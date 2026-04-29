@@ -1,0 +1,367 @@
+import { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
+
+export default function OnboardingScreen({ onComplete, onGoBack }) {
+  const [step, setStep] = useState(1);
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [targetWeight, setTargetWeight] = useState('');
+  const [weeklyWorkouts, setWeeklyWorkouts] = useState(3);
+  const [sessionLength, setSessionLength] = useState(60);
+  const [equipment, setEquipment] = useState([]);
+  const [supplements, setSupplements] = useState([]);
+  const [customSupplement, setCustomSupplement] = useState('');
+  const [customSupplements, setCustomSupplements] = useState([]);
+  const [goals, setGoals] = useState([]);
+
+  const totalSteps = 5;
+  const next = () => setStep((s) => s + 1);
+  const back = () => setStep((s) => s - 1);
+
+  const h = parseFloat(height);
+  const w = parseFloat(weight);
+  const tw = parseFloat(targetWeight);
+
+  const bmi = h && w ? (w / ((h / 100) ** 2)).toFixed(1) : null;
+  const bmiCategory = bmi
+    ? bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese'
+    : null;
+  const bmiColor = bmi
+    ? bmi < 18.5 ? '#BA7517' : bmi < 25 ? '#1D9E75' : bmi < 30 ? '#BA7517' : '#E24B4A'
+    : null;
+  const healthyLow = h ? (18.5 * ((h / 100) ** 2)).toFixed(1) : null;
+  const healthyHigh = h ? (24.9 * ((h / 100) ** 2)).toFixed(1) : null;
+  const weeksToGoal = w && tw ? Math.abs(Math.round((w - tw) / 0.5)) : null;
+
+  const isLosingFat = goals.includes('lose');
+  const isGaining = goals.includes('gain') || goals.includes('strength') || goals.includes('aesthetics');
+  const caloricTarget = w
+    ? isLosingFat ? Math.round(w * 24 * 0.8)
+    : isGaining ? Math.round(w * 24 * 1.15)
+    : Math.round(w * 24)
+    : null;
+  const proteinTarget = w ? Math.round(w * 2) : null;
+  const fatTarget = caloricTarget ? Math.round((caloricTarget * 0.25) / 9) : null;
+  const carbTarget = caloricTarget && proteinTarget && fatTarget
+    ? Math.round((caloricTarget - proteinTarget * 4 - fatTarget * 9) / 4)
+    : null;
+
+  const toggleItem = (list, setList, item) => {
+    setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
+  };
+
+  const addCustomSupplement = () => {
+    if (customSupplement.trim()) {
+      setCustomSupplements([...customSupplements, customSupplement.trim()]);
+      setCustomSupplement('');
+    }
+  };
+
+  const GOALS = [
+    { key: 'lose', label: 'Lose fat' },
+    { key: 'gain', label: 'Build muscle' },
+    { key: 'strength', label: 'Build strength' },
+    { key: 'aesthetics', label: 'Aesthetics' },
+    { key: 'endurance', label: 'Improve endurance' },
+    { key: 'maintain', label: 'Stay healthy' },
+  ];
+
+  const EQUIPMENT = ['Barbell', 'Dumbbells', 'Cables', 'Machines', 'Bodyweight only', 'Kettlebells', 'Resistance bands'];
+  const SUPPLEMENTS = ['Whey protein', 'Creatine', 'Pre-workout', 'Multivitamin', 'Omega-3', 'Vitamin D', 'Magnesium', 'BCAAs', 'Collagen', 'None'];
+
+  const getScheduleFeedback = () => {
+    const wantsMuscle = goals.includes('gain') || goals.includes('strength') || goals.includes('aesthetics');
+    const wantsEndurance = goals.includes('endurance');
+    const wantsFat = goals.includes('lose');
+
+    if (wantsMuscle) {
+      if (weeklyWorkouts >= 4) {
+        return {
+          status: 'optimal',
+          message: 'Each muscle group will be trained twice per week — the research-backed minimum for maximizing hypertrophy.',
+          citation: 'Schoenfeld, Ogborn & Krieger (2016). Effects of resistance training frequency on measures of muscle hypertrophy. Sports Medicine, 46(11):1689–1697.',
+          program: weeklyWorkouts === 4 ? 'Upper / Lower 4×/week' : weeklyWorkouts === 5 ? 'Hybrid 5×/week' : 'Push / Pull / Legs 6×/week',
+        };
+      } else if (weeklyWorkouts === 3) {
+        return {
+          status: 'good',
+          message: 'Good starting point. Full body sessions will hit each muscle 3 times per week. Slightly less volume per muscle than optimal but effective.',
+          citation: 'Schoenfeld et al. (2016): twice per week superior to once per week for hypertrophy. 3× full body meets this threshold.',
+          program: 'Full Body 3×/week',
+        };
+      } else {
+        return {
+          status: 'suboptimal',
+          message: '2 days is below the research minimum for optimal muscle growth. Results will come but significantly slower. Consider adding a third day if possible.',
+          citation: 'Schoenfeld et al. (2016): training each muscle at least twice per week produces superior hypertrophic outcomes to once per week.',
+          program: 'Full Body 2×/week',
+        };
+      }
+    } else if (wantsEndurance && !wantsMuscle) {
+      return {
+        status: 'optimal',
+        message: 'For endurance goals, higher rep ranges and shorter rest periods will be prioritized. Consistency matters more than frequency.',
+        citation: 'ACSM Position Stand (2009): muscular endurance — higher repetitions, shorter rest intervals.',
+        program: weeklyWorkouts >= 4 ? 'Upper / Lower Express' : 'Full Body Express',
+      };
+    } else if (wantsFat && !wantsMuscle) {
+      return {
+        status: 'optimal',
+        message: 'For fat loss, resistance training preserves muscle while in a caloric deficit. Higher density training keeps heart rate elevated.',
+        citation: 'Willis et al. (2012): resistance training preserves lean mass during caloric restriction. J Appl Physiol.',
+        program: weeklyWorkouts >= 4 ? 'Upper / Lower Express' : 'Full Body Express',
+      };
+    }
+    return {
+      status: 'good',
+      message: 'Your schedule will be optimized for your selected goals.',
+      citation: '',
+      program: weeklyWorkouts >= 4 ? 'Upper / Lower' : 'Full Body',
+    };
+  };
+
+  const feedback = goals.length > 0 ? getScheduleFeedback() : null;
+  const statusColors = { optimal: '#1D9E75', good: '#BA7517', suboptimal: '#E24B4A' };
+  const statusLabels = { optimal: 'Optimal', good: 'Good', suboptimal: 'Suboptimal' };
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 60 }}>
+      <View style={styles.progressBg}>
+        <View style={[styles.progressFill, { width: `${(step / totalSteps) * 100}%` }]} />
+      </View>
+      <Text style={styles.stepLabel}>Step {step} of {totalSteps}</Text>
+      {step === 1 && (
+        <Pressable onPress={onGoBack} style={{ paddingHorizontal: 24 }}>
+          <Text style={{ color: '#71717A', fontSize: 15 }}>← Back</Text>
+        </Pressable>
+      )}
+
+      {step === 1 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>Let's start with{'\n'}your body stats</Text>
+          <Text style={styles.stepSub}>We'll calculate your BMI and healthy weight range.</Text>
+          <Text style={styles.label}>Height (cm)</Text>
+          <TextInput style={styles.input} value={height} onChangeText={setHeight} keyboardType="numeric" placeholder="e.g. 178" placeholderTextColor="#3D3D4A" />
+          <Text style={styles.label}>Current weight (kg)</Text>
+          <TextInput style={styles.input} value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder="e.g. 85" placeholderTextColor="#3D3D4A" />
+          {bmi && (
+            <View style={styles.bmiCard}>
+              <View style={styles.bmiRow}>
+                <Text style={styles.bmiLabel}>Your BMI</Text>
+                <Text style={[styles.bmiVal, { color: bmiColor }]}>{bmi}</Text>
+                <Text style={[styles.bmiCategory, { color: bmiColor }]}>{bmiCategory}</Text>
+              </View>
+              <Text style={styles.bmiRange}>Healthy weight range: {healthyLow}kg – {healthyHigh}kg</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {step === 2 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>What are your goals?</Text>
+          <Text style={styles.stepSub}>Your healthy range is {healthyLow}–{healthyHigh}kg. You're at {weight}kg.{'\n'}Select all that apply.</Text>
+          <View style={styles.goalsWrap}>
+            {GOALS.map((g) => (
+              <Pressable key={g.key} style={[styles.goalCard, goals.includes(g.key) && styles.goalCardActive]} onPress={() => toggleItem(goals, setGoals, g.key)}>
+                <Text style={[styles.goalLabel, goals.includes(g.key) && styles.goalLabelActive]}>{g.label}</Text>
+                {goals.includes(g.key) && <Text style={styles.check}>✓</Text>}
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.label}>Target weight (kg)</Text>
+          <TextInput style={styles.input} value={targetWeight} onChangeText={setTargetWeight} keyboardType="numeric" placeholder="e.g. 75" placeholderTextColor="#3D3D4A" />
+          {weeksToGoal > 0 && <Text style={styles.estimate}>At a healthy pace, you'll reach {targetWeight}kg in ~{weeksToGoal} weeks</Text>}
+        </View>
+      )}
+
+      {step === 3 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>Your training schedule</Text>
+          <Text style={styles.stepSub}>We'll build your plan around your availability.</Text>
+
+          <Text style={styles.label}>Days per week</Text>
+          <View style={styles.optionRow}>
+            {[2, 3, 4, 5, 6].map((d) => (
+              <Pressable key={d} style={[styles.optionBtn, weeklyWorkouts === d && styles.optionBtnActive]} onPress={() => setWeeklyWorkouts(d)}>
+                <Text style={[styles.optionBtnText, weeklyWorkouts === d && styles.optionBtnTextActive]}>{d}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.label}>Session length</Text>
+          <View style={styles.optionRow}>
+            {[30, 45, 60, 90, 120].map((m) => (
+              <Pressable key={m} style={[styles.optionBtn, sessionLength === m && styles.optionBtnActive]} onPress={() => setSessionLength(m)}>
+                <Text style={[styles.optionBtnText, sessionLength === m && styles.optionBtnTextActive]}>{m}m</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {feedback && (
+            <View style={[styles.feedbackCard, { borderColor: statusColors[feedback.status] }]}>
+              <View style={styles.feedbackHeader}>
+                <View style={[styles.feedbackBadge, { backgroundColor: statusColors[feedback.status] + '22' }]}>
+                  <Text style={[styles.feedbackBadgeText, { color: statusColors[feedback.status] }]}>
+                    {statusLabels[feedback.status]}
+                  </Text>
+                </View>
+                <Text style={styles.feedbackProgram}>{feedback.program}</Text>
+              </View>
+              <Text style={styles.feedbackMessage}>{feedback.message}</Text>
+              {feedback.citation ? <Text style={styles.feedbackCitation}>{feedback.citation}</Text> : null}
+            </View>
+          )}
+
+          <Text style={styles.label}>Equipment available</Text>
+          <View style={styles.tagsWrap}>
+            {EQUIPMENT.map((e) => (
+              <Pressable key={e} style={[styles.tag, equipment.includes(e) && styles.tagActive]} onPress={() => toggleItem(equipment, setEquipment, e)}>
+                <Text style={[styles.tagText, equipment.includes(e) && styles.tagTextActive]}>{e}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {step === 4 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>What supplements{'\n'}do you take?</Text>
+          <Text style={styles.stepSub}>We'll factor these into your nutrition targets.</Text>
+          <View style={styles.tagsWrap}>
+            {SUPPLEMENTS.map((s) => (
+              <Pressable key={s} style={[styles.tag, supplements.includes(s) && styles.tagActive]} onPress={() => {
+                if (s === 'None') { setSupplements(['None']); }
+                else { setSupplements(supplements.includes(s) ? supplements.filter((x) => x !== s) : [...supplements.filter((x) => x !== 'None'), s]); }
+              }}>
+                <Text style={[styles.tagText, supplements.includes(s) && styles.tagTextActive]}>{s}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.label}>Other supplements</Text>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+            <TextInput style={[styles.input, { flex: 1 }]} value={customSupplement} onChangeText={setCustomSupplement} placeholder="e.g. Ashwagandha" placeholderTextColor="#3D3D4A" onSubmitEditing={addCustomSupplement} />
+            <Pressable style={{ backgroundColor: '#534AB7', borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }} onPress={addCustomSupplement}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Add</Text>
+            </Pressable>
+          </View>
+          {customSupplements.length > 0 && (
+            <View style={[styles.tagsWrap, { marginTop: 12 }]}>
+              {customSupplements.map((s) => (
+                <Pressable key={s} style={styles.tagActive} onPress={() => setCustomSupplements(customSupplements.filter((x) => x !== s))}>
+                  <Text style={styles.tagTextActive}>{s} ×</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {step === 5 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>Your personal plan{'\n'}is ready</Text>
+          <View style={styles.resultCard}>
+            <Text style={styles.resultLabel}>Daily calorie target</Text>
+            <Text style={styles.resultBig}>{caloricTarget} kcal</Text>
+          </View>
+          <View style={styles.macrosRow}>
+            <View style={styles.macroCard}>
+              <Text style={styles.macroVal}>{proteinTarget}g</Text>
+              <Text style={styles.macroLabel}>Protein</Text>
+            </View>
+            <View style={styles.macroCard}>
+              <Text style={styles.macroVal}>{carbTarget}g</Text>
+              <Text style={styles.macroLabel}>Carbs</Text>
+            </View>
+            <View style={styles.macroCard}>
+              <Text style={styles.macroVal}>{fatTarget}g</Text>
+              <Text style={styles.macroLabel}>Fat</Text>
+            </View>
+          </View>
+          <View style={styles.resultCard}>
+            <Text style={styles.resultLabel}>Training plan</Text>
+            <Text style={styles.resultDetail}>{weeklyWorkouts} days/week · {sessionLength} min sessions</Text>
+            {feedback && <Text style={[styles.resultDetail, { color: statusColors[feedback.status] }]}>{feedback.program} — {statusLabels[feedback.status]}</Text>}
+            {goals.length > 0 && <Text style={styles.resultDetail}>Goals: {goals.join(', ')}</Text>}
+            {weeksToGoal > 0 && <Text style={styles.resultDetail}>Target: {targetWeight}kg in ~{weeksToGoal} weeks</Text>}
+          </View>
+          {(supplements.length > 0 || customSupplements.length > 0) && !supplements.includes('None') && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultLabel}>Supplements noted</Text>
+              <Text style={styles.resultDetail}>{[...supplements, ...customSupplements].join(', ')}</Text>
+            </View>
+          )}
+          <Pressable style={styles.completeBtn} onPress={() => onComplete && onComplete({
+            height, weight, targetWeight, weeklyWorkouts, sessionLength,
+            equipment, supplements: [...supplements, ...customSupplements],
+            goals, caloricTarget, proteinTarget, carbTarget, fatTarget,
+          })}>
+            <Text style={styles.completeBtnText}>Start training</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <View style={styles.navRow}>
+        {step > 1 && <Pressable style={styles.backBtn} onPress={back}><Text style={styles.backBtnText}>← Back</Text></Pressable>}
+        {step < totalSteps && <Pressable style={styles.nextBtn} onPress={next}><Text style={styles.nextBtnText}>Next →</Text></Pressable>}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0F0F13' },
+  progressBg: { height: 3, backgroundColor: '#2C2C35', marginTop: 48 },
+  progressFill: { height: 3, backgroundColor: '#534AB7' },
+  stepLabel: { fontSize: 12, color: '#71717A', padding: 24, paddingBottom: 0 },
+  stepWrap: { padding: 24 },
+  stepTitle: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.8, marginBottom: 8, lineHeight: 36 },
+  stepSub: { fontSize: 14, color: '#71717A', marginBottom: 32, lineHeight: 22 },
+  label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
+  input: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', padding: 16, color: '#FFFFFF', fontSize: 16 },
+  bmiCard: { marginTop: 20, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  bmiRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
+  bmiLabel: { fontSize: 14, color: '#71717A' },
+  bmiVal: { fontSize: 28, fontWeight: '700' },
+  bmiCategory: { fontSize: 14, fontWeight: '600' },
+  bmiRange: { fontSize: 13, color: '#71717A' },
+  goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
+  goalCard: { width: '48%', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  goalCardActive: { borderColor: '#534AB7', backgroundColor: '#1A1830' },
+  goalLabel: { fontSize: 14, color: '#71717A', fontWeight: '500' },
+  goalLabelActive: { color: '#7F77DD' },
+  check: { color: '#534AB7', fontWeight: '700' },
+  estimate: { fontSize: 13, color: '#1D9E75', marginTop: 12 },
+  optionRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  optionBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
+  optionBtnActive: { backgroundColor: '#534AB7', borderColor: '#534AB7' },
+  optionBtnText: { color: '#71717A', fontWeight: '600' },
+  optionBtnTextActive: { color: '#FFFFFF' },
+  tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tag: { backgroundColor: '#1A1A20', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
+  tagActive: { backgroundColor: '#1A1830', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#534AB7' },
+  tagText: { color: '#71717A', fontSize: 13 },
+  tagTextActive: { color: '#7F77DD', fontSize: 13 },
+  feedbackCard: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, marginBottom: 8 },
+  feedbackHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  feedbackBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
+  feedbackBadgeText: { fontSize: 12, fontWeight: '600' },
+  feedbackProgram: { fontSize: 13, color: '#A1A1AA', fontWeight: '500' },
+  feedbackMessage: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 10 },
+  feedbackCitation: { fontSize: 11, color: '#71717A', fontStyle: 'italic', lineHeight: 16 },
+  resultCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
+  resultLabel: { fontSize: 11, color: '#71717A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  resultBig: { fontSize: 36, fontWeight: '700', color: '#FFFFFF' },
+  resultDetail: { fontSize: 14, color: '#A1A1AA', marginTop: 4 },
+  macrosRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  macroCard: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
+  macroVal: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
+  macroLabel: { fontSize: 11, color: '#71717A', marginTop: 3 },
+  completeBtn: { backgroundColor: '#534AB7', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
+  completeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  navRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginTop: 8 },
+  backBtn: { paddingVertical: 12 },
+  backBtnText: { color: '#71717A', fontSize: 15 },
+  nextBtn: { backgroundColor: '#534AB7', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
+  nextBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+});
