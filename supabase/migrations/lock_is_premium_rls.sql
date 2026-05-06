@@ -1,6 +1,9 @@
 -- Prevent users from elevating their own is_premium flag.
 -- Run this in the Supabase SQL editor (Dashboard → SQL Editor).
 
+-- 0. Add is_premium column if it doesn't exist yet
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_premium boolean NOT NULL DEFAULT false;
+
 -- 1. Enable RLS on profiles if not already enabled
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
