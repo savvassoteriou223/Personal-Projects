@@ -1,4 +1,4 @@
-// LiftIQ Science Engine
+// Helix Science Engine
 // All principles derived exclusively from peer-reviewed research
 // No proprietary content — sources cited for every claim
 //
@@ -122,17 +122,54 @@ export const RECOVERY_GUIDELINES = {
   },
 };
 
+// Weekly sets per muscle group by experience level — hypertrophy reference
+// Sources: Baz-Valle et al. (2022) PMC8884877 — general 10–20 set range for trained men;
+//          Schoenfeld et al. (2017) PMID 27433992 — dose-response, each set = +0.37% gain;
+//          PMC9302196 umbrella review — ≥4 sets sufficient for beginners;
+//          PMC12345604 — competitive physique athlete survey (advanced upper bound reference)
+// Note: per-muscle per-level data does not exist in a single RCT. These ranges represent
+// the intersection of the above sources — not precision, but the best defensible estimate.
 export const VOLUME_BY_MUSCLE = {
-  chest:      { min: 10, optimal: '12–16', freq: '2×/week', notes: 'Include flat and incline pressing for upper/lower fiber development (Fonseca et al., 2014).' },
-  back:       { min: 10, optimal: '12–16', freq: '2×/week', notes: 'Include vertical pulls (lat width) and horizontal pulls (back thickness).' },
-  shoulders:  { min: 8,  optimal: '10–14', freq: '2–3×/week', notes: 'Side deltoid requires direct isolation — pressing primarily develops anterior deltoids.' },
-  biceps:     { min: 6,  optimal: '8–12',  freq: '2×/week', notes: 'Account for indirect volume from rows and pull-ups.' },
-  triceps:    { min: 6,  optimal: '8–12',  freq: '2×/week', notes: 'Long head (largest portion) best trained with arm overhead.' },
-  quads:      { min: 10, optimal: '12–16', freq: '2×/week', notes: 'Multiple exercises produce more complete development than squats alone (Fonseca et al., 2014).' },
-  hamstrings: { min: 8,  optimal: '10–14', freq: '2×/week', notes: 'Train at long muscle lengths (hip hinge) and with direct isolation (leg curl).' },
-  glutes:     { min: 8,  optimal: '12–16', freq: '2×/week', notes: 'Train through peak contraction (hip thrust) and lengthened position (Romanian deadlift).' },
-  calves:     { min: 8,  optimal: '10–14', freq: '2–3×/week', notes: 'Full range of motion with emphasis on the stretch position.' },
-  abs:        { min: 6,  optimal: '8–12',  freq: '2×/week', notes: 'EMG research: rectus abdominis is minimally active during squats/deadlifts. Direct work necessary.' },
+  chest: {
+    beginner: '6–9', intermediate: '10–15', advanced: '14–20', freq: '2×/week',
+    notes: 'Includes flat and incline pressing. Front delts receive indirect volume from all pressing — do not double-count toward shoulder work.',
+  },
+  back: {
+    beginner: '8–10', intermediate: '10–20', advanced: '14–25', freq: '2×/week',
+    notes: 'Largest muscle group by volume tolerance. Requires both vertical pulls (lat width) and horizontal pulls (back thickness) for complete development.',
+  },
+  shoulders: {
+    beginner: '6–10', intermediate: '10–18', advanced: '12–22', freq: '2–3×/week',
+    notes: 'Side and rear delts receive minimal stimulus from pressing — dedicated isolation is required. Front delts are covered by pressing and rarely need direct work.',
+  },
+  biceps: {
+    beginner: '3–6', intermediate: '6–10', advanced: '8–14', freq: '2–3×/week',
+    notes: 'Direct isolation sets only. Rows and pull-ups provide additional indirect volume on top of these numbers.',
+  },
+  triceps: {
+    beginner: '3–6', intermediate: '6–10', advanced: '10–16', freq: '2×/week',
+    notes: 'Direct isolation sets only. All pressing adds indirect volume. Baz-Valle et al. (2022) found triceps show the strongest dose-response of any muscle tested — the one muscle where >20 total sets showed significant benefit (p=0.01).',
+  },
+  quads: {
+    beginner: '6–10', intermediate: '10–15', advanced: '12–20', freq: '2×/week',
+    notes: 'Multiple exercises produce more complete development than squats alone. Include knee-dominant squatting and knee-extension isolation.',
+  },
+  hamstrings: {
+    beginner: '5–8', intermediate: '8–12', advanced: '10–15', freq: '2×/week',
+    notes: 'Hip hinge movements (RDL, deadlift) are primary — they train the long head at a lengthened position. Leg curl targets the short head differently. Both are needed.',
+  },
+  glutes: {
+    beginner: '6–10', intermediate: '8–14', advanced: '10–18', freq: '2×/week',
+    notes: 'Squats, deadlifts and lunges provide a baseline stimulus. Direct work (hip thrust, glute bridge, cable kickback) is additive — not mandatory for beginners but accelerates development.',
+  },
+  calves: {
+    beginner: '4–8', intermediate: '6–12', advanced: '10–16', freq: '3×/week',
+    notes: 'High type I slow-twitch fibre content — recovers faster than most muscles and tolerates higher frequency. Full ROM with emphasis on the stretched position is essential.',
+  },
+  abs: {
+    beginner: '3–8', intermediate: '6–10', advanced: '8–12', freq: '2–3×/week',
+    notes: 'Heavy compounds provide indirect stimulus but EMG research shows rectus abdominis is minimally active during squats and deadlifts. Direct weighted work (cable crunch, ab wheel) is more effective than bodyweight crunches.',
+  },
 };
 
 export const MUSCLE_GAIN_EXPECTATIONS = {
@@ -148,6 +185,75 @@ export const MUSCLE_GAIN_EXPECTATIONS = {
     'Body recomposition is most achievable for beginners and those returning after a layoff',
     'Consistency over years is the primary determinant of results',
   ],
+};
+
+export const GOAL_PARAMETERS = {
+  lose: {
+    label: 'Fat loss',
+    frequency: '3–5×/week',
+    volume: '10–20 sets/muscle + 150+ min cardio',
+    intensity: '60–80% 1RM',
+    rep_range: '8–15',
+    key_finding: 'Concurrent training (resistance + cardio combined) outperforms either modality alone for fat reduction while preserving lean mass.',
+    citation: 'Willis et al. (2012). J Appl Physiol, 113(12):1831–1837. PMID: 23019316',
+    secondary_finding: 'Energy deficits >500 kcal/day impair lean mass retention during resistance training — keep deficits moderate.',
+    secondary_citation: 'Stokes et al. (2022). Scand J Med Sci Sports, 32(1):125–137. PMID: 34623696',
+  },
+  gain: {
+    label: 'Build muscle',
+    frequency: '2–4×/week per muscle',
+    volume: '10–20+ sets/muscle/week',
+    intensity: '40–80% 1RM',
+    rep_range: '5–30 (varied)',
+    key_finding: 'Training each muscle ≥2×/week and accumulating >10 sets/week produces significantly greater hypertrophy than lower frequencies or volumes.',
+    citation: 'Schoenfeld, Ogborn & Krieger (2017). J Sports Sci, 35(11):1073–1082. PMID: 27433992',
+    secondary_finding: 'Stopping 1–3 reps short of failure produces equivalent hypertrophy to training to failure, with meaningfully better recovery.',
+    secondary_citation: 'Kassiano et al. (2022). Sports Med, 52(12):2909–2929. PMID: 36334240',
+  },
+  strength: {
+    label: 'Build strength',
+    frequency: '2–4×/week',
+    volume: '6–12 sets/muscle/week',
+    intensity: '80–100% 1RM',
+    rep_range: '1–5',
+    key_finding: 'High-load training (>60% 1RM) produces significantly superior maximal strength gains. Heavy loads drive the neural adaptations that underpin 1RM performance.',
+    citation: 'Lopez et al. (2021). Med Sci Sports Exerc, 53(6):1206–1216. PMID: 33433148',
+    secondary_finding: 'When weekly volume is equated, training frequency does not significantly affect strength gains — total weekly sets matter more than distribution.',
+    secondary_citation: 'Grgic et al. (2018). Sports Med, 48(5):1207–1220. PMID: 29470825',
+  },
+  aesthetics: {
+    label: 'Aesthetics',
+    frequency: '3–5×/week',
+    volume: '10–20 sets/muscle/week',
+    intensity: '60–80% 1RM',
+    rep_range: '6–15',
+    key_finding: 'Body recomposition — simultaneous muscle gain and fat loss — is achievable at all fitness levels with progressive resistance training, high protein (1.6–2.2g/kg), and modest energy balance.',
+    citation: 'Frontiers in Nutrition (2024). PMID: 39290563',
+    secondary_finding: 'Protein intake of 1.6–2.2g/kg/day maximally supports muscle retention and growth during recomposition phases.',
+    secondary_citation: 'Morton et al. (2018). Br J Sports Med, 52(6):376–384.',
+  },
+  endurance: {
+    label: 'Endurance',
+    frequency: '3–6×/week',
+    volume: 'Low-moderate RT + sport cardio',
+    intensity: '<60% 1RM for muscular endurance; >80% for concurrent strength',
+    rep_range: '15–30',
+    key_finding: 'Concurrent training does not significantly interfere with hypertrophy or strength when sessions are separated by ≥3 hours. Power output is the most affected quality.',
+    citation: 'Schumann et al. (2022). Sports Med, 52(3):601–612. PMID: 34757594',
+    secondary_finding: 'Heavy strength training (3–5RM) improves running economy and cycling efficiency without interfering with cardiorespiratory adaptations.',
+    secondary_citation: 'Rønnestad & Mujika (2014). Scand J Med Sci Sports, 24(4):603–612.',
+  },
+  maintain: {
+    label: 'General health',
+    frequency: '2–3×/week',
+    volume: '2–4 sets/muscle/week (minimum effective dose)',
+    intensity: '60–80% 1RM',
+    rep_range: '8–15',
+    key_finding: 'Any resistance training reduces all-cause mortality by 15% and cardiovascular disease mortality by 19%. Approximately 60 minutes per week is the longevity sweet spot.',
+    citation: 'Momma et al. (2022). Br J Sports Med, 56(13):755–763. PMID: 35228201',
+    secondary_finding: '1–3 sets per exercise, 2–3 exercises, twice per week still produces meaningful strength and health improvements — the minimum effective dose is lower than most people think.',
+    secondary_citation: 'Baz-Valle et al. (2024). Int J Environ Res Public Health. PMID: 38509414',
+  },
 };
 
 // Helpers

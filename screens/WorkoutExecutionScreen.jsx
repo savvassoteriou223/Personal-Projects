@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert } from 'react-native';
-import { supabase } from '../supabase';
+import { Image } from 'expo-image';
+import { supabase, getCurrentUser } from '../supabase';
 import StudyChart from './StudyChart';
 import MuscleMap from './MuscleMap';
 import ExerciseSlideshow from './ExerciseSlideshow';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
+import { checkReadyToProgress } from './programGenerator';
+import { getExerciseGif } from './exerciseDBService';
 
-const SCREEN_W = Dimensions.get('window').width;
+const SCREEN_W = Dimensions.get('window').width;  // fallback; overridden by onLayout
 
 // ─── Find exercise by name across all patterns ────────────────────────────────
 function findExerciseByName(name) {
@@ -38,39 +41,80 @@ function getMuscles(ex) {
   return { primary: [], secondary: [] };
 }
 
+function exerciseToSetState(ex) {
+  const n = typeof ex.sets === 'number' ? ex.sets : 3;
+  return {
+    name: ex.name,
+    muscles: ex.muscles || '',
+    primaryMuscles: ex.primaryMuscles || ex.patternMuscles || [],
+    secondaryMuscles: ex.secondaryMuscles || [],
+    target_sets: n,
+    target_reps: ex.reps || '',
+    rest: ex.rest || '2–3 min',
+    early_rpe: ex.early_rpe || 7,
+    last_rpe: ex.last_rpe || 9,
+    research_note: ex.research_note || '',
+    cues: ex.cues || [],
+    sub1: ex.sub1 || '',
+    sub2: ex.sub2 || '',
+    sub3: ex.sub3 || '',
+    study: ex.study || null,
+    completedSets: Array.from({ length: n }, () => ({ weight: '', reps: '', done: false })),
+  };
+}
+
 export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) {
   const [currentExIdx, setCurrentExIdx] = useState(0);
-  const [sets, setSets] = useState(() =>
-    workout.exercises.map(ex => ({
-      name: ex.name,
-      muscles: ex.muscles || '',
-      primaryMuscles: ex.primaryMuscles || ex.patternMuscles || [],
-      secondaryMuscles: ex.secondaryMuscles || [],
-      target_sets: typeof ex.sets === 'number' ? ex.sets : 3,
-      target_reps: ex.reps || '',
-      rest: ex.rest || '2–3 min',
-      early_rpe: ex.early_rpe || 7,
-      last_rpe: ex.last_rpe || 9,
-      research_note: ex.research_note || '',
-      cues: ex.cues || [],
-      sub1: ex.sub1 || '',
-      sub2: ex.sub2 || '',
-      sub3: ex.sub3 || '',
-      study: ex.study || null,
-      completedSets: Array.from(
-        { length: typeof ex.sets === 'number' ? ex.sets : 3 },
-        () => ({ weight: '', reps: '', done: false })
-      ),
-    }))
-  );
+  const [sets, setSets] = useState(() => workout.exercises.map(exerciseToSetState));
   const [restTimer, setRestTimer] = useState(null);
   const [finishTime, setFinishTime] = useState(null);
   const [rpe, setRpe] = useState(7);
-  const [showCues, setShowCues] = useState(false);
   const [finished, setFinished] = useState(false);
   const [prevWeights, setPrevWeights] = useState({});
   const [restWarning, setRestWarning] = useState(null);
   const [slideshowExercise, setSlideshowExercise] = useState(null);
+
+  // ─── Load AI coach additions for this day ────────────────────────────────
+  useEffect(() => {
+    if (!workout.id) return;
+    (async () => {
+      const user = await getCurrentUser();
+      if (!user) return;
+      const { data: additions } = await supabase
+        .from('program_additions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('day_id', workout.id)
+        .order('created_at', { ascending: true });
+      if (!additions?.length) return;
+      const extra = additions.map(a => {
+        const found = findExerciseByName(a.exercise_name);
+        const ex = found?.exercise || {};
+        const pattern = found?.pattern;
+        const n = a.sets;
+        return {
+          ...exerciseToSetState({
+            name: a.exercise_name,
+            muscles: ex.muscles || pattern?.muscles?.join(', ') || '',
+            primaryMuscles: ex.primaryMuscles || pattern?.muscles || [],
+            secondaryMuscles: ex.secondaryMuscles || [],
+            sets: n,
+            reps: a.reps,
+            rest: a.rest,
+            early_rpe: ex.early_rpe,
+            last_rpe: ex.last_rpe,
+            research_note: ex.research_note || '',
+            cues: ex.cues || [],
+            sub1: ex.sub1 || '',
+            sub2: ex.sub2 || '',
+            sub3: ex.sub3 || '',
+            study: ex.study || null,
+          }),
+        };
+      });
+      setSets(prev => [...prev, ...extra]);
+    })();
+  }, []);
 
   // ─── Swap alternative in for current exercise ─────────────────────────────
   const swapExercise = (exIdx, altName, subIdx) => {
@@ -122,8 +166,21 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
     }));
   };
   const [overloadSuggestions, setOverloadSuggestions] = useState([]);
+  const [pageWidth, setPageWidth] = useState(SCREEN_W);
+  const [gifCache, setGifCache] = useState({});
   const startTime = useRef(Date.now());
   const swipeRef = useRef(null);
+
+  // Prefetch GIFs for all exercises so "How to" opens instantly
+  useEffect(() => {
+    const names = workout.exercises.map(e => e.name);
+    names.forEach(name => {
+      getExerciseGif(name).then(url => {
+        if (!url) return;
+        setGifCache(prev => ({ ...prev, [name]: url }));
+      }).catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     if (!restTimer || restTimer <= 0) return;
@@ -133,7 +190,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) return;
 
       const exNames = sets.map(s => s.name);
@@ -261,61 +318,83 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
   const totalSets = sets.reduce((acc, ex) => acc + ex.completedSets.length, 0);
 
   const saveWorkout = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
 
-    const { data: session, error } = await supabase
-      .from('workout_sessions')
-      .insert({
-        user_id: user.id,
-        name: workout.name,
-        started_at: new Date(startTime.current).toISOString(),
-        completed_at: new Date().toISOString(),
-        duration_min: Math.round(((finishTime ?? Date.now()) - startTime.current) / 60000),
-        perceived_exertion: rpe,
-      })
-      .select()
-      .single();
+    try {
+      const { data: session, error } = await supabase
+        .from('workout_sessions')
+        .insert({
+          user_id: user.id,
+          name: workout.name,
+          started_at: new Date(startTime.current).toISOString(),
+          completed_at: new Date().toISOString(),
+          duration_min: Math.round(((finishTime ?? Date.now()) - startTime.current) / 60000),
+          perceived_exertion: rpe,
+        })
+        .select()
+        .single();
 
-    if (!error && session) {
-      const completedSets = sets.flatMap((ex, exIdx) =>
-        ex.completedSets
-          .filter(s => s.done)
-          .map((s, setIdx) => ({
-            session_id: session.id,
-            exercise_name: ex.name,
-            set_number: setIdx + 1,
-            reps: parseInt(s.reps) || null,
-            weight_kg: parseFloat(s.weight) || null,
-          }))
-      );
-      if (completedSets.length > 0) {
-        await supabase.from('completed_sets').insert(completedSets);
+      if (error) throw error;
+
+      if (session) {
+        // Save completed sets (include user_id for direct history queries)
+        const completedSets = sets.flatMap((ex) =>
+          ex.completedSets
+            .filter(s => s.done)
+            .map((s, setIdx) => ({
+              session_id: session.id,
+              user_id: user.id,
+              exercise_name: ex.name,
+              pattern_key: ex.pattern || null,
+              set_number: setIdx + 1,
+              reps: parseInt(s.reps) || null,
+              weight_kg: parseFloat(s.weight) || null,
+            }))
+        );
+        if (completedSets.length > 0) {
+          await supabase.from('completed_sets').insert(completedSets);
+        }
+
+        // Record skipped exercises
+        const skippedExercises = sets.filter(ex =>
+          ex.completedSets.every(s => !s.done)
+        );
+        if (skippedExercises.length > 0) {
+          await supabase.from('exercise_skips').insert(
+            skippedExercises.map(ex => ({
+              user_id: user.id,
+              session_id: session.id,
+              exercise_name: ex.name,
+              pattern_key: ex.pattern || null,
+            }))
+          );
+        }
+
+        // Progressive overload suggestions using the research-backed double-progression model
+        const { data: recentSets } = await supabase
+          .from('completed_sets')
+          .select('exercise_name, weight_kg, reps, completed_at')
+          .eq('user_id', user.id)
+          .order('completed_at', { ascending: false })
+          .limit(200);
+
+        const suggestions = sets.map(ex => {
+          const doneSets = ex.completedSets.filter(s => s.done);
+          if (!doneSets.length) return null;
+          const result = checkReadyToProgress(recentSets || [], ex.name, ex.reps || ex.target_reps);
+          if (result.status === 'insufficient_data') return null;
+          return { name: ex.name, suggestion: result.note, type: result.status };
+        }).filter(Boolean);
+
+        setOverloadSuggestions(suggestions);
       }
 
-      const suggestions = sets.map(ex => {
-        const doneSets = ex.completedSets.filter(s => s.done);
-        if (!doneSets.length) return null;
-        const prev = prevWeights[ex.name];
-        const topWeight = Math.max(...doneSets.map(s => parseFloat(s.weight) || 0));
-        const topReps = Math.max(...doneSets.map(s => parseInt(s.reps) || 0));
-        const [repLow, repHigh] = ex.target_reps.includes('–')
-          ? ex.target_reps.split('–').map(Number)
-          : [8, 12];
-
-        if (topReps >= repHigh && topWeight > 0) {
-          const increment = topWeight >= 60 ? 2.5 : 1.25;
-          return { name: ex.name, suggestion: `Increase to ${topWeight + increment}kg next session (hit top of ${ex.target_reps} rep range)`, type: 'increase' };
-        } else if (prev && topWeight > 0 && parseFloat(prev.weight) > topWeight) {
-          return { name: ex.name, suggestion: `Aim for ${prev.weight}kg again — you hit this before`, type: 'maintain' };
-        }
-        return null;
-      }).filter(Boolean);
-
-      setOverloadSuggestions(suggestions);
+      onFinish && onFinish();
+    } catch (err) {
+      console.error('saveWorkout error:', err);
+      Alert.alert('Save failed', 'Could not save your workout. Please try again.');
     }
-
-    onFinish && onFinish();
   };
 
   const currentEx = sets[currentExIdx];
@@ -396,11 +475,20 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         </Pressable>
         <View style={styles.dotIndicators}>
           {sets.map((ex, i) => (
-            <View key={i} style={[
-              styles.dotIndicator,
-              i === currentExIdx && styles.dotIndicatorActive,
-              allSetsDone(ex) && styles.dotIndicatorDone,
-            ]} />
+            <Pressable
+              key={i}
+              onPress={() => {
+                swipeRef.current?.scrollTo({ x: i * pageWidth, animated: true });
+                setCurrentExIdx(i);
+              }}
+              hitSlop={8}
+            >
+              <View style={[
+                styles.dotIndicator,
+                i === currentExIdx && styles.dotIndicatorActive,
+                allSetsDone(ex) && styles.dotIndicatorDone,
+              ]} />
+            </Pressable>
           ))}
         </View>
         <Pressable style={styles.finishBtn} onPress={() => { setFinished(true); setFinishTime(Date.now()); }}>
@@ -444,10 +532,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        onLayout={e => setPageWidth(e.nativeEvent.layout.width)}
         onMomentumScrollEnd={(e) => {
-          const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
+          const idx = Math.round(e.nativeEvent.contentOffset.x / pageWidth);
           setCurrentExIdx(idx);
-          setShowCues(false);
         }}
         style={{ flex: 1 }}
       >
@@ -457,7 +545,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
           return (
             <ScrollView
               key={exIdx}
-              style={{ width: SCREEN_W }}
+              style={{ width: pageWidth }}
               contentContainerStyle={{ padding: 20, paddingBottom: 80 }}
             >
               {/* Exercise header */}
@@ -501,7 +589,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 {/* Subs — tap to swap in as current exercise */}
                 {(ex.sub1 || ex.sub2 || ex.sub3) && (
                   <View style={styles.subRow}>
-                    <Text style={styles.subText}>No equipment? Try: </Text>
+                    <Text style={styles.subText}>Swap: </Text>
                     {[ex.sub1, ex.sub2, ex.sub3].map((sub, slotIdx) => sub ? (
                       <Pressable key={slotIdx} onPress={() => swapExercise(exIdx, sub, slotIdx)}>
                         <Text style={styles.subLink}>{sub}{slotIdx < 2 && (ex.sub2 || ex.sub3) ? ' · ' : ''}</Text>
@@ -513,26 +601,6 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 {/* Study chart */}
                 {ex.study && <StudyChart study={ex.study} />}
 
-                {/* Cues toggle */}
-                {ex.cues?.length > 0 && (
-                  <Pressable onPress={() => setShowCues(!showCues)} style={styles.cuesToggle}>
-                    <Text style={styles.cuesToggleText}>
-                      {showCues && exIdx === currentExIdx ? 'Hide technique cues ▲' : 'Show technique cues ▼'}
-                    </Text>
-                  </Pressable>
-                )}
-                {showCues && exIdx === currentExIdx && ex.cues?.length > 0 && (
-                  <View style={styles.cuesList}>
-                    {ex.cues.map((cue, i) => (
-                      <View key={i} style={styles.cueRow}>
-                        <View style={styles.cueNumWrap}>
-                          <Text style={styles.cueNumText}>{i + 1}</Text>
-                        </View>
-                        <Text style={styles.cueText}>{cue}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
               </View>
 
               {/* Sets */}
@@ -587,9 +655,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 <Pressable
                   style={styles.nextExBtn}
                   onPress={() => {
-                    swipeRef.current?.scrollTo({ x: (exIdx + 1) * SCREEN_W, animated: true });
+                    swipeRef.current?.scrollTo({ x: (exIdx + 1) * pageWidth, animated: true });
                     setCurrentExIdx(exIdx + 1);
-                    setShowCues(false);
+          
                   }}
                 >
                   <Text style={styles.nextExBtnText}>Next: {sets[exIdx + 1].name} →</Text>
@@ -617,6 +685,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
       <ExerciseSlideshow
         exercise={slideshowExercise}
         visible={!!slideshowExercise}
+        gifUrl={slideshowExercise ? gifCache[slideshowExercise.name] : null}
         onClose={() => setSlideshowExercise(null)}
       />
     </View>
@@ -672,13 +741,6 @@ const styles = StyleSheet.create({
   subRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 },
   subLink: { color: '#534AB7' },
 
-  cuesToggle: { paddingVertical: 8 },
-  cuesToggleText: { fontSize: 12, color: '#534AB7' },
-  cuesList: { marginTop: 4, gap: 8 },
-  cueRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  cueNumWrap: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#1D9E7522', alignItems: 'center', justifyContent: 'center', marginTop: 1, flexShrink: 0 },
-  cueNumText: { fontSize: 9, color: '#1D9E75', fontWeight: '700' },
-  cueText: { flex: 1, fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
 
   setsCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   setHeaderRow: { flexDirection: 'row', marginBottom: 8 },

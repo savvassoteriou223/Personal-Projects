@@ -1,4 +1,4 @@
-// ─── LiftIQ Calisthenics Library ─────────────────────────────────────────────
+// ─── Helix Calisthenics Library ───────────────────────────────────────────────
 //
 // Three purposes:
 //   1. Bodyweight exercise progressions for every movement pattern —

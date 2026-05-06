@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform } from 'react-native';
-import Purchases, { LOG_LEVEL } from 'react-native-purchases';
+import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform, Linking } from 'react-native';
+import Purchases, { LOG_LEVEL } from './lib/purchases';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import NutritionScreen from './screens/NutritionScreen';
@@ -9,7 +9,7 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import NutritionLogScreen from './screens/NutritionLogScreen';
-import { supabase } from './supabase';
+import { supabase, getCurrentUser } from './supabase';
 import ProgramScreen from './screens/ProgramScreen';
 import TodayScreen from './screens/TodayScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -21,7 +21,7 @@ const Tab = createBottomTabNavigator();
 
 const RC_KEY_IOS     = 'test_jHYThiyJlpwboJgEVGkacXEEtTp';
 const RC_KEY_ANDROID = 'test_jHYThiyJlpwboJgEVGkacXEEtTp'; // replace with Android key when you add Android app in RevenueCat
-const RC_ENTITLEMENT = 'LiftIq Pro'; // matches Entitlement identifier in RevenueCat dashboard
+const RC_ENTITLEMENT = 'Helix Pro'; // matches Entitlement identifier in RevenueCat dashboard
 
 // ─── PREMIUM PAYWALL SCREEN ───────────────────────────────────────────────────
 
@@ -191,7 +191,7 @@ function TabIcon({ route, color, focused, isPremium, isLocked }) {
 
 // ─── PROFILE + PROGRESS COMBINED TAB ─────────────────────────────────────────
 
-function ProfileTabScreen({ onSignOut }) {
+function ProfileTabScreen({ onSignOut, isAdmin }) {
   const [view, setView] = useState('profile'); // 'profile' | 'progress'
 
   return (
@@ -213,7 +213,7 @@ function ProfileTabScreen({ onSignOut }) {
       </View>
 
       {view === 'profile'
-        ? <ProfileScreen onSignOut={onSignOut} />
+        ? <ProfileScreen onSignOut={onSignOut} isAdmin={isAdmin} />
         : <ProgressScreen />
       }
     </View>
@@ -249,52 +249,143 @@ export default function App() {
   const [showNutrition, setShowNutrition] = useState(false);
   const [previewWorkout, setPreviewWorkout] = useState(null);
   const [refreshToday, setRefreshToday] = useState(0);
-  const [isPremium, setIsPremium] = useState(false); // TODO: wire to RevenueCat / Supabase subscription check
+  const [isPremium, setIsPremium] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Initialise RevenueCat before any auth check
+    // Safety net: if nothing resolves auth within 8 s, bail to welcome screen.
+    const safetyTimer = setTimeout(() => {
+      setScreen(prev => prev === 'loading' ? 'welcome' : prev);
+    }, 8000);
+
     Purchases.setLogLevel(LOG_LEVEL.ERROR);
     Purchases.configure({
       apiKey: Platform.OS === 'ios' ? RC_KEY_IOS : RC_KEY_ANDROID,
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        Purchases.logIn(session.user.id);
-        checkPremiumStatus();
-        setScreen('main');
-      } else {
+    // Handle helix:// deep links (email confirmation callback)
+    const handleDeepLink = async (url) => {
+      if (!url || !url.startsWith('helix://')) return;
+      // PKCE flow: helix://?code=xxx
+      const codeMatch = url.match(/[?&]code=([^&#]+)/);
+      if (codeMatch) {
+        const { error } = await supabase.auth.exchangeCodeForSession(decodeURIComponent(codeMatch[1]));
+        if (error) console.warn('Deep link exchange error:', error.message);
+        return;
+      }
+      // Implicit flow fallback: helix://#access_token=xxx&refresh_token=xxx
+      const hashMatch = url.match(/#(.+)/);
+      if (hashMatch) {
+        const params = new URLSearchParams(hashMatch[1]);
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (error) console.warn('Deep link setSession error:', error.message);
+        }
+      }
+    };
+
+    Linking.getInitialURL().then(handleDeepLink);
+    const linkSub = Linking.addEventListener('url', ({ url }) => handleDeepLink(url));
+
+    if (Platform.OS === 'web') {
+      // Read localStorage directly — instant, no network, no hang.
+      // If a session key exists (even with an expired access token), show the app.
+      // autoRefreshToken will refresh in the background; SIGNED_OUT fires if the
+      // refresh token is also dead, and we'll route to welcome at that point.
+      try {
+        const stored = window.localStorage.getItem('sb-guvvzimnucttjjzmpsvp-auth-token');
+        if (stored) {
+          clearTimeout(safetyTimer);
+          checkPremiumStatus();
+          setScreen('main');
+        } else {
+          clearTimeout(safetyTimer);
+          setScreen('welcome');
+        }
+      } catch {
+        clearTimeout(safetyTimer);
         setScreen('welcome');
+      }
+    } else {
+      supabase.auth.getSession()
+        .then(({ data: { session } }) => {
+          clearTimeout(safetyTimer);
+          if (session) {
+            Purchases.logIn(session.user.id);
+            checkPremiumStatus();
+            setScreen('main');
+          } else {
+            setScreen('welcome');
+          }
+        })
+        .catch(() => { clearTimeout(safetyTimer); setScreen('welcome'); });
+    }
+
+    const routeAuthedUser = async (session) => {
+      Purchases.logIn(session.user.id);
+      checkPremiumStatus();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_complete')
+        .eq('id', session.user.id)
+        .single();
+      // Only send to onboarding if we KNOW the profile exists and it's not complete.
+      // If the query failed (profile null), default to main — never loop into onboarding.
+      if (profile && !profile.onboarding_complete) {
+        setScreen('onboarding');
+      } else {
+        setScreen('main');
+      }
+    };
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        Purchases.logOut().catch(() => {});
+        setScreen('welcome');
+        return;
+      }
+      if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED')) {
+        clearTimeout(safetyTimer);
+        await routeAuthedUser(session);
       }
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        Purchases.logIn(session.user.id);
-        checkPremiumStatus();
-        setScreen('main');
-      } else {
-        Purchases.logOut().catch(() => {});
-        setScreen('welcome');
-      }
-    });
+    return () => { linkSub.remove(); clearTimeout(safetyTimer); };
   }, []);
 
   const checkPremiumStatus = async () => {
+    const user = await getCurrentUser();
+    let supabasePremium = false;
+    let supabaseAdmin = false;
+
+    if (user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_premium, is_admin')
+        .eq('id', user.id)
+        .single();
+      supabaseAdmin = data?.is_admin === true;
+      supabasePremium = data?.is_premium === true;
+    }
+
+    if (supabaseAdmin) {
+      setIsAdmin(true);
+      setIsPremium(true);
+      return;
+    }
+
+    if (supabasePremium) {
+      setIsPremium(true);
+      return;
+    }
+
     try {
       const customerInfo = await Purchases.getCustomerInfo();
       setIsPremium(!!customerInfo.entitlements.active[RC_ENTITLEMENT]);
     } catch {
-      // RevenueCat unreachable — fall back to Supabase flag
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('is_premium')
-          .eq('id', user.id)
-          .single();
-        setIsPremium(data?.is_premium === true);
-      }
+      // RevenueCat unreachable — already handled by supabasePremium above
     }
   };
 
@@ -316,7 +407,7 @@ export default function App() {
       const premium = !!customerInfo.entitlements.active[RC_ENTITLEMENT];
       setIsPremium(premium);
       if (premium) {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCurrentUser();
         if (user) await supabase.from('profiles').update({ is_premium: true }).eq('id', user.id);
       }
     } catch (e) {
@@ -333,7 +424,7 @@ export default function App() {
       setIsPremium(premium);
       if (premium) {
         Alert.alert('Restored', 'Your subscription has been restored.');
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCurrentUser();
         if (user) await supabase.from('profiles').update({ is_premium: true }).eq('id', user.id);
       } else {
         Alert.alert('Nothing to restore', 'No active subscription found for this account.');
@@ -345,7 +436,13 @@ export default function App() {
 
   // ── Pre-main screens ──
 
-  if (screen === 'loading') return null;
+  if (screen === 'loading') {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0F0F13', alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ color: '#534AB7', fontSize: 22, fontWeight: '700', letterSpacing: 2 }}>HELIX</Text>
+      </View>
+    );
+  }
 
   if (screen === 'welcome') {
     return <WelcomeScreen onGetStarted={() => setScreen('signup')} onLogin={() => setScreen('login')} />;
@@ -363,7 +460,7 @@ export default function App() {
     return (
       <OnboardingScreen
         onComplete={async (data) => {
-          const { data: { user } } = await supabase.auth.getUser();
+          const user = await getCurrentUser();
           if (user) {
             await supabase.from('profiles').update({
               height_cm: parseFloat(data.height),
@@ -378,12 +475,14 @@ export default function App() {
               protein_target: data.proteinTarget,
               carb_target: data.carbTarget,
               fat_target: data.fatTarget,
+              trainingExperience: data.trainingExperience,
+              health_conditions: data.health_conditions ?? [],
               onboarding_complete: true,
             }).eq('id', user.id);
           }
           setScreen('main');
         }}
-        onGoBack={() => setScreen('signup')}
+        onGoBack={() => setScreen('welcome')}
       />
     );
   }
@@ -485,6 +584,7 @@ export default function App() {
           {() => (
             <ProfileTabScreen
               onSignOut={() => supabase.auth.signOut()}
+              isAdmin={isAdmin}
             />
           )}
         </Tab.Screen>

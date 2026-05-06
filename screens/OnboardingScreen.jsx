@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert } from 'react-native';
+import { GOAL_PARAMETERS } from './scienceEngine';
 
 export default function OnboardingScreen({ onComplete, onGoBack }) {
   const [step, setStep] = useState(1);
@@ -13,10 +14,62 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
   const [customSupplement, setCustomSupplement] = useState('');
   const [customSupplements, setCustomSupplements] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [trainingExperience, setTrainingExperience] = useState('');
+  const [healthConditions, setHealthConditions] = useState([]);
 
-  const totalSteps = 5;
-  const next = () => setStep((s) => s + 1);
+  const totalSteps = 7;
   const back = () => setStep((s) => s - 1);
+
+  const handleNext = () => {
+    if (step === 1) {
+      const hVal = parseFloat(height);
+      const wVal = parseFloat(weight);
+      if (!height || isNaN(hVal) || hVal < 100 || hVal > 250) {
+        Alert.alert('Invalid height', 'Please enter a height between 100 and 250 cm.');
+        return;
+      }
+      if (!weight || isNaN(wVal) || wVal < 20 || wVal > 300) {
+        Alert.alert('Invalid weight', 'Please enter a weight between 20 and 300 kg.');
+        return;
+      }
+    }
+    if (step === 2) {
+      if (goals.length === 0) {
+        Alert.alert('Select a goal', 'Please select at least one goal to continue.');
+        return;
+      }
+      const twVal = parseFloat(targetWeight);
+      if (!targetWeight || isNaN(twVal) || twVal < 20 || twVal > 300) {
+        Alert.alert('Invalid target weight', 'Please enter a target weight between 20 and 300 kg.');
+        return;
+      }
+    }
+    if (step === 3) {
+      if (!trainingExperience) {
+        Alert.alert('Select your experience', 'Please select how long you have been training for this goal.');
+        return;
+      }
+    }
+    if (step === 4) {
+      if (equipment.length === 0) {
+        Alert.alert('Select equipment', 'Please select at least one equipment option.');
+        return;
+      }
+    }
+    if (step === 5) {
+      if (supplements.length === 0 && customSupplements.length === 0) {
+        Alert.alert('Select supplements', 'Please select at least one option, or tap "None" if you take no supplements.');
+        return;
+      }
+    }
+    if (step === 6) {
+      if (healthConditions.length === 0) {
+        Alert.alert('Health conditions', 'Please select any relevant conditions, or tap "None" if you have no injuries or conditions.');
+        return;
+      }
+    }
+    setStep((s) => s + 1);
+  };
 
   const h = parseFloat(height);
   const w = parseFloat(weight);
@@ -55,6 +108,22 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
       setCustomSupplements([...customSupplements, customSupplement.trim()]);
       setCustomSupplement('');
     }
+  };
+
+  const EXPERIENCE_OPTIONS = [
+    { key: 'under_6m', label: 'Less than 6 months', sublabel: 'Just starting out', level: 'beginner' },
+    { key: '6m_to_2y', label: '6 months – 2 years', sublabel: 'Building foundations', level: 'beginner' },
+    { key: '2y_to_4y', label: '2 – 4 years', sublabel: 'Consistent practitioner', level: 'intermediate' },
+    { key: 'over_4y', label: '4+ years', sublabel: 'Well experienced', level: 'advanced' },
+  ];
+
+  const GOAL_ACTIVITY_LABEL = {
+    lose: 'losing fat',
+    gain: 'building muscle',
+    strength: 'strength training',
+    aesthetics: 'lifting',
+    endurance: 'endurance training',
+    maintain: 'exercising regularly',
   };
 
   const GOALS = [
@@ -169,6 +238,17 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
               </Pressable>
             ))}
           </View>
+          {goals.length > 0 && (() => {
+            const gp = GOAL_PARAMETERS[goals[0]];
+            if (!gp) return null;
+            return (
+              <View style={styles.goalCitationCard}>
+                <Text style={styles.goalCitationTitle}>{gp.label}</Text>
+                <Text style={styles.goalCitationText}>{gp.key_finding}</Text>
+                <Text style={styles.goalCitationSource}>{gp.citation}</Text>
+              </View>
+            );
+          })()}
           <Text style={styles.label}>Target weight (kg)</Text>
           <TextInput style={styles.input} value={targetWeight} onChangeText={setTargetWeight} keyboardType="numeric" placeholder="e.g. 75" placeholderTextColor="#3D3D4A" />
           {weeksToGoal > 0 && <Text style={styles.estimate}>At a healthy pace, you'll reach {targetWeight}kg in ~{weeksToGoal} weeks</Text>}
@@ -176,6 +256,30 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
       )}
 
       {step === 3 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>How long have you been{'\n'}{GOAL_ACTIVITY_LABEL[goals[0]] || 'training'}?</Text>
+          <Text style={styles.stepSub}>This calibrates your weekly training volume. Being new to {GOAL_ACTIVITY_LABEL[goals[0]] || 'this goal'} means a different program even if you've trained before.</Text>
+          <View style={{ gap: 10, marginTop: 8 }}>
+            {EXPERIENCE_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.key}
+                style={[styles.expCard, trainingExperience === opt.key && styles.expCardActive]}
+                onPress={() => setTrainingExperience(opt.key)}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.expLabel, trainingExperience === opt.key && styles.expLabelActive]}>{opt.label}</Text>
+                  <Text style={styles.expSublabel}>{opt.sublabel}</Text>
+                </View>
+                {trainingExperience === opt.key && (
+                  <Text style={{ color: '#534AB7', fontWeight: '700', fontSize: 16 }}>✓</Text>
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {step === 4 && (
         <View style={styles.stepWrap}>
           <Text style={styles.stepTitle}>Your training schedule</Text>
           <Text style={styles.stepSub}>We'll build your plan around your availability.</Text>
@@ -224,7 +328,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
         </View>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <View style={styles.stepWrap}>
           <Text style={styles.stepTitle}>What supplements{'\n'}do you take?</Text>
           <Text style={styles.stepSub}>We'll factor these into your nutrition targets.</Text>
@@ -257,7 +361,56 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
         </View>
       )}
 
-      {step === 5 && (
+      {step === 6 && (
+        <View style={styles.stepWrap}>
+          <Text style={styles.stepTitle}>Any injuries or{'\n'}health conditions?</Text>
+          <Text style={styles.stepSub}>We'll filter out exercises that are contraindicated for your situation. Select all that apply, or tap "None".</Text>
+          <View style={styles.tagsWrap}>
+            {[
+              { key: 'none', label: 'None' },
+              { key: 'lower_back_disc_herniation', label: 'Lower back disc' },
+              { key: 'spondylolisthesis', label: 'Spondylolisthesis' },
+              { key: 'shoulder_impingement', label: 'Shoulder impingement' },
+              { key: 'rotator_cuff_tear', label: 'Rotator cuff tear' },
+              { key: 'ac_joint_injury', label: 'AC joint injury' },
+              { key: 'pec_tear', label: 'Pec tear' },
+              { key: 'cervical_disc_herniation', label: 'Cervical disc' },
+              { key: 'knee_replacement', label: 'Knee replacement' },
+              { key: 'severe_knee_osteoarthritis', label: 'Knee osteoarthritis' },
+              { key: 'bilateral_hip_replacement', label: 'Hip replacement' },
+              { key: 'proximal_hamstring_tendinopathy', label: 'Hamstring tendinopathy' },
+              { key: 'achilles_tendinopathy', label: 'Achilles tendinopathy' },
+            ].map((c) => (
+              <Pressable
+                key={c.key}
+                style={[styles.tag, healthConditions.includes(c.key) && styles.tagActive]}
+                onPress={() => {
+                  if (c.key === 'none') {
+                    setHealthConditions(['none']);
+                  } else {
+                    setHealthConditions(
+                      healthConditions.includes(c.key)
+                        ? healthConditions.filter((x) => x !== c.key)
+                        : [...healthConditions.filter((x) => x !== 'none'), c.key]
+                    );
+                  }
+                }}
+              >
+                <Text style={[styles.tagText, healthConditions.includes(c.key) && styles.tagTextActive]}>{c.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          {healthConditions.length > 0 && !healthConditions.includes('none') && (
+            <View style={styles.conditionsNote}>
+              <Text style={styles.conditionsNoteText}>
+                Exercises contraindicated for your conditions will be automatically replaced with safer alternatives.
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {step === 7 && (
         <View style={styles.stepWrap}>
           <Text style={styles.stepTitle}>Your personal plan{'\n'}is ready</Text>
           <View style={styles.resultCard}>
@@ -283,6 +436,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
             <Text style={styles.resultDetail}>{weeklyWorkouts} days/week · {sessionLength} min sessions</Text>
             {feedback && <Text style={[styles.resultDetail, { color: statusColors[feedback.status] }]}>{feedback.program} — {statusLabels[feedback.status]}</Text>}
             {goals.length > 0 && <Text style={styles.resultDetail}>Goals: {goals.join(', ')}</Text>}
+            {trainingExperience && <Text style={styles.resultDetail}>Experience: {EXPERIENCE_OPTIONS.find(o => o.key === trainingExperience)?.label}</Text>}
             {weeksToGoal > 0 && <Text style={styles.resultDetail}>Target: {targetWeight}kg in ~{weeksToGoal} weeks</Text>}
           </View>
           {(supplements.length > 0 || customSupplements.length > 0) && !supplements.includes('None') && (
@@ -291,11 +445,23 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
               <Text style={styles.resultDetail}>{[...supplements, ...customSupplements].join(', ')}</Text>
             </View>
           )}
-          <Pressable style={styles.completeBtn} onPress={() => onComplete && onComplete({
-            height, weight, targetWeight, weeklyWorkouts, sessionLength,
-            equipment, supplements: [...supplements, ...customSupplements],
-            goals, caloricTarget, proteinTarget, carbTarget, fatTarget,
-          })}>
+          {healthConditions.length > 0 && !healthConditions.includes('none') && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultLabel}>Conditions (program filtered)</Text>
+              <Text style={styles.resultDetail}>{healthConditions.join(', ').replace(/_/g, ' ')}</Text>
+            </View>
+          )}
+          <Pressable style={styles.completeBtn} onPress={() => {
+            const expOption = EXPERIENCE_OPTIONS.find(o => o.key === trainingExperience);
+            onComplete && onComplete({
+              height, weight, targetWeight, weeklyWorkouts, sessionLength,
+              equipment, supplements: [...supplements, ...customSupplements],
+              goals, caloricTarget, proteinTarget, carbTarget, fatTarget,
+              trainingExperience: expOption?.level || 'beginner',
+              trainingExperienceLabel: expOption?.label || '',
+              health_conditions: healthConditions.includes('none') ? [] : healthConditions,
+            });
+          }}>
             <Text style={styles.completeBtnText}>Start training</Text>
           </Pressable>
         </View>
@@ -303,7 +469,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
 
       <View style={styles.navRow}>
         {step > 1 && <Pressable style={styles.backBtn} onPress={back}><Text style={styles.backBtnText}>← Back</Text></Pressable>}
-        {step < totalSteps && <Pressable style={styles.nextBtn} onPress={next}><Text style={styles.nextBtnText}>Next →</Text></Pressable>}
+        {step < totalSteps && <Pressable style={styles.nextBtn} onPress={handleNext}><Text style={styles.nextBtnText}>Next →</Text></Pressable>}
       </View>
     </ScrollView>
   );
@@ -332,6 +498,10 @@ const styles = StyleSheet.create({
   goalLabelActive: { color: '#7F77DD' },
   check: { color: '#534AB7', fontWeight: '700' },
   estimate: { fontSize: 13, color: '#1D9E75', marginTop: 12 },
+  goalCitationCard: { backgroundColor: '#13121E', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 16 },
+  goalCitationTitle: { fontSize: 10, color: '#1D9E75', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
+  goalCitationText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 6 },
+  goalCitationSource: { fontSize: 10, color: '#71717A', fontStyle: 'italic' },
   optionRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   optionBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   optionBtnActive: { backgroundColor: '#534AB7', borderColor: '#534AB7' },
@@ -342,6 +512,11 @@ const styles = StyleSheet.create({
   tagActive: { backgroundColor: '#1A1830', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#534AB7' },
   tagText: { color: '#71717A', fontSize: 13 },
   tagTextActive: { color: '#7F77DD', fontSize: 13 },
+  expCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  expCardActive: { backgroundColor: '#1A1830', borderColor: '#534AB7' },
+  expLabel: { fontSize: 15, fontWeight: '600', color: '#A1A1AA', marginBottom: 3 },
+  expLabelActive: { color: '#FFFFFF' },
+  expSublabel: { fontSize: 12, color: '#71717A' },
   feedbackCard: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, marginBottom: 8 },
   feedbackHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   feedbackBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
@@ -364,4 +539,6 @@ const styles = StyleSheet.create({
   backBtnText: { color: '#71717A', fontSize: 15 },
   nextBtn: { backgroundColor: '#534AB7', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
   nextBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  conditionsNote: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#534AB744' },
+  conditionsNoteText: { fontSize: 13, color: '#7F77DD', lineHeight: 20 },
 });

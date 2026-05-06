@@ -1,31 +1,37 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, Modal, ScrollView, Pressable,
-  StyleSheet, Dimensions, StatusBar,
+  StyleSheet, Dimensions, StatusBar, ActivityIndicator, Platform,
 } from 'react-native';
-import Exercise3DFigure from './Exercise3DFigure';
-import { getExercise3DData } from './exercise3DData';
+import { Image } from 'expo-image';
+import { getExerciseGif } from './exerciseDBService';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const FIGURE_H = 260;
 
-export default function ExerciseSlideshow({ exercise, visible, onClose }) {
-  const [slideIdx, setSlideIdx] = useState(0);
-  const scrollRef = useRef(null);
+export default function ExerciseSlideshow({ exercise, visible, onClose, gifUrl: cachedUrl }) {
+  const [gifUrl, setGifUrl]       = useState(null);
+  const [gifLoading, setGifLoading] = useState(false);
+
+  useEffect(() => {
+    if (!visible || !exercise?.name) { setGifUrl(null); return; }
+
+    // Use pre-fetched URL immediately if available
+    if (cachedUrl) { setGifUrl(cachedUrl); setGifLoading(false); return; }
+
+    // Fallback: fetch (only happens if gifCache missed this exercise)
+    setGifUrl(null);
+    setGifLoading(true);
+    getExerciseGif(exercise.name)
+      .then(url => setGifUrl(url || null))
+      .catch(() => setGifUrl(null))
+      .finally(() => setGifLoading(false));
+  }, [exercise?.name, visible, cachedUrl]);
 
   if (!exercise) return null;
 
-  const d3data = getExercise3DData(exercise.name);
-  const poses  = d3data?.slides ?? [];
-  const total  = poses.length;
-
   const sets = exercise.sets ?? exercise.target_sets;
   const reps = exercise.reps ?? exercise.target_reps;
-
-  function goTo(i) {
-    scrollRef.current?.scrollTo({ x: i * SCREEN_W, animated: true });
-    setSlideIdx(i);
-  }
 
   return (
     <Modal
@@ -57,45 +63,28 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-          {/* ── Swipeable 3D pose slides ── */}
-          {total > 0 && (
+          {/* ── Exercise visual ── */}
+          {(gifLoading || gifUrl) && (
             <View style={styles.poseSection}>
-              <ScrollView
-                ref={scrollRef}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={e => {
-                  setSlideIdx(Math.round(e.nativeEvent.contentOffset.x / SCREEN_W));
-                }}
-                style={{ width: SCREEN_W }}
-                contentContainerStyle={{ width: SCREEN_W * total }}
-              >
-                {poses.map((pose, i) => (
-                  <View key={i} style={styles.slide}>
-                    <Exercise3DFigure
-                      joints={pose.joints}
-                      width={SCREEN_W}
-                      height={FIGURE_H}
-                      autoRotate={false}
-                      initialRotY={d3data?.viewAngle ?? 0.5}
-                    />
-                    <Text style={styles.phaseLabel}>{pose.phase}</Text>
-                    <Text style={styles.phaseCue}>{pose.cue}</Text>
-                  </View>
-                ))}
-              </ScrollView>
-
-              {/* Dots */}
-              <View style={styles.dots}>
-                {poses.map((_, i) => (
-                  <Pressable key={i} onPress={() => goTo(i)}>
-                    <View style={[styles.dot, i === slideIdx && styles.dotActive]} />
-                  </Pressable>
-                ))}
-              </View>
-
-              <Text style={styles.hint}>Swipe for next pose · Drag figure to rotate</Text>
+              {gifLoading ? (
+                <View style={styles.gifPlaceholder}>
+                  <ActivityIndicator color="#534AB7" />
+                </View>
+              ) : Platform.OS === 'web' ? (
+                  <img
+                    src={gifUrl}
+                    style={{ width: SCREEN_W, height: FIGURE_H + 40, objectFit: 'contain', backgroundColor: '#0A0A10' }}
+                    alt=""
+                  />
+              ) : (
+                  <Image
+                    source={{ uri: gifUrl }}
+                    style={styles.gif}
+                    contentFit="contain"
+                    autoplay
+                  />
+              )
+              }
             </View>
           )}
 
@@ -160,6 +149,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: '#1E1E28',
     paddingBottom: 10,
+    minHeight: FIGURE_H,
+    justifyContent: 'center',
+  },
+  gif: {
+    width: SCREEN_W,
+    height: FIGURE_H + 40,
+    backgroundColor: '#0A0A10',
+  },
+  gifPlaceholder: {
+    width: SCREEN_W,
+    height: FIGURE_H,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   slide: {
     width: SCREEN_W,

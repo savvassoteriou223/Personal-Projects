@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { supabase } from '../supabase';
+import { supabase, getCurrentUser } from '../supabase';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
-import { VOLUME_TARGETS } from './programGenerator';
+import { VOLUME_TARGETS, generateProgram } from './programGenerator';
 import { format, subDays } from 'date-fns';
 
-const MONTHLY_QUOTA = 50;
+const MONTHLY_QUOTA = 100;
 
 const _MUSCLE_MAP = (() => {
   const map = {};
@@ -40,6 +40,9 @@ export default function CoachScreen() {
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const [answer, setAnswer] = useState(null);
+  const [proposal, setProposal] = useState(null);
+  const [confirmingProposal, setConfirmingProposal] = useState(false);
+  const [proposalSaved, setProposalSaved] = useState(false);
   const [userData, setUserData] = useState(null);
   const [quota, setQuota] = useState({ used: 0, remaining: MONTHLY_QUOTA });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
@@ -49,7 +52,7 @@ export default function CoachScreen() {
   }, []));
 
   const loadUserData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
 
     const [{ data: profile }, { data: sessions }] = await Promise.all([
@@ -93,17 +96,30 @@ export default function CoachScreen() {
       }
     }
 
-    const data = { profile, weeklyVolume, prs, recentSessions };
+    // Load current block so program context matches what the user actually sees
+    const { data: block } = await supabase
+      .from('program_blocks')
+      .select('block_index, block_start_date')
+      .eq('user_id', user.id)
+      .single();
+
+    const blockIndex = block?.block_index || 0;
+    const blockStartDate = block?.block_start_date || null;
+    const program = profile ? generateProgram(profile, blockIndex, blockStartDate) : null;
+
+    const data = { profile, weeklyVolume, prs, recentSessions, program, blockIndex };
     setUserData(data);
     return data;
   };
 
   const buildContext = (data) => {
-    const { profile, weeklyVolume, prs, recentSessions } = data;
+    const { profile, weeklyVolume, prs, recentSessions, program } = data;
+    const exp = profile?.trainingExperience || 'intermediate';
     const volumeLines = Object.entries(VOLUME_TARGETS).map(([m, t]) => {
+      const target = t[exp] || t.intermediate;
       const done = weeklyVolume[m] || 0;
-      const status = done < t.min ? 'under minimum' : done > t.optimal_high ? 'over optimal' : done >= t.optimal_low ? 'optimal' : 'below optimal';
-      return `  ${m}: ${done} sets (${status}, target ${t.optimal_low}–${t.optimal_high})`;
+      const status = done < target.min ? 'under minimum' : done > target.optimal_high ? 'over optimal' : done >= target.optimal_low ? 'optimal' : 'below optimal';
+      return `  ${m}: ${done} sets (${status}, target ${target.optimal_low}–${target.optimal_high})`;
     }).join('\n');
 
     const prLines = Object.entries(prs).slice(0, 15).map(([ex, p]) =>
@@ -114,11 +130,24 @@ export default function CoachScreen() {
       `  ${format(new Date(s.completed_at), 'EEE MMM d')}: ${s.name} (${s.duration_min || '?'}min, RPE ${s.perceived_exertion || '?'})`
     ).join('\n');
 
+    const programLines = program
+      ? program.days.filter(d => !d.optional).map(day =>
+          `  ${day.id} — ${day.name}:\n${day.exercises.map(ex =>
+            `    - ${ex.name} (${ex.sets ?? 3}×${ex.reps || '8–12'}, rest ${ex.rest || '2 min'})`
+          ).join('\n')}`
+        ).join('\n')
+      : '  Program not available';
+
     return `User profile:
 - Name: ${profile?.name || 'unknown'}
+- Experience: ${exp}
 - Goal: ${(profile?.goals || []).join(', ') || 'not set'}
 - Training: ${profile?.weekly_workouts} days/week, ${profile?.session_length} min sessions
 - Weight: ${profile?.weight_kg}kg, Height: ${profile?.height_cm}cm
+
+Current program: ${program?.name || 'unknown'} (split ID: ${profile?.selected_split || 'unknown'})
+Days and exercises:
+${programLines}
 
 This week's volume — last 7 days (sets per muscle):
 ${volumeLines}
@@ -149,7 +178,7 @@ ${sessionLines}`;
       setQuotaExceeded(data.remaining <= 0);
     }
 
-    return data?.text ?? null;
+    return data ?? null;
   };
 
   const generateInsight = async () => {
@@ -160,11 +189,11 @@ ${sessionLines}`;
     if (!data) { setLoading(false); return; }
 
     try {
-      const text = await callCoach(
+      const result = await callCoach(
         'Analyse my training this week and give me your top insight.',
         buildContext(data)
       );
-      setInsight(text || 'No insight generated.');
+      setInsight(result?.text || 'No insight generated.');
     } catch {
       setInsight('Failed to connect. Check your internet connection.');
     }
@@ -175,15 +204,61 @@ ${sessionLines}`;
     if (!question.trim() || quotaExceeded) return;
     setAsking(true);
     setAnswer(null);
+    setProposal(null);
+    setProposalSaved(false);
     const data = userData || await loadUserData();
 
     try {
-      const text = await callCoach(question, data ? buildContext(data) : '');
-      setAnswer(text || 'No answer generated.');
+      const result = await callCoach(question, data ? buildContext(data) : '');
+      setAnswer(result?.text || 'No answer generated.');
+      if (result?.proposal) {
+        setProposal(result.proposal);
+      }
     } catch {
       setAnswer('Failed to connect.');
     }
     setAsking(false);
+  };
+
+  const confirmProposal = async () => {
+    if (!proposal || confirmingProposal) return;
+    setConfirmingProposal(true);
+
+    const user = await getCurrentUser();
+    if (!user) { setConfirmingProposal(false); return; }
+
+    let error;
+
+    if (proposal.type === 'add_exercise') {
+      ({ error } = await supabase.from('program_additions').insert({
+        user_id: user.id,
+        day_id: proposal.day_id || '',
+        exercise_name: proposal.exercise_name || '',
+        sets: proposal.sets || 3,
+        reps: proposal.reps || '10–15',
+        rest: proposal.rest || '90 sec',
+      }));
+    } else {
+      // permanent_edit and session_swap both write to program_template_overrides.
+      // session_swap is cleared by WorkoutExecutionScreen after one use.
+      ({ error } = await supabase.from('program_template_overrides').insert({
+        user_id: user.id,
+        day_id: proposal.day_id || '',
+        exercise_index: proposal.exercise_index ?? 0,
+        edit_type: proposal.edit_type || 'replace_exercise',
+        pattern_key: proposal.pattern_key || null,
+        exercise_id: proposal.exercise_id || null,
+        sets: proposal.sets || null,
+        reps: proposal.reps || null,
+        rpe: proposal.rpe || null,
+      }));
+    }
+
+    setConfirmingProposal(false);
+    if (!error) {
+      setProposalSaved(true);
+      setProposal(null);
+    }
   };
 
   return (
@@ -255,7 +330,7 @@ ${sessionLines}`;
           style={[styles.questionInput, quotaExceeded && { opacity: 0.4 }]}
           value={quotaExceeded ? '' : question}
           onChangeText={setQuestion}
-          placeholder={quotaExceeded ? 'Monthly limit reached' : 'e.g. Should I add more leg volume this week?'}
+          placeholder={quotaExceeded ? 'Monthly limit reached' : 'e.g. Add more shoulders to my next push day'}
           placeholderTextColor="#3D3D4A"
           multiline
           numberOfLines={3}
@@ -265,6 +340,65 @@ ${sessionLines}`;
         {answer && (
           <View style={styles.answerBox}>
             <Text style={styles.answerText}>{answer}</Text>
+          </View>
+        )}
+
+        {/* Proposal confirmation card */}
+        {proposal && (
+          <View style={styles.proposalCard}>
+            <View style={styles.proposalScopeRow}>
+              <View style={[
+                styles.proposalScopePill,
+                proposal.type === 'session_swap' && styles.proposalScopePillSession,
+              ]}>
+                <Text style={[
+                  styles.proposalScopeText,
+                  proposal.type === 'session_swap' && styles.proposalScopeTextSession,
+                ]}>
+                  {proposal.scope_label || (proposal.type === 'session_swap' ? 'This session only' : 'Permanent change')}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.proposalLabel}>
+              {proposal.type === 'add_exercise' ? 'Coach proposes adding' : 'Coach proposes changing'}
+            </Text>
+            {proposal.exercise_name && (
+              <Text style={styles.proposalExercise}>{proposal.exercise_name}</Text>
+            )}
+            {(proposal.sets || proposal.reps) && (
+              <Text style={styles.proposalDetail}>
+                {proposal.sets ? `${proposal.sets} sets` : ''}{proposal.sets && proposal.reps ? ' × ' : ''}{proposal.reps || ''}{proposal.rest ? ` · ${proposal.rest} rest` : ''}
+              </Text>
+            )}
+            {proposal.day_name && (
+              <Text style={styles.proposalDay}>{proposal.day_name}</Text>
+            )}
+            {proposal.rationale && (
+              <Text style={styles.proposalRationale}>{proposal.rationale}</Text>
+            )}
+            <View style={styles.proposalActions}>
+              <Pressable
+                style={[styles.confirmBtn, confirmingProposal && styles.btnDisabled]}
+                onPress={confirmProposal}
+                disabled={confirmingProposal}
+              >
+                <Text style={styles.confirmBtnText}>
+                  {confirmingProposal ? 'Saving...' : 'Apply'}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.dismissBtn}
+                onPress={() => setProposal(null)}
+              >
+                <Text style={styles.dismissBtnText}>Dismiss</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {proposalSaved && (
+          <View style={styles.savedBanner}>
+            <Text style={styles.savedBannerText}>Added to your program. It will appear in your next workout.</Text>
           </View>
         )}
 
@@ -332,6 +466,27 @@ const styles = StyleSheet.create({
   questionInput: { backgroundColor: '#12121A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: '#2C2C35' },
   answerBox: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: '#1D9E75' },
   answerText: { fontSize: 13, color: '#FFFFFF', lineHeight: 21 },
+
+  proposalCard: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: '#534AB7' },
+  proposalScopeRow: { flexDirection: 'row', marginBottom: 10 },
+  proposalScopePill: { backgroundColor: '#534AB722', borderRadius: 20, paddingVertical: 3, paddingHorizontal: 10, borderWidth: 0.5, borderColor: '#534AB7' },
+  proposalScopePillSession: { backgroundColor: '#BA751722', borderColor: '#BA7517' },
+  proposalScopeText: { fontSize: 10, color: '#7F77DD', fontWeight: '600' },
+  proposalScopeTextSession: { color: '#BA7517' },
+  proposalLabel: { fontSize: 10, color: '#534AB7', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  proposalExercise: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
+  proposalDetail: { fontSize: 13, color: '#A1A1AA', marginBottom: 4 },
+  proposalDay: { fontSize: 12, color: '#7F77DD', marginBottom: 8 },
+  proposalRationale: { fontSize: 12, color: '#71717A', lineHeight: 18, marginBottom: 12 },
+  proposalActions: { flexDirection: 'row', gap: 8 },
+  confirmBtn: { flex: 1, backgroundColor: '#534AB7', borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
+  confirmBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  dismissBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 16, alignItems: 'center' },
+  dismissBtnText: { color: '#71717A', fontSize: 13, fontWeight: '500' },
+
+  savedBanner: { backgroundColor: '#0D1F18', borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: '#1D9E75' },
+  savedBannerText: { fontSize: 13, color: '#1D9E75', lineHeight: 18 },
+
   askBtn: { backgroundColor: '#1D9E75', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
   askBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
 

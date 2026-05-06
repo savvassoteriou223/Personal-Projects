@@ -1,5 +1,5 @@
 /**
- * ExerciseDetailCard.jsx — LiftIQ Exercise Detail
+ * ExerciseDetailCard.jsx — Helix Exercise Detail
  *
  * Bottom sheet / inline card that shows:
  *   - Exercise name + difficulty badge

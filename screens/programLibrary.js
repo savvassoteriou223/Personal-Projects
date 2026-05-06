@@ -1,4 +1,4 @@
-// LiftIQ Program Library
+// Helix Program Library
 // Programs designed from peer-reviewed exercise science principles
 // No proprietary content from any book or third party
 //
@@ -255,9 +255,9 @@ export const PROGRAMS = {
         exercises: [
           { name: 'Conventional deadlift',  warmup: '2–3', sets: 3, reps: '3–5',  early_rpe: 7, last_rpe: 8, rest: '3–5 min', sub1: 'Romanian deadlift',     sub2: 'Hip thrust',            muscles: 'Glutes, hamstrings, back', category: 'Hip hinge' },
           { name: 'Bulgarian split squat',  warmup: '1–2', sets: 3, reps: '8–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Barbell lunge',         sub2: 'Leg press',             muscles: 'Quads, glutes', category: 'Squat' },
-          { name: 'Hip thrust',             warmup: '1–2', sets: 3, reps: '10–15',early_rpe: 8, last_rpe: 9, rest: '2 min',   sub1: '45° back extension',    sub2: 'Glute bridge',          muscles: 'Glutes', category: 'Hip hinge' },
+          { name: 'Hip thrust',             warmup: '1–2', sets: 3, reps: '10–15',early_rpe: 8, last_rpe: 9, rest: '2 min',   sub1: '45° back extension',    sub2: 'Unilateral hip thrust',          muscles: 'Glutes', category: 'Hip hinge' },
           { name: 'Lying leg curl',         warmup: '0–1', sets: 3, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Nordic ham curl',       sub2: 'Seated leg curl',       muscles: 'Hamstrings', category: 'Isolation' },
-          { name: 'Hip abduction',          warmup: '0',   sets: 2, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Cable hip abduction',   sub2: 'Lateral banded walk',   muscles: 'Glute medius', category: 'Isolation' },
+          { name: 'Hip abduction',          warmup: '0',   sets: 2, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Hip abduction machine',   sub2: 'Lateral banded walk',   muscles: 'Glute medius', category: 'Isolation' },
           { name: 'Standing calf raise',    warmup: '0–1', sets: 3, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Seated calf raise',     sub2: 'Leg press calf press',  muscles: 'Calves', category: 'Isolation' },
         ],
       },
@@ -361,7 +361,6 @@ export const PROGRAMS = {
           { name: 'Incline barbell press',           warmup: '2–3', sets: 3, reps: '6–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Incline dumbbell press',sub2: 'Incline machine press', muscles: 'Upper chest', category: 'Horizontal push' },
           { name: 'Dumbbell shoulder press',         warmup: '1–2', sets: 3, reps: '10–12',early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Machine shoulder press',sub2:'Arnold press',           muscles: 'Shoulders, triceps', category: 'Vertical push' },
           { name: 'Cable fly',                       warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Pec deck',              sub2: 'Dumbbell fly',          muscles: 'Chest', category: 'Isolation' },
-          { name: 'Lateral raise',                   warmup: '0–1', sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Cable lateral raise',   sub2: 'Machine lateral raise', muscles: 'Side deltoids', category: 'Isolation' },
           { name: 'Superset: Overhead tricep ext.',  warmup: '0–1', sets: 3, reps: '10–12',early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'Dumbbell skullcrusher', sub2: 'EZ-bar skullcrusher',   muscles: 'Triceps long head', category: 'Isolation' },
           { name: 'Superset: Tricep pushdown',       warmup: '0–1', sets: 3, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Cable tricep kickback', sub2: 'Rope pushdown',         muscles: 'Triceps', category: 'Isolation' },
         ],
@@ -371,18 +370,19 @@ export const PROGRAMS = {
         exercises: [
           { name: 'Conventional deadlift',  warmup: '2–3', sets: 3, reps: '3–5',  early_rpe: 7, last_rpe: 8, rest: '3–5 min', sub1: 'Romanian deadlift',     sub2: 'Hip thrust',            muscles: 'Glutes, hamstrings, back', category: 'Hip hinge' },
           { name: 'Bulgarian split squat',  warmup: '1–2', sets: 3, reps: '8–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Barbell lunge',         sub2: 'Step-up',               muscles: 'Quads, glutes', category: 'Squat' },
-          { name: 'Hip thrust',             warmup: '1–2', sets: 3, reps: '10–15',early_rpe: 8, last_rpe: 9, rest: '2 min',   sub1: '45° back extension',    sub2: 'Glute bridge',          muscles: 'Glutes', category: 'Hip hinge' },
+          { name: 'Hip thrust',             warmup: '1–2', sets: 3, reps: '10–15',early_rpe: 8, last_rpe: 9, rest: '2 min',   sub1: '45° back extension',    sub2: 'Unilateral hip thrust',          muscles: 'Glutes', category: 'Hip hinge' },
           { name: 'Lying leg curl',         warmup: '0–1', sets: 3, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Nordic ham curl',       sub2: 'Seated leg curl',       muscles: 'Hamstrings', category: 'Isolation' },
           { name: 'Standing calf raise',    warmup: '0–1', sets: 3, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Seated calf raise',     sub2: 'Leg press calf press',  muscles: 'Calves', category: 'Isolation' },
         ],
       },
       {
-        id: 'pull', name: 'Pull — Back / Biceps',
+        id: 'pull', name: 'Pull — Back / Biceps / Side Delts',
         exercises: [
           { name: 'Pull-up',                  warmup: '1–2', sets: 3, reps: '6–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Lat pulldown',          sub2: 'Chin-up',               muscles: 'Lats, biceps', category: 'Vertical pull' },
           { name: 'Barbell row',              warmup: '2–3', sets: 3, reps: '8–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Dumbbell row',          sub2: 'Pendlay row',           muscles: 'Back, biceps', category: 'Horizontal pull' },
           { name: 'Seated cable row',         warmup: '1–2', sets: 3, reps: '10–12',early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Chest-supported row',   sub2: 'Machine row',           muscles: 'Back, biceps', category: 'Horizontal pull' },
-          { name: 'Face pull',                warmup: '0',   sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Reverse fly',           sub2: 'Band pull-apart',       muscles: 'Rear delts', category: 'Isolation' },
+          { name: 'Face pull',                warmup: '0',   sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Reverse pec deck',      sub2: 'Reverse cable crossover',muscles: 'Rear delts', category: 'Isolation' },
+          { name: 'Lateral raise',            warmup: '0–1', sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Cable lateral raise',   sub2: 'Machine lateral raise', muscles: 'Side deltoids', category: 'Isolation' },
           { name: 'Superset: Barbell curl',   warmup: '0–1', sets: 3, reps: '8–12', early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'EZ-bar curl',           sub2: 'Cable curl',            muscles: 'Biceps', category: 'Isolation' },
           { name: 'Superset: Incline dumbbell curl',warmup:'0–1',sets:3,reps:'10–12',early_rpe:9,last_rpe:10,rest:'1–2 min',   sub1: 'Bayesian cable curl',   sub2: 'Preacher curl',         muscles: 'Biceps long head', category: 'Isolation' },
         ],
@@ -409,7 +409,6 @@ export const PROGRAMS = {
           { name: 'Incline dumbbell press',         warmup: '1–2', sets: 3, reps: '8–12', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Incline machine press', sub2: 'Incline barbell press', muscles: 'Upper chest', category: 'Horizontal push' },
           { name: 'Cable fly',                      warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Pec deck',              sub2: 'Dumbbell fly',          muscles: 'Chest', category: 'Isolation' },
           { name: 'Dumbbell shoulder press',        warmup: '1–2', sets: 3, reps: '8–12', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Machine shoulder press',sub2: 'Arnold press',          muscles: 'Shoulders, triceps', category: 'Vertical push' },
-          { name: 'Lateral raise',                  warmup: '0–1', sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Cable lateral raise',   sub2: 'Machine lateral raise', muscles: 'Side deltoids', category: 'Isolation' },
           { name: 'Superset: Overhead tricep ext.', warmup: '0–1', sets: 3, reps: '10–12',early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'EZ-bar skullcrusher',   sub2: 'Dumbbell skullcrusher', muscles: 'Triceps long head', category: 'Isolation' },
           { name: 'Superset: Tricep pushdown',      warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Rope pushdown',         sub2: 'Cable kickback',        muscles: 'Triceps', category: 'Isolation' },
         ],
@@ -420,7 +419,8 @@ export const PROGRAMS = {
           { name: 'Pull-up',                  warmup: '1–2', sets: 4, reps: '6–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Lat pulldown',          sub2: 'Weighted pull-up',      muscles: 'Lats, biceps', category: 'Vertical pull' },
           { name: 'Barbell row',              warmup: '2–3', sets: 3, reps: '6–8',  early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Pendlay row',           sub2: 'Dumbbell row',          muscles: 'Back, biceps', category: 'Horizontal pull' },
           { name: 'Seated cable row',         warmup: '1–2', sets: 3, reps: '10–12',early_rpe: 7, last_rpe: 9, rest: '2 min',   sub1: 'Machine row',           sub2: 'Chest-supported row',   muscles: 'Back, biceps', category: 'Horizontal pull' },
-          { name: 'Face pull',                warmup: '0',   sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Reverse fly',           sub2: 'Band pull-apart',       muscles: 'Rear delts', category: 'Isolation' },
+          { name: 'Face pull',                warmup: '0',   sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Reverse pec deck',      sub2: 'Reverse cable crossover',muscles: 'Rear delts', category: 'Isolation' },
+          { name: 'Lateral raise',            warmup: '0–1', sets: 3, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Cable lateral raise',   sub2: 'Machine lateral raise', muscles: 'Side deltoids', category: 'Isolation' },
           { name: 'Superset: Barbell curl',   warmup: '0–1', sets: 3, reps: '8–12', early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'EZ-bar curl',           sub2: 'Cable curl',            muscles: 'Biceps', category: 'Isolation' },
           { name: 'Superset: Incline dumbbell curl',warmup:'0–1',sets:3,reps:'10–12',early_rpe:9,last_rpe:10,rest:'1 min',      sub1: 'Bayesian cable curl',   sub2: 'Preacher curl',         muscles: 'Biceps long head', category: 'Isolation' },
         ],
@@ -439,9 +439,8 @@ export const PROGRAMS = {
       {
         id: 'push_b', name: 'Push B — Shoulder Focus',
         exercises: [
-          { name: 'Barbell overhead press',          warmup: '2–3', sets: 4, reps: '5–8',  early_rpe: 7, last_rpe: 9, rest: '3–4 min', sub1: 'Dumbbell shoulder press (standing)',sub2:'Dumbbell shoulder press (seated)', muscles: 'Shoulders, triceps', category: 'Vertical push' },
+          { name: 'Barbell overhead press',          warmup: '2–3', sets: 4, reps: '5–8',  early_rpe: 7, last_rpe: 9, rest: '3–4 min', sub1: 'Dumbbell shoulder press',sub2: 'Machine shoulder press', muscles: 'Shoulders, triceps', category: 'Vertical push' },
           { name: 'Incline barbell press',           warmup: '1–2', sets: 3, reps: '8–12', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Incline dumbbell press',sub2: 'Incline machine press', muscles: 'Upper chest', category: 'Horizontal push' },
-          { name: 'Lateral raise',                   warmup: '0–1', sets: 4, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Cable lateral raise',   sub2: 'Machine lateral raise', muscles: 'Side deltoids', category: 'Isolation' },
           { name: 'Pec deck',                        warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Cable fly',             sub2: 'Dumbbell fly',          muscles: 'Chest', category: 'Isolation' },
           { name: 'Superset: EZ-bar skullcrusher',   warmup: '0–1', sets: 3, reps: '10–12',early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'Overhead tricep ext.',  sub2: 'Dumbbell skullcrusher', muscles: 'Triceps long head', category: 'Isolation' },
           { name: 'Superset: Cable tricep pushdown',warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Rope pushdown',         sub2: 'Tricep kickback (cable)',muscles: 'Triceps', category: 'Isolation' },
@@ -452,7 +451,8 @@ export const PROGRAMS = {
         exercises: [
           { name: 'Lat pulldown',             warmup: '1–2', sets: 4, reps: '8–12', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Pull-up',               sub2: 'Chin-up',               muscles: 'Lats, biceps', category: 'Vertical pull' },
           { name: 'Dumbbell row',             warmup: '1–2', sets: 3, reps: '10–12',early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Chest-supported row',   sub2: 'Barbell row',           muscles: 'Back, biceps', category: 'Horizontal pull' },
-          { name: 'Reverse pec deck',         warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Rope facepull',         sub2: 'Reverse cable fly',     muscles: 'Rear delts', category: 'Isolation' },
+          { name: 'Reverse pec deck',         warmup: '0–1', sets: 3, reps: '12–15',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Face pull',             sub2: 'Reverse cable crossover',muscles: 'Rear delts', category: 'Isolation' },
+          { name: 'Lateral raise',            warmup: '0–1', sets: 4, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Cable lateral raise',   sub2: 'Machine lateral raise', muscles: 'Side deltoids', category: 'Isolation' },
           { name: 'Superset: Barbell curl',   warmup: '0–1', sets: 3, reps: '8–12', early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'EZ-bar curl',           sub2: 'Cable curl',            muscles: 'Biceps', category: 'Isolation' },
           { name: 'Superset: Bayesian cable curl',warmup:'0–1',sets:3,reps:'10–15', early_rpe: 9, last_rpe: 10,rest: '30 sec',  sub1: 'Incline dumbbell curl', sub2: 'Preacher curl',         muscles: 'Biceps long head', category: 'Isolation' },
           { name: 'Superset: Hammer curl',    warmup: '0–1', sets: 3, reps: '10–12',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Reverse curl',          sub2: 'Rope hammer curl',      muscles: 'Brachialis, brachioradialis', category: 'Isolation' },
@@ -463,9 +463,9 @@ export const PROGRAMS = {
         exercises: [
           { name: 'Conventional deadlift',  warmup: '2–3', sets: 3, reps: '4–6',  early_rpe: 7, last_rpe: 8, rest: '3–5 min', sub1: 'Romanian deadlift',     sub2: 'Sumo deadlift',         muscles: 'Glutes, hamstrings, back', category: 'Hip hinge' },
           { name: 'Bulgarian split squat',  warmup: '1–2', sets: 3, reps: '8–10', early_rpe: 7, last_rpe: 9, rest: '2–3 min', sub1: 'Barbell lunge',         sub2: 'Step-up',               muscles: 'Quads, glutes', category: 'Squat' },
-          { name: 'Hip thrust',             warmup: '1–2', sets: 3, reps: '10–15',early_rpe: 8, last_rpe: 9, rest: '2 min',   sub1: '45° back extension',    sub2: 'Glute bridge',          muscles: 'Glutes', category: 'Hip hinge' },
+          { name: 'Hip thrust',             warmup: '1–2', sets: 3, reps: '10–15',early_rpe: 8, last_rpe: 9, rest: '2 min',   sub1: '45° back extension',    sub2: 'Unilateral hip thrust',          muscles: 'Glutes', category: 'Hip hinge' },
           { name: 'Lying leg curl',         warmup: '0–1', sets: 3, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Nordic ham curl',       sub2: 'Seated leg curl',       muscles: 'Hamstrings', category: 'Isolation' },
-          { name: 'Hip abduction',          warmup: '0',   sets: 2, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Cable hip abduction',   sub2: 'Lateral banded walk',   muscles: 'Glute medius', category: 'Isolation' },
+          { name: 'Hip abduction',          warmup: '0',   sets: 2, reps: '15–20',early_rpe: 9, last_rpe: 10,rest: '1 min',   sub1: 'Hip abduction machine',   sub2: 'Lateral banded walk',   muscles: 'Glute medius', category: 'Isolation' },
           { name: 'Standing calf raise',    warmup: '0–1', sets: 4, reps: '10–15',early_rpe: 9, last_rpe: 10,rest: '1–2 min', sub1: 'Seated calf raise',     sub2: 'Leg press calf press',  muscles: 'Calves', category: 'Isolation' },
         ],
       },

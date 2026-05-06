@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { supabase } from '../supabase';
+import { supabase, getCurrentUser } from '../supabase';
 import { generateProgram, getRankedSplits, SPLITS } from './programGenerator';
+import { GOAL_PARAMETERS } from './scienceEngine';
 import StudyChart from './StudyChart';
 
 const DAYS_OPTIONS = [2, 3, 4, 5, 6];
@@ -25,7 +26,7 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
   useEffect(() => { loadProgram(); }, []);
 
   const loadProgram = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
     const { data: prof } = await supabase
       .from('profiles')
@@ -41,7 +42,7 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
   };
 
   const saveSplitChoice = async (splitId, days) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
     await supabase.from('profiles').update({
       selected_split: splitId,
@@ -287,6 +288,23 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
             <Text style={styles.scienceLabel}>Research basis</Text>
             <Text style={styles.scienceTextSmall}>{program.science_basis}</Text>
           </View>
+          {profile?.goals?.length > 0 && (() => {
+            const primaryGoal = profile.goals[0];
+            const gp = GOAL_PARAMETERS[primaryGoal];
+            if (!gp) return null;
+            return (
+              <View style={styles.goalResearchCard}>
+                <Text style={styles.scienceLabel}>Your goal — {gp.label}</Text>
+                <Text style={styles.scienceTextSmall}>{gp.key_finding}</Text>
+                <Text style={styles.citationText}>{gp.citation}</Text>
+                <View style={styles.goalParamsRow}>
+                  <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.frequency}</Text><Text style={styles.goalParamLabel}>Frequency</Text></View>
+                  <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.rep_range}</Text><Text style={styles.goalParamLabel}>Rep range</Text></View>
+                  <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.intensity}</Text><Text style={styles.goalParamLabel}>Intensity</Text></View>
+                </View>
+              </View>
+            );
+          })()}
           {program.honest_note && (
             <View style={styles.honestNoteCard}>
               <Text style={styles.scienceLabel}>Honest assessment</Text>
@@ -533,6 +551,12 @@ const styles = StyleSheet.create({
   scienceCard: { backgroundColor: '#13121E', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#534AB7', marginBottom: 20 },
   scienceCardSmall: { backgroundColor: '#13121E', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 10 },
   honestNoteCard: { backgroundColor: '#13121E', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#BA7517', marginBottom: 12 },
+  goalResearchCard: { backgroundColor: '#13121E', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 10 },
+  citationText: { fontSize: 10, color: '#71717A', fontStyle: 'italic', marginTop: 6, marginBottom: 10 },
+  goalParamsRow: { flexDirection: 'row', gap: 6 },
+  goalParam: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, padding: 8, alignItems: 'center' },
+  goalParamVal: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', textAlign: 'center', marginBottom: 2 },
+  goalParamLabel: { fontSize: 9, color: '#71717A', textAlign: 'center' },
   scienceLabel: { fontSize: 10, color: '#534AB7', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
   scienceText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20 },
   scienceTextSmall: { fontSize: 12, color: '#71717A', lineHeight: 18 },

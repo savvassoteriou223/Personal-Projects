@@ -1,5 +1,5 @@
 /**
- * MuscleMap.jsx — LiftIQ Muscle Activation Diagram
+ * MuscleMap.jsx — Helix Muscle Activation Diagram
  *
  * Two-panel SVG: Anterior (front) + Posterior (back)
  * Muscle regions are SVG paths. Active muscles glow in primary colour,

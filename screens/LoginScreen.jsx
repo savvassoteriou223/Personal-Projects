@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Image } from 'react-native';
 import { supabase } from '../supabase';
 
 export default function LoginScreen({ onLogin, onGoToSignup, onGoBack }) {
@@ -15,10 +15,26 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack }) {
     if (!email || !password) { setError('Please fill in all fields.'); return; }
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    onLogin && onLogin();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const { error } = await supabase.auth.signInWithPassword(
+        { email, password },
+        { fetchOptions: { signal: controller.signal } }
+      );
+      clearTimeout(timer);
+      if (error) { setError(error.message); return; }
+      onLogin && onLogin();
+    } catch (e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError' || e.message?.includes('abort')) {
+        setError('Connection timed out. Please try again.');
+      } else {
+        setError(e.message || 'Sign in failed.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = async () => {
@@ -26,7 +42,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack }) {
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'liftiq://reset-password',
+      redirectTo: 'helix://reset-password',
     });
     setLoading(false);
     if (error) { setError(error.message); return; }
@@ -102,8 +118,9 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack }) {
         <Text style={{ color: '#71717A', fontSize: 15 }}>← Back</Text>
       </Pressable>
 
+      <Image source={require('../assets/icon.png')} style={styles.logo} />
       <Text style={styles.title}>Welcome back</Text>
-      <Text style={styles.sub}>Sign in to your LiftIQ account</Text>
+      <Text style={styles.sub}>Sign in to your Helix account</Text>
 
       <Text style={styles.label}>Email</Text>
       <TextInput
@@ -159,6 +176,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13', padding: 24, justifyContent: 'center' },
+  logo: { width: 64, height: 64, borderRadius: 14, marginBottom: 24, alignSelf: 'center' },
   title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
   sub: { fontSize: 15, color: '#71717A', marginBottom: 40 },
   label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },

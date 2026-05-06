@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { supabase } from '../supabase';
+import { supabase, getCurrentUser } from '../supabase';
 
 const MEALS = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -19,7 +19,7 @@ export default function NutritionScreen({ onOpenNutrition }) {
   }, []));
 
   const loadData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
     const today = new Date().toISOString().split('T')[0];
     const [{ data: prof }, { data: logs }] = await Promise.all([

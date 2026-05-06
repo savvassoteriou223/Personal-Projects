@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert, Linking } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
-import { supabase } from '../supabase';
+import { supabase, getCurrentUser } from '../supabase';
+import AdminScreen from './AdminScreen';
 import { format, startOfWeek, eachDayOfInterval, endOfWeek, subWeeks } from 'date-fns';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import BodyCompositionCard from './BodyCompositionCard';
+import { VOLUME_TARGETS } from './programGenerator';
 
 const SCREEN_W = Dimensions.get('window').width;
 const CHART_H = 140;
@@ -24,13 +26,17 @@ const MUSCLE_GROUPS = [
   'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Abs',
 ];
 
-const MUSCLE_TARGETS = {
-  Chest: '10–16 sets/week', Back: '10–16 sets/week',
-  Shoulders: '8–12 sets/week', Biceps: '8–12 sets/week',
-  Triceps: '8–12 sets/week', Quads: '10–16 sets/week',
-  Hamstrings: '8–12 sets/week', Glutes: '8–12 sets/week',
-  Calves: '8–14 sets/week', Abs: '6–10 sets/week',
-};
+const EXPERIENCE_LEVELS = [
+  { key: 'beginner',     label: 'Beginner',     sub: '< 2 years' },
+  { key: 'intermediate', label: 'Intermediate', sub: '2–4 years' },
+  { key: 'advanced',     label: 'Advanced',     sub: '4+ years' },
+];
+
+function getMuscleTarget(muscle, level) {
+  const t = VOLUME_TARGETS[muscle.toLowerCase()]?.[level];
+  if (!t) return '—';
+  return `${t.optimal_low}–${t.optimal_high} sets/week`;
+}
 
 // Build exercise → muscles map from movementLibrary (same as TodayScreen)
 const _EXERCISE_MUSCLE_MAP = (() => {
@@ -163,8 +169,9 @@ function MuscleVolumeChart({ data, width }) {
   );
 }
 
-export default function ProfileScreen({ onSignOut }) {
+export default function ProfileScreen({ onSignOut, isAdmin }) {
   const [activeTab, setActiveTab] = useState('profile');
+  const [showAdmin, setShowAdmin] = useState(false);
   const [profile, setProfile] = useState(null);
   const [prs, setPrs] = useState([]);
   const [metrics, setMetrics] = useState([]);
@@ -177,6 +184,7 @@ export default function ProfileScreen({ onSignOut }) {
   const [selectedGoals, setSelectedGoals] = useState([]);
   const [weeklyWorkouts, setWeeklyWorkouts] = useState('3');
   const [sessionLength, setSessionLength] = useState('60');
+  const [trainingExperience, setTrainingExperience] = useState('beginner');
   const [loading, setLoading] = useState(true);
   const [selectedMuscle, setSelectedMuscle] = useState('Chest');
   const [showMuscleDropdown, setShowMuscleDropdown] = useState(false);
@@ -212,7 +220,7 @@ export default function ProfileScreen({ onSignOut }) {
   }, [selectedMuscle, weekOffset, allSets]);
 
   const loadData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
     const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     if (prof) {
@@ -224,6 +232,7 @@ export default function ProfileScreen({ onSignOut }) {
       setSelectedGoals(prof.goals || []);
       setWeeklyWorkouts(prof.weekly_workouts?.toString() || '3');
       setSessionLength(prof.session_length?.toString() || '60');
+      setTrainingExperience(prof.trainingExperience || 'beginner');
     }
 
     const { data: sessionData } = await supabase
@@ -281,7 +290,7 @@ export default function ProfileScreen({ onSignOut }) {
   const logQuickWeight = async () => {
     const val = parseFloat(quickWeight);
     if (!quickWeight || isNaN(val) || val <= 0) return;
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
     await supabase.from('body_metrics').insert({
       user_id: user.id,
@@ -295,10 +304,11 @@ export default function ProfileScreen({ onSignOut }) {
   };
 
   const saveProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
-    await supabase.from('profiles').update({ name, weight_kg: parseFloat(weight)||null, height_cm: parseFloat(height)||null, target_weight_kg: (parseFloat(targetWeight) > 0 ? parseFloat(targetWeight) : null), goals: selectedGoals, weekly_workouts: parseInt(weeklyWorkouts)||3, session_length: parseInt(sessionLength)||60 }).eq('id', user.id);
-    setProfile(p => ({ ...p, name, weight_kg: parseFloat(weight), height_cm: parseFloat(height), target_weight_kg: parseFloat(targetWeight), goals: selectedGoals, weekly_workouts: parseInt(weeklyWorkouts), session_length: parseInt(sessionLength) }));
+    const { error } = await supabase.from('profiles').update({ name, weight_kg: parseFloat(weight)||null, height_cm: parseFloat(height)||null, target_weight_kg: (parseFloat(targetWeight) > 0 ? parseFloat(targetWeight) : null), goals: selectedGoals, weekly_workouts: parseInt(weeklyWorkouts)||3, session_length: parseInt(sessionLength)||60, trainingExperience }).eq('id', user.id);
+    if (error) { Alert.alert('Save failed', 'Could not save your profile. Please try again.'); return; }
+    setProfile(p => ({ ...p, name, weight_kg: parseFloat(weight), height_cm: parseFloat(height), target_weight_kg: parseFloat(targetWeight), goals: selectedGoals, weekly_workouts: parseInt(weeklyWorkouts), session_length: parseInt(sessionLength), trainingExperience }));
     setEditing(false);
   };
 
@@ -351,8 +361,16 @@ export default function ProfileScreen({ onSignOut }) {
             <Text style={styles.profileName}>{profile?.name || 'No name'}</Text>
             <Text style={styles.profileEmail}>{profile?.email || ''}</Text>
           </View>
-          <Pressable onPress={signOut}><Text style={styles.signOut}>Sign out</Text></Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {isAdmin && (
+              <Pressable onPress={() => setShowAdmin(true)} style={styles.adminBtn}>
+                <Text style={styles.adminBtnText}>Admin</Text>
+              </Pressable>
+            )}
+            <Pressable onPress={signOut}><Text style={styles.signOut}>Sign out</Text></Pressable>
+          </View>
         </View>
+        <AdminScreen visible={showAdmin} onClose={() => setShowAdmin(false)} />
         <View style={styles.statsRow}>
           {[
             { val: profile?.weight_kg || '—', label: 'kg' },
@@ -413,6 +431,15 @@ export default function ProfileScreen({ onSignOut }) {
                     </Pressable>
                   ))}
                 </View>
+                <Text style={styles.inputLabel}>Experience level</Text>
+                <View style={styles.optionRow}>
+                  {EXPERIENCE_LEVELS.map(lvl => (
+                    <Pressable key={lvl.key} style={[styles.expBtn, trainingExperience === lvl.key && styles.expBtnActive]} onPress={() => setTrainingExperience(lvl.key)}>
+                      <Text style={[styles.expBtnLabel, trainingExperience === lvl.key && styles.expBtnLabelActive]}>{lvl.label}</Text>
+                      <Text style={[styles.expBtnSub, trainingExperience === lvl.key && styles.expBtnSubActive]}>{lvl.sub}</Text>
+                    </Pressable>
+                  ))}
+                </View>
                 <Text style={styles.inputLabel}>Goals</Text>
                 <View style={styles.goalsWrap}>
                   {GOALS.map(g => (
@@ -429,6 +456,7 @@ export default function ProfileScreen({ onSignOut }) {
                 <Text style={styles.profileField}>Height: <Text style={styles.profileFieldVal}>{profile?.height_cm} cm</Text></Text>
                 <Text style={styles.profileField}>Target: <Text style={styles.profileFieldVal}>{profile?.target_weight_kg} kg</Text></Text>
                 <Text style={styles.profileField}>Training: <Text style={styles.profileFieldVal}>{profile?.weekly_workouts}×/week · {profile?.session_length} min</Text></Text>
+                <Text style={styles.profileField}>Experience: <Text style={styles.profileFieldVal}>{EXPERIENCE_LEVELS.find(l => l.key === (profile?.trainingExperience || 'beginner'))?.label}</Text></Text>
                 <View style={[styles.goalsWrap, { marginTop: 8 }]}>
                   {(profile?.goals || []).map(g => (
                     <View key={g} style={styles.goalChipActive}><Text style={styles.goalChipTextActive}>{GOALS.find(x=>x.key===g)?.label||g}</Text></View>
@@ -464,6 +492,9 @@ export default function ProfileScreen({ onSignOut }) {
 
           {/* Account actions */}
           <View style={styles.accountSection}>
+            <Pressable onPress={() => Linking.openURL('https://venerable-nasturtium-4e9b15.netlify.app/')}>
+              <Text style={styles.privacyLink}>Privacy Policy</Text>
+            </Pressable>
             <Pressable style={styles.deleteAccountBtn} onPress={deleteAccount}>
               <Text style={styles.deleteAccountText}>Delete account</Text>
             </Pressable>
@@ -522,7 +553,9 @@ export default function ProfileScreen({ onSignOut }) {
             </View>
 
             <View style={styles.targetNote}>
-              <Text style={styles.targetNoteText}>Target: {MUSCLE_TARGETS[selectedMuscle]} · Schoenfeld et al. (2017)</Text>
+              <Text style={styles.targetNoteText}>
+                Target ({EXPERIENCE_LEVELS.find(l => l.key === trainingExperience)?.label}): {getMuscleTarget(selectedMuscle, trainingExperience)} · Schoenfeld et al. (2017)
+              </Text>
             </View>
           </View>
 
@@ -613,6 +646,8 @@ const styles = StyleSheet.create({
   profileName: { fontSize: 16, fontWeight: '600', color: '#FFF' },
   profileEmail: { fontSize: 12, color: '#71717A', marginTop: 1 },
   signOut: { fontSize: 12, color: '#71717A' },
+  adminBtn: { backgroundColor: '#1A1830', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: '#534AB7' },
+  adminBtnText: { fontSize: 11, color: '#A89FE8', fontWeight: '600' },
   statsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   statCard: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   statVal: { fontSize: 16, fontWeight: '700', color: '#FFF' },
@@ -695,8 +730,15 @@ const styles = StyleSheet.create({
   quickWeightBtn: { backgroundColor: '#534AB7', borderRadius: 10, paddingHorizontal: 18, justifyContent: 'center', alignItems: 'center' },
   quickWeightBtnText: { color: '#FFF', fontWeight: '700', fontSize: 14 },
   quickWeightTip: { fontSize: 11, color: '#52525B', lineHeight: 16 },
-  accountSection: { paddingHorizontal: 20, paddingBottom: 16, alignItems: 'center' },
+  accountSection: { paddingHorizontal: 20, paddingBottom: 16, alignItems: 'center', gap: 4 },
+  privacyLink: { fontSize: 13, color: '#71717A', textDecorationLine: 'underline', paddingVertical: 8 },
   deleteAccountBtn: { paddingVertical: 10 },
   deleteAccountText: { fontSize: 13, color: '#E24B4A', fontWeight: '500' },
   deleteAccountSub: { fontSize: 11, color: '#3F3F50', textAlign: 'center', marginTop: 4 },
+  expBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
+  expBtnActive: { backgroundColor: '#1A1830', borderColor: '#534AB7' },
+  expBtnLabel: { fontSize: 13, fontWeight: '600', color: '#71717A' },
+  expBtnLabelActive: { color: '#A89FE8' },
+  expBtnSub: { fontSize: 10, color: '#3D3D4A', marginTop: 2 },
+  expBtnSubActive: { color: '#534AB7' },
 });

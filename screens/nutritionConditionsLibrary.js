@@ -1,4 +1,4 @@
-// ─── LiftIQ Nutrition Conditions Library ────────────────────────────────────
+// ─── Helix Nutrition Conditions Library ─────────────────────────────────────
 //
 // Evidence-based dietary guidance for 9 medical conditions.
 // Each condition follows the same schema so NutritionScreen.jsx can apply
@@ -700,7 +700,7 @@ export const CONDITIONS = {
       { supplement: 'Psyllium husk', evidence: 'Soluble fibre reduces LDL cholesterol by ~5–7%; also lowers blood pressure', grade: 'A' },
       { supplement: 'Coenzyme Q10', evidence: 'May improve statin side effects and mild blood pressure benefit — limited evidence', grade: 'C' },
     ],
-    exercise_interaction: 'Exercise is first-line treatment alongside diet for CVD risk. Resistance training improves metabolic markers including HDL and glycaemic control. Aerobic exercise lowers resting blood pressure (5–8 mmHg) and LDL. LiftIQ resistance programs align with AHA 2024 recommendations for cardiovascular health.',
+    exercise_interaction: 'Exercise is first-line treatment alongside diet for CVD risk. Resistance training improves metabolic markers including HDL and glycaemic control. Aerobic exercise lowers resting blood pressure (5–8 mmHg) and LDL. Helix resistance programs align with AHA 2024 recommendations for cardiovascular health.',
     myths_busted: [
       'Dietary cholesterol causes heart disease — oversimplified. Saturated fat raises LDL more than dietary cholesterol for most people. Eggs in moderation are now accepted (up to 6–7/week) for most people.',
       'Coconut oil is heart-healthy — false. Coconut oil is very high in saturated fat and raises LDL cholesterol. Not supported by evidence despite popular claims.',

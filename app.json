@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "LiftIQ",
-    "slug": "LiftIQ",
+    "name": "Helix",
+    "slug": "Helix",
+    "scheme": "helix",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,13 +28,14 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA"
-      ]
+      ],
+      "package": "com.helix.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-barcode-scanner"
+      "expo-camera"
     ],
     "extra": {
       "eas": {

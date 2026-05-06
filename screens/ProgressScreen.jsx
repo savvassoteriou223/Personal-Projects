@@ -1,4 +1,4 @@
-// ProgressScreen.jsx — LiftIQ
+// ProgressScreen.jsx — Helix
 // Goal-aware progress metrics. Every section has an ACTIONABLE verdict.
 // No AI. Pure rule-based logic from the data.
 //
@@ -11,8 +11,9 @@
 
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
-import { supabase } from '../supabase';
-import { format, subDays, startOfWeek } from 'date-fns';
+import Svg, { Path, Circle, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
+import { supabase, getCurrentUser } from '../supabase';
+import { format, subDays, startOfWeek, differenceInDays } from 'date-fns';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 
 const { width: W } = Dimensions.get('window');
@@ -41,6 +42,38 @@ function buildMuscleMap() {
   return map;
 }
 const MUSCLE_MAP = buildMuscleMap();
+
+const MUSCLE_NORM = {
+  chest: 'Chest', 'upper chest': 'Chest', 'lower chest': 'Chest', 'mid chest': 'Chest',
+  lats: 'Back', traps: 'Back', 'upper trapezius': 'Back', 'levator scapulae': 'Back',
+  shoulders: 'Shoulders', 'side deltoids': 'Shoulders', 'rear deltoids': 'Shoulders',
+  biceps: 'Biceps', brachialis: 'Biceps',
+  triceps: 'Triceps',
+  quads: 'Quads',
+  hamstrings: 'Hamstrings',
+  glutes: 'Glutes', 'glute medius': 'Glutes', adductors: 'Glutes',
+  gastrocnemius: 'Calves', soleus: 'Calves',
+  'rectus abdominis': 'Abs', obliques: 'Abs',
+};
+
+const VOLUME_TARGETS = {
+  Chest:      { min: 12, max: 16 },
+  Back:       { min: 12, max: 16 },
+  Shoulders:  { min: 10, max: 14 },
+  Biceps:     { min: 8,  max: 12 },
+  Triceps:    { min: 8,  max: 12 },
+  Quads:      { min: 12, max: 16 },
+  Hamstrings: { min: 10, max: 14 },
+  Glutes:     { min: 12, max: 16 },
+  Calves:     { min: 10, max: 14 },
+  Abs:        { min: 8,  max: 12 },
+};
+
+function normaliseMuscle(name) {
+  return name ? MUSCLE_NORM[name.toLowerCase()] || null : null;
+}
+
+const BLOCK_WEEKS = { beginner: 7, intermediate: 5, advanced: 4 };
 
 // ─── BENCHMARK MATCHING (fuzzy) ───────────────────────────────────────────────
 
@@ -123,21 +156,21 @@ function LineChart({ points, color = '#534AB7', height = 130, unit = '', rawPoin
         </Text>
       </View>
       <View style={{ height: height + 9, width: w }}>
-        <svg width={w} height={height + 9} viewBox={`0 0 ${w} ${height + 9}`}>
-          <defs>
-            <linearGradient id={`g${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity="0.18" />
-              <stop offset="100%" stopColor={color} stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path d={area} fill={`url(#g${color.slice(1)})`} />
-          {rawSvg.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="2.5" fill={color} fillOpacity="0.2" />)}
-          <path d={path} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx={last.x} cy={last.y} r="5" fill={color} />
-          <circle cx={last.x} cy={last.y} r="10" fill={color} fillOpacity="0.15" />
-          <text x="4" y={height + 8} fill="#3F3F50" fontSize="9">{points[0].x}</text>
-          <text x={w - 4} y={height + 8} fill="#3F3F50" fontSize="9" textAnchor="end">{points[points.length - 1].x}</text>
-        </svg>
+        <Svg width={w} height={height + 9} viewBox={`0 0 ${w} ${height + 9}`}>
+          <Defs>
+            <LinearGradient id={`g${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0%" stopColor={color} stopOpacity="0.18" />
+              <Stop offset="100%" stopColor={color} stopOpacity="0" />
+            </LinearGradient>
+          </Defs>
+          <Path d={area} fill={`url(#g${color.replace('#', '')})`} />
+          {rawSvg.map((p, i) => <Circle key={i} cx={p.x} cy={p.y} r={2.5} fill={color} fillOpacity={0.2} />)}
+          <Path d={path} fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+          <Circle cx={last.x} cy={last.y} r={5} fill={color} />
+          <Circle cx={last.x} cy={last.y} r={10} fill={color} fillOpacity={0.15} />
+          <SvgText x={4} y={height + 8} fill="#3F3F50" fontSize={9}>{points[0].x}</SvgText>
+          <SvgText x={w - 4} y={height + 8} fill="#3F3F50" fontSize={9} textAnchor="end">{points[points.length - 1].x}</SvgText>
+        </Svg>
       </View>
     </View>
   );
@@ -382,6 +415,72 @@ function strengthLevelVerdict(bests) {
   return closestStr;
 }
 
+// ─── MUSCLE VOLUME BARS ──────────────────────────────────────────────────────
+
+function MuscleVolumeSection({ volume }) {
+  const muscles = Object.keys(VOLUME_TARGETS);
+  return (
+    <View style={{ gap: 10, paddingHorizontal: PAD }}>
+      {muscles.map(m => {
+        const actual = volume[m] || 0;
+        const { min, max } = VOLUME_TARGETS[m];
+        const color = actual >= min ? '#1D9E75' : actual >= Math.round(min * 0.7) ? '#BA7517' : '#E24B4A';
+        return (
+          <View key={m}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Text style={{ fontSize: 12, color: '#A1A1AA', fontWeight: '500' }}>{m}</Text>
+              <Text style={{ fontSize: 11, color }}>
+                {actual}<Text style={{ color: '#3F3F50' }}>/{min}–{max}</Text>
+              </Text>
+            </View>
+            <View style={{ height: 5, backgroundColor: '#1A1A20', borderRadius: 3, overflow: 'hidden' }}>
+              <View style={{ width: `${Math.min(actual / max, 1) * 100}%`, height: 5, backgroundColor: color, borderRadius: 3 }} />
+            </View>
+          </View>
+        );
+      })}
+      <Text style={{ fontSize: 10, color: '#3F3F50', marginTop: 4, fontStyle: 'italic' }}>
+        Sets this week · targets Schoenfeld et al. 2017
+      </Text>
+    </View>
+  );
+}
+
+// ─── BLOCK PROGRESS ──────────────────────────────────────────────────────────
+
+function BlockProgressSection({ info }) {
+  if (!info) return <Empty text="Start your first workout to begin block tracking" />;
+  const totalDays = (BLOCK_WEEKS[info.level] || 5) * 7;
+  const daysIn = Math.min(differenceInDays(new Date(), new Date(info.block_start_date)), totalDays);
+  const daysLeft = Math.max(totalDays - daysIn, 0);
+  const pct = daysIn / totalDays;
+  const blockNum = (info.block_index || 0) + 1;
+  const endDate = new Date(new Date(info.block_start_date).getTime() + totalDays * 86400000);
+  return (
+    <View style={{ paddingHorizontal: PAD }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <View>
+          <Text style={{ fontSize: 26, fontWeight: '200', color: '#FFFFFF', letterSpacing: -0.8 }}>Block {blockNum}</Text>
+          <Text style={{ fontSize: 12, color: '#52525B', marginTop: 2 }}>
+            {format(new Date(info.block_start_date), 'MMM d')} → {format(endDate, 'MMM d')}
+          </Text>
+        </View>
+        <View style={{ backgroundColor: '#1E1A35', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#534AB7' }}>
+          <Text style={{ fontSize: 11, color: '#7F77DD', fontWeight: '600', textTransform: 'capitalize' }}>{info.level}</Text>
+        </View>
+      </View>
+      <View style={{ height: 6, backgroundColor: '#1A1A20', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
+        <View style={{ width: `${Math.min(pct, 1) * 100}%`, height: 6, backgroundColor: daysLeft === 0 ? '#1D9E75' : '#534AB7', borderRadius: 4 }} />
+      </View>
+      <Text style={{ fontSize: 12, color: daysLeft === 0 ? '#1D9E75' : '#52525B' }}>
+        {daysLeft === 0
+          ? 'Block complete — new exercises load next session'
+          : `${daysLeft} days remaining · ${Math.round(pct * 100)}% complete`}
+      </Text>
+    </View>
+  );
+}
+
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 
 export default function ProgressScreen() {
@@ -399,13 +498,15 @@ export default function ProgressScreen() {
   const [weeklySessionCounts, setWeeklySessionCounts] = useState([]);
   const [cardioWeeklyCounts, setCardioWeeklyCounts] = useState([]);
   const [cardioDurations, setCardioDurations] = useState([]);
+  const [muscleVolume, setMuscleVolume] = useState({});
+  const [blockInfo, setBlockInfo] = useState(null);
 
   useEffect(() => { load(); }, []);
 
   const load = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) return;
 
       const { data: profile } = await supabase
@@ -501,6 +602,29 @@ export default function ProgressScreen() {
         const days = Object.keys(dm).length;
         setProteinAvg(days ? Math.round(Object.values(dm).reduce((a, b) => a + b, 0) / days) : null);
       }
+      // Muscle volume this week (uses user_id directly — no session join needed)
+      const weekAgo = subDays(new Date(), 7).toISOString();
+      const { data: weekSets } = await supabase
+        .from('completed_sets')
+        .select('pattern_key')
+        .eq('user_id', user.id)
+        .gte('completed_at', weekAgo);
+      const vol = {};
+      (weekSets || []).forEach(s => {
+        if (!s.pattern_key) return;
+        const muscle = normaliseMuscle(MOVEMENT_PATTERNS[s.pattern_key]?.muscles?.[0]);
+        if (muscle) vol[muscle] = (vol[muscle] || 0) + 1;
+      });
+      setMuscleVolume(vol);
+
+      // Block progress
+      const { data: block } = await supabase
+        .from('program_blocks')
+        .select('block_index, block_start_date, level')
+        .eq('user_id', user.id)
+        .single();
+      setBlockInfo(block || null);
+
     } catch (e) { console.error('ProgressScreen:', e); }
     finally { setLoading(false); }
   };
@@ -606,6 +730,27 @@ export default function ProgressScreen() {
           )}
         </>
       )}
+
+      {/* Muscle volume this week */}
+      <Section label="Weekly Volume · sets vs targets"
+        verdict={(() => {
+          const below = Object.keys(VOLUME_TARGETS).filter(m => (muscleVolume[m] || 0) < VOLUME_TARGETS[m].min);
+          if (!Object.keys(muscleVolume).length) return null;
+          if (below.length === 0) return 'All muscle groups hitting minimum volume — maintain or increase to optimal range.';
+          if (below.length <= 2) return `${below.join(', ')} below minimum. Add sets to these groups next session.`;
+          return `${below.length} groups below target — prioritise frequency over adding more sets to strong groups.`;
+        })()}>
+        <Card style={{ padding: 0, paddingVertical: 16 }}>
+          <MuscleVolumeSection volume={muscleVolume} />
+        </Card>
+      </Section>
+
+      {/* Block progress */}
+      <Section label="Training Block">
+        <Card style={{ padding: 0, paddingVertical: 16 }}>
+          <BlockProgressSection info={blockInfo} />
+        </Card>
+      </Section>
 
       {/* Consistency — all goals */}
       {(isMaintain || isGain || isStrength || isLose || isAesthetics) && (

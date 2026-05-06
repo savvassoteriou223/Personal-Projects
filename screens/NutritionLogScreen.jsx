@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, ActivityIndicator } from 'react-native';
-import { supabase } from '../supabase';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { supabase, getCurrentUser } from '../supabase';
+// expo-barcode-scanner removed in SDK 52 — replaced with expo-camera when wired up
 
 const MEALS = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -22,15 +22,13 @@ export default function NutritionLogScreen({ onClose }) {
   const [showSearch, setShowSearch] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null);
   const [servingGrams, setServingGrams] = useState('100');
-  const [showScanner, setShowScanner] = useState(false);
-  const [scanPermission, setScanPermission] = useState(null);
 
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
 
     const { data: prof } = await supabase
@@ -82,16 +80,13 @@ export default function NutritionLogScreen({ onClose }) {
       setSearchResults(results);
     } catch {
       setSearchResults([]);
+      Alert.alert('Search failed', 'Could not reach the food database. Check your connection and try again.');
     }
     setSearching(false);
   };
 
   const openScanner = async () => {
-    const { status } = await BarCodeScanner.requestPermissionsAsync();
-    const granted = status === 'granted';
-    setScanPermission(granted);
-    if (granted) setShowScanner(true);
-    else setShowScanner(true); // still show — renders the denied UI
+    Alert.alert('Coming soon', 'Barcode scanning will be available in the next update.');
   };
 
   const handleBarcodeScan = async ({ data }) => {
@@ -114,15 +109,17 @@ export default function NutritionLogScreen({ onClose }) {
         setSelectedFood(food);
         setServingGrams('100');
         setShowSearch(true);
+      } else {
+        Alert.alert('Product not found', 'This barcode was not found in the database. Try searching manually.');
       }
     } catch {
-      // nothing
+      Alert.alert('Scan failed', 'Could not look up this product. Try searching manually.');
     }
     setSearching(false);
   };
 
   const logFood = async (food) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return;
 
     const { data, error } = await supabase
@@ -141,7 +138,11 @@ export default function NutritionLogScreen({ onClose }) {
       .select()
       .single();
 
-    if (!error && data) {
+    if (error) {
+      Alert.alert('Log failed', 'Could not save this food entry. Please try again.');
+      return;
+    }
+    if (data) {
       setEntries(prev => [...prev, data]);
       setSearch('');
       setSearchResults([]);
@@ -330,30 +331,6 @@ export default function NutritionLogScreen({ onClose }) {
         </View>
       </ScrollView>
 
-      {showScanner && (
-        <View style={StyleSheet.absoluteFillObject}>
-          {scanPermission === false ? (
-            <View style={styles.scanDenied}>
-              <Text style={styles.scanDeniedText}>Camera permission denied.</Text>
-              <Pressable onPress={() => setShowScanner(false)}>
-                <Text style={styles.cancelSearchText}>Close</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <BarCodeScanner
-              onBarCodeScanned={handleBarcodeScan}
-              style={StyleSheet.absoluteFillObject}
-            >
-              <View style={styles.scanOverlay}>
-                <Text style={styles.scanHint}>Point at a barcode</Text>
-                <Pressable style={styles.scanCancelBtn} onPress={() => setShowScanner(false)}>
-                  <Text style={styles.scanCancelText}>Cancel</Text>
-                </Pressable>
-              </View>
-            </BarCodeScanner>
-          )}
-        </View>
-      )}
     </View>
   );
 }

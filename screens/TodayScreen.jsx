@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { supabase } from '../supabase';
-import { generateProgram, VOLUME_TARGETS, detectPlateaus, detectDeloadNeeded, generateDeloadWeek } from './programGenerator';
+import { supabase, getCurrentUser } from '../supabase';
+import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment } from './programGenerator';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
 
@@ -77,6 +77,7 @@ const MUSCLE_DISPLAY = {
 export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
   const [program, setProgram] = useState(null);
   const [todayWorkout, setTodayWorkout] = useState(null);
+  const [todayCompleted, setTodayCompleted] = useState(false);
   const [tomorrowWorkout, setTomorrowWorkout] = useState(null);
   const [muscleRecovery, setMuscleRecovery] = useState({});
   const [weeklyVolume, setWeeklyVolume] = useState({});
@@ -87,6 +88,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
   const [deloadSuggestion, setDeloadSuggestion] = useState(null);
   const [showSessionDetail, setShowSessionDetail] = useState(false);
   const [sessionMuscles, setSessionMuscles] = useState([]);
+  const [blockData, setBlockData] = useState(null);
+  const [blockJustRotated, setBlockJustRotated] = useState(false);
 
   const todayName = DAYS[new Date().getDay()];
   const tomorrowName = DAYS[(new Date().getDay() + 1) % 7];
@@ -111,12 +114,15 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
     setShowSessionDetail(true);
   };
 
-  useFocusEffect(useCallback(() => { loadData(); }, []));
+  useFocusEffect(useCallback(() => {
+    const safetyTimer = setTimeout(() => setLoading(false), 12000);
+    loadData().finally(() => clearTimeout(safetyTimer));
+  }, []));
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const user = await getCurrentUser();
+      if (!user) { setLoading(false); return; }
 
       // Load profile
       const { data: prof } = await supabase
@@ -127,24 +133,103 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
       if (prof) {
         setProfile(prof);
-        const prog = generateProgram(prof);
+
+        // ── Load or create the user's current training block ──────────────
+        let block = null;
+        const { data: existingBlock } = await supabase
+          .from('program_blocks')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (existingBlock) {
+          block = existingBlock;
+
+          // Check if this block is complete — if so, advance to the next block.
+          // Only show the rotation banner if the DB write succeeds; if it fails,
+          // keep the existing block so the check retries on the next load.
+          if (isBlockComplete(block.block_start_date, prof.trainingExperience || 'beginner')) {
+            const nextIndex = block.block_index + 1;
+            const { data: updatedBlock } = await supabase
+              .from('program_blocks')
+              .update({
+                block_index: nextIndex,
+                block_start_date: new Date().toISOString(),
+                level: prof.trainingExperience || 'beginner',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('user_id', user.id)
+              .select()
+              .single();
+            if (updatedBlock) {
+              block = updatedBlock;
+              setBlockJustRotated(true);
+            }
+            // If updatedBlock is null the write failed — keep old block,
+            // skip the banner, and let the next app load retry.
+          }
+        } else {
+          // First time — create block record
+          const { data: newBlock } = await supabase
+            .from('program_blocks')
+            .insert({
+              user_id: user.id,
+              block_index: 0,
+              block_start_date: new Date().toISOString(),
+              split_id: null,
+              level: prof.trainingExperience || 'beginner',
+            })
+            .select()
+            .single();
+          block = newBlock || { block_index: 0, block_start_date: new Date().toISOString() };
+        }
+
+        setBlockData(block);
+
+        let prog = generateProgram(prof, block.block_index, block.block_start_date);
+
+        // Apply any permanent AI coach edits on top of the generated program
+        const { data: overrides } = await supabase
+          .from('program_template_overrides')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
+
+        if (overrides?.length) {
+          const equipment = normalizeEquipment(prof.equipment || []);
+          overrides.forEach(o => {
+            prog = applyPermanentEdit(prog, {
+              type: o.edit_type,
+              dayId: o.day_id,
+              exerciseIndex: o.exercise_index,
+              patternKey: o.pattern_key,
+              preferExerciseId: o.exercise_id,
+              sets: o.sets,
+              reps: o.reps,
+              rpe: o.rpe,
+            }, equipment);
+          });
+        }
+
+        prog = applyContraindicationFilters(prog, prof);
+
         setProgram(prog);
 
         // Today's workout
         const todayIdx = prog.schedule.indexOf(todayName);
-        if (todayIdx !== -1 && prog.days[todayIdx]) {
-          setTodayWorkout(prog.days[todayIdx]);
-        }
+        const todayWk = todayIdx !== -1 ? prog.days[todayIdx] : null;
+        if (todayWk) setTodayWorkout(todayWk);
 
         // Tomorrow's workout — calculated after sessions load below
         // so we can skip workouts already completed today
-        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0); // local midnight — avoids UTC offset bug
 
         const { data: recentSessions } = await supabase
           .from('workout_sessions')
           .select('name, completed_at')
           .eq('user_id', user.id)
-          .gte('completed_at', new Date(todayStr).toISOString())
+          .gte('completed_at', todayStart.toISOString())
           .order('completed_at', { ascending: false });
 
         // Names of workouts already done today
@@ -152,18 +237,16 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           (recentSessions || []).map(s => s.name?.toLowerCase().trim())
         );
 
-        // Walk through upcoming days (tomorrow, day after, etc.) and find
-        // the first scheduled workout that hasn't been done today
+        setTodayCompleted(!!todayWk && completedTodayNames.has(todayWk.name?.toLowerCase().trim()));
+
+        // Find the next scheduled workout day (always show it so the button is never missing)
         let foundTomorrow = null;
         for (let offset = 1; offset <= 7; offset++) {
           const checkDay = DAYS[(new Date().getDay() + offset) % 7];
           const checkIdx = prog.schedule.indexOf(checkDay);
           if (checkIdx !== -1 && prog.days[checkIdx]) {
-            const candidate = prog.days[checkIdx];
-            if (!completedTodayNames.has(candidate.name?.toLowerCase().trim())) {
-              foundTomorrow = candidate;
-              break;
-            }
+            foundTomorrow = prog.days[checkIdx];
+            break;
           }
         }
         setTomorrowWorkout(foundTomorrow);
@@ -284,6 +367,25 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
         <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMM d')}</Text>
       </View>
 
+      {/* Block rotation banner */}
+      {blockJustRotated && (
+        <View style={styles.blockBanner}>
+          <Text style={styles.blockBannerTitle}>New block started</Text>
+          <Text style={styles.blockBannerSub}>
+            Your exercises have rotated to keep your body adapting. Same movements, fresh stimulus.
+          </Text>
+        </View>
+      )}
+
+      {/* Block progress pill */}
+      {blockData && !blockJustRotated && (
+        <View style={styles.blockPill}>
+          <Text style={styles.blockPillText}>
+            Block {blockData.block_index + 1} · Week {Math.max(1, Math.ceil((Date.now() - new Date(blockData.block_start_date).getTime()) / (7 * 86400000)))} of {getBlockLength(profile?.trainingExperience || 'beginner')}
+          </Text>
+        </View>
+      )}
+
       {/* Today's session or rest day */}
       {todayWorkout ? (
         <View style={styles.sessionCard}>
@@ -311,17 +413,30 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
               <Text style={styles.moreText}>+{todayWorkout.exercises.length - 4} more exercises</Text>
             )}
           </View>
-          <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(todayWorkout)}>
-            <Text style={styles.startBtnText}>Start Workout →</Text>
-          </Pressable>
+          {todayCompleted ? (
+            <>
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedBadgeText}>✓ Completed today</Text>
+              </View>
+              {tomorrowWorkout && (
+                <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(tomorrowWorkout)}>
+                  <Text style={styles.startBtnText}>Start Next: {tomorrowWorkout.name} →</Text>
+                </Pressable>
+              )}
+            </>
+          ) : (
+            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(todayWorkout)}>
+              <Text style={styles.startBtnText}>Start Workout →</Text>
+            </Pressable>
+          )}
         </View>
       ) : (
         <View style={styles.restCard}>
           <Text style={styles.restTitle}>Rest day</Text>
           <Text style={styles.restSub}>Recovery is when your muscles actually grow. Prioritize sleep and protein today.</Text>
           {tomorrowWorkout && (
-            <Pressable style={styles.tomorrowBtn} onPress={() => onPreviewWorkout && onPreviewWorkout(tomorrowWorkout)}>
-              <Text style={styles.tomorrowBtnText}>Up next: {tomorrowWorkout.name} →</Text>
+            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(tomorrowWorkout)}>
+              <Text style={styles.startBtnText}>Start Next: {tomorrowWorkout.name} →</Text>
             </Pressable>
           )}
         </View>
@@ -343,8 +458,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
                   {status === 'trained_today' ? 'Today'
                     : r?.daysSince === 1 ? '1d ago'
                     : r?.daysSince === 2 ? '2d ago'
-                    : r?.daysSince === null ? 'Never'
-                    : `${r.daysSince}d ago`}
+                    : r?.daysSince == null ? 'Never'
+                    : `${r?.daysSince}d ago`}
                 </Text>
               </View>
             );
@@ -374,10 +489,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
         </View>
 
         {(() => {
+          const volumeTargets = getVolumeTargets(profile?.trainingExperience);
           const junkMuscles = [];
           const rows = Object.entries(MUSCLE_DISPLAY).map(([muscle, label]) => {
             const done = weeklyVolume[muscle] || 0;
-            const target = VOLUME_TARGETS[muscle];
+            const target = volumeTargets[muscle];
             if (!target) return null;
             const junkThreshold = Math.round(target.optimal_high * 1.5);
             const isJunk = done > junkThreshold;
@@ -623,6 +739,11 @@ const styles = StyleSheet.create({
   header: { padding: 24, paddingTop: 56 },
   greeting: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
   dateText: { fontSize: 13, color: '#71717A', marginTop: 2 },
+  blockBanner: { marginHorizontal: 16, marginBottom: 12, backgroundColor: '#1D9E7522', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E75' },
+  blockBannerTitle: { fontSize: 14, fontWeight: '700', color: '#1D9E75', marginBottom: 3 },
+  blockBannerSub: { fontSize: 12, color: '#A1A1AA', lineHeight: 17 },
+  blockPill: { marginHorizontal: 16, marginBottom: 12, alignSelf: 'flex-start', backgroundColor: '#1A1830', borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12, borderWidth: 0.5, borderColor: '#534AB7' },
+  blockPillText: { fontSize: 11, color: '#7F77DD', fontWeight: '500' },
 
   // Today's session
   sessionCard: { marginHorizontal: 20, backgroundColor: '#1A1830', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#534AB7', marginBottom: 24 },
@@ -636,6 +757,8 @@ const styles = StyleSheet.create({
   sessionCount: { fontSize: 12, color: '#71717A' },
   startBtn: { backgroundColor: '#534AB7', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
   startBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
+  completedBadge: { backgroundColor: '#1D9E7522', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16, borderWidth: 1, borderColor: '#1D9E7544' },
+  completedBadgeText: { color: '#1D9E75', fontSize: 15, fontWeight: '700' },
   exercisePreview: { borderTopWidth: 0.5, borderTopColor: '#2C2C35', paddingTop: 12, gap: 8 },
   exPreviewRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   exPreviewDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#534AB7' },
