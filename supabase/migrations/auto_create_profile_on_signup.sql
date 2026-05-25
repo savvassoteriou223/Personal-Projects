@@ -5,13 +5,16 @@
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, name, email, age, sex)
+  INSERT INTO public.profiles (id, name, email, age, sex, dob)
   VALUES (
     new.id,
     new.raw_user_meta_data->>'name',
     new.email,
-    (new.raw_user_meta_data->>'age')::integer,
-    new.raw_user_meta_data->>'sex'
+    CASE WHEN new.raw_user_meta_data->>'age' IS NOT NULL
+         THEN (new.raw_user_meta_data->>'age')::integer ELSE NULL END,
+    new.raw_user_meta_data->>'sex',
+    CASE WHEN new.raw_user_meta_data->>'dob' IS NOT NULL
+         THEN (new.raw_user_meta_data->>'dob')::date ELSE NULL END
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN new;

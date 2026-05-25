@@ -174,7 +174,7 @@ export const SPLITS = {
     optimality: 'optimal',
     optimality_score: 8,
     science_basis: 'Currier et al. (2023, BJSM, n=3364): higher-load multiset twice-weekly training was the top-ranked prescription for hypertrophy in a Bayesian network meta-analysis of 119 RCTs. Upper/lower achieves this exact structure — each muscle trained 2× per week with high load and multiple sets.',
-    honest_note: 'The sweet spot for most lifters. Each muscle trained twice per week with 3 days recovery between sessions. Upper B includes lower chest and trap work for complete upper body coverage. Progressive overload is the engine — when you can complete all your sets with ease for 2–3 weeks in a row, it\'s time to add weight or reps. Tracking your lifts is not optional here: without a log you\'ll plateau without realising it.',
+    honest_note: 'The sweet spot for most lifters. Each muscle trained twice per week with 3 days recovery between sessions. Upper A hits side delts twice — machine and cable — because small muscles need 3× weekly direct work. Upper B adds a second rear delt slot; rear delts are the most undertrained muscle in most programs. Progressive overload is the engine — when you can complete all your sets with ease for 2–3 weeks in a row, it\'s time to add weight or reps. Tracking your lifts is not optional here: without a log you\'ll plateau without realising it.',
     session_time_est: '60–80 min',
     day_structure: ['Upper A', 'Lower A', 'Upper B', 'Lower B'],
     schedule_template: ['Monday', 'Tuesday', 'Thursday', 'Friday'],
@@ -261,8 +261,8 @@ export const SPLITS = {
     honest_note: 'Excellent for dedicated intermediate-advanced lifters. 6 days is a significant commitment. Upper C gives shoulders their own full session — no volume is missing.',
     session_time_est: '55–70 min',
     day_structure: ['Upper A', 'Lower A', 'Upper B', 'Lower B', 'Upper C (Shoulders)', 'Lower C'],
-    schedule_template: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    rest_between: [0, 0, 0, 0, 0, 1],
+    schedule_template: ['Monday', 'Tuesday', 'Wednesday', 'Friday', 'Saturday', 'Sunday'],
+    rest_between: [0, 0, 1, 0, 0, 1],
   },
   full_body_5x: {
     id: 'full_body_5x',
@@ -424,7 +424,17 @@ export const SPLIT_RANKINGS = {
     lose:      [{ id: 'full_body_2x', rank: 1, why: 'Full body sessions burn more calories and preserve muscle during deficit.' }],
     endurance: [{ id: 'full_body_2x', rank: 1, why: 'Full body at 2 days. High reps, short rest. Resistance work supports cardio base.' }],
     maintain:  [{ id: 'full_body_2x', rank: 1, why: 'Minimum effective dose for health maintenance. Full body covers all muscle groups.' }],
-    default:   [{ id: 'full_body_2x', rank: 1, why: 'Only viable option at 2 days.' }],
+    default:          [{ id: 'full_body_2x', rank: 1, why: 'Only viable option at 2 days.' }],
+    recomp:           [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Small deficit — keep volume up to signal muscle retention while losing fat.' }],
+    cut_strength:     [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Prioritise heavy compounds — preserving neuromuscular strength in deficit requires consistent practice.' }],
+    cut_endurance:    [{ id: 'full_body_2x', rank: 1, why: 'Full body 2× with short rest. Pair each session with cardio — cardio is the primary fat loss driver here.' }],
+    powerbuilding:    [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. At minimum frequency keep the big compounds heavy — powerbuilding needs more days to fully express.' }],
+    hybrid_muscle:    [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Your dedicated cardio sessions provide the endurance stimulus — keep lifting heavy.' }],
+    hybrid_strength:  [{ id: 'full_body_2x', rank: 1, why: 'Full body 2× with heavy compound emphasis. Cardio sessions handled separately.' }],
+    powerbuilding_cut:[{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Deficit limits recovery — heavy compounds first, skip isolation when fatigued.' }],
+    athletic_recomp:  [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Near-maintenance calories. Add 2–3 cardio sessions for the athletic component.' }],
+    athletic_cut:     [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Strength maintained via heavy compounds. Cardio drives fat loss.' }],
+    athletic_bulk:    [{ id: 'full_body_2x', rank: 1, why: 'Full body 2×. Add 2–3 dedicated cardio sessions. Resist cutting lifting volume — it drives the bulk.' }],
   },
   3: {
     muscle: [
@@ -447,6 +457,41 @@ export const SPLIT_RANKINGS = {
     ],
     default: [
       { id: 'full_body_3x', rank: 1, why: 'Best all-around option for 3 days.' },
+    ],
+    recomp: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× — each muscle trained 3× per week. Critical for recomp: maximal muscle retention signal while in slight deficit.' },
+      { id: 'hybrid_3x',    rank: 2, why: 'Full Body + Upper/Lower hybrid. Good recomp alternative — maintains high frequency.' },
+    ],
+    cut_strength: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3×. Compound lifts trained frequently to preserve neuromuscular strength adaptations in deficit.' },
+      { id: 'hybrid_3x',    rank: 2, why: 'Hybrid allows dedicated heavy days — useful for maintaining key compound lifts.' },
+    ],
+    cut_endurance: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× with high-rep, short-rest sets. Pair with dedicated cardio — cardio is the primary driver of fat loss here.' },
+    ],
+    powerbuilding: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3×. Alternate heavy and volume days — trains big compounds frequently while adding hypertrophy work.' },
+      { id: 'hybrid_3x',    rank: 2, why: 'Full Body + Upper/Lower. Heavy full body day + volume upper/lower days — good powerbuilding structure at 3 days.' },
+    ],
+    hybrid_muscle: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× at moderate rest. Your dedicated cardio sessions provide the endurance stimulus — keep lifting heavy to counter the interference effect.' },
+    ],
+    hybrid_strength: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× with heavy compound emphasis. Cardio sessions strictly separate — interference is real.' },
+      { id: 'hybrid_3x',    rank: 2, why: 'Hybrid allows dedicated heavy compound days — strong structure for the strength-endurance athlete.' },
+    ],
+    powerbuilding_cut: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3×. In deficit, frequency helps preserve both strength and muscle. Heavy compounds first, volume second.' },
+      { id: 'hybrid_3x',    rank: 2, why: 'Hybrid allows heavy and volume days — maintains powerbuilding stimulus at lower total volume in deficit.' },
+    ],
+    athletic_recomp: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× near maintenance. Add 2–3 cardio sessions. Frequent resistance training is the anchor for athletic recomp.' },
+    ],
+    athletic_cut: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× in moderate deficit. Cardio and the deficit drive fat loss — lifting preserves strength and athletic capacity.' },
+    ],
+    athletic_bulk: [
+      { id: 'full_body_3x', rank: 1, why: 'Full body 3× with surplus. Add 2–3 dedicated cardio sessions — ensures all muscles grow while athletic capacity improves.' },
     ],
   },
   4: {
@@ -476,6 +521,47 @@ export const SPLIT_RANKINGS = {
       { id: 'upper_lower_4x', rank: 1, why: 'Best all-around 4-day option.' },
       { id: 'chest_back_shoulders_legs_4x', rank: 2, why: 'Classic split alternative.' },
     ],
+    recomp: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4×. 2× frequency per muscle — the strongest muscle-retention signal available in a slight deficit.' },
+      { id: 'full_body_4x',                 rank: 2, why: 'Full body 4×. Higher frequency option for recomp — works well if you prefer shorter sessions.' },
+      { id: 'chest_back_shoulders_legs_4x', rank: 3, why: 'Focused sessions with once-weekly direct frequency. Acceptable for recomp when volume is maintained.' },
+    ],
+    cut_strength: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4×. Heavy compounds twice per week preserves strength in deficit. Research: 2× frequency best for maintaining neuromuscular performance.' },
+      { id: 'chest_back_shoulders_legs_4x', rank: 2, why: 'High per-session volume on big lifts. Lower frequency is harder to maintain in deficit but keeps intensity high.' },
+    ],
+    cut_endurance: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4× with high reps and short rest. Efficient metabolic stimulus — pair with 3–4 cardio sessions.' },
+      { id: 'full_body_4x',                 rank: 2, why: 'Full body 4×. Circuit-style training maximises caloric expenditure per session.' },
+    ],
+    powerbuilding: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4×. Heavy and volume days alternate — the classic powerbuilding structure. Each compound trained 2× per week.' },
+      { id: 'chest_back_shoulders_legs_4x', rank: 2, why: 'High per-session volume per movement. Strong strength carry-over despite lower frequency.' },
+    ],
+    hybrid_muscle: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4× with moderate rest. Keep cardio separate (6+ hours) to minimise interference. 2× frequency maximises muscle stimulus.' },
+      { id: 'full_body_4x',                 rank: 2, why: 'Full body 4× — shorter sessions leave more energy for cardio training.' },
+    ],
+    hybrid_strength: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4×. Heavy compounds 2× per week with cardio kept strictly separate. Builds strength while maintaining conditioning.' },
+      { id: 'chest_back_shoulders_legs_4x', rank: 2, why: 'Focused strength sessions per movement. Lower lifting frequency works if cardio is kept well separated.' },
+    ],
+    powerbuilding_cut: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4× in deficit. 2× frequency minimises muscle loss — heavy compounds first, isolation only if energy allows.' },
+      { id: 'chest_back_shoulders_legs_4x', rank: 2, why: 'Focused sessions — acceptable in deficit when total volume is reduced proportionally.' },
+    ],
+    athletic_recomp: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4× near maintenance with cardio sessions alongside. Balances muscle retention, strength, and athletic conditioning.' },
+      { id: 'full_body_4x',                 rank: 2, why: 'Full body 4× — leaves more weekly slots for cardio while hitting every muscle frequently.' },
+    ],
+    athletic_cut: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4× in deficit. 2× frequency preserves strength. Cardio is the primary fat loss driver — add 3+ sessions per week.' },
+      { id: 'full_body_4x',                 rank: 2, why: 'Full body 4× with short rest — higher metabolic stimulus per session, reduces need for separate cardio.' },
+    ],
+    athletic_bulk: [
+      { id: 'upper_lower_4x',               rank: 1, why: 'Upper/lower 4×. Surplus calories power muscle and athletic development. Add 2–3 cardio sessions for the endurance component.' },
+      { id: 'chest_back_shoulders_legs_4x', rank: 2, why: 'Focused compound sessions per movement. Add cardio as extra sessions alongside.' },
+    ],
   },
   5: {
     muscle: [
@@ -499,6 +585,46 @@ export const SPLIT_RANKINGS = {
     ],
     default: [
       { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Best 5-day option for most lifters.' },
+    ],
+    recomp: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Hybrid 5×. High volume maintains the hypertrophy stimulus needed to build muscle even in a slight deficit.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5× — maximum frequency. Effective for recomp if recovery is strong.' },
+    ],
+    cut_strength: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Hybrid 5×. Compounds trained twice per week preserves neuromuscular strength. Volume reduced in deficit — keep compound intensity high.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5×. High frequency maintains movement patterns in deficit.' },
+    ],
+    cut_endurance: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'High volume with short rest. Combined with cardio, maximises fat loss while preserving lean mass.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5× — high metabolic demand per session, good option if cardio is separate.' },
+    ],
+    powerbuilding: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Best powerbuilding option at 5 days. Upper/lower heavy days + PPL volume days. Compounds 2× per week with dedicated volume work.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Very high frequency on all lifts — advanced lifters only.' },
+    ],
+    hybrid_muscle: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Hybrid 5× for muscle. Moderate rest periods (90 sec – 2 min). Cardio kept strictly separate to minimise interference.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5×. Shorter sessions leave more capacity for cardio.' },
+    ],
+    hybrid_strength: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Compounds trained twice per week with volume work. Cardio sessions kept strictly separate (6+ hours) to prevent acute strength losses.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Maximum lifting frequency — effective for the strength-endurance athlete with excellent recovery capacity.' },
+    ],
+    powerbuilding_cut: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Hybrid 5× at reduced volume in deficit. Prioritise heavy compound sessions — drop accessory work first when fatigue accumulates.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5×. High frequency supports strength maintenance in deficit — adjust volume per energy levels daily.' },
+    ],
+    athletic_recomp: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Hybrid 5× near maintenance. Ideal for athletic recomp — high frequency supports muscle gain and metabolic adaptation simultaneously.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5× — maximises weekly muscle stimulus. Athletic conditioning added on top.' },
+    ],
+    athletic_cut: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'High volume in moderate deficit. Heavy compounds preserved — cardio and deficit drive fat loss, lifting preserves everything else.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5×. Shorter sessions allow more athletic conditioning sessions alongside lifting.' },
+    ],
+    athletic_bulk: [
+      { id: 'ul_ppl_hybrid_5x', rank: 1, why: 'Best option for concurrent training bulk. Compounds 2× per week with surplus calories. Dedicated cardio sessions — manage interference carefully.' },
+      { id: 'full_body_5x',     rank: 2, why: 'Full body 5× with surplus. High frequency — effective for advanced athletes combining strength and endurance development.' },
     ],
   },
   6: {
@@ -524,17 +650,106 @@ export const SPLIT_RANKINGS = {
       { id: 'upper_lower_6x', rank: 1, why: 'Best 6-day option.' },
       { id: 'ppl_6x',         rank: 2, why: 'Classic alternative.' },
     ],
+    recomp: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Maximum frequency for recomp. 3× per muscle per week — strongest possible muscle retention signal in a slight deficit.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL 6×. 2× frequency with high per-session volume — strong recomp option.' },
+    ],
+    cut_strength: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Highest lifting frequency. 3× weekly practice on main compounds maintains neuromuscular strength despite caloric deficit.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL in deficit. Focused sessions allow high intensity per lift — lower frequency but high per-session load.' },
+    ],
+    cut_endurance: [
+      { id: 'upper_lower_6x', rank: 1, why: '6-day high-rep resistance programme. Maximum weekly volume preserves muscle in deficit. Add cardio as active recovery sessions.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL 6× with endurance rep ranges. Focused metabolic sessions alongside dedicated cardio.' },
+    ],
+    powerbuilding: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Each muscle 3× per week. Alternates heavy and volume days — the most complete powerbuilding structure available.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL 6×. Each muscle 2× per week with high volume per session. Strong powerbuilding alternative.' },
+    ],
+    hybrid_muscle: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Maximum muscle frequency. Cardio as active recovery or in separate sessions (6+ hours apart). Highest concurrent training stimulus.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL 6× with moderate rest periods. Good muscle-endurance concurrent structure.' },
+    ],
+    hybrid_strength: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Highest lifting frequency for strength. Cardio strictly separate. 3× per compound per week maximises strength adaptation.' },
+      { id: 'ppl_6x',         rank: 2, why: 'Focused heavy push/pull/legs. Strength-biased with room for conditioning on off-lifting days.' },
+    ],
+    powerbuilding_cut: [
+      { id: 'upper_lower_6x', rank: 1, why: '3× frequency preserves both strength and muscle in deficit. Drop isolation volume first when recovery suffers — keep compounds heavy.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL in deficit. Volume reduced vs a bulk — intensity maintained on compound movements.' },
+    ],
+    athletic_recomp: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Maximum resistance frequency near maintenance. Athletic conditioning fits alongside or as active recovery. Best overall stimulus for all three adaptations.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL 6× with conditioning added on top. High volume per muscle — demanding but highly effective.' },
+    ],
+    athletic_cut: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Maximum frequency preserves strength in deficit. Cardio added as conditioning work — total load is very high, monitor recovery closely.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL in deficit. Focused sessions reduce per-session fatigue — more sustainable alongside frequent cardio.' },
+    ],
+    athletic_bulk: [
+      { id: 'upper_lower_6x', rank: 1, why: 'Each muscle 3× per week with surplus calories. Cardio develops athletic capacity alongside maximum hypertrophy stimulus.' },
+      { id: 'ppl_6x',         rank: 2, why: 'PPL 6× with surplus. Focused muscle groups per session — pairs well with endurance training on the same days.' },
+    ],
   },
 };
 
-// Get goal key from profile goals array
+// Resolve any combination of goals to a single canonical combo key.
+// This is the single source of truth used by split selection, goal profiles,
+// and calorie calculation — so all three systems stay consistent.
+export function resolveGoalCombo(goals = []) {
+  const hasFat      = goals.includes('lose');
+  const hasMuscle   = goals.includes('gain') || goals.includes('aesthetics');
+  const hasStrength = goals.includes('strength');
+  const hasEnd      = goals.includes('endurance');
+
+  // 4-way (all active → athletic recomp near maintenance)
+  if (hasFat && hasMuscle && hasStrength && hasEnd) return 'athletic_recomp';
+
+  // Triple combos
+  if (hasFat  && hasMuscle   && hasStrength) return 'powerbuilding_cut';
+  if (hasFat  && hasMuscle   && hasEnd)      return 'athletic_recomp';
+  if (hasFat  && hasStrength && hasEnd)      return 'athletic_cut';
+  if (hasMuscle && hasStrength && hasEnd)    return 'athletic_bulk';
+
+  // Dual combos
+  if (hasFat  && hasMuscle)    return 'recomp';
+  if (hasFat  && hasStrength)  return 'cut_strength';
+  if (hasFat  && hasEnd)       return 'cut_endurance';
+  if (hasMuscle && hasStrength) return 'powerbuilding';
+  if (hasMuscle && hasEnd)     return 'hybrid_muscle';
+  if (hasStrength && hasEnd)   return 'hybrid_strength';
+
+  // Single goals
+  if (hasFat)      return 'cut';
+  if (hasMuscle)   return 'muscle';
+  if (hasStrength) return 'strength';
+  if (hasEnd)      return 'endurance';
+  return 'maintain';
+}
+
+// Calorie and protein targets per combo key.
+// multiplier applied to TDEE estimate (weight_kg * 24).
+// proteinPerKg is grams of protein per kg bodyweight.
+export const GOAL_COMBO_CALORIES = {
+  cut:               { multiplier: 0.80, proteinPerKg: 2.2 }, // -20% deficit, high protein to preserve muscle
+  muscle:            { multiplier: 1.15, proteinPerKg: 2.0 }, // +15% surplus
+  strength:          { multiplier: 1.10, proteinPerKg: 1.8 }, // +10% surplus
+  endurance:         { multiplier: 1.00, proteinPerKg: 1.6 }, // maintenance
+  maintain:          { multiplier: 1.00, proteinPerKg: 1.6 }, // maintenance
+  recomp:            { multiplier: 0.95, proteinPerKg: 2.4 }, // -5% deficit, highest protein (muscle building in deficit)
+  cut_strength:      { multiplier: 0.88, proteinPerKg: 2.2 }, // -12% deficit, strength preserved via high protein
+  cut_endurance:     { multiplier: 0.85, proteinPerKg: 2.0 }, // -15% deficit, cardio drives fat loss
+  powerbuilding:     { multiplier: 1.12, proteinPerKg: 2.0 }, // +12% surplus for strength + size
+  hybrid_muscle:     { multiplier: 1.08, proteinPerKg: 2.0 }, // +8% (interference effect reduces efficiency)
+  hybrid_strength:   { multiplier: 1.05, proteinPerKg: 1.8 }, // +5% small surplus, strength focus
+  powerbuilding_cut: { multiplier: 0.90, proteinPerKg: 2.2 }, // -10% deficit, strength first
+  athletic_recomp:   { multiplier: 0.97, proteinPerKg: 2.4 }, // -3% (near maintenance), all qualities
+  athletic_cut:      { multiplier: 0.88, proteinPerKg: 2.0 }, // -12% deficit, athletic performance preserved
+  athletic_bulk:     { multiplier: 1.08, proteinPerKg: 2.0 }, // +8% surplus, concurrent training
+};
+
 function getGoalKey(goals = []) {
-  if (goals.includes('gain') || goals.includes('aesthetics')) return 'muscle';
-  if (goals.includes('strength')) return 'strength';
-  if (goals.includes('lose')) return 'lose';
-  if (goals.includes('endurance')) return 'endurance';
-  if (goals.includes('maintain')) return 'maintain';
-  return 'default';
+  return resolveGoalCombo(goals);
 }
 
 // Get ranked splits for a given days + goals combination
@@ -623,6 +838,7 @@ function buildExercise(patternKey, equipment, overrides = {}) {
     early_rpe: overrides.early_rpe || 7,
     last_rpe: overrides.last_rpe || 9,
     stretch_position: ex.stretch_position,
+    load_position: ex.load_position || null,
     research_note: ex.research_note,
     study: ex.study || null,
     cues: ex.cues,
@@ -735,6 +951,158 @@ export const GOAL_PROFILES = {
     prioritiseIsolation: false,
     cardioNote: '2–3 moderate cardio sessions/week supports cardiovascular health alongside lifting.',
   },
+
+  // ── Combination goal profiles ──────────────────────────────────────────────
+  recomp: {
+    label: 'Body recomposition',
+    description: 'Build muscle and lose fat simultaneously in a slight deficit with very high protein. Slower than a dedicated bulk or cut — but progress moves in both directions at once.',
+    compoundReps: '6–12',
+    isolationReps: '10–15',
+    compoundSets: 3,
+    isolationSets: 3,
+    compoundRPE: 7,
+    lastSetRPE: 9,
+    restCompound: '2 min',
+    restIsolation: '90 sec',
+    volumeMultiplier: 0.9,
+    prioritiseIsolation: true,
+    cardioNote: '1–2 cardio sessions/week. Keep intensity moderate — high-intensity cardio in a deficit increases muscle loss risk.',
+  },
+  cut_strength: {
+    label: 'Strength-focused cut',
+    description: 'Preserve hard-earned strength while dropping body fat. Heavier loads, fewer sets — intensity stays high, total volume reduces.',
+    compoundReps: '4–8',
+    isolationReps: '8–12',
+    compoundSets: 4,
+    isolationSets: 2,
+    compoundRPE: 8,
+    lastSetRPE: 10,
+    restCompound: '2–3 min',
+    restIsolation: '90 sec',
+    volumeMultiplier: 0.80,
+    prioritiseIsolation: false,
+    cardioNote: '2–3 cardio sessions/week. Separate from lifting by at least 6 hours to protect strength performance.',
+  },
+  cut_endurance: {
+    label: 'Endurance cut',
+    description: 'Lose fat while improving cardiovascular capacity. High-rep resistance work complements dedicated cardio as the primary fat loss driver.',
+    compoundReps: '12–20',
+    isolationReps: '15–25',
+    compoundSets: 3,
+    isolationSets: 2,
+    compoundRPE: 6,
+    lastSetRPE: 8,
+    restCompound: '45–60 sec',
+    restIsolation: '30–45 sec',
+    volumeMultiplier: 0.85,
+    prioritiseIsolation: false,
+    cardioNote: '4–5 cardio sessions/week is the primary driver. Resistance training preserves muscle during the deficit.',
+  },
+  powerbuilding: {
+    label: 'Powerbuilding',
+    description: 'Maximise strength on the big lifts while building significant muscle mass. Heavy compound work paired with higher-rep accessory work.',
+    compoundReps: '3–8',
+    isolationReps: '8–15',
+    compoundSets: 5,
+    isolationSets: 3,
+    compoundRPE: 8,
+    lastSetRPE: 9,
+    restCompound: '3–4 min',
+    restIsolation: '90 sec–2 min',
+    volumeMultiplier: 1.05,
+    prioritiseIsolation: true,
+    cardioNote: '1–2 low-intensity cardio sessions/week (GPP). Avoid high-intensity cardio — it compromises recovery for heavy compound work.',
+  },
+  hybrid_muscle: {
+    label: 'Muscle + endurance',
+    description: 'Build muscle while maintaining or improving cardiovascular fitness. Interference effect is real — manage it with session timing, adequate sleep, and high protein.',
+    compoundReps: '8–15',
+    isolationReps: '10–20',
+    compoundSets: 3,
+    isolationSets: 3,
+    compoundRPE: 7,
+    lastSetRPE: 9,
+    restCompound: '90 sec–2 min',
+    restIsolation: '60–90 sec',
+    volumeMultiplier: 0.95,
+    prioritiseIsolation: true,
+    cardioNote: '2–3 cardio sessions/week. Separate lifting and cardio by 6+ hours. Prioritise sleep and protein to offset the interference effect (Wilson et al., 2012).',
+  },
+  hybrid_strength: {
+    label: 'Strength + endurance',
+    description: 'Build maximal strength while maintaining cardiovascular fitness. Heavy compounds prioritised — cardio kept separate to minimise interference on strength output.',
+    compoundReps: '4–8',
+    isolationReps: '8–12',
+    compoundSets: 4,
+    isolationSets: 2,
+    compoundRPE: 8,
+    lastSetRPE: 10,
+    restCompound: '2–4 min',
+    restIsolation: '90 sec',
+    volumeMultiplier: 0.85,
+    prioritiseIsolation: false,
+    cardioNote: '2–3 cardio sessions/week strictly separate from lifting (6+ hours). High-intensity cardio on the same day as heavy lifting acutely reduces strength output.',
+  },
+  powerbuilding_cut: {
+    label: 'Powerbuilding cut',
+    description: 'Drop body fat while maintaining strength and muscle mass. Compounds stay heavy — isolation volume is the first thing to reduce when deficit fatigue accumulates.',
+    compoundReps: '4–8',
+    isolationReps: '8–12',
+    compoundSets: 4,
+    isolationSets: 2,
+    compoundRPE: 8,
+    lastSetRPE: 10,
+    restCompound: '2–3 min',
+    restIsolation: '90 sec',
+    volumeMultiplier: 0.85,
+    prioritiseIsolation: false,
+    cardioNote: '2–3 cardio sessions/week at low-to-moderate intensity. High-intensity cardio combined with heavy lifting in a deficit accelerates overtraining.',
+  },
+  athletic_recomp: {
+    label: 'Athletic recomposition',
+    description: 'Lose fat, build muscle, and improve athleticism near maintenance calories. The slowest path — but all qualities develop in parallel. Demands excellent nutrition and sleep.',
+    compoundReps: '8–15',
+    isolationReps: '10–15',
+    compoundSets: 3,
+    isolationSets: 2,
+    compoundRPE: 7,
+    lastSetRPE: 8,
+    restCompound: '90 sec',
+    restIsolation: '60 sec',
+    volumeMultiplier: 0.9,
+    prioritiseIsolation: false,
+    cardioNote: '3–4 conditioning sessions/week. Prioritise sleep, high protein, and session quality over quantity — this is a complex concurrent training goal.',
+  },
+  athletic_cut: {
+    label: 'Athletic cut',
+    description: 'Lose fat while maintaining strength and athletic performance. Moderate deficit, heavy compounds, frequent cardio — the deficit and cardio drive fat loss, lifting preserves the rest.',
+    compoundReps: '5–10',
+    isolationReps: '10–15',
+    compoundSets: 3,
+    isolationSets: 2,
+    compoundRPE: 7,
+    lastSetRPE: 9,
+    restCompound: '2 min',
+    restIsolation: '60–90 sec',
+    volumeMultiplier: 0.82,
+    prioritiseIsolation: false,
+    cardioNote: '3–4 cardio sessions/week. Alternate high and low intensity to balance fat loss with athletic performance retention.',
+  },
+  athletic_bulk: {
+    label: 'Athletic bulk',
+    description: 'Build muscle and strength while improving cardiovascular fitness. Slight surplus supports all three adaptations — gains are slower than a pure bulk but you maintain athletic capacity throughout.',
+    compoundReps: '6–12',
+    isolationReps: '10–15',
+    compoundSets: 4,
+    isolationSets: 3,
+    compoundRPE: 7,
+    lastSetRPE: 9,
+    restCompound: '2–3 min',
+    restIsolation: '90 sec',
+    volumeMultiplier: 0.95,
+    prioritiseIsolation: true,
+    cardioNote: '2–3 cardio sessions/week. Keep them aerobic-dominant — high-intensity cardio competes with resistance training recovery and limits the surplus benefit.',
+  },
 };
 
 // Milestone thresholds — when these are hit, trigger the goal agenda
@@ -760,12 +1128,8 @@ export const GOAL_MILESTONES = {
 };
 
 function getGoalProfile(goals = []) {
-  if (goals.includes('strength')) return GOAL_PROFILES.strength;
-  if (goals.includes('lose')) return GOAL_PROFILES.lose;
-  if (goals.includes('aesthetics')) return GOAL_PROFILES.aesthetics;
-  if (goals.includes('endurance')) return GOAL_PROFILES.endurance;
-  if (goals.includes('maintain')) return GOAL_PROFILES.maintain;
-  return GOAL_PROFILES.muscle;
+  const combo = resolveGoalCombo(goals);
+  return GOAL_PROFILES[combo] || GOAL_PROFILES.muscle;
 }
 
 // ─── PLATEAU RESEARCH ────────────────────────────────────────────────────────
@@ -1414,48 +1778,155 @@ export function getNextRotationExercise(patternKey, currentExerciseId, equipment
 }
 
 // ─── CONTRAINDICATION FILTERS ─────────────────────────────────────────────────
-// Hard filters block an exercise entirely (safety).
-// Soft filters deprioritise it (preference / discomfort) — it stays available
-// as an explicit choice but won't be auto-assigned.
+// Hard filters: exercise is unsafe — replace with a safe substitute from PATTERN_SUBSTITUTES.
+// Soft filters: exercise is risky — keep but flag with a warning note.
+//
+// Conditions vocabulary (matches profile.health_conditions values):
+//   shoulder_impingement, ac_joint_injury, rotator_cuff_tear, pec_tear
+//   shoulder_instability, bicep_tendinopathy
+//   cervical_disc_herniation, scoliosis, sciatica
+//   lateral_epicondylitis, medial_epicondylitis, elbow_tendinopathy
+//   lower_back_disc_herniation, spondylolisthesis
+//   bilateral_hip_replacement, hip_labral_tear, inguinal_hernia
+//   knee_replacement, severe_knee_osteoarthritis, patellofemoral_syndrome
+//   proximal_hamstring_tendinopathy, achilles_tendinopathy, plantar_fasciitis
+//   carpal_tunnel_syndrome, wrist_injury
+//   osteoporosis
 
 export const CONTRAINDICATION_MAP = {
-  // patternKey → { conditions: [], hard: bool, reason: string }
   chest_horizontal_push: [
-    { conditions: ['shoulder_impingement', 'ac_joint_injury'], hard: true, reason: 'Horizontal pressing loads the AC joint and anterior capsule. Avoid until cleared by a physio.' },
-    { conditions: ['pec_tear'], hard: true, reason: 'Horizontal pressing contraindicated with pec tear history until fully healed.' },
+    { conditions: ['shoulder_impingement', 'ac_joint_injury', 'shoulder_instability'], hard: true, reason: 'Horizontal pressing loads the AC joint and anterior capsule. Replaced with chest isolation (fly) which keeps the shoulder in a safer position.' },
+    { conditions: ['pec_tear'], hard: true, reason: 'Horizontal pressing is contraindicated with pec tear history until fully cleared by a physio.' },
+    { conditions: ['wrist_injury', 'carpal_tunnel_syndrome'], hard: false, reason: 'Pressing with a fixed grip stresses the wrist. Use a neutral or cambered grip, reduce load, and stop if wrist pain develops.' },
   ],
   chest_incline_push: [
-    { conditions: ['shoulder_impingement'], hard: false, reason: 'Incline pressing places the shoulder in a more impingement-prone position. Monitor for pain and reduce ROM if needed.' },
+    { conditions: ['shoulder_impingement', 'ac_joint_injury'], hard: false, reason: 'Incline pressing is more impingement-prone than flat pressing. Reduce load, avoid locking out overhead, and stop if sharp pain occurs.' },
+    { conditions: ['rotator_cuff_tear'], hard: true, reason: 'Incline pressing places the rotator cuff under load at a vulnerable angle. Replaced with safer chest isolation work.' },
+  ],
+  chest_decline: [
+    { conditions: ['shoulder_impingement', 'ac_joint_injury', 'pec_tear'], hard: true, reason: 'Dips and decline pressing load the pec tendon and anterior capsule at the bottom position. Replaced with isolation work.' },
+  ],
+  chest_isolation: [
+    { conditions: ['pec_tear'], hard: false, reason: 'Fly movements stretch the pec under load — use a reduced range of motion and stop well before any stretch-induced pain.' },
+  ],
+  triceps: [
+    { conditions: ['lateral_epicondylitis', 'elbow_tendinopathy'], hard: false, reason: 'Tricep extensions (especially overhead) stress the lateral elbow. Prefer pushdowns with light bands at a limited range. Avoid dips.' },
+    { conditions: ['shoulder_impingement', 'ac_joint_injury'], hard: false, reason: 'Dips and behind-head extensions load the shoulder in a compromised position. Use cable pushdowns or machine extensions only.' },
   ],
   shoulders_vertical_push: [
-    { conditions: ['shoulder_impingement', 'rotator_cuff_tear', 'ac_joint_injury'], hard: true, reason: 'Overhead pressing is contraindicated with active shoulder pathology. Substitute with lateral raises and rear delt work.' },
-    { conditions: ['cervical_disc_herniation'], hard: false, reason: 'Axial loading overhead may aggravate cervical disc. Use seated supported OHP or cable alternatives.' },
+    { conditions: ['shoulder_impingement', 'rotator_cuff_tear', 'ac_joint_injury', 'shoulder_instability'], hard: true, reason: 'Overhead pressing is contraindicated with shoulder pathology. Replaced with lateral raises which train the delts without overhead loading.' },
+    { conditions: ['cervical_disc_herniation'], hard: false, reason: 'Overhead pressing creates axial spinal load that can aggravate cervical discs. Use a seated, supported, or landmine press variation.' },
+    { conditions: ['scoliosis'], hard: false, reason: 'Heavy overhead pressing creates axial spinal load on an asymmetric spine. Use seated dumbbell press or landmine press to reduce compressive forces.' },
+    { conditions: ['osteoporosis'], hard: false, reason: 'Heavy overhead pressing with osteoporosis increases vertebral fracture risk under axial load. Use lighter loads with controlled technique and avoid loaded behind-the-neck movements.' },
+    { conditions: ['wrist_injury', 'carpal_tunnel_syndrome'], hard: false, reason: 'Use a neutral grip (dumbbells or landmine) and reduce pressing load to limit wrist extension stress.' },
   ],
   back_vertical_pull: [
-    { conditions: ['shoulder_impingement'], hard: false, reason: 'Lat pulldowns involve shoulder internal rotation under load — monitor for impingement symptoms.' },
+    { conditions: ['shoulder_impingement', 'ac_joint_injury'], hard: false, reason: 'Lat pulldowns involve internal rotation under load — use a wide neutral grip and avoid behind-the-neck variations. Switch to rows if pain persists.' },
+    { conditions: ['bicep_tendinopathy'], hard: false, reason: 'Heavy pulling loads the long head of the bicep. Use a machine pulldown with a neutral grip and reduce range if pain occurs at the top stretch.' },
+  ],
+  back_horizontal_pull: [
+    { conditions: ['lower_back_disc_herniation', 'spondylolisthesis'], hard: false, reason: 'Bent-over rows require significant lumbar stability under load. Use a chest-supported row, seated cable row, or machine row instead — these eliminate spinal shear.' },
+    { conditions: ['scoliosis', 'sciatica'], hard: false, reason: 'Bent-over rows create asymmetric lumbar loading. Use chest-supported or seated cable rows to remove spinal shear.' },
+  ],
+  back_inner: [
+    { conditions: ['shoulder_impingement', 'ac_joint_injury', 'shoulder_instability'], hard: false, reason: 'Wide-grip rows with flared elbows place the shoulder in a vulnerable position at end-range. Reduce load and range of motion, or substitute a neutral-grip chest-supported row.' },
+    { conditions: ['lateral_epicondylitis', 'elbow_tendinopathy'], hard: false, reason: 'Wide overhand grip rows stress the lateral elbow. Use a neutral grip and reduce load.' },
+    { conditions: ['wrist_injury', 'carpal_tunnel_syndrome'], hard: false, reason: 'Overhand grip rows stress the wrist in extension. Switch to a neutral grip handle.' },
   ],
   squat_pattern: [
-    { conditions: ['knee_replacement', 'severe_knee_osteoarthritis'], hard: true, reason: 'Deep squat loading contraindicated. Substitute with leg press at limited ROM.' },
-    { conditions: ['lower_back_disc_herniation'], hard: false, reason: 'High-bar back squat increases lumbar compressive load. Prefer goblet squat, SSB, or leg press.' },
+    { conditions: ['knee_replacement', 'severe_knee_osteoarthritis'], hard: true, reason: 'Deep squat loading is contraindicated. Replaced with hip hinge work (deadlifts, RDLs) which keeps knee angle shallow.' },
+    { conditions: ['patellofemoral_syndrome'], hard: false, reason: 'Deep squats compress the patellofemoral joint. Limit depth to pain-free range, avoid front-loaded squats, and prefer hip-hinge-dominant movements.' },
+    { conditions: ['lower_back_disc_herniation'], hard: false, reason: 'High-bar back squat increases lumbar compressive load. Prefer goblet squat, trap bar, or leg press at moderate depth.' },
+    { conditions: ['scoliosis'], hard: false, reason: 'Barbell back squat creates asymmetric axial compression on a curved spine. Prefer goblet squat, safety bar, or leg press to distribute load more evenly.' },
+    { conditions: ['hip_labral_tear'], hard: false, reason: 'Deep squat may impinge the labrum at full hip flexion. Limit depth to pain-free range and avoid excessive forward lean.' },
+    { conditions: ['inguinal_hernia'], hard: false, reason: 'Heavy squats create significant intra-abdominal pressure. Use moderate loads, avoid the Valsalva maneuver, and consult your surgeon before heavy loading.' },
+  ],
+  quad_isolation: [
+    { conditions: ['knee_replacement', 'severe_knee_osteoarthritis', 'patellofemoral_syndrome'], hard: true, reason: 'Leg extensions load the patellofemoral joint directly and are contraindicated with knee pathology. Slot removed — additional hip hinge volume added instead.' },
   ],
   hip_hinge: [
-    { conditions: ['lower_back_disc_herniation', 'spondylolisthesis'], hard: false, reason: 'Conventional deadlift maximises lumbar shear. Prefer trap bar deadlift, Romanian DL, or 45° back extension.' },
-    { conditions: ['bilateral_hip_replacement'], hard: true, reason: 'Deep hip hinge loading contraindicated. Consult physio for hip-safe alternatives.' },
+    { conditions: ['lower_back_disc_herniation', 'spondylolisthesis'], hard: false, reason: 'Conventional deadlift maximises lumbar shear forces. Prefer trap bar deadlift, Romanian DL from blocks, or 45° back extension. Avoid conventional pulling from the floor.' },
+    { conditions: ['bilateral_hip_replacement'], hard: true, reason: 'Deep hip hinge loading is contraindicated. Slot removed — consult your physio for a hip-safe alternative.' },
+    { conditions: ['scoliosis', 'sciatica'], hard: false, reason: 'Conventional deadlift creates significant asymmetric spinal load. Prefer trap bar deadlift or Romanian DL which maintains a more neutral spine.' },
+    { conditions: ['inguinal_hernia'], hard: false, reason: 'Heavy deadlifts create significant intra-abdominal pressure (Valsalva). Use lighter loads with controlled breathing and avoid breath-holding under load.' },
+    { conditions: ['hip_labral_tear'], hard: false, reason: 'Deep hip hinge may provoke labral symptoms. Limit range of motion, avoid butt-wink, and stop if clicking or sharp pain occurs.' },
   ],
   hamstring_isolation: [
-    { conditions: ['proximal_hamstring_tendinopathy'], hard: false, reason: 'Avoid high hip-flexion loaded stretches (e.g. Nordic curl) during acute phase. Prefer standing leg curl at neutral hip.' },
+    { conditions: ['proximal_hamstring_tendinopathy'], hard: false, reason: 'High hip-flexion loaded stretches (Nordic curl, lying leg curl at full ROM) aggravate proximal hamstring tendons. Use standing leg curl, keep hip angle neutral, and avoid end-range stretch.' },
+  ],
+  glute_focused: [
+    { conditions: ['bilateral_hip_replacement'], hard: false, reason: 'Hip thrusts and glute bridges load the hip in a position that may stress a hip replacement. Use machine abductions and clamshells — consult your physio.' },
+    { conditions: ['hip_labral_tear'], hard: false, reason: 'Hip thrust end-range extension may provoke labral symptoms. Monitor for clicking or groin pain; reduce range of motion if needed.' },
+  ],
+  upper_traps: [
+    { conditions: ['cervical_disc_herniation'], hard: false, reason: 'Heavy shrugs create axial cervical loading. Keep weight moderate and avoid sudden high-speed movements.' },
+  ],
+  biceps: [
+    { conditions: ['medial_epicondylitis', 'elbow_tendinopathy'], hard: false, reason: 'Supinated curls aggravate the medial elbow. Use a neutral hammer grip exclusively and reduce load until pain-free.' },
+    { conditions: ['bicep_tendinopathy'], hard: false, reason: 'Loading the bicep at full stretch (incline or Bayesian curl) stresses the long head tendon. Prefer preacher or concentration curls at a shortened position.' },
   ],
   calves: [
-    { conditions: ['achilles_tendinopathy'], hard: false, reason: 'Calf raises load the Achilles. Reduce ROM (avoid deep stretch position during acute phase) and build eccentrically.' },
+    { conditions: ['achilles_tendinopathy'], hard: false, reason: 'Calf raises load the Achilles tendon. Avoid the deep stretch at the bottom during acute phase. Build eccentrically (slow lowering only). Consult a physio before returning to full range.' },
+    { conditions: ['plantar_fasciitis'], hard: false, reason: 'Calf raises load the plantar fascia via the windlass mechanism. Avoid deep heel drop, keep range of motion pain-free, and prefer seated over standing variations during the acute phase.' },
+  ],
+  forearms: [
+    { conditions: ['carpal_tunnel_syndrome', 'wrist_injury'], hard: false, reason: 'Wrist curls and extensions stress the carpal tunnel. Use neutral-grip variations and keep wrist in a neutral position. Stop if tingling or numbness develops.' },
+    { conditions: ['lateral_epicondylitis'], hard: false, reason: 'Wrist extension exercises aggravate lateral epicondylitis (tennis elbow). Avoid wrist extension under load. Focus on eccentric flexion only.' },
   ],
 };
 
+// When a pattern is hard-blocked, substitute with this pattern if available.
+// null = no substitute — remove the exercise slot entirely.
+const PATTERN_SUBSTITUTES = {
+  chest_horizontal_push: 'chest_isolation',       // bench blocked → fly (shoulder-safe)
+  chest_incline_push: null,                        // no safe sub for upper chest with shoulder issues
+  chest_decline: 'chest_isolation',               // dips blocked → fly
+  shoulders_vertical_push: 'shoulders_side_delt', // OHP blocked → lateral raises
+  squat_pattern: 'hip_hinge',                     // knee squat blocked → deadlift/RDL
+  quad_isolation: null,                           // knee isolation blocked → skip
+  hip_hinge: null,                                // back blocked → skip (nothing safe enough)
+  back_vertical_pull: 'back_horizontal_pull',     // lat pulldown blocked → row
+};
+
+// Build a minimal exercise object from a pattern + raw exercise, matching the
+// structure expected by WorkoutExecutionScreen. Used for contraindication substitutes.
+function buildSubstituteExercise(patternKey, rawEx, originalSets, originalRpe) {
+  const pattern = MOVEMENT_PATTERNS[patternKey];
+  if (!pattern || !rawEx) return null;
+  return {
+    id: rawEx.id,
+    name: rawEx.name,
+    pattern: patternKey,
+    muscles: pattern.muscles.join(', '),
+    category: pattern.label.split(' — ')[1] || pattern.label,
+    sets: originalSets || rawEx.sets,
+    reps: rawEx.reps,
+    rest: rawEx.rest,
+    early_rpe: originalRpe?.early || 7,
+    last_rpe: originalRpe?.last || 9,
+    stretch_position: rawEx.stretch_position,
+    load_position: rawEx.load_position || null,
+    research_note: rawEx.research_note,
+    cues: rawEx.cues,
+    progression_path: rawEx.progression_path || null,
+    sub1: null, sub2: null, sub3: null,
+    sub1_id: null, sub2_id: null, sub3_id: null,
+    sub1_equipment: null, sub2_equipment: null,
+    equipment_required: rawEx.equipment,
+    optional: false,
+    contraindication_substitute: true,
+  };
+}
+
 // Filter a program's exercises based on the user's health conditions.
-// Returns the program with hard-contraindicated exercises removed (or flagged if soft).
+// Hard-blocked exercises are replaced with safe substitutes where possible.
+// Soft-blocked exercises are kept and flagged with a warning note.
 // profile.health_conditions: string[] — e.g. ['shoulder_impingement', 'knee_replacement']
 export function applyContraindicationFilters(program, profile) {
   const conditions = profile.health_conditions || [];
   if (conditions.length === 0) return program;
+
+  const equipment = normalizeEquipment(profile.equipment || []);
 
   const days = program.days.map(day => ({
     ...day,
@@ -1466,9 +1937,24 @@ export function applyContraindicationFilters(program, profile) {
         if (matched.length === 0) return ex;
 
         const hardBlock = matched.find(r => r.hard);
-        if (hardBlock) return null; // remove entirely
+        if (hardBlock) {
+          // Try to find a safe substitute in a related pattern
+          const subPatternKey = PATTERN_SUBSTITUTES[ex.pattern];
+          if (subPatternKey) {
+            const subRules = CONTRAINDICATION_MAP[subPatternKey] || [];
+            const subBlocked = subRules.some(r => r.hard && r.conditions.some(c => conditions.includes(c)));
+            if (!subBlocked) {
+              const candidates = getAllExercisesForPattern(subPatternKey, equipment);
+              const best = candidates.find(e => e.primary_alternative) || candidates[0];
+              if (best) {
+                return buildSubstituteExercise(subPatternKey, best, ex.sets, { early: ex.early_rpe, last: ex.last_rpe });
+              }
+            }
+          }
+          return null; // no substitute available — remove slot
+        }
 
-        // Soft block — keep but flag
+        // Soft block — keep but flag with the reason
         const softNote = matched.map(r => r.reason).join(' ');
         return { ...ex, contraindication_note: softNote, contraindication_level: 'soft' };
       })
@@ -1625,12 +2111,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body A',
           focus: 'Quad + Chest + Back focus',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, early_rpe: compoundRPE }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
+            be('glute_focused', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1638,12 +2128,17 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body B',
           focus: 'Hip hinge + Shoulders + Vertical pull focus',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, early_rpe: compoundRPE }),
-            be('back_vertical_pull', { reps: compoundReps }),
-            be('shoulders_vertical_push', { reps: compoundReps }),
-            be('quad_isolation', { sets: isolationSets }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            be('back_vertical_pull', { reps: compoundReps, sets: compoundSets }),
+            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
       ];
@@ -1657,12 +2152,17 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body A',
           focus: 'Strength focus — lower reps on compounds',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
+            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
+            be('core', { sets: 3, reps: '10–15', prefer: 'cable_crunch' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1670,12 +2170,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body B',
           focus: 'Hypertrophy focus — moderate reps',
           exercises: [
-            be('hip_hinge', { reps: '8–12' }),
-            be('back_vertical_pull', { reps: '8–12' }),
-            be('shoulders_vertical_push', { reps: '8–12' }),
+            be('hip_hinge', { reps: '8–12', sets: compoundSets }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            be('back_vertical_pull', { reps: '8–12', sets: compoundSets }),
+            be('shoulders_vertical_push', { reps: '8–12', sets: compoundSets }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets }),
+            be('biceps', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1683,11 +2187,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body C',
           focus: 'Volume focus — isolation and weak points',
           exercises: [
-            be('squat_pattern', { reps: '8–12' }),
-            be('chest_incline_push', { reps: '8–12' }),
-            be('back_horizontal_pull', { reps: '10–15' }),
+            be('squat_pattern', { reps: '8–12', sets: 3 }),
+            be('chest_incline_push', { reps: '8–12', sets: 3 }),
+            be('back_vertical_pull', { reps: '10–15', sets: 3 }),
+            be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
             be('hip_hinge', { sets: 2, reps: '10–15' }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
             be('rear_delt', { sets: isolationSets }),
+            be('shoulders_side_delt', { sets: isolationSets }),
+            be('triceps', { sets: isolationSets }),
             be('calves', { sets: isolationSets }),
           ].filter(Boolean),
         },
@@ -1700,15 +2209,17 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'upper_a',
           name: 'Upper A — Push + Pull Strength',
-          focus: 'Heavy horizontal press and row, OHP, overhead tricep extension',
+          focus: 'Heavy horizontal press and row, OHP, side delts, overhead tricep extension',
           exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
+            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('biceps', { sets: 3, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
-            be('triceps', { sets: 3, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
+            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1716,28 +2227,35 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower A — Quad Focus',
           focus: 'Heavy squat, leg extension reclined 40°, seated curl, calves',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('hip_hinge', { reps: '6–10', sets: 3 }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: 3, reps: '10–15', prefer: 'seated_leg_curl' }),
-            be('calves', { sets: 4 }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
           id: 'upper_b',
           name: 'Upper B — Hypertrophy + Arms',
-          focus: 'Incline press, vertical pull, lower chest, side delts, arms',
+          focus: 'Incline press, vertical pull, lower chest, side delts, rear delts, arms',
           exercises: [
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_vertical_pull', { reps: '8–12', sets: 4 }),
-            be('chest_isolation', { sets: 2, reps: '12–15' }),
-            be('chest_decline', { sets: 2, reps: '12–15' }),
-            be('shoulders_side_delt', { sets: 4, reps: '15–20' }),
+            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
+            be('chest_isolation', { sets: isolationSets, reps: isolationReps }),
+            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '15–20' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
-            be('upper_traps', { sets: 2, reps: '12–15' }),
-            be('biceps', { sets: 3, reps: '10–15', prefer: 'preacher_curl' }),
-            be('triceps', { sets: 3, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'preacher_curl' }),
+            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
+            be('core', { sets: isolationSets }),
+            be('core', { sets: 3, reps: '8–12', prefer: 'ab_wheel_rollout' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1745,11 +2263,14 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower B — Posterior Chain',
           focus: 'RDL, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('glute_focused', { sets: 3, reps: '15–20' }),
-            be('hamstring_isolation', { sets: 3, reps: '10–15', prefer: 'lying_leg_curl' }),
-            be('calves', { sets: 4 }),
+            be('quad_isolation', { sets: isolationSets }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
@@ -1777,21 +2298,27 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Chest + Triceps',
           focus: 'Full chest development + tricep isolation',
           exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('chest_isolation', { sets: 3, reps: '12–15' }),
-            be('triceps', { sets: 4, reps: '10–15' }),
+            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
+            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
+            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'overhead_tricep_extension' }),
+            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
           ].filter(Boolean),
         },
         {
           id: 'back_bi',
           name: 'Back + Biceps',
-          focus: 'Lat width + back thickness + bicep volume',
+          focus: 'Lat width + back thickness + side delt frequency + bicep volume',
           exercises: [
-            be('back_vertical_pull', { reps: '6–10', sets: 4 }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
+            be('back_vertical_pull', { reps: '6–10', sets: compoundSets }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
+            be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
             be('rear_delt', { sets: isolationSets }),
-            be('biceps', { sets: 4, reps: '10–15' }),
+            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
+            be('biceps', { sets: isolationSets, reps: '10–15' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'preacher_curl' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1799,10 +2326,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Shoulders + Abs',
           focus: 'Full shoulder development + core',
           exercises: [
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: 4, reps: '12–20' }),
+            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
             be('rear_delt', { sets: isolationSets }),
-            be('core', { sets: 4 }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
@@ -1810,12 +2340,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Legs',
           focus: 'Complete lower body — quads, hamstrings, glutes, calves',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('hip_hinge', { reps: '8–12', sets: 3 }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: 3, reps: '10–15' }),
+            be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
-            be('calves', { sets: 4 }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
       ];
@@ -1827,28 +2361,33 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'push',
           name: 'Push — Chest / Shoulders / Triceps',
-          focus: 'Heavy chest + OHP, side delts, lower chest, overhead tricep extension',
+          focus: 'Heavy chest + OHP, side delts, lower chest, overhead extension + pushdown',
           exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('chest_decline', { sets: 2, reps: '12–15' }),
+            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: 4, reps: '12–20' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('triceps', { sets: 3, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
+            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
           ].filter(Boolean),
         },
         {
           id: 'pull',
           name: 'Pull — Back / Biceps',
-          focus: 'Vertical + horizontal pulls, rear delts, incline curl + Bayesian curl',
+          focus: 'Vertical + horizontal pulls, inner back, rear delts, face pull, incline curl + hammer curl',
           exercises: [
             be('back_vertical_pull', { reps: '6–10', sets: 4 }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
+            be('back_inner', { reps: '10–15', sets: 3 }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
-            be('upper_traps', { sets: 2, reps: '12–15', prefer: 'barbell_shrug' }),
-            be('biceps', { sets: 3, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15', prefer: 'barbell_shrug' }) : null,
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
             be('biceps', { sets: 2, reps: isolationReps, prefer: 'standing_hammer_curl' }),
+            be('core', { sets: isolationSets }),
+            be('core', { sets: 3, reps: '8–12', prefer: 'ab_wheel_rollout' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1856,25 +2395,30 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Legs',
           focus: 'Squat, RDL, leg extension reclined, seated curl, calves',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('hip_hinge', { reps: '8–12', sets: 3 }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: 3, prefer: 'seated_leg_curl' }),
-            be('calves', { sets: 4 }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
           id: 'upper',
           name: 'Upper — Full Upper Body',
-          focus: 'Incline chest, vertical pull, chest isolation, side delts, arms volume',
+          focus: 'Incline chest, vertical pull, chest isolation, side delts, rear delts, arms volume',
           exercises: [
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_vertical_pull', { reps: '8–12', sets: 4 }),
-            be('chest_isolation', { sets: 2, reps: '12–15' }),
-            be('shoulders_side_delt', { sets: 3, reps: '15–20' }),
-            be('biceps', { sets: 3, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
-            be('triceps', { sets: 3, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
+            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '15–20' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
+            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1882,11 +2426,14 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower — Posterior Chain Focus',
           focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('glute_focused', { sets: 3, reps: '15–20' }),
-            be('hamstring_isolation', { sets: 3, prefer: 'lying_leg_curl' }),
-            be('calves', { sets: 4 }),
+            be('glute_focused', { sets: isolationSets, reps: '10–15', prefer: 'hip_thrust' }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
@@ -1912,26 +2459,31 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'push_a',
           name: 'Push A — Chest Focus',
-          focus: 'Heavy chest, lower chest, side delts, overhead tricep extension',
+          focus: 'Incline press, chest isolation, side delts x2, overhead tricep extension',
           exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('chest_decline', { sets: 2, reps: '12–15' }),
-            be('chest_isolation', { sets: 2, reps: '12–15' }),
+            be('chest_incline_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
+            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
             be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: 3, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
+            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
+            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
           ].filter(Boolean),
         },
         {
           id: 'pull_a',
           name: 'Pull A — Back Focus',
-          focus: 'Heavy vertical + horizontal pull, Y raise, incline curl',
+          focus: 'Heavy vertical + horizontal pull, inner back, Y raise, face pull, incline curl',
           exercises: [
             be('back_vertical_pull', { reps: '5–8', sets: 4 }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
+            be('back_inner', { reps: '10–15', sets: 3 }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
-            be('upper_traps', { sets: 2, reps: '12–15' }),
-            be('biceps', { sets: 3, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
+            be('core', { sets: isolationSets }),
+            be('core', { sets: 3, reps: '10–15', prefer: 'cable_crunch' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1939,36 +2491,41 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Legs A — Quad Focus',
           focus: 'Heavy squat, leg extension reclined, seated curl, calves',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('hip_hinge', { reps: '8–10', sets: 3 }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: 2, prefer: 'seated_leg_curl' }),
-            be('calves', { sets: 4 }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
           id: 'push_b',
           name: 'Push B — Shoulder Focus',
-          focus: 'OHP, lateral raises, Lu raise, face pull, pushdown',
+          focus: 'OHP, lateral raises, incline press, overhead extension + pushdown',
           exercises: [
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: 4, reps: '12–20' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('shoulders_side_delt', { sets: 3, reps: '12–20' }),
             be('chest_incline_push', { reps: '8–12', sets: 2 }),
-            be('triceps', { sets: 3, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
+            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'overhead_tricep_extension' }),
+            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
           ].filter(Boolean),
         },
         {
           id: 'pull_b',
           name: 'Pull B — Bicep Focus',
-          focus: 'Vertical pull volume, face pull, Bayesian curl + hammer curl',
+          focus: 'Vertical pull volume, inner back, face pull, reverse pec deck, Bayesian curl + hammer curl',
           exercises: [
             be('back_vertical_pull', { reps: '8–12', sets: 4 }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
+            be('back_inner', { reps: '12–15', sets: 3 }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
-            be('biceps', { sets: 3, reps: '10–15', prefer: 'bayesian_cable_curl' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            be('biceps', { sets: isolationSets, reps: '10–15', prefer: 'bayesian_cable_curl' }),
             be('biceps', { sets: 2, reps: '10–15', prefer: 'standing_hammer_curl' }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -1976,11 +2533,15 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Legs B — Posterior Chain Focus',
           focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('glute_focused', { sets: 3, reps: '15–20' }),
-            be('hamstring_isolation', { sets: 3, prefer: 'lying_leg_curl' }),
-            be('calves', { sets: 4 }),
+            be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
       ];
@@ -1994,12 +2555,18 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body',
           focus: 'Full body — compounds only, higher intensity',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
+            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
             be('hip_hinge', { reps: compoundReps, sets: 3 }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 2 }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
+            be('shoulders_side_delt', { sets: isolationSets }),
+            be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2008,11 +2575,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Upper body — chest, back, shoulders, arms',
           exercises: [
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
+            be('back_vertical_pull', { reps: '8–12', sets: 4 }),
+            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
             be('chest_isolation', { sets: isolationSets }),
-            be('biceps', { sets: 3, reps: isolationReps }),
-            be('triceps', { sets: 3, reps: isolationReps }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: 2 }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2023,9 +2595,11 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('hip_hinge', { reps: '8–12', sets: 3 }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
-            be('calves', { sets: 4 }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
       ];
@@ -2044,7 +2618,11 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2053,10 +2631,14 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Hip hinge + vertical push/pull focus',
           exercises: [
             be('hip_hinge', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('back_vertical_pull', { reps: '6–10', sets: 3 }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
+            be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('quad_isolation', { sets: isolationSets }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
@@ -2068,9 +2650,14 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
+            be('quad_isolation', { sets: isolationSets }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('rear_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2079,10 +2666,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Posterior chain + arms volume',
           exercises: [
             be('hip_hinge', { reps: '8–12', sets: 3 }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('back_vertical_pull', { reps: '8–12', sets: 3 }),
+            be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
             be('shoulders_side_delt', { sets: isolationSets }),
-            be('triceps', { sets: 3, reps: isolationReps }),
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
@@ -2095,15 +2685,18 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'upper_a',
           name: 'Upper A — Heavy Push + Pull',
-          focus: 'Heavy horizontal press/row, overhead press, overhead tricep extension',
+          focus: 'Heavy horizontal press/row, overhead press, side delts, overhead tricep extension',
           exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
+            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
             be('rear_delt', { sets: 2, reps: '15–20' }),
             be('biceps', { sets: 2, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
             be('triceps', { sets: 2, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2111,10 +2704,11 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower A — Quad Focus',
           focus: 'Heavy squat, leg extension reclined, calves, core',
           exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('hip_hinge', { reps: '6–10', sets: 3 }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: 2, prefer: 'seated_leg_curl' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
             be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
@@ -2122,14 +2716,17 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'upper_b',
           name: 'Upper B — Hypertrophy Volume',
-          focus: 'Incline push, vertical pull, chest isolation, lower chest, pushdowns',
+          focus: 'Incline push, vertical pull, chest isolation, lower chest, rear delts, pushdowns',
           exercises: [
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_vertical_pull', { reps: '8–12', sets: 4 }),
-            be('chest_isolation', { sets: 2, reps: '12–15' }),
-            be('chest_decline', { sets: 2, reps: '12–15' }),
-            be('biceps', { sets: 3, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
-            be('triceps', { sets: 3, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
+            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
+            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
+            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2137,11 +2734,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower B — Posterior Chain',
           focus: 'RDL/deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('hamstring_isolation', { sets: 3, reps: '10–15' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
@@ -2149,13 +2748,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Upper C — Shoulders Specialisation',
           focus: 'Overhead press, lateral raises, Y raise, Lu raise, rear delts, traps',
           exercises: [
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 4, early_rpe: compoundRPE }),
+            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('shoulders_side_delt', { sets: 4, reps: '12–20' }),
             be('rear_delt', { sets: 3, reps: '15–20' }),
+            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
             be('upper_traps', { sets: 3, reps: '12–15' }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
             be('biceps', { sets: 2, reps: isolationReps, prefer: 'standing_hammer_curl' }),
             be('triceps', { sets: 2, reps: isolationReps, prefer: 'ez_bar_skullcrusher' }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2168,7 +2770,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('hamstring_isolation', { sets: isolationSets }),
             be('glute_focused', { sets: isolationSets }),
-            be('calves', { sets: 4 }),
+            be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
@@ -2188,6 +2790,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
+            be('core', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2196,10 +2802,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Hip hinge + vertical pull + triceps',
           exercises: [
             be('hip_hinge', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
+            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('back_vertical_pull', { reps: '6–10', sets: 3 }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
@@ -2210,6 +2819,8 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
+            be('quad_isolation', { sets: isolationSets }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
@@ -2221,9 +2832,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           exercises: [
             be('hip_hinge', { reps: '8–12', sets: 3 }),
             be('back_vertical_pull', { reps: '8–12', sets: 3 }),
+            be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets }),
+            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
@@ -2232,8 +2847,11 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Weak points + isolation',
           exercises: [
             be('squat_pattern', { reps: '10–15', sets: 3 }),
+            be('back_vertical_pull', { reps: '10–15', sets: 3 }),
             be('chest_isolation', { sets: isolationSets }),
             be('rear_delt', { sets: isolationSets }),
+            be('biceps', { sets: 2, reps: isolationReps }),
+            be('triceps', { sets: 2, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
             be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),

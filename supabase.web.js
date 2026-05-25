@@ -25,8 +25,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   global: { fetch: fetchWithTimeout },
 });
 
-// On web, getSession() reads localStorage — no network call, no hang.
-export async function getCurrentUser() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user ?? null;
+// On web, read directly from localStorage — avoids the async initialization
+// race where getSession() returns null before the auth client finishes loading.
+// The Supabase client still uses its own session for request signing (headers).
+const STORAGE_KEY = `sb-${supabaseUrl.match(/\/\/([^.]+)/)?.[1]}-auth-token`;
+
+export function getCurrentUser() {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return Promise.resolve(null);
+    const session = JSON.parse(raw);
+    return Promise.resolve(session?.user ?? null);
+  } catch {
+    return Promise.resolve(null);
+  }
 }

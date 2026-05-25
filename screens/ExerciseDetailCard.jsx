@@ -42,7 +42,6 @@ const C = {
   amber:       '#FBBF24',
   red:         '#F87171',
   blue:        '#60A5FA',
-  purple:      '#A78BFA',
   textPrimary: '#F1F0F5',
   textSecond:  '#8B8A9A',
   textMuted:   '#4A4A5A',
@@ -126,7 +125,7 @@ export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
               bg={diffStyle.bg}
             />
             {exercise.stretch_position && (
-              <Badge label="Stretch loaded" color={C.purple} bg={C.purple + '22'} />
+              <Badge label="Stretch loaded" color={C.amber} bg={C.amber + '22'} />
             )}
             <Badge
               label={`${exercise.progressive_overload} overload`}

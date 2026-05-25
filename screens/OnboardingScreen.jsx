@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GOAL_PARAMETERS } from './scienceEngine';
+import { resolveGoalCombo, GOAL_COMBO_CALORIES } from './programGenerator';
 
 export default function OnboardingScreen({ onComplete, onGoBack }) {
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(1);
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -17,8 +20,13 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
   const [trainingExperience, setTrainingExperience] = useState('');
   const [healthConditions, setHealthConditions] = useState([]);
 
+  const scrollRef = useRef(null);
   const totalSteps = 7;
   const back = () => setStep((s) => s - 1);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [step]);
 
   const handleNext = () => {
     if (step === 1) {
@@ -86,14 +94,10 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
   const healthyHigh = h ? (24.9 * ((h / 100) ** 2)).toFixed(1) : null;
   const weeksToGoal = w && tw ? Math.abs(Math.round((w - tw) / 0.5)) : null;
 
-  const isLosingFat = goals.includes('lose');
-  const isGaining = goals.includes('gain') || goals.includes('strength') || goals.includes('aesthetics');
-  const caloricTarget = w
-    ? isLosingFat ? Math.round(w * 24 * 0.8)
-    : isGaining ? Math.round(w * 24 * 1.15)
-    : Math.round(w * 24)
-    : null;
-  const proteinTarget = w ? Math.round(w * 2) : null;
+  const combo = resolveGoalCombo(goals);
+  const comboCalories = GOAL_COMBO_CALORIES[combo] || GOAL_COMBO_CALORIES.maintain;
+  const caloricTarget = w ? Math.round(w * 24 * comboCalories.multiplier) : null;
+  const proteinTarget = w ? Math.round(w * comboCalories.proteinPerKg) : null;
   const fatTarget = caloricTarget ? Math.round((caloricTarget * 0.25) / 9) : null;
   const carbTarget = caloricTarget && proteinTarget && fatTarget
     ? Math.round((caloricTarget - proteinTarget * 4 - fatTarget * 9) / 4)
@@ -194,8 +198,12 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
   const statusLabels = { optimal: 'Optimal', good: 'Good', suboptimal: 'Suboptimal' };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 60 }}>
-      <View style={styles.progressBg}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+    <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
+      <View style={[styles.progressBg, { marginTop: insets.top + 12 }]}>
         <View style={[styles.progressFill, { width: `${(step / totalSteps) * 100}%` }]} />
       </View>
       <Text style={styles.stepLabel}>Step {step} of {totalSteps}</Text>
@@ -271,7 +279,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                   <Text style={styles.expSublabel}>{opt.sublabel}</Text>
                 </View>
                 {trainingExperience === opt.key && (
-                  <Text style={{ color: '#534AB7', fontWeight: '700', fontSize: 16 }}>✓</Text>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>✓</Text>
                 )}
               </Pressable>
             ))}
@@ -345,8 +353,8 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.label}>Other supplements</Text>
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
             <TextInput style={[styles.input, { flex: 1 }]} value={customSupplement} onChangeText={setCustomSupplement} placeholder="e.g. Ashwagandha" placeholderTextColor="#3D3D4A" onSubmitEditing={addCustomSupplement} />
-            <Pressable style={{ backgroundColor: '#534AB7', borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }} onPress={addCustomSupplement}>
-              <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Add</Text>
+            <Pressable style={{ backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }} onPress={addCustomSupplement}>
+              <Text style={{ color: '#111114', fontWeight: '600' }}>Add</Text>
             </Pressable>
           </View>
           {customSupplements.length > 0 && (
@@ -368,18 +376,36 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <View style={styles.tagsWrap}>
             {[
               { key: 'none', label: 'None' },
+              // Spine
               { key: 'lower_back_disc_herniation', label: 'Lower back disc' },
               { key: 'spondylolisthesis', label: 'Spondylolisthesis' },
+              { key: 'scoliosis', label: 'Scoliosis' },
+              { key: 'cervical_disc_herniation', label: 'Cervical disc' },
+              { key: 'sciatica', label: 'Sciatica' },
+              // Shoulder
               { key: 'shoulder_impingement', label: 'Shoulder impingement' },
               { key: 'rotator_cuff_tear', label: 'Rotator cuff tear' },
               { key: 'ac_joint_injury', label: 'AC joint injury' },
-              { key: 'pec_tear', label: 'Pec tear' },
-              { key: 'cervical_disc_herniation', label: 'Cervical disc' },
+              { key: 'shoulder_instability', label: 'Shoulder instability' },
+              // Elbow & wrist
+              { key: 'lateral_epicondylitis', label: 'Tennis elbow' },
+              { key: 'medial_epicondylitis', label: 'Golfer\'s elbow' },
+              { key: 'bicep_tendinopathy', label: 'Bicep tendinopathy' },
+              { key: 'wrist_injury', label: 'Wrist injury' },
+              { key: 'carpal_tunnel_syndrome', label: 'Carpal tunnel' },
+              // Hip & knee
+              { key: 'bilateral_hip_replacement', label: 'Hip replacement' },
+              { key: 'hip_labral_tear', label: 'Hip labral tear' },
+              { key: 'inguinal_hernia', label: 'Inguinal hernia' },
               { key: 'knee_replacement', label: 'Knee replacement' },
               { key: 'severe_knee_osteoarthritis', label: 'Knee osteoarthritis' },
-              { key: 'bilateral_hip_replacement', label: 'Hip replacement' },
+              { key: 'patellofemoral_syndrome', label: 'Patellofemoral syndrome' },
+              // Lower leg & foot
               { key: 'proximal_hamstring_tendinopathy', label: 'Hamstring tendinopathy' },
               { key: 'achilles_tendinopathy', label: 'Achilles tendinopathy' },
+              { key: 'plantar_fasciitis', label: 'Plantar fasciitis' },
+              // Other
+              { key: 'osteoporosis', label: 'Osteoporosis' },
             ].map((c) => (
               <Pressable
                 key={c.key}
@@ -472,13 +498,14 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
         {step < totalSteps && <Pressable style={styles.nextBtn} onPress={handleNext}><Text style={styles.nextBtnText}>Next →</Text></Pressable>}
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13' },
-  progressBg: { height: 3, backgroundColor: '#2C2C35', marginTop: 48 },
-  progressFill: { height: 3, backgroundColor: '#534AB7' },
+  progressBg: { height: 3, backgroundColor: '#2C2C35', marginTop: 12 },
+  progressFill: { height: 3, backgroundColor: '#FFFFFF' },
   stepLabel: { fontSize: 12, color: '#71717A', padding: 24, paddingBottom: 0 },
   stepWrap: { padding: 24 },
   stepTitle: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.8, marginBottom: 8, lineHeight: 36 },
@@ -493,27 +520,27 @@ const styles = StyleSheet.create({
   bmiRange: { fontSize: 13, color: '#71717A' },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
   goalCard: { width: '48%', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  goalCardActive: { borderColor: '#534AB7', backgroundColor: '#1A1830' },
+  goalCardActive: { borderColor: '#FFFFFF', backgroundColor: '#1C1C22' },
   goalLabel: { fontSize: 14, color: '#71717A', fontWeight: '500' },
-  goalLabelActive: { color: '#7F77DD' },
-  check: { color: '#534AB7', fontWeight: '700' },
+  goalLabelActive: { color: '#E4E4E8' },
+  check: { color: '#FFFFFF', fontWeight: '700' },
   estimate: { fontSize: 13, color: '#1D9E75', marginTop: 12 },
-  goalCitationCard: { backgroundColor: '#13121E', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 16 },
+  goalCitationCard: { backgroundColor: '#111114', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 16 },
   goalCitationTitle: { fontSize: 10, color: '#1D9E75', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
   goalCitationText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 6 },
   goalCitationSource: { fontSize: 10, color: '#71717A', fontStyle: 'italic' },
   optionRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   optionBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  optionBtnActive: { backgroundColor: '#534AB7', borderColor: '#534AB7' },
+  optionBtnActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
   optionBtnText: { color: '#71717A', fontWeight: '600' },
-  optionBtnTextActive: { color: '#FFFFFF' },
+  optionBtnTextActive: { color: '#111114' },
   tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: { backgroundColor: '#1A1A20', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
-  tagActive: { backgroundColor: '#1A1830', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#534AB7' },
+  tagActive: { backgroundColor: '#1C1C22', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#FFFFFF' },
   tagText: { color: '#71717A', fontSize: 13 },
-  tagTextActive: { color: '#7F77DD', fontSize: 13 },
+  tagTextActive: { color: '#E4E4E8', fontSize: 13 },
   expCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
-  expCardActive: { backgroundColor: '#1A1830', borderColor: '#534AB7' },
+  expCardActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
   expLabel: { fontSize: 15, fontWeight: '600', color: '#A1A1AA', marginBottom: 3 },
   expLabelActive: { color: '#FFFFFF' },
   expSublabel: { fontSize: 12, color: '#71717A' },
@@ -532,13 +559,13 @@ const styles = StyleSheet.create({
   macroCard: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   macroVal: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
   macroLabel: { fontSize: 11, color: '#71717A', marginTop: 3 },
-  completeBtn: { backgroundColor: '#534AB7', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  completeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  completeBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
+  completeBtnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
   navRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginTop: 8 },
   backBtn: { paddingVertical: 12 },
   backBtnText: { color: '#71717A', fontSize: 15 },
-  nextBtn: { backgroundColor: '#534AB7', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
-  nextBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  conditionsNote: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#534AB744' },
-  conditionsNoteText: { fontSize: 13, color: '#7F77DD', lineHeight: 20 },
+  nextBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
+  nextBtnText: { color: '#111114', fontSize: 15, fontWeight: '600' },
+  conditionsNote: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
+  conditionsNoteText: { fontSize: 13, color: '#E4E4E8', lineHeight: 20 },
 });

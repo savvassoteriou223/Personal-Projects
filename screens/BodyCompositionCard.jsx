@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { analyseBodyComposition } from './BodyCompositionEngine';
 
@@ -58,8 +59,8 @@ function WeightChart({ movingAvgs, targetWeight }) {
     <Svg width={CHART_W} height={CHART_H}>
       <Defs>
         <LinearGradient id="avgGrad" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#534AB7" stopOpacity="0.25" />
-          <Stop offset="1" stopColor="#534AB7" stopOpacity="0" />
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0.25" />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
         </LinearGradient>
       </Defs>
 
@@ -69,7 +70,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
       {/* Raw weight dots */}
       {movingAvgs.map((m, i) => (
         <Circle
-          key={i}
+          key={`dot-${i}`}
           cx={xScale(i)}
           cy={yScale(m.raw)}
           r={2}
@@ -104,20 +105,20 @@ function WeightChart({ movingAvgs, targetWeight }) {
       )}
 
       {/* Moving average line */}
-      <Path d={avgPath} stroke="#A89FE8" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d={avgPath} stroke="#FFFFFF" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
 
       {/* Latest point */}
       <Circle
         cx={xScale(movingAvgs.length - 1)}
         cy={yScale(movingAvgs[movingAvgs.length - 1].avg7)}
         r={4}
-        fill="#A89FE8"
+        fill="#FFFFFF"
       />
 
       {/* Y-axis labels */}
       {yTicks.map((tick, i) => (
         <SvgText
-          key={i}
+          key={`ytick-${i}`}
           x={PAD.left - 4}
           y={yScale(tick) + 3}
           fontSize={8}
@@ -131,7 +132,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
       {/* X-axis labels */}
       {labelIndices.map(i => (
         <SvgText
-          key={i}
+          key={`xlabel-${i}`}
           x={xScale(i)}
           y={CHART_H - 4}
           fontSize={8}
@@ -167,7 +168,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
   const targetWeight = profile.target_weight_kg;
 
   const trendLabel = trend === 'cutting' ? 'Cutting' : trend === 'gaining' ? 'Building' : 'Maintaining';
-  const trendColor = trend === 'cutting' ? '#A89FE8' : trend === 'gaining' ? '#1D9E75' : '#71717A';
+  const trendColor = trend === 'cutting' ? '#FFFFFF' : trend === 'gaining' ? '#1D9E75' : '#71717A';
 
   const rateStr = weeklyRate !== null
     ? `${weeklyRate > 0 ? '+' : ''}${weeklyRate.toFixed(2)} kg/week`
@@ -204,7 +205,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
           <Text style={styles.legendText}>Daily weight</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#A89FE8' }]} />
+          <View style={[styles.legendDot, { backgroundColor: '#FFFFFF' }]} />
           <Text style={styles.legendText}>7-day average</Text>
         </View>
         {targetWeight && (
@@ -269,7 +270,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       {/* Alerts */}
       {waterSpike && (
         <View style={styles.alertCard}>
-          <Text style={styles.alertIcon}>💧</Text>
+          <Ionicons name="water" size={18} color="#60A5FA" style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={styles.alertTitle}>Likely water retention</Text>
             <Text style={styles.alertBody}>
@@ -281,7 +282,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {muscleLossRisk && (
         <View style={[styles.alertCard, styles.alertCardRed]}>
-          <Text style={styles.alertIcon}>⚠️</Text>
+          <Ionicons name="warning" size={18} color="#E24B4A" style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleRed]}>Muscle loss risk</Text>
             <Text style={styles.alertBody}>
@@ -293,7 +294,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {excessFatRisk && (
         <View style={[styles.alertCard, styles.alertCardAmber]}>
-          <Text style={styles.alertIcon}>📈</Text>
+          <Ionicons name="trending-up" size={18} color="#BA7517" style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleAmber]}>Gaining too fast</Text>
             <Text style={styles.alertBody}>
@@ -305,7 +306,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {stalled && (
         <View style={[styles.alertCard, styles.alertCardAmber]}>
-          <Text style={styles.alertIcon}>⏸️</Text>
+          <Ionicons name="pause-circle" size={18} color="#BA7517" style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleAmber]}>Progress stalled</Text>
             <Text style={styles.alertBody}>
@@ -325,7 +326,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#13121E',
+    backgroundColor: '#111114',
     borderRadius: 18,
     padding: 16,
     borderWidth: 0.5,
@@ -376,7 +377,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#2C2C35',
   },
-  statValue: { fontSize: 14, fontWeight: '700', color: '#A89FE8', marginBottom: 2 },
+  statValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
   statLabel: { fontSize: 9, color: '#52525B', textAlign: 'center' },
 
   paceCard: {
@@ -404,14 +405,14 @@ const styles = StyleSheet.create({
   alertCard: {
     flexDirection: 'row', gap: 10, alignItems: 'flex-start',
     backgroundColor: '#1A1820',
-    borderRadius: 12, borderWidth: 0.5, borderColor: '#534AB744',
+    borderRadius: 12, borderWidth: 0.5, borderColor: '#FFFFFF1A',
     padding: 12, marginBottom: 8,
   },
   alertCardRed: { backgroundColor: '#1A0E0E', borderColor: '#E24B4A44' },
   alertCardAmber: { backgroundColor: '#1A1208', borderColor: '#BA751744' },
-  alertIcon: { fontSize: 16, marginTop: 1 },
+  alertIcon: { marginTop: 1 },
   alertText: { flex: 1 },
-  alertTitle: { fontSize: 13, fontWeight: '700', color: '#A89FE8', marginBottom: 4 },
+  alertTitle: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
   alertTitleRed: { color: '#E24B4A' },
   alertTitleAmber: { color: '#BA7517' },
   alertBody: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },

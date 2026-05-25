@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase, getCurrentUser } from '../supabase';
 import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment } from './programGenerator';
@@ -36,29 +38,60 @@ function normaliseMuscle(raw) {
   if (r === 'glutes' || r === 'glute medius' || r === 'glute minimus') return 'glutes';
   if (r === 'gastrocnemius' || r === 'soleus') return 'calves';
   if (r === 'rectus abdominis' || r === 'obliques') return 'abs';
+  if (r === 'forearms' || r === 'brachioradialis' || r === 'wrist flexors' || r === 'wrist extensors') return 'forearms';
   return null; // ignore: external rotators on their own, etc.
 }
 
 function getMusclesForExercise(exerciseName) {
   const raw = EXERCISE_MUSCLE_MAP[exerciseName?.toLowerCase()] || [];
-  // Map to display keys, deduplicate, drop nulls
   const keys = [...new Set(raw.map(normaliseMuscle).filter(Boolean))];
   return keys;
 }
 
-function getRecoveryStatus(daysSince) {
-  if (daysSince === null) return 'fresh';      // never trained
-  if (daysSince === 0) return 'trained_today'; // trained today
-  if (daysSince === 1) return 'recovering';    // 1 day ago
-  if (daysSince <= 2) return 'ready';          // 2 days ago
-  return 'fresh';                               // 3+ days
+// Primary muscle only — for volume counting so rows don't inflate biceps etc.
+const EXERCISE_PRIMARY_MAP = (() => {
+  const map = {};
+  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
+    const primary = normaliseMuscle(pattern.muscles[0]);
+    if (primary) pattern.exercises.forEach(ex => { map[ex.name.toLowerCase()] = primary; });
+  });
+  return map;
+})();
+
+function getPrimaryMuscleForExercise(exerciseName) {
+  return EXERCISE_PRIMARY_MAP[exerciseName?.toLowerCase()] || null;
+}
+
+// Evidence-based recovery thresholds per muscle (days until ready to retrain)
+// Sources: Schoenfeld et al. 2016, fiber-type composition research
+const MUSCLE_RECOVERY_DAYS = {
+  abs:        1, // high type 1, oxidative — recovers in ~24h
+  calves:     1, // 40–50% type 1, adapted to frequent loading
+  forearms:   1, // high type 1 (brachioradialis, flexors), used daily — ~24h
+  biceps:     2, // ~60% type 2 but small — ~36–48h
+  triceps:    2, // fast-twitch dominant, similar to chest rhythm
+  shoulders:  2, // anterior ~60% type 2, posterior more type 1 — ~48h
+  chest:      2, // ~65% type 2, lower fatigue resistance — ~48h
+  glutes:     2, // large but tolerates frequency well — ~48h
+  quads:      3, // very large, type 2 dominant, notorious DOMS — ~72h
+  hamstrings: 3, // ~50% type 2, larger group, high injury risk if undertested — ~72h
+  back:       3, // mixed fiber, lats/traps large complex — ~72h
+};
+
+function getRecoveryStatus(muscle, daysSince) {
+  if (daysSince === null) return 'fresh';
+  if (daysSince === 0) return 'trained_today';
+  const threshold = MUSCLE_RECOVERY_DAYS[muscle] ?? 2;
+  if (daysSince < threshold) return 'recovering';
+  if (daysSince === threshold) return 'ready';
+  return 'fresh';
 }
 
 const RECOVERY_COLORS = {
-  fresh:         { color: '#7F77DD', label: 'Primed',        bg: '#534AB722' },
+  fresh:         { color: '#1D9E75', label: 'Primed',        bg: '#1D9E7515' },
   ready:         { color: '#1D9E75', label: 'Ready',         bg: '#1D9E7522' },
   recovering:    { color: '#BA7517', label: 'Recovering',    bg: '#BA751722' },
-  trained_today: { color: '#534AB7', label: 'Trained today', bg: '#534AB722' },
+  trained_today: { color: '#E24B4A', label: 'Trained today', bg: '#E24B4A18' },
 };
 
 const MUSCLE_DISPLAY = {
@@ -71,6 +104,7 @@ const MUSCLE_DISPLAY = {
   hamstrings: 'Hamstrings',
   glutes:     'Glutes',
   calves:     'Calves',
+  forearms:   'Forearms',
   abs:        'Abs',
 };
 
@@ -93,6 +127,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
   const todayName = DAYS[new Date().getDay()];
   const tomorrowName = DAYS[(new Date().getDay() + 1) % 7];
+  const lastLoadedAt = useRef(0);
+
 
   const openSessionDetail = async () => {
     if (!lastSession) return;
@@ -103,9 +139,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
     const muscleCounts = {};
     (sets || []).forEach(s => {
-      getMusclesForExercise(s.exercise_name).forEach(m => {
-        muscleCounts[m] = (muscleCounts[m] || 0) + 1;
-      });
+      const primary = getPrimaryMuscleForExercise(s.exercise_name);
+      if (primary) muscleCounts[primary] = (muscleCounts[primary] || 0) + 1;
     });
     const sorted = Object.entries(muscleCounts)
       .map(([muscle, sets]) => ({ muscle, sets }))
@@ -115,7 +150,9 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
   };
 
   useFocusEffect(useCallback(() => {
-    const safetyTimer = setTimeout(() => setLoading(false), 12000);
+    if (Date.now() - lastLoadedAt.current < 30000) return;
+    lastLoadedAt.current = Date.now();
+    const safetyTimer = setTimeout(() => setLoading(false), 5000);
     loadData().finally(() => clearTimeout(safetyTimer));
   }, []));
 
@@ -127,7 +164,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       // Load profile
       const { data: prof } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, trainingExperience, equipment')
         .eq('id', user.id)
         .single();
 
@@ -140,7 +177,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           .from('program_blocks')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (existingBlock) {
           block = existingBlock;
@@ -150,7 +187,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           // keep the existing block so the check retries on the next load.
           if (isBlockComplete(block.block_start_date, prof.trainingExperience || 'beginner')) {
             const nextIndex = block.block_index + 1;
-            const { data: updatedBlock } = await supabase
+            const { data: updatedBlocks } = await supabase
               .from('program_blocks')
               .update({
                 block_index: nextIndex,
@@ -159,8 +196,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
                 updated_at: new Date().toISOString(),
               })
               .eq('user_id', user.id)
-              .select()
-              .single();
+              .select();
+            const updatedBlock = updatedBlocks?.[0] || null;
             if (updatedBlock) {
               block = updatedBlock;
               setBlockJustRotated(true);
@@ -274,7 +311,14 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           .select('exercise_name, session_id, created_at')
           .in('session_id', sessionIds);
 
-        if (sets?.length > 0) {
+        if (!sets?.length) {
+          // No sets logged — all muscles fresh
+          const recovery = {};
+          Object.keys(MUSCLE_DISPLAY).forEach(muscle => {
+            recovery[muscle] = { daysSince: null, status: 'fresh', lastDate: null };
+          });
+          setMuscleRecovery(recovery);
+        } else {
           // Map session_id → created_at
           const sessionDateMap = {};
           sessions.forEach(s => { sessionDateMap[s.id] = new Date(s.created_at); });
@@ -300,7 +344,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
             const daysSince = lastDate ? differenceInDays(today, lastDate) : null;
             recovery[muscle] = {
               daysSince,
-              status: getRecoveryStatus(daysSince),
+              status: getRecoveryStatus(muscle, daysSince),
               lastDate,
             };
           });
@@ -315,10 +359,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
           const volume = {};
           weekSets.forEach(set => {
-            const muscles = getMusclesForExercise(set.exercise_name);
-            muscles.forEach(muscle => {
-              volume[muscle] = (volume[muscle] || 0) + 1;
-            });
+            const primary = getPrimaryMuscleForExercise(set.exercise_name);
+            if (primary) volume[primary] = (volume[primary] || 0) + 1;
           });
           setWeeklyVolume(volume);
 
@@ -346,9 +388,9 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
   };
 
   if (loading) return (
-    <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-      <ActivityIndicator size="large" color="#534AB7" />
-    </View>
+    <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]} edges={['top']}>
+      <ActivityIndicator size="large" color="#FFFFFF" />
+    </SafeAreaView>
   );
 
   const greeting = (() => {
@@ -359,7 +401,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
   })();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 80 }}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+    <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
 
       {/* Header */}
       <View style={styles.header}>
@@ -419,14 +462,14 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
                 <Text style={styles.completedBadgeText}>✓ Completed today</Text>
               </View>
               {tomorrowWorkout && (
-                <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(tomorrowWorkout)}>
-                  <Text style={styles.startBtnText}>Start Next: {tomorrowWorkout.name} →</Text>
+                <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout({ ...tomorrowWorkout, trainingExperience: profile?.trainingExperience })}>
+                  <Text style={styles.startBtnText}>Next up · {tomorrowWorkout.name.split('—')[0].trim()}</Text>
                 </Pressable>
               )}
             </>
           ) : (
-            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(todayWorkout)}>
-              <Text style={styles.startBtnText}>Start Workout →</Text>
+            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout({ ...todayWorkout, trainingExperience: profile?.trainingExperience })}>
+              <Text style={styles.startBtnText}>Start Workout</Text>
             </Pressable>
           )}
         </View>
@@ -435,8 +478,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           <Text style={styles.restTitle}>Rest day</Text>
           <Text style={styles.restSub}>Recovery is when your muscles actually grow. Prioritize sleep and protein today.</Text>
           {tomorrowWorkout && (
-            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout(tomorrowWorkout)}>
-              <Text style={styles.startBtnText}>Start Next: {tomorrowWorkout.name} →</Text>
+            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout({ ...tomorrowWorkout, trainingExperience: profile?.trainingExperience })}>
+              <Text style={styles.startBtnText}>Next up · {tomorrowWorkout.name.split('—')[0].trim()}</Text>
             </Pressable>
           )}
         </View>
@@ -514,7 +557,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
               : '#1D9E75';
 
             // Status label shown to right of bar
-            const statusText = isJunk ? `${done} ⚠` : `${done}`;
+            const statusText = `${done}`;
             const statusSub = isJunk ? 'Too much'
               : isOver ? `${done}/${target.optimal_high} ↑`
               : done === 0 ? `0 — aim ${target.min}+`
@@ -533,20 +576,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
                 </View>
 
                 {/* Bar */}
-                <View style={{ flex: 1, position: 'relative' }}>
-                  <View style={styles.volumeBarBg}>
-                    {/* Main fill */}
-                    <View style={[styles.volumeBarFill, { width: `${fillPct}%`, backgroundColor: fillColor }]} />
-                    {/* Overflow past optimal */}
-                    {isOver && (
-                      <View style={[
-                        styles.volumeBarOverflow,
-                        { width: `${overflowPct}%`, backgroundColor: isJunk ? '#E24B4A55' : '#BA751755' }
-                      ]} />
-                    )}
-                    {/* Minimum threshold tick mark */}
-                    <View style={[styles.volumeMinTick, { left: `${minMarkerPct}%` }]} />
-                  </View>
+                <View style={styles.volumeBarTrack}>
+                  <View style={[styles.volumeBarFill, { width: `${fillPct}%`, backgroundColor: fillColor }]} />
                 </View>
 
                 {/* Count */}
@@ -560,7 +591,10 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
               {rows}
               {junkMuscles.length > 0 && (
                 <View style={styles.junkWarning}>
-                  <Text style={styles.junkWarningTitle}>⚠ Junk volume</Text>
+                  <View style={styles.junkWarningHeader}>
+                    <Ionicons name="warning" size={12} color="#E24B4A" style={{ marginTop: 1 }} />
+                    <Text style={styles.junkWarningTitle}>Junk volume</Text>
+                  </View>
                   <Text style={styles.junkWarningText}>
                     {junkMuscles.map(m => `${m.label} (${m.done} sets)`).join(', ')} — past the ceiling where extra sets stop building muscle and increase injury risk. Spread that effort to lagging muscles instead.
                   </Text>
@@ -578,9 +612,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
             {/* Header */}
             <View style={styles.deloadHeader}>
               <View style={styles.deloadIconWrap}>
-                <Text style={styles.deloadIcon}>
-                  {deloadSuggestion.trigger === 'autoreg' ? '⚡' : '🔄'}
-                </Text>
+                <Ionicons
+                  name={deloadSuggestion.trigger === 'autoreg' ? 'flash' : 'refresh'}
+                  size={20}
+                  color="#FFFFFF"
+                />
               </View>
               <View style={styles.deloadHeaderText}>
                 <Text style={styles.deloadTitle}>{deloadSuggestion.headline}</Text>
@@ -623,7 +659,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
             {/* Diet note (fat loss users only) */}
             {deloadSuggestion.dietNote && (
               <View style={styles.deloadDietNote}>
-                <Text style={styles.deloadDietNoteText}>🥗 {deloadSuggestion.dietNote}</Text>
+                <Text style={styles.deloadDietNoteText}>{deloadSuggestion.dietNote}</Text>
               </View>
             )}
 
@@ -649,7 +685,12 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           {plateaus.map((p, i) => (
             <View key={i} style={[styles.plateauCard, p.type === 'confirmed' && styles.plateauCardConfirmed]}>
               <View style={styles.plateauHeader}>
-                <Text style={styles.plateauIcon}>{p.type === 'confirmed' ? '🛑' : '⚠️'}</Text>
+                <Ionicons
+                  name={p.type === 'confirmed' ? 'remove-circle' : 'warning'}
+                  size={18}
+                  color={p.type === 'confirmed' ? '#E24B4A' : '#BA7517'}
+                  style={{ marginTop: 1 }}
+                />
                 <View style={styles.plateauHeaderText}>
                   <Text style={styles.plateauExercise}>{p.exercise}</Text>
                   <Text style={styles.plateauDays}>{p.days} days without progress · Est. 1RM: {p.est1rm}kg</Text>
@@ -730,38 +771,39 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       </Modal>
 
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13' },
 
-  header: { padding: 24, paddingTop: 56 },
+  header: { padding: 24, paddingTop: 16 },
   greeting: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
   dateText: { fontSize: 13, color: '#71717A', marginTop: 2 },
   blockBanner: { marginHorizontal: 16, marginBottom: 12, backgroundColor: '#1D9E7522', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E75' },
   blockBannerTitle: { fontSize: 14, fontWeight: '700', color: '#1D9E75', marginBottom: 3 },
   blockBannerSub: { fontSize: 12, color: '#A1A1AA', lineHeight: 17 },
-  blockPill: { marginHorizontal: 16, marginBottom: 12, alignSelf: 'flex-start', backgroundColor: '#1A1830', borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12, borderWidth: 0.5, borderColor: '#534AB7' },
-  blockPillText: { fontSize: 11, color: '#7F77DD', fontWeight: '500' },
+  blockPill: { marginHorizontal: 16, marginBottom: 12, alignSelf: 'flex-start', backgroundColor: '#1C1C22', borderRadius: 20, paddingVertical: 5, paddingHorizontal: 12, borderWidth: 0.5, borderColor: '#FFFFFF' },
+  blockPillText: { fontSize: 11, color: '#E4E4E8', fontWeight: '500' },
 
   // Today's session
-  sessionCard: { marginHorizontal: 20, backgroundColor: '#1A1830', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#534AB7', marginBottom: 24 },
-  sessionLabel: { fontSize: 10, color: '#534AB7', fontWeight: '700', letterSpacing: 1.2, marginBottom: 6 },
+  sessionCard: { marginHorizontal: 20, backgroundColor: '#1C1C22', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#FFFFFF', marginBottom: 24 },
+  sessionLabel: { fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 1.2, marginBottom: 6 },
   sessionName: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', marginBottom: 4, letterSpacing: -0.3 },
-  sessionFocus: { fontSize: 13, color: '#7F77DD', marginBottom: 12 },
+  sessionFocus: { fontSize: 13, color: '#E4E4E8', marginBottom: 12 },
   sessionMeta: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   sessionMetaChip: { backgroundColor: '#12121A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: '#2C2C35' },
   sessionMetaText: { fontSize: 12, color: '#A1A1AA', fontWeight: '500' },
   sessionTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
   sessionCount: { fontSize: 12, color: '#71717A' },
-  startBtn: { backgroundColor: '#534AB7', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
-  startBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
+  startBtn: { backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
+  startBtnText: { color: '#111114', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
   completedBadge: { backgroundColor: '#1D9E7522', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16, borderWidth: 1, borderColor: '#1D9E7544' },
   completedBadgeText: { color: '#1D9E75', fontSize: 15, fontWeight: '700' },
   exercisePreview: { borderTopWidth: 0.5, borderTopColor: '#2C2C35', paddingTop: 12, gap: 8 },
   exPreviewRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  exPreviewDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#534AB7' },
+  exPreviewDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFFFFF' },
   exPreviewName: { fontSize: 13, color: '#FFFFFF', flex: 1 },
   exPreviewDetail: { fontSize: 12, color: '#71717A' },
   moreText: { fontSize: 12, color: '#71717A', paddingLeft: 13 },
@@ -770,8 +812,8 @@ const styles = StyleSheet.create({
   restCard: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 24 },
   restTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF', marginBottom: 6 },
   restSub: { fontSize: 13, color: '#71717A', lineHeight: 20, marginBottom: 14 },
-  tomorrowBtn: { borderWidth: 0.5, borderColor: '#534AB7', borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
-  tomorrowBtnText: { color: '#534AB7', fontSize: 13, fontWeight: '500' },
+  tomorrowBtn: { borderWidth: 0.5, borderColor: '#FFFFFF', borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  tomorrowBtnText: { color: '#111114', fontSize: 13, fontWeight: '500' },
 
   // Sections
   section: { paddingHorizontal: 20, marginBottom: 28 },
@@ -790,37 +832,35 @@ const styles = StyleSheet.create({
   volumeLegendDot: { width: 7, height: 7, borderRadius: 4 },
   volumeLegendLabel: { fontSize: 10, color: '#71717A' },
   volumeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
-  volumeNameCol: { width: 76 },
+  volumeNameCol: { width: 100 },
   volumeMuscleName: { fontSize: 12, color: '#E4E4E7', fontWeight: '500' },
   volumeTargetLabel: { fontSize: 10, color: '#A1A1AA', marginTop: 2 },
-  volumeBarBg: { flex: 1, height: 7, backgroundColor: '#2C2C35', borderRadius: 4, overflow: 'visible', position: 'relative' },
-  volumeBarFill: { height: 7, borderRadius: 4, position: 'absolute', left: 0, top: 0 },
-  volumeBarOverflow: { position: 'absolute', right: 0, top: 0, height: 7, borderRadius: 4 },
-  volumeMinTick: { position: 'absolute', top: -2, width: 1.5, height: 11, backgroundColor: '#3F3F50', borderRadius: 1 },
+  volumeBarTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#2C2C35' },
+  volumeBarFill: { height: 6, borderRadius: 3 },
   volumeCount: { fontSize: 11, fontWeight: '700', width: 36, textAlign: 'right' },
   junkWarning: { marginTop: 10, backgroundColor: '#1A0E0E', borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: '#E24B4A44' },
-  junkWarningTitle: { fontSize: 12, fontWeight: '700', color: '#E24B4A', marginBottom: 5 },
+  junkWarningHeader: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 5 },
+  junkWarningTitle: { fontSize: 12, fontWeight: '700', color: '#E24B4A' },
   junkWarningText: { fontSize: 11, color: '#A1A1AA', lineHeight: 17 },
 
   // Deload card
-  deloadCard: { backgroundColor: '#13121E', borderRadius: 18, padding: 16, borderWidth: 0.5, borderColor: '#534AB766' },
+  deloadCard: { backgroundColor: '#111114', borderRadius: 18, padding: 16, borderWidth: 0.5, borderColor: '#FFFFFF66' },
   deloadHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  deloadIconWrap: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1E1A35', alignItems: 'center', justifyContent: 'center' },
-  deloadIcon: { fontSize: 20 },
+  deloadIconWrap: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1C1C22', alignItems: 'center', justifyContent: 'center' },
   deloadHeaderText: { flex: 1 },
-  deloadTitle: { fontSize: 16, fontWeight: '700', color: '#C4B8FF', marginBottom: 2 },
-  deloadTrigger: { fontSize: 11, color: '#534AB7', fontWeight: '600' },
+  deloadTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
+  deloadTrigger: { fontSize: 11, color: '#FFFFFF', fontWeight: '600' },
   deloadReason: { fontSize: 12, color: '#71717A', lineHeight: 18, marginBottom: 10, fontStyle: 'italic' },
   deloadMessage: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 14 },
   deloadStats: { flexDirection: 'row', gap: 6, marginBottom: 14 },
   deloadStat: { flex: 1, backgroundColor: '#0F0F18', borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  deloadStatValue: { fontSize: 14, fontWeight: '700', color: '#A89FE8', marginBottom: 2 },
+  deloadStatValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
   deloadStatLabel: { fontSize: 9, color: '#52525B', textAlign: 'center' },
   deloadDietNote: { backgroundColor: '#0F1A12', borderRadius: 10, padding: 10, borderWidth: 0.5, borderColor: '#1D9E7533', marginBottom: 12 },
   deloadDietNoteText: { fontSize: 12, color: '#1D9E75', lineHeight: 18 },
   deloadInstructionsTitle: { fontSize: 11, fontWeight: '700', color: '#E4E4E7', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 },
   deloadInstruction: { flexDirection: 'row', gap: 10, marginBottom: 6, alignItems: 'flex-start' },
-  deloadInstructionNum: { fontSize: 11, fontWeight: '700', color: '#534AB7', width: 16, marginTop: 1 },
+  deloadInstructionNum: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', width: 16, marginTop: 1 },
   deloadInstructionText: { fontSize: 12, color: '#A1A1AA', lineHeight: 19, flex: 1 },
   deloadScience: { fontSize: 9, color: '#3F3F50', marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
 
@@ -828,7 +868,6 @@ const styles = StyleSheet.create({
   plateauCard: { backgroundColor: '#1A1510', borderRadius: 16, padding: 14, borderWidth: 0.5, borderColor: '#BA751744', marginBottom: 10 },
   plateauCardConfirmed: { backgroundColor: '#1A0E0E', borderColor: '#E24B4A44' },
   plateauHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
-  plateauIcon: { fontSize: 18, marginTop: 1 },
   plateauHeaderText: { flex: 1 },
   plateauExercise: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
   plateauDays: { fontSize: 11, color: '#71717A' },
@@ -839,7 +878,7 @@ const styles = StyleSheet.create({
 
   // Last session
   lastSessionCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  lastSessionLeft: {},
+  lastSessionLeft: { flex: 1, paddingRight: 10 },
   lastSessionName: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 3 },
   lastSessionDate: { fontSize: 12, color: '#71717A' },
   lastSessionRight: { alignItems: 'flex-end', gap: 3 },
@@ -856,7 +895,7 @@ const styles = StyleSheet.create({
   muscleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   muscleLabel: { fontSize: 13, color: '#A1A1AA', width: 80 },
   muscleBarBg: { flex: 1, height: 6, backgroundColor: '#2C2C35', borderRadius: 3, overflow: 'hidden' },
-  muscleBarFill: { height: 6, backgroundColor: '#534AB7', borderRadius: 3 },
+  muscleBarFill: { height: 6, backgroundColor: '#FFFFFF', borderRadius: 3 },
   muscleCount: { fontSize: 12, fontWeight: '700', color: '#FFFFFF', width: 24, textAlign: 'right' },
   modalClose: { marginTop: 20, backgroundColor: '#2C2C35', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
   modalCloseText: { color: '#A1A1AA', fontSize: 14, fontWeight: '600' },

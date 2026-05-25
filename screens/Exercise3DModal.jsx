@@ -24,16 +24,16 @@ function buildViewerHTML(slideData) {
 body{background:#0A0A10;overflow:hidden;width:100vw;height:100vh;touch-action:none}
 canvas{display:block}
 #phase{position:absolute;top:14px;left:0;right:0;text-align:center;
-  color:#534AB7;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  color:#FFFFFF;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
   font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;
   pointer-events:none}
 #cue{position:absolute;bottom:36px;left:18px;right:18px;text-align:center;
-  color:#A89FE8;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  color:#FFFFFF;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
   font-size:13px;line-height:1.55;pointer-events:none}
 #dots{position:absolute;bottom:14px;left:0;right:0;display:flex;
   justify-content:center;gap:7px;pointer-events:none}
 .dot{width:5px;height:5px;border-radius:3px;background:#2C2C35;transition:all .25s}
-.dot.on{background:#534AB7;width:18px}
+.dot.on{background:#FFFFFF;width:18px}
 </style>
 </head><body>
 <div id="phase"></div>
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   closeBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#A89FE8',
+    color: '#FFFFFF',
   },
   viewer: {
     flex: 1,
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#13121E',
+    backgroundColor: '#111114',
     borderRadius: 12,
     borderWidth: 0.5,
     borderColor: '#2C2C35',
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
   navArrow: {
     fontSize: 22,
-    color: '#A89FE8',
+    color: '#FFFFFF',
     lineHeight: 24,
     fontWeight: '300',
   },
@@ -336,14 +336,14 @@ const styles = StyleSheet.create({
   navLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#A89FE8',
+    color: '#FFFFFF',
   },
   navLabelDim: {
     color: '#52525B',
   },
   slideCount: {
     fontSize: 13,
-    color: '#534AB7',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   hint: {

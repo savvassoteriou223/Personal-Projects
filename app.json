@@ -7,13 +7,14 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#000000"
     },
+    "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.helix.app",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Used to scan food barcodes when logging nutrition.",
@@ -21,26 +22,56 @@
       }
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.helix.app"
+      "package": "com.helix.app",
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-camera"
+      "expo-camera",
+      "expo-image",
+      "expo-status-bar",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow Helix to use your microphone to log food by voice.",
+          "speechRecognitionPermission": "Allow Helix to transcribe your voice into food descriptions."
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Helix reads your sleep and heart rate data to assess your recovery and adjust training recommendations.",
+          "NSHealthUpdateUsageDescription": "Helix does not write health data."
+        }
+      ],
+      [
+        "react-native-health-connect",
+        {
+          "permissions": [
+            "android.permission.health.READ_SLEEP",
+            "android.permission.health.READ_HEART_RATE_VARIABILITY",
+            "android.permission.health.READ_RESTING_HEART_RATE"
+          ]
+        }
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {
-        "projectId": "b265a2f1-28c5-4437-a296-0d6365a02d7e"
+        "projectId": "c608deeb-5c1c-4085-be1d-a1869dfaabe9"
       }
-    }
+    },
+    "owner": "thehelixapp"
   }
 }

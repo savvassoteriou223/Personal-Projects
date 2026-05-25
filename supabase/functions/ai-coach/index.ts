@@ -50,6 +50,8 @@ RULES:
 5. Keep responses under 120 words. Plain text only — no markdown, bullets, or headers.
 6. Be direct. No padding or encouragement.
 7. When the user explicitly asks to add, remove, replace, or modify an exercise in their program — use the propose_program_change tool. Do not propose changes unless the user has clearly asked for one.
+8. When replacing or changing N exercises, call propose_program_change exactly N times — one call per exercise. Use the [index] number shown in the program context for exercise_index.
+9. Never propose an exercise that already appears on the same day in the user's program. Check the program context carefully before proposing.
 
 RESEARCH REFERENCE:
 ${SCIENCE_REFERENCE}`;
@@ -62,7 +64,7 @@ ${SCIENCE_REFERENCE}`;
 const TOOLS = [
   {
     name: 'propose_program_change',
-    description: 'Propose a specific change to the training program. Only call this when the user explicitly asks to add, remove, replace, or change an exercise or sets/reps in their program.',
+    description: 'Propose a specific change to the training program. Only call this when the user explicitly asks to add, remove, replace, or change an exercise or sets/reps in their program. Call once per exercise that needs changing.',
     input_schema: {
       type: 'object',
       properties: {
@@ -81,7 +83,7 @@ const TOOLS = [
         },
         exercise_index: {
           type: 'integer',
-          description: '0-based index of the exercise to change or replace. Required for permanent_edit and session_swap.',
+          description: '0-based index of the exercise to change or replace, as shown in [brackets] in the program context. Required for permanent_edit and session_swap.',
         },
         exercise_name: {
           type: 'string',
@@ -149,7 +151,7 @@ Deno.serve(async (req: Request) => {
     const now = new Date();
     let callsUsed: number = profile.ai_calls_used ?? 0;
 
-    if (now.getFullYear() !== resetAt.getFullYear() || now.getMonth() !== resetAt.getMonth()) {
+    if (now.getUTCFullYear() !== resetAt.getUTCFullYear() || now.getUTCMonth() !== resetAt.getUTCMonth()) {
       await supabase.from('profiles')
         .update({ ai_calls_used: 0, ai_calls_reset_at: now.toISOString() })
         .eq('id', user.id);
@@ -158,12 +160,29 @@ Deno.serve(async (req: Request) => {
 
     if (callsUsed >= MONTHLY_QUOTA) return json({ error: 'quota_exceeded', remaining: 0 }, 429);
 
-    const { userContext, question } = await req.json();
-    if (!question?.trim()) return json({ error: 'missing_question' }, 400);
+    const body = await req.json();
+    const { userContext, messages: msgHistory, question } = body;
 
-    const userMessage = userContext
-      ? `My training data:\n${userContext}\n\nQuestion: ${question}`
-      : question;
+    // Build the messages array for Claude.
+    // New clients send a messages array; old format sends a single question string.
+    let claudeMessages: Array<{ role: string; content: string }>;
+
+    if (msgHistory?.length) {
+      // Inject fresh context into the last user message so the model has current data.
+      claudeMessages = msgHistory.map((m: { role: string; content: string }, i: number) => {
+        if (i === msgHistory.length - 1 && m.role === 'user' && userContext) {
+          return { role: 'user', content: `My training data:\n${userContext}\n\nQuestion: ${m.content}` };
+        }
+        return m;
+      });
+    } else if (question?.trim()) {
+      const content = userContext
+        ? `My training data:\n${userContext}\n\nQuestion: ${question}`
+        : question;
+      claudeMessages = [{ role: 'user', content }];
+    } else {
+      return json({ error: 'missing_question' }, 400);
+    }
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -175,9 +194,9 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 500,
+        max_tokens: 1500,
         system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-        messages: [{ role: 'user', content: userMessage }],
+        messages: claudeMessages,
         tools: TOOLS,
         tool_choice: { type: 'auto' },
       }),
@@ -191,14 +210,14 @@ Deno.serve(async (req: Request) => {
 
     const anthropicJson = await anthropicRes.json();
 
-    // Extract text response and optional program proposal
+    // Extract text response and all program proposals (may be multiple per response).
     const textBlock = anthropicJson.content?.find((b: { type: string }) => b.type === 'text');
-    const toolBlock = anthropicJson.content?.find(
+    const toolBlocks = (anthropicJson.content ?? []).filter(
       (b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'propose_program_change'
     );
 
     const text = textBlock?.text ?? '';
-    const proposal = toolBlock?.input ?? null;
+    const proposals = toolBlocks.map((b: { input: unknown }) => b.input);
 
     await supabase.from('profiles')
       .update({ ai_calls_used: callsUsed + 1 })
@@ -206,7 +225,7 @@ Deno.serve(async (req: Request) => {
 
     return json({
       text,
-      proposal,
+      proposals,
       remaining: MONTHLY_QUOTA - callsUsed - 1,
       used: callsUsed + 1,
       quota: MONTHLY_QUOTA,

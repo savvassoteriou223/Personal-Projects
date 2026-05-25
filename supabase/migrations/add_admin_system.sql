@@ -49,11 +49,9 @@ WHERE profiles.id = u.id AND u.email = 'savvas.soteriou223@gmail.com';
 CREATE OR REPLACE FUNCTION auto_grant_admin_on_signup()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM admin_emails ae
-    JOIN auth.users u ON u.email = ae.email
-    WHERE u.id = NEW.id
-  ) THEN
+  -- Use NEW.email directly — no need to join auth.users since profiles.email
+  -- is populated from the same value by handle_new_user.
+  IF EXISTS (SELECT 1 FROM public.admin_emails WHERE email = NEW.email) THEN
     NEW.is_admin   := true;
     NEW.is_premium := true;
   END IF;

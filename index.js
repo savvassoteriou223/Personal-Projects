@@ -1,11 +1,25 @@
 import { registerRootComponent } from 'expo';
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import App from './App';
+
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    tracesSampleRate: 0.2,
+    environment: __DEV__ ? 'development' : 'production',
+  });
+}
 
 class ErrorBoundary extends React.Component {
   state = { error: null };
   static getDerivedStateFromError(e) { return { error: e }; }
+  componentDidCatch(error, info) {
+    if (SENTRY_DSN) Sentry.captureException(error, { extra: info });
+  }
   render() {
     if (this.state.error) {
       return (

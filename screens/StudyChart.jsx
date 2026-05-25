@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
 
 const COLORS = {
-  purple: { bar: '#534AB7', val: '#7F77DD', bg: '#13121E', border: '#2C2C35' },
+  purple: { bar: '#FFFFFF', val: '#E4E4E8', bg: '#111114', border: '#2C2C35' },
   teal:   { bar: '#1D9E75', val: '#1D9E75', bg: '#0F1A16', border: '#2C2C35' },
   amber:  { bar: '#BA7517', val: '#BA7517', bg: '#1A1408', border: '#2C2C35' },
-  gray:   { bar: '#534AB7', val: '#7F77DD', bg: '#13121E', border: '#2C2C35' },
+  gray:   { bar: '#FFFFFF', val: '#E4E4E8', bg: '#111114', border: '#2C2C35' },
 };
 
 const MAX_HEIGHT = 80;
@@ -13,7 +13,7 @@ const COL_WIDTH = 60;
 export default function StudyChart({ study }) {
   if (!study) return null;
 
-  const c = COLORS[study.color] || COLORS.purple;
+  const c = COLORS[study.color] || COLORS.gray;
   const thisHeight = (study.this_pct / 100) * MAX_HEIGHT;
   const controlHeight = (study.control_pct / 100) * MAX_HEIGHT;
 
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   colValControl: { fontSize: 14, fontWeight: '600', color: '#71717A', height: 24, textAlignVertical: 'bottom', textAlign: 'center' },
   barArea: { width: COL_WIDTH, height: MAX_HEIGHT, justifyContent: 'flex-end' },
   colBar: { width: COL_WIDTH, borderRadius: 4 },
-  colLabel: { fontSize: 10, color: '#71717A', marginTop: 6, textAlign: 'center', lineHeight: 14, height: 28 },
+  colLabel: { fontSize: 10, color: '#71717A', marginTop: 6, textAlign: 'center', lineHeight: 14 },
   baseline: { height: 0.5, backgroundColor: '#2C2C35', marginTop: 8, marginBottom: 8 },
   cite: { fontSize: 10, color: '#3D3D4A' },
 });

@@ -1,20 +1,10 @@
-// ProgressScreen.jsx — Helix
-// Goal-aware progress metrics. Every section has an ACTIONABLE verdict.
-// No AI. Pure rule-based logic from the data.
-//
-// gain        → e1RM + volume load trend
-// strength    → e1RM + benchmark level cards
-// lose        → 7-day MA weight + rate + protein
-// aesthetics  → e1RM + weight dual-signal
-// endurance   → cardio freq + duration
-// maintain    → consistency
-
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { supabase, getCurrentUser } from '../supabase';
 import { format, subDays, startOfWeek, differenceInDays } from 'date-fns';
-import { MOVEMENT_PATTERNS } from './movementLibrary';
 
 const { width: W } = Dimensions.get('window');
 const PAD = 20;
@@ -34,44 +24,7 @@ function sevenDayMA(entries) {
   });
 }
 
-function buildMuscleMap() {
-  const map = {};
-  Object.values(MOVEMENT_PATTERNS).forEach(p =>
-    p.exercises.forEach(ex => { map[ex.name.toLowerCase()] = p.muscles?.[0]?.toLowerCase(); })
-  );
-  return map;
-}
-const MUSCLE_MAP = buildMuscleMap();
 
-const MUSCLE_NORM = {
-  chest: 'Chest', 'upper chest': 'Chest', 'lower chest': 'Chest', 'mid chest': 'Chest',
-  lats: 'Back', traps: 'Back', 'upper trapezius': 'Back', 'levator scapulae': 'Back',
-  shoulders: 'Shoulders', 'side deltoids': 'Shoulders', 'rear deltoids': 'Shoulders',
-  biceps: 'Biceps', brachialis: 'Biceps',
-  triceps: 'Triceps',
-  quads: 'Quads',
-  hamstrings: 'Hamstrings',
-  glutes: 'Glutes', 'glute medius': 'Glutes', adductors: 'Glutes',
-  gastrocnemius: 'Calves', soleus: 'Calves',
-  'rectus abdominis': 'Abs', obliques: 'Abs',
-};
-
-const VOLUME_TARGETS = {
-  Chest:      { min: 12, max: 16 },
-  Back:       { min: 12, max: 16 },
-  Shoulders:  { min: 10, max: 14 },
-  Biceps:     { min: 8,  max: 12 },
-  Triceps:    { min: 8,  max: 12 },
-  Quads:      { min: 12, max: 16 },
-  Hamstrings: { min: 10, max: 14 },
-  Glutes:     { min: 12, max: 16 },
-  Calves:     { min: 10, max: 14 },
-  Abs:        { min: 8,  max: 12 },
-};
-
-function normaliseMuscle(name) {
-  return name ? MUSCLE_NORM[name.toLowerCase()] || null : null;
-}
 
 const BLOCK_WEEKS = { beginner: 7, intermediate: 5, advanced: 4 };
 
@@ -95,7 +48,7 @@ function matchBenchmark(name) {
 }
 
 const LEVELS = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Elite'];
-const LEVEL_COLORS = ['#52525B', '#BA7517', '#1D9E75', '#7F77DD', '#A89FE8'];
+const LEVEL_COLORS = ['#52525B', '#BA7517', '#1D9E75', '#E4E4E8', '#FFFFFF'];
 
 function getLevel(t, val) {
   if (!t || !val) return -1;
@@ -125,7 +78,7 @@ function Empty({ text }) {
 
 // ─── LINE CHART ───────────────────────────────────────────────────────────────
 
-function LineChart({ points, color = '#534AB7', height = 130, unit = '', rawPoints }) {
+function LineChart({ points, color = '#FFFFFF', height = 130, unit = '', rawPoints }) {
   if (!points || points.length < 2) return <Empty text="Log more sessions to see this trend" />;
   const all = [...points, ...(rawPoints || [])];
   const vals = all.map(p => p.y).filter(v => v != null && !isNaN(v));
@@ -217,7 +170,7 @@ function BenchmarkCards({ bests }) {
             <View style={[st.bmBadge, { backgroundColor: lc + '22', borderColor: lc + '55' }]}>
               <Text style={[st.bmBadgeTxt, { color: lc }]}>{li >= 0 ? LEVELS[li] : 'Beginner'}</Text>
             </View>
-            <Text style={st.bmLift} numberOfLines={1}>{name}</Text>
+            <Text style={st.bmLift} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{name}</Text>
             <Text style={st.bmVal}>{val.toFixed(0)}<Text style={st.bmUnit}> kg</Text></Text>
             <Text style={st.bmSub}>est. 1RM</Text>
             <View style={st.bmBar}>
@@ -242,7 +195,7 @@ function ConsistencyBars({ weeks }) {
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 72, gap: 5, marginBottom: 8 }}>
         {weeks.map((w, i) => {
           const h = Math.max(4, (w.count / max) * 64);
-          const color = w.count >= 4 ? '#1D9E75' : w.count >= 3 ? '#534AB7' : w.count >= 2 ? '#BA7517' : w.count >= 1 ? '#2B3A7A' : '#1A1A20';
+          const color = w.count >= 4 ? '#1D9E75' : w.count >= 3 ? '#FFFFFF' : w.count >= 2 ? '#BA7517' : w.count >= 1 ? '#2B3A7A' : '#1A1A20';
           return (
             <View key={i} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
               <View style={{ height: h, width: '100%', backgroundColor: color, borderRadius: 4 }} />
@@ -281,11 +234,19 @@ function WeightSection({ entries, proteinAvg, proteinTarget, strengthDelta, show
       {/* Recomp dual signal */}
       {showRecompSignal && strengthDelta !== null && (
         <View style={[st.signal, { marginHorizontal: PAD, marginTop: 12, borderColor: strengthDelta >= 0 ? '#1D9E7444' : '#E24B4A44' }]}>
-          <Text style={st.signalTxt}>
-            {strengthDelta >= 0
-              ? `💪 Strength up +${strengthDelta.toFixed(1)}kg while weight dropping — recomp working`
-              : `⚠ Strength dropping ${strengthDelta.toFixed(1)}kg — increase protein or slow the cut`}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 7 }}>
+            <Ionicons
+              name={strengthDelta >= 0 ? 'trending-up' : 'warning'}
+              size={14}
+              color={strengthDelta >= 0 ? '#1D9E75' : '#BA7517'}
+              style={{ marginTop: 2 }}
+            />
+            <Text style={[st.signalTxt, { flex: 1 }]}>
+              {strengthDelta >= 0
+                ? `Strength up +${strengthDelta.toFixed(1)}kg while weight dropping — recomp working`
+                : `Strength dropping ${strengthDelta.toFixed(1)}kg — increase protein or slow the cut`}
+            </Text>
+          </View>
         </View>
       )}
 
@@ -415,37 +376,6 @@ function strengthLevelVerdict(bests) {
   return closestStr;
 }
 
-// ─── MUSCLE VOLUME BARS ──────────────────────────────────────────────────────
-
-function MuscleVolumeSection({ volume }) {
-  const muscles = Object.keys(VOLUME_TARGETS);
-  return (
-    <View style={{ gap: 10, paddingHorizontal: PAD }}>
-      {muscles.map(m => {
-        const actual = volume[m] || 0;
-        const { min, max } = VOLUME_TARGETS[m];
-        const color = actual >= min ? '#1D9E75' : actual >= Math.round(min * 0.7) ? '#BA7517' : '#E24B4A';
-        return (
-          <View key={m}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Text style={{ fontSize: 12, color: '#A1A1AA', fontWeight: '500' }}>{m}</Text>
-              <Text style={{ fontSize: 11, color }}>
-                {actual}<Text style={{ color: '#3F3F50' }}>/{min}–{max}</Text>
-              </Text>
-            </View>
-            <View style={{ height: 5, backgroundColor: '#1A1A20', borderRadius: 3, overflow: 'hidden' }}>
-              <View style={{ width: `${Math.min(actual / max, 1) * 100}%`, height: 5, backgroundColor: color, borderRadius: 3 }} />
-            </View>
-          </View>
-        );
-      })}
-      <Text style={{ fontSize: 10, color: '#3F3F50', marginTop: 4, fontStyle: 'italic' }}>
-        Sets this week · targets Schoenfeld et al. 2017
-      </Text>
-    </View>
-  );
-}
-
 // ─── BLOCK PROGRESS ──────────────────────────────────────────────────────────
 
 function BlockProgressSection({ info }) {
@@ -465,12 +395,12 @@ function BlockProgressSection({ info }) {
             {format(new Date(info.block_start_date), 'MMM d')} → {format(endDate, 'MMM d')}
           </Text>
         </View>
-        <View style={{ backgroundColor: '#1E1A35', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#534AB7' }}>
-          <Text style={{ fontSize: 11, color: '#7F77DD', fontWeight: '600', textTransform: 'capitalize' }}>{info.level}</Text>
+        <View style={{ backgroundColor: '#1C1C22', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#FFFFFF' }}>
+          <Text style={{ fontSize: 11, color: '#E4E4E8', fontWeight: '600', textTransform: 'capitalize' }}>{info.level}</Text>
         </View>
       </View>
       <View style={{ height: 6, backgroundColor: '#1A1A20', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
-        <View style={{ width: `${Math.min(pct, 1) * 100}%`, height: 6, backgroundColor: daysLeft === 0 ? '#1D9E75' : '#534AB7', borderRadius: 4 }} />
+        <View style={{ width: `${Math.min(pct, 1) * 100}%`, height: 6, backgroundColor: daysLeft === 0 ? '#1D9E75' : '#FFFFFF', borderRadius: 4 }} />
       </View>
       <Text style={{ fontSize: 12, color: daysLeft === 0 ? '#1D9E75' : '#52525B' }}>
         {daysLeft === 0
@@ -491,15 +421,22 @@ export default function ProgressScreen() {
   const [selectedEx, setSelectedEx] = useState('');
   const [e1rmByEx, setE1rmByEx] = useState({});
   const [strengthBests, setStrengthBests] = useState({});
-  const [volumeLoadPoints, setVolumeLoadPoints] = useState([]);
   const [weightEntries, setWeightEntries] = useState([]);
   const [proteinAvg, setProteinAvg] = useState(null);
   const [proteinTarget, setProteinTarget] = useState(null);
   const [weeklySessionCounts, setWeeklySessionCounts] = useState([]);
   const [cardioWeeklyCounts, setCardioWeeklyCounts] = useState([]);
   const [cardioDurations, setCardioDurations] = useState([]);
-  const [muscleVolume, setMuscleVolume] = useState({});
   const [blockInfo, setBlockInfo] = useState(null);
+  // Overview stats
+  const [totalSessions, setTotalSessions] = useState(0);
+  const [totalSets, setTotalSets] = useState(0);
+  const [avgDuration, setAvgDuration] = useState(null);
+  const [streak, setStreak] = useState(0);
+  // RPE trend
+  const [rpeWeeks, setRpeWeeks] = useState([]);
+  // Most improved
+  const [mostImproved, setMostImproved] = useState([]);
 
   useEffect(() => { load(); }, []);
 
@@ -516,31 +453,62 @@ export default function ProgressScreen() {
 
       const since = format(subDays(new Date(), 90), 'yyyy-MM-dd');
       const { data: sessions } = await supabase
-        .from('workout_sessions').select('id, started_at, name, duration_min')
+        .from('workout_sessions').select('id, started_at, name, duration_min, perceived_exertion')
         .eq('user_id', user.id).gte('started_at', since).order('started_at', { ascending: true });
 
-      const ids = (sessions || []).map(s => s.id);
+      const allSess = sessions || [];
+      setTotalSessions(allSess.length);
+
+      // Streak — consecutive weeks with at least 1 session
+      const weekSet = new Set(allSess.map(s => {
+        const ws = startOfWeek(new Date(s.started_at), { weekStartsOn: 1 });
+        return ws.toISOString().split('T')[0];
+      }));
+      const sortedWeeks = [...weekSet].sort().reverse();
+      let streakCount = 0;
+      let checkDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+      for (const wk of sortedWeeks) {
+        const wkDate = new Date(wk);
+        const diff = Math.round((checkDate - wkDate) / (1000 * 60 * 60 * 24 * 7));
+        if (diff <= 1) { streakCount++; checkDate = wkDate; } else break;
+      }
+      setStreak(streakCount);
+
+      const withDuration = allSess.filter(s => s.duration_min > 0);
+      if (withDuration.length) {
+        setAvgDuration(Math.round(withDuration.reduce((a, s) => a + s.duration_min, 0) / withDuration.length));
+      }
+
+      // RPE per week — last 8 weeks
+      const rpeArr = [];
+      for (let i = 7; i >= 0; i--) {
+        const ws = startOfWeek(subDays(new Date(), i * 7), { weekStartsOn: 1 });
+        const we = new Date(ws); we.setDate(we.getDate() + 7);
+        const week = allSess.filter(s => { const d = new Date(s.started_at); return d >= ws && d < we && s.perceived_exertion; });
+        const avg = week.length ? Math.round(week.reduce((a, s) => a + s.perceived_exertion, 0) / week.length * 10) / 10 : null;
+        rpeArr.push({ label: format(ws, 'M/d'), avg, count: week.length });
+      }
+      setRpeWeeks(rpeArr);
+
+      const ids = allSess.map(s => s.id);
       let sets = [];
       if (ids.length) {
         const { data } = await supabase
           .from('completed_sets').select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
         sets = data || [];
       }
-      const sessionMap = {};
-      (sessions || []).forEach(s => { sessionMap[s.id] = s; });
+      setTotalSets(sets.length);
 
-      // e1RM + volume load
+      const sessionMap = {};
+      allSess.forEach(s => { sessionMap[s.id] = s; });
+
+      // e1RM per exercise
       const exNames = [...new Set(sets.map(s => s.exercise_name).filter(Boolean))];
       setExercises(exNames);
       const def = exNames.find(n => /bench|squat|deadlift/i.test(n)) || exNames[0] || '';
       setSelectedEx(def);
 
       const byEx = {}, bests = {};
-      const sessVol = {};
-      sets.forEach(s => {
-        if (s.weight_kg && s.reps) sessVol[s.session_id] = (sessVol[s.session_id] || 0) + s.weight_kg * s.reps;
-      });
-
       exNames.forEach(ex => {
         const byDate = {};
         sets.filter(s => s.exercise_name === ex && s.weight_kg && s.reps).forEach(s => {
@@ -557,19 +525,27 @@ export default function ProgressScreen() {
       setE1rmByEx(byEx);
       setStrengthBests(bests);
 
-      const volPts = (sessions || []).filter(s => sessVol[s.id]).map(s => ({
-        x: format(new Date(s.started_at), 'MMM d'),
-        y: Math.round(sessVol[s.id]),
-      }));
-      setVolumeLoadPoints(volPts);
+      // Most improved — biggest % e1RM gain, exercises with 3+ data points
+      const improved = Object.entries(byEx)
+        .filter(([, pts]) => pts.length >= 3)
+        .map(([ex, pts]) => {
+          const first = pts[0].y, last = pts[pts.length - 1].y;
+          const gain = last - first;
+          const pct = first > 0 ? (gain / first) * 100 : 0;
+          return { ex, first: first.toFixed(1), last: last.toFixed(1), gain: gain.toFixed(1), pct: pct.toFixed(0) };
+        })
+        .filter(x => parseFloat(x.gain) > 0)
+        .sort((a, b) => parseFloat(b.pct) - parseFloat(a.pct))
+        .slice(0, 5);
+      setMostImproved(improved);
 
-      // Weekly counts — 8 weeks
+      // Weekly session counts — 8 weeks
       const buildWeekly = (filter) => {
         const arr = [];
         for (let i = 7; i >= 0; i--) {
           const ws = startOfWeek(subDays(new Date(), i * 7), { weekStartsOn: 1 });
           const we = new Date(ws); we.setDate(we.getDate() + 7);
-          const count = (sessions || []).filter(s => {
+          const count = allSess.filter(s => {
             const d = new Date(s.started_at);
             return d >= ws && d < we && (!filter || filter(s));
           }).length;
@@ -581,7 +557,7 @@ export default function ProgressScreen() {
       const cardioKw = /run|cardio|bike|cycle|swim|row|hiit|treadmill|elliptical/i;
       setCardioWeeklyCounts(buildWeekly(s => cardioKw.test(s.name || '')));
 
-      const durPts = (sessions || [])
+      const durPts = allSess
         .filter(s => cardioKw.test(s.name || '') && s.duration_min > 0)
         .map(s => ({ x: format(new Date(s.started_at), 'MMM d'), y: s.duration_min }));
       setCardioDurations(durPts);
@@ -602,27 +578,13 @@ export default function ProgressScreen() {
         const days = Object.keys(dm).length;
         setProteinAvg(days ? Math.round(Object.values(dm).reduce((a, b) => a + b, 0) / days) : null);
       }
-      // Muscle volume this week (uses user_id directly — no session join needed)
-      const weekAgo = subDays(new Date(), 7).toISOString();
-      const { data: weekSets } = await supabase
-        .from('completed_sets')
-        .select('pattern_key')
-        .eq('user_id', user.id)
-        .gte('completed_at', weekAgo);
-      const vol = {};
-      (weekSets || []).forEach(s => {
-        if (!s.pattern_key) return;
-        const muscle = normaliseMuscle(MOVEMENT_PATTERNS[s.pattern_key]?.muscles?.[0]);
-        if (muscle) vol[muscle] = (vol[muscle] || 0) + 1;
-      });
-      setMuscleVolume(vol);
 
       // Block progress
       const { data: block } = await supabase
         .from('program_blocks')
         .select('block_index, block_start_date, level')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       setBlockInfo(block || null);
 
     } catch (e) { console.error('ProgressScreen:', e); }
@@ -641,119 +603,181 @@ export default function ProgressScreen() {
   const strengthDelta = e1rmData.length >= 2 ? e1rmData[e1rmData.length - 1].y - e1rmData[0].y : null;
 
   if (loading) return (
-    <View style={{ flex: 1, backgroundColor: '#0F0F13', alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: '#3F3F50', fontSize: 14 }}>Loading…</Text>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F0F13' }} edges={['top']}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ color: '#52525B', fontSize: 14 }}>Loading…</Text>
+      </View>
+    </SafeAreaView>
   );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#0F0F13' }}
-      contentContainerStyle={{ paddingHorizontal: PAD, paddingTop: 12, paddingBottom: 80 }}
-      showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0F0F13' }} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: PAD, paddingTop: 12, paddingBottom: 80 }}
+        showsVerticalScrollIndicator={false}>
 
-      {/* e1RM — gain / strength / aesthetics */}
-      {(isGain || isStrength || isAesthetics) && (
-        <Section label="Strength Trend · e1RM"
-          verdict={e1rmVerdict(e1rmData, selectedEx)}
-          verdictColor={e1rmColor(e1rmData)}>
-          <Card style={{ padding: 0, overflow: 'hidden' }}>
-            <View style={{ padding: PAD, paddingBottom: 0 }}>
-              <ExPills exercises={exercises} selected={selectedEx} onSelect={setSelectedEx} />
+        {/* ── OVERVIEW ── */}
+        <Section label="Overview">
+          <Card>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+              {[
+                { val: totalSessions, label: 'Sessions', color: '#FFFFFF' },
+                { val: totalSets, label: 'Total sets', color: '#E4E4E8' },
+                { val: avgDuration ? `${avgDuration}m` : '—', label: 'Avg duration', color: '#1D9E75' },
+                { val: `${streak}w`, label: 'Streak', color: streak >= 4 ? '#1D9E75' : streak >= 2 ? '#BA7517' : '#52525B' },
+              ].map(({ val, label, color }) => (
+                <View key={label} style={st.overviewStat}>
+                  <Text style={[st.overviewVal, { color }]}>{val}</Text>
+                  <Text style={st.overviewLabel}>{label}</Text>
+                </View>
+              ))}
             </View>
-            <LineChart points={e1rmData} color="#534AB7" height={130} unit=" kg" />
-            <View style={{ height: 16 }} />
+            {totalSessions === 0 && (
+              <Text style={{ fontSize: 12, color: '#71717A', marginTop: 10 }}>
+                Complete your first workout to start tracking progress.
+              </Text>
+            )}
           </Card>
         </Section>
-      )}
 
-      {/* Strength level benchmarks */}
-      {isStrength && (
-        <Section label="Strength Level"
-          verdict={strengthLevelVerdict(strengthBests)}
-          verdictColor="#A89FE8">
-          <Card style={{ padding: 0, paddingVertical: 16 }}>
-            <BenchmarkCards bests={strengthBests} />
-          </Card>
-        </Section>
-      )}
-
-      {/* Volume load — gain */}
-      {isGain && (
-        <Section label="Volume Load · kg × reps per session"
-          verdict={volumeVerdict(volumeLoadPoints)}>
-          <Card style={{ padding: 0, overflow: 'hidden' }}>
-            <LineChart points={volumeLoadPoints} color="#7F77DD" height={110} unit=" kg" />
-            <View style={{ height: 16 }} />
-          </Card>
-        </Section>
-      )}
-
-      {/* Weight trend — lose / aesthetics / anyone with weight data */}
-      {(isLose || isAesthetics || weightEntries.length >= 5) && (
-        <Section label="Body Weight · 7-day average"
-          verdict={weightVerdict(weightEntries)}
-          verdictColor={weightVerdictColor(weightEntries)}>
-          <Card style={{ padding: 0, overflow: 'hidden', paddingVertical: 16 }}>
-            <WeightSection
-              entries={weightEntries}
-              proteinAvg={proteinAvg}
-              proteinTarget={proteinTarget}
-              strengthDelta={strengthDelta}
-              showRecompSignal={isAesthetics}
-            />
-          </Card>
-        </Section>
-      )}
-
-      {/* Cardio — endurance */}
-      {isEndurance && (
-        <>
-          <Section label="Cardio Frequency"
-            verdict={cardioVerdict(cardioWeeklyCounts)}
-            verdictColor={consistencyColor(cardioWeeklyCounts)}>
-            <Card style={{ padding: 0, paddingVertical: 16 }}>
-              <ConsistencyBars weeks={cardioWeeklyCounts} />
+        {/* ── STRENGTH TREND ── */}
+        {(isGain || isStrength || isAesthetics) && (
+          <Section label="Strength Trend · estimated 1RM"
+            verdict={e1rmVerdict(e1rmData, selectedEx)}
+            verdictColor={e1rmColor(e1rmData)}>
+            <Card style={{ padding: 0, overflow: 'hidden' }}>
+              <View style={{ padding: PAD, paddingBottom: 0 }}>
+                <ExPills exercises={exercises} selected={selectedEx} onSelect={setSelectedEx} />
+              </View>
+              <LineChart points={e1rmData} color="#FFFFFF" height={130} unit=" kg" />
+              <View style={{ height: 16 }} />
             </Card>
           </Section>
-          {cardioDurations.length >= 2 && (
-            <Section label="Session Duration"
-              verdict={
-                cardioDurations[cardioDurations.length - 1].y > cardioDurations[0].y
-                  ? `Duration up ${cardioDurations[cardioDurations.length-1].y - cardioDurations[0].y}min since start — aerobic capacity improving.`
-                  : `Duration flat. Push 5min longer per session to drive VO₂max gains.`
-              }>
-              <Card style={{ padding: 0, overflow: 'hidden' }}>
-                <LineChart points={cardioDurations} color="#BA7517" height={100} unit=" min" />
-                <View style={{ height: 16 }} />
+        )}
+
+        {/* ── MOST IMPROVED ── */}
+        {mostImproved.length > 0 && (
+          <Section label="Most Improved · last 90 days">
+            <Card style={{ gap: 12 }}>
+              {mostImproved.map(({ ex, first, last, gain, pct }) => (
+                <View key={ex} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13, color: '#E4E4E8', fontWeight: '500' }} numberOfLines={1}>{ex}</Text>
+                    <Text style={{ fontSize: 11, color: '#52525B', marginTop: 2 }}>{first}kg → {last}kg est. 1RM</Text>
+                  </View>
+                  <View style={{ backgroundColor: '#1D9E7522', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: '#1D9E7544' }}>
+                    <Text style={{ fontSize: 13, color: '#1D9E75', fontWeight: '700' }}>+{pct}%</Text>
+                  </View>
+                </View>
+              ))}
+            </Card>
+          </Section>
+        )}
+
+        {/* ── STRENGTH BENCHMARKS ── */}
+        {isStrength && (
+          <Section label="Strength Level"
+            verdict={strengthLevelVerdict(strengthBests)}
+            verdictColor="#FFFFFF">
+            <Card style={{ padding: 0, paddingVertical: 16 }}>
+              <BenchmarkCards bests={strengthBests} />
+            </Card>
+          </Section>
+        )}
+
+        {/* ── BODY WEIGHT ── */}
+        {(isLose || isAesthetics || weightEntries.length >= 5) && (
+          <Section label="Body Weight · 7-day average"
+            verdict={weightVerdict(weightEntries)}
+            verdictColor={weightVerdictColor(weightEntries)}>
+            <Card style={{ padding: 0, overflow: 'hidden', paddingVertical: 16 }}>
+              <WeightSection
+                entries={weightEntries}
+                proteinAvg={proteinAvg}
+                proteinTarget={proteinTarget}
+                strengthDelta={strengthDelta}
+                showRecompSignal={isAesthetics}
+              />
+            </Card>
+          </Section>
+        )}
+
+        {/* ── RPE TREND ── */}
+        {rpeWeeks.some(w => w.avg !== null) && (
+          <Section label="Fatigue · avg RPE per week"
+            verdict={(() => {
+              const filled = rpeWeeks.filter(w => w.avg !== null);
+              if (filled.length < 2) return null;
+              const last = filled[filled.length - 1].avg;
+              const prev = filled[filled.length - 2].avg;
+              if (last > 8.5) return `RPE ${last} this week — high fatigue. Consider a deload or lighter session.`;
+              if (last > prev + 1) return `RPE rising to ${last} — fatigue accumulating. Watch recovery.`;
+              if (last < 6) return `RPE ${last} — sessions feel easy. Push harder or increase load.`;
+              return `RPE ${last} — in the optimal training zone. Keep this intensity.`;
+            })()}
+            verdictColor={(() => {
+              const filled = rpeWeeks.filter(w => w.avg !== null);
+              if (!filled.length) return undefined;
+              const last = filled[filled.length - 1].avg;
+              return last > 8.5 ? '#E24B4A' : last > 7 ? '#1D9E75' : '#BA7517';
+            })()}>
+            <Card style={{ padding: 0, paddingVertical: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 80, gap: 4, paddingHorizontal: PAD }}>
+                {rpeWeeks.map((w, i) => {
+                  const h = w.avg ? Math.max(6, (w.avg / 10) * 64) : 0;
+                  const color = w.avg > 8.5 ? '#E24B4A' : w.avg >= 7 ? '#1D9E75' : w.avg >= 5 ? '#BA7517' : '#2C2C35';
+                  return (
+                    <View key={i} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <View style={{ height: h, width: '100%', backgroundColor: color, borderRadius: 4 }} />
+                      {w.avg !== null && (
+                        <Text style={{ fontSize: 8, color: '#52525B', marginTop: 3 }}>{w.avg}</Text>
+                      )}
+                      <Text style={{ fontSize: 7, color: '#3F3F50', marginTop: 1 }}>{w.label}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+              <Text style={{ fontSize: 10, color: '#52525B', paddingHorizontal: PAD, marginTop: 8 }}>
+                Scale 1–10 · Rate of Perceived Exertion logged per session
+              </Text>
+            </Card>
+          </Section>
+        )}
+
+        {/* ── CARDIO (endurance) ── */}
+        {isEndurance && (
+          <>
+            <Section label="Cardio Frequency"
+              verdict={cardioVerdict(cardioWeeklyCounts)}
+              verdictColor={consistencyColor(cardioWeeklyCounts)}>
+              <Card style={{ padding: 0, paddingVertical: 16 }}>
+                <ConsistencyBars weeks={cardioWeeklyCounts} />
               </Card>
             </Section>
-          )}
-        </>
-      )}
+            {cardioDurations.length >= 2 && (
+              <Section label="Session Duration"
+                verdict={
+                  cardioDurations[cardioDurations.length - 1].y > cardioDurations[0].y
+                    ? `Duration up ${cardioDurations[cardioDurations.length-1].y - cardioDurations[0].y}min since start — aerobic capacity improving.`
+                    : `Duration flat. Push 5min longer per session to drive VO₂max gains.`
+                }>
+                <Card style={{ padding: 0, overflow: 'hidden' }}>
+                  <LineChart points={cardioDurations} color="#BA7517" height={100} unit=" min" />
+                  <View style={{ height: 16 }} />
+                </Card>
+              </Section>
+            )}
+          </>
+        )}
 
-      {/* Muscle volume this week */}
-      <Section label="Weekly Volume · sets vs targets"
-        verdict={(() => {
-          const below = Object.keys(VOLUME_TARGETS).filter(m => (muscleVolume[m] || 0) < VOLUME_TARGETS[m].min);
-          if (!Object.keys(muscleVolume).length) return null;
-          if (below.length === 0) return 'All muscle groups hitting minimum volume — maintain or increase to optimal range.';
-          if (below.length <= 2) return `${below.join(', ')} below minimum. Add sets to these groups next session.`;
-          return `${below.length} groups below target — prioritise frequency over adding more sets to strong groups.`;
-        })()}>
-        <Card style={{ padding: 0, paddingVertical: 16 }}>
-          <MuscleVolumeSection volume={muscleVolume} />
-        </Card>
-      </Section>
+        {/* ── TRAINING BLOCK ── */}
+        <Section label="Training Block">
+          <Card style={{ padding: 0, paddingVertical: 16 }}>
+            <BlockProgressSection info={blockInfo} />
+          </Card>
+        </Section>
 
-      {/* Block progress */}
-      <Section label="Training Block">
-        <Card style={{ padding: 0, paddingVertical: 16 }}>
-          <BlockProgressSection info={blockInfo} />
-        </Card>
-      </Section>
-
-      {/* Consistency — all goals */}
-      {(isMaintain || isGain || isStrength || isLose || isAesthetics) && (
+        {/* ── CONSISTENCY ── */}
         <Section label="Training Consistency"
           verdict={consistencyVerdict(weeklySessionCounts)}
           verdictColor={consistencyColor(weeklySessionCounts)}>
@@ -761,9 +785,9 @@ export default function ProgressScreen() {
             <ConsistencyBars weeks={weeklySessionCounts} />
           </Card>
         </Section>
-      )}
 
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -771,29 +795,32 @@ export default function ProgressScreen() {
 
 const st = StyleSheet.create({
   section: { marginBottom: 24 },
-  label: { fontSize: 10, fontWeight: '700', color: '#3F3F50', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 },
+  label: { fontSize: 10, fontWeight: '700', color: '#52525B', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 },
   verdict: { fontSize: 13, color: '#A1A1AA', lineHeight: 19, marginBottom: 10 },
-  card: { backgroundColor: '#13121E', borderRadius: 18, borderWidth: 0.5, borderColor: '#1E1E28', padding: PAD },
+  card: { backgroundColor: '#111114', borderRadius: 18, borderWidth: 0.5, borderColor: '#1E1E28', padding: PAD },
+  overviewStat: { flex: 1, minWidth: '40%', backgroundColor: '#0F0F18', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#1E1E28' },
+  overviewVal: { fontSize: 28, fontWeight: '200', letterSpacing: -0.5 },
+  overviewLabel: { fontSize: 10, color: '#52525B', marginTop: 2, fontWeight: '500' },
   heroNum: { fontSize: 38, fontWeight: '200', color: '#FFFFFF', letterSpacing: -1 },
   heroUnit: { fontSize: 16, color: '#52525B', fontWeight: '300' },
   heroDelta: { fontSize: 14, fontWeight: '500', marginBottom: 4 },
   pill: { borderRadius: 9, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#0F0F18', borderWidth: 0.5, borderColor: '#2C2C35' },
-  pillActive: { backgroundColor: '#1E1A35', borderColor: '#534AB7' },
+  pillActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
   pillTxt: { fontSize: 12, color: '#52525B', fontWeight: '500' },
-  pillTxtActive: { color: '#A89FE8', fontWeight: '700' },
+  pillTxtActive: { color: '#FFFFFF', fontWeight: '700' },
   emptyWrap: { paddingVertical: 28, alignItems: 'center', paddingHorizontal: PAD },
-  emptyTxt: { fontSize: 13, color: '#3F3F50', fontStyle: 'italic', textAlign: 'center' },
+  emptyTxt: { fontSize: 13, color: '#71717A', textAlign: 'center', lineHeight: 20 },
   bmCard: { width: 148, backgroundColor: '#0F0F18', borderRadius: 16, padding: 14, borderWidth: 0.5, borderColor: '#1E1E28' },
   bmBadge: { alignSelf: 'flex-start', borderRadius: 6, borderWidth: 0.5, paddingHorizontal: 7, paddingVertical: 2, marginBottom: 10 },
   bmBadgeTxt: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
   bmLift: { fontSize: 11, color: '#52525B', marginBottom: 6 },
   bmVal: { fontSize: 30, fontWeight: '200', color: '#FFFFFF', letterSpacing: -0.8 },
   bmUnit: { fontSize: 14, color: '#52525B', fontWeight: '300' },
-  bmSub: { fontSize: 10, color: '#3F3F50', marginBottom: 10 },
+  bmSub: { fontSize: 10, color: '#52525B', marginBottom: 10 },
   bmBar: { height: 5, backgroundColor: '#1A1A20', borderRadius: 3, overflow: 'hidden', position: 'relative', marginBottom: 8 },
   bmFill: { height: 5, borderRadius: 3, position: 'absolute', left: 0, top: 0 },
   bmTick: { position: 'absolute', top: 0, width: 1, height: 5, backgroundColor: '#0F0F13' },
-  bmNext: { fontSize: 10, color: '#534AB7', fontStyle: 'italic' },
+  bmNext: { fontSize: 10, color: '#FFFFFF', fontStyle: 'italic' },
   legendTxt: { fontSize: 10, color: '#52525B' },
   signal: { borderRadius: 10, borderWidth: 0.5, padding: 10 },
   signalTxt: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
@@ -802,5 +829,5 @@ const st = StyleSheet.create({
   metaSub: { fontWeight: '400', color: '#52525B' },
   proBar: { height: 5, backgroundColor: '#1A1A20', borderRadius: 3, overflow: 'hidden' },
   proFill: { height: 5, borderRadius: 3 },
-  proNote: { fontSize: 10, color: '#3F3F50', marginTop: 5 },
+  proNote: { fontSize: 10, color: '#52525B', marginTop: 5 },
 });

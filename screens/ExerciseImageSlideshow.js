@@ -78,7 +78,7 @@ export default function ExerciseImageSlideshow({ exerciseName, style }) {
           <View key={i} style={[styles.slide, { width: SLIDE_W }]}>
             {loadStates[i] === 'loading' && (
               <View style={styles.placeholder}>
-                <ActivityIndicator color="#534AB7" size="small" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               </View>
             )}
             {loadStates[i] === 'error' && (
@@ -115,7 +115,7 @@ export default function ExerciseImageSlideshow({ exerciseName, style }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#13121E',
+    backgroundColor: '#111114',
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 0.5,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   labelTextActive: {
-    color: '#A89FE8',
+    color: '#FFFFFF',
   },
   labelUnderline: {
     position: 'absolute',
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     left: '20%',
     right: '20%',
     height: 2,
-    backgroundColor: '#534AB7',
+    backgroundColor: '#FFFFFF',
     borderRadius: 2,
   },
 
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 10,
-    backgroundColor: '#13121E',
+    backgroundColor: '#111114',
   },
   dot: {
     width: 5,
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2C2C35',
   },
   dotActive: {
-    backgroundColor: '#534AB7',
+    backgroundColor: '#FFFFFF',
     width: 16,
   },
 });
