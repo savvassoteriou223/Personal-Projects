@@ -270,7 +270,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       {/* Alerts */}
       {waterSpike && (
         <View style={styles.alertCard}>
-          <Ionicons name="water" size={18} color="#60A5FA" style={styles.alertIcon} />
+          <Ionicons name="water" size={18} color="#1D9E75" style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={styles.alertTitle}>Likely water retention</Text>
             <Text style={styles.alertBody}>

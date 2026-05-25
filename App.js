@@ -599,6 +599,7 @@ export default function App() {
             setPreviewWorkout(null);
             setActiveWorkout(workout || true);
           }}
+          onSplitChanged={() => setRefreshToday(prev => prev + 1)}
         />
       );
     }
@@ -646,7 +647,10 @@ export default function App() {
 
         <Tab.Screen name="Program">
           {() => (
-            <ProgramScreen onStartWorkout={(workout) => setActiveWorkout(workout || true)} />
+            <ProgramScreen
+              onStartWorkout={(workout) => setActiveWorkout(workout || true)}
+              onSplitChanged={() => setRefreshToday(prev => prev + 1)}
+            />
           )}
         </Tab.Screen>
 

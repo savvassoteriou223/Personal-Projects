@@ -40,10 +40,10 @@ const C = {
   bodyStroke:   '#2A2A38',
   inactive:     '#1C1C24',
   inactiveEdge: '#2A2A38',
-  primary:      '#34D399',   // green — primary muscle
-  primaryEdge:  '#10B981',
-  secondary:    '#FBBF24',   // amber — secondary muscle
-  secondaryEdge:'#D97706',
+  primary:      '#1D9E75',   // green — primary muscle
+  primaryEdge:  '#1D9E75',
+  secondary:    '#BA7517',   // amber — secondary muscle
+  secondaryEdge:'#BA7517',
   label:        '#8B8A9A',
   textPrimary:  '#F1F0F5',
 };

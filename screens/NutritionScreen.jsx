@@ -103,7 +103,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
   const macros = [
     { label: 'Protein', val: totals.protein, target: targets.protein, color: '#FFFFFF' },
     { label: 'Carbs',   val: totals.carbs,   target: targets.carbs,   color: '#BA7517' },
-    { label: 'Fat',     val: totals.fat,      target: targets.fat,     color: '#D4537E' },
+    { label: 'Fat',     val: totals.fat,      target: targets.fat,     color: '#E24B4A' },
   ];
 
   return (

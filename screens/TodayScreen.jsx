@@ -164,7 +164,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       // Load profile
       const { data: prof } = await supabase
         .from('profiles')
-        .select('id, name, trainingExperience, equipment')
+        .select('id, name, trainingExperience, equipment, weekly_workouts, goals, selected_split')
         .eq('id', user.id)
         .single();
 

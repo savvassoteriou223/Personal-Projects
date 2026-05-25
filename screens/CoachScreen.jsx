@@ -80,7 +80,12 @@ export default function CoachScreen() {
     ]);
 
     if (profile) {
-      const used = profile.ai_calls_used ?? 0;
+      const resetAt = profile.ai_calls_reset_at ? new Date(profile.ai_calls_reset_at) : null;
+      const now = new Date();
+      const isNewMonth = !resetAt ||
+        now.getUTCFullYear() !== resetAt.getUTCFullYear() ||
+        now.getUTCMonth() !== resetAt.getUTCMonth();
+      const used = isNewMonth ? 0 : (profile.ai_calls_used ?? 0);
       setQuota({ used, remaining: Math.max(0, MONTHLY_QUOTA - used) });
       setQuotaExceeded(used >= MONTHLY_QUOTA);
     }

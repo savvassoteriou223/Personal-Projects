@@ -17,7 +17,7 @@ const OPTIMALITY_COLORS = {
 
 const RANK_LABELS = ['Best match', '2nd option', '3rd option'];
 
-export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
+export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewDay, onClose }) {
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState(null);
   const [program, setProgram] = useState(null);
@@ -57,6 +57,7 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
     const { data: block } = await supabase.from('program_blocks').select('block_index, block_start_date').eq('user_id', user.id).maybeSingle();
     setProgram(generateProgram(newProfile, block?.block_index || 0, block?.block_start_date || null));
     setSelectingDays(false);
+    onSplitChanged && onSplitChanged();
   };
 
   // ─── PREVIEW MODE ──────────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
             <Pressable onPress={onClose} style={styles.backBtnWrapper}>
               <Text style={styles.backBtn}>← Back</Text>
             </Pressable>
-            <Pressable style={styles.startBtn} onPress={() => onStartWorkout(previewDay)}>
+            <Pressable style={styles.startBtn} onPress={() => onStartWorkout({ ...previewDay, trainingExperience: profile?.trainingExperience })}>
               <Text style={styles.startBtnText}>Start</Text>
             </Pressable>
           </View>
@@ -217,7 +218,7 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
             </Pressable>
             <Pressable style={styles.startBtn} onPress={() => {
               setSelectedDay(null);
-              onStartWorkout && onStartWorkout(selectedDay);
+              onStartWorkout && onStartWorkout({ ...selectedDay, trainingExperience: profile?.trainingExperience });
             }}>
               <Text style={styles.startBtnText}>Start</Text>
             </Pressable>
@@ -279,9 +280,11 @@ export default function ProgramScreen({ onStartWorkout, previewDay, onClose }) {
                     {!isLast && (
                       <View style={styles.restArrow}>
                         <View style={styles.restArrowLine} />
-                        <Text style={styles.restArrowLabel}>
-                          {rest === 0 ? 'next day' : rest === 1 ? '1 rest' : `${rest} rest`}
-                        </Text>
+                        {rest > 0 && (
+                          <Text style={styles.restArrowLabel}>
+                            {rest === 1 ? '1 rest' : `${rest} rest`}
+                          </Text>
+                        )}
                         <View style={styles.restArrowLine} />
                       </View>
                     )}
@@ -436,7 +439,7 @@ const MUSCLE_COLORS = {
   'Shoulders': '#A1A1AA', 'Side deltoids': '#A1A1AA', 'Rear deltoids': '#A1A1AA',
   'Biceps': '#1D9E75', 'Brachialis': '#1D9E75',
   'Triceps': '#BA7517',
-  'Quads': '#0EA5E9', 'Hamstrings': '#0EA5E9', 'Glutes': '#0EA5E9', 'Calves': '#0EA5E9',
+  'Quads': '#A1A1AA', 'Hamstrings': '#A1A1AA', 'Glutes': '#A1A1AA', 'Calves': '#A1A1AA',
   'Abs': '#71717A', 'Core': '#71717A',
 };
 

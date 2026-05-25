@@ -758,7 +758,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
               ? <Text style={styles.empty}>No PRs yet — complete workouts to start tracking.</Text>
               : prs.map((pr, i) => (
                 <View key={i} style={styles.prRow}>
-                  <View style={[styles.prRank, i < 3 && { backgroundColor: i===0?'#BA7517':i===1?'#71717A':'#7B4B2A' }]}>
+                  <View style={[styles.prRank, i < 3 && { backgroundColor: i===0?'#BA7517':i===1?'#71717A':'#3D3D4A' }]}>
                     <Text style={styles.prRankText}>{i+1}</Text>
                   </View>
                   <Text style={styles.prName} numberOfLines={1}>{pr.name}</Text>
