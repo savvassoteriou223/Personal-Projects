@@ -260,14 +260,7 @@ export default function App() {
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
-    NavigationBar.setVisibilityAsync('hidden');
-    NavigationBar.setBehaviorAsync('overlay-swipe');
-    const sub = NavigationBar.addVisibilityListener(({ visibility }) => {
-      if (visibility === 'visible') {
-        setTimeout(() => NavigationBar.setVisibilityAsync('hidden'), 1500);
-      }
-    });
-    return () => sub.remove();
+    NavigationBar.setVisibilityAsync('hidden').catch(() => {});
   }, []);
 
   useEffect(() => {
