@@ -76,7 +76,8 @@
           }
         }
       ],
-      "./plugins/withAbiFilters"
+      "./plugins/withAbiFilters",
+      "./plugins/withBlackSplash"
     ],
     "extra": {
       "eas": {
