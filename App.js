@@ -424,7 +424,16 @@ export default function App() {
           const raw = await AsyncStorage.getItem('@helix_workout_draft');
           if (raw) {
             const draft = JSON.parse(raw);
-            if (draft.workout && !draft.finished) setActiveWorkout(draft.workout);
+            if (draft.workout && !draft.finished) {
+              Alert.alert(
+                'Resume workout?',
+                `You have an unfinished ${draft.workout.name} session.`,
+                [
+                  { text: 'Discard', style: 'destructive', onPress: () => AsyncStorage.removeItem('@helix_workout_draft') },
+                  { text: 'Resume', onPress: () => setActiveWorkout(draft.workout) },
+                ]
+              );
+            }
           }
         } catch (_) {}
         setScreen('main');
