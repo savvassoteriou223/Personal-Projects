@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, AppState } from 'react-native';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://guvvzimnucttjjzmpsvp.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1dnZ6aW1udWN0dGpqem1wc3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMzc4NjQsImV4cCI6MjA5MTgxMzg2NH0.DzlaEHqxnln1GgjkBKLSyyIoyR6-VrknUL0d0wyuPaQ';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 // Auth endpoints (login, signup, refresh, reset) are never aborted — aborting
 // a refresh causes SIGNED_OUT and wipes the session; aborting login just
@@ -49,7 +49,7 @@ if (Platform.OS !== 'web') {
 // and to work even when the access token is mid-refresh.
 // Native: getUser() validates against the server (more reliable than getSession).
 const _WEB_STORAGE_KEY = Platform.OS === 'web'
-  ? `sb-${supabaseUrl.match(/\/\/([^.]+)/)?.[1]}-auth-token`
+  ? `sb-${supabaseUrl?.match(/\/\/([^.]+)/)?.[1]}-auth-token`
   : null;
 
 export async function getCurrentUser() {

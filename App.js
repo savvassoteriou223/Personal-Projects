@@ -25,8 +25,8 @@ import ResetPasswordScreen from './screens/ResetPasswordScreen';
 
 const Tab = createBottomTabNavigator();
 
-const RC_KEY_IOS     = process.env.EXPO_PUBLIC_RC_KEY_IOS     ?? 'test_jHYThiyJlpwboJgEVGkacXEEtTp';
-const RC_KEY_ANDROID = process.env.EXPO_PUBLIC_RC_KEY_ANDROID ?? 'test_jHYThiyJlpwboJgEVGkacXEEtTp';
+const RC_KEY_IOS     = process.env.EXPO_PUBLIC_RC_KEY_IOS     ?? '';
+const RC_KEY_ANDROID = process.env.EXPO_PUBLIC_RC_KEY_ANDROID ?? '';
 const RC_ENTITLEMENT = 'Helix Pro'; // matches Entitlement identifier in RevenueCat dashboard
 
 // ─── PREMIUM PAYWALL SCREEN ───────────────────────────────────────────────────

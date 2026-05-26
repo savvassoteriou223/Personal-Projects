@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://guvvzimnucttjjzmpsvp.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1dnZ6aW1udWN0dGpqem1wc3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMzc4NjQsImV4cCI6MjA5MTgxMzg2NH0.DzlaEHqxnln1GgjkBKLSyyIoyR6-VrknUL0d0wyuPaQ';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 // DB/storage requests get an 8-second timeout. Auth requests MUST NOT be
 // aborted — an aborted token refresh causes the SDK to fire SIGNED_OUT,
@@ -28,7 +28,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // On web, read directly from localStorage — avoids the async initialization
 // race where getSession() returns null before the auth client finishes loading.
 // The Supabase client still uses its own session for request signing (headers).
-const STORAGE_KEY = `sb-${supabaseUrl.match(/\/\/([^.]+)/)?.[1]}-auth-token`;
+const STORAGE_KEY = `sb-${supabaseUrl?.match(/\/\/([^.]+)/)?.[1]}-auth-token`;
 
 export function getCurrentUser() {
   try {
