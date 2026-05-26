@@ -634,7 +634,20 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
       {/* Top bar — hidden when slideshow is open to prevent bleed-through */}
       {!slideshowExercise && (
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={onCancel} style={styles.cancelBtn}>
+        <Pressable onPress={() => {
+          if (totalSetsCompleted > 0) {
+            Alert.alert(
+              'Cancel workout?',
+              'Your logged sets will not be saved.',
+              [
+                { text: 'Keep going', style: 'cancel' },
+                { text: 'Cancel', style: 'destructive', onPress: onCancel },
+              ]
+            );
+          } else {
+            onCancel();
+          }
+        }} style={styles.cancelBtn}>
           <Text style={styles.cancelText}>✕</Text>
         </Pressable>
         <View style={styles.dotIndicators}>

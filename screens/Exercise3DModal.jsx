@@ -199,7 +199,7 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
   const html = buildViewerHTML(data.slides);
 
   return (
-    <Modal visible animationType="slide" statusBarTranslucent>
+    <Modal visible animationType="slide" statusBarTranslucent onRequestClose={onClose}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0A10" />
       <SafeAreaView style={styles.container}>
 

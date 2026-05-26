@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform, Linking } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform, Linking, BackHandler } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
@@ -33,6 +33,13 @@ const RC_ENTITLEMENT = 'Helix Pro'; // matches Entitlement identifier in Revenue
 
 function PremiumPaywall({ feature, onUpgrade, onRestore }) {
   const [plan, setPlan] = useState('monthly'); // 'monthly' | 'yearly'
+  const [upgrading, setUpgrading] = useState(false);
+
+  const handleUpgradePress = async () => {
+    if (upgrading) return;
+    setUpgrading(true);
+    try { await onUpgrade(plan); } finally { setUpgrading(false); }
+  };
 
   const features = {
     Coach: {
@@ -102,8 +109,8 @@ function PremiumPaywall({ feature, onUpgrade, onRestore }) {
 
         <Text style={pw.trialNote}>7-day free trial · Cancel anytime</Text>
 
-        <Pressable style={pw.upgradeBtn} onPress={() => onUpgrade(plan)}>
-          <Text style={pw.upgradeBtnText}>Start free trial</Text>
+        <Pressable style={[pw.upgradeBtn, upgrading && { opacity: 0.6 }]} onPress={handleUpgradePress} disabled={upgrading}>
+          <Text style={pw.upgradeBtnText}>{upgrading ? 'Processing...' : 'Start free trial'}</Text>
         </Pressable>
 
         <Pressable style={pw.restoreBtn} onPress={onRestore}>
@@ -262,6 +269,29 @@ export default function App() {
     if (Platform.OS !== 'android') return;
     NavigationBar.setVisibilityAsync('hidden').catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (screen === 'login' || screen === 'signup') { setScreen('welcome'); return true; }
+      if (screen === 'reset_password') { setScreen('main'); return true; }
+      if (screen === 'onboarding') { setScreen('welcome'); return true; }
+      if (previewWorkout) { setPreviewWorkout(null); return true; }
+      if (activeWorkout) {
+        Alert.alert(
+          'Cancel workout?',
+          'Your progress will not be saved.',
+          [
+            { text: 'Keep going', style: 'cancel' },
+            { text: 'Cancel workout', style: 'destructive', onPress: () => setActiveWorkout(false) },
+          ]
+        );
+        return true;
+      }
+      return false;
+    });
+    return () => sub.remove();
+  }, [screen, activeWorkout, previewWorkout]);
 
   useEffect(() => {
     fetch('https://guvvzimnucttjjzmpsvp.supabase.co/auth/v1/').catch(() => {});
