@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase, getCurrentUser } from '../supabase';
@@ -326,7 +326,8 @@ ${sessionLines}`;
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
       <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         <Text style={styles.title}>AI Coach</Text>
         <Text style={styles.subtitle}>Science-based · Powered by Claude</Text>
@@ -527,6 +528,7 @@ ${sessionLines}`;
         ))}
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

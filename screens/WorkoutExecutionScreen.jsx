@@ -932,6 +932,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
 
       {/* ── Plate calculator modal ── */}
       <Modal visible={showPlateCalc} transparent animationType="slide" onRequestClose={() => setShowPlateCalc(false)}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable style={styles.plateOverlay} onPress={() => setShowPlateCalc(false)}>
           <Pressable style={styles.plateCard} onPress={e => e.stopPropagation()}>
             <Text style={styles.plateTitle}>Plate calculator</Text>
@@ -994,6 +995,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
             </Pressable>
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ── Exercise slideshow modal ── */}

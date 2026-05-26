@@ -84,7 +84,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
   if (mode === 'reset_code') {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <Pressable onPress={switchToReset} style={{ paddingBottom: 24 }}>
               <Text style={{ color: '#71717A', fontSize: 15 }}>← Back</Text>
@@ -127,7 +127,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
   if (mode === 'reset') {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <Pressable onPress={switchToLogin} style={{ paddingBottom: 24 }}>
               <Text style={{ color: '#71717A', fontSize: 15 }}>← Back to sign in</Text>

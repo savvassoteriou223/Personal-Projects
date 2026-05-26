@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert, Linking, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
@@ -463,7 +463,8 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
 
         {/* Scrollable header — scrolls away */}
         <View style={styles.header}>
@@ -874,6 +875,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
 
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
