@@ -12,7 +12,7 @@
     },
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.helix.app",
+      "bundleIdentifier": "com.helixfit.app",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Used to scan food barcodes when logging nutrition.",
@@ -32,7 +32,7 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.helix.app",
+      "package": "com.helixfit.app",
       "versionCode": 3
     },
     "web": {
