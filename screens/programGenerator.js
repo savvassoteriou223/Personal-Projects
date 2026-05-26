@@ -2173,7 +2173,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('hip_hinge', { reps: '8–12', sets: compoundSets }),
             be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
-            be('back_vertical_pull', { reps: '8–12', sets: compoundSets }),
+            be('back_vertical_pull', { reps: '8–12', sets: compoundSets, prefer: 'chin_up' }),
             be('shoulders_vertical_push', { reps: '8–12', sets: compoundSets }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets }),
@@ -2189,7 +2189,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           exercises: [
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '10–15', sets: 3 }),
+            be('back_vertical_pull', { reps: '10–15', sets: 3, prefer: 'lat_pulldown' }),
             be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
             be('hip_hinge', { sets: 2, reps: '10–15' }),
             be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
@@ -2410,8 +2410,8 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Upper — Full Upper Body',
           focus: 'Incline chest, vertical pull, chest isolation, side delts, rear delts, arms volume',
           exercises: [
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 4 }),
+            be('chest_incline_push', { reps: '8–12', sets: 3, prefer: 'incline_dumbbell_press' }),
+            be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
             be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
             be('shoulders_side_delt', { sets: isolationSets, reps: '15–20' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
@@ -2508,7 +2508,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           exercises: [
             be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('shoulders_side_delt', { sets: 3, reps: '12–20' }),
-            be('chest_incline_push', { reps: '8–12', sets: 2 }),
+            be('chest_incline_push', { reps: '8–12', sets: 2, prefer: 'incline_dumbbell_press' }),
             be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'overhead_tricep_extension' }),
             be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
           ].filter(Boolean),
@@ -2518,7 +2518,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Pull B — Bicep Focus',
           focus: 'Vertical pull volume, inner back, face pull, reverse pec deck, Bayesian curl + hammer curl',
           exercises: [
-            be('back_vertical_pull', { reps: '8–12', sets: 4 }),
+            be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
             be('back_inner', { reps: '12–15', sets: 3 }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
@@ -2575,7 +2575,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Upper body — chest, back, shoulders, arms',
           exercises: [
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 4 }),
+            be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
             be('chest_isolation', { sets: isolationSets }),
             be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
@@ -2634,7 +2634,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('back_vertical_pull', { reps: '6–10', sets: 3 }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
+            be('chest_incline_push', { reps: '8–12', sets: 3, prefer: 'incline_dumbbell_press' }),
             be('quad_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
@@ -2667,7 +2667,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           exercises: [
             be('hip_hinge', { reps: '8–12', sets: 3 }),
             be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
+            be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
             be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
             be('shoulders_side_delt', { sets: isolationSets }),
@@ -2831,7 +2831,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Posterior chain + arms',
           exercises: [
             be('hip_hinge', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
+            be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
             be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
@@ -2847,7 +2847,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Weak points + isolation',
           exercises: [
             be('squat_pattern', { reps: '10–15', sets: 3 }),
-            be('back_vertical_pull', { reps: '10–15', sets: 3 }),
+            be('back_vertical_pull', { reps: '10–15', sets: 3, prefer: 'lat_pulldown' }),
             be('chest_isolation', { sets: isolationSets }),
             be('rear_delt', { sets: isolationSets }),
             be('biceps', { sets: 2, reps: isolationReps }),
