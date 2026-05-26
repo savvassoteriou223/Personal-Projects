@@ -103,15 +103,33 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
           setLoading(false);
           return;
         }
-        throw new Error(json.error || 'ai_unavailable');
+        if (res.status === 403) {
+          Alert.alert('Premium required', 'AI nutrition logging requires a Helix Pro subscription.');
+          setLoading(false);
+          return;
+        }
+        if (res.status === 401) {
+          Alert.alert('Session expired', 'Please log out and log back in.');
+          setLoading(false);
+          return;
+        }
+        const errCode = json.error || 'ai_unavailable';
+        console.error('nutrition-ai error response:', res.status, errCode);
+        Alert.alert('Could not calculate', `Error: ${errCode}. Please try again.`);
+        setLoading(false);
+        return;
       }
 
-      if (!json?.items?.length) throw new Error('No items identified. Try describing your meal in more detail.');
+      if (!json?.items?.length) {
+        Alert.alert('No items found', 'Try describing your meal in more detail.');
+        setLoading(false);
+        return;
+      }
 
       setResult({ items: json.items, totals: json.totals });
     } catch (err) {
       console.error('nutrition calc error:', err);
-      Alert.alert('Could not calculate', 'AI service unavailable. Please try again.');
+      Alert.alert('Could not calculate', err.message || 'Network error. Check your connection.');
     }
     setLoading(false);
   };
