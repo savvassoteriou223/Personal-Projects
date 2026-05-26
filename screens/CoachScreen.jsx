@@ -557,7 +557,6 @@ const styles = StyleSheet.create({
   insightEmptyText: { fontSize: 13, color: '#71717A', lineHeight: 20 },
 
   generateBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  btnDisabled: { backgroundColor: '#2C2C35' },
   generateBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
 
   questionInput: { backgroundColor: '#12121A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: '#2C2C35' },

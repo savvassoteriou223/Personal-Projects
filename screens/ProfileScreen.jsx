@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
   header: { backgroundColor: '#0F0F13', paddingHorizontal: 20, paddingTop: 16 },
   avatarRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 19, fontWeight: '700', color: '#FFF' },
+  avatarText: { fontSize: 19, fontWeight: '700', color: '#111114' },
   profileName: { fontSize: 16, fontWeight: '600', color: '#FFF' },
   profileEmail: { fontSize: 12, color: '#71717A', marginTop: 1 },
   signOut: { fontSize: 12, color: '#71717A' },

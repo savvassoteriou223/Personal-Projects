@@ -2191,7 +2191,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_vertical_pull', { reps: '10–15', sets: 3, prefer: 'lat_pulldown' }),
             be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
-            be('hip_hinge', { sets: 2, reps: '10–15' }),
+            be('hip_hinge', { sets: 2, reps: '10–15', prefer: 'hip_thrust' }),
             be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
             be('rear_delt', { sets: isolationSets }),
@@ -2263,7 +2263,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower B — Posterior Chain',
           focus: 'RDL, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'hip_thrust' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('quad_isolation', { sets: isolationSets }),
             be('glute_focused', { sets: isolationSets, reps: '15–20' }),
@@ -2426,7 +2426,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower — Posterior Chain Focus',
           focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('glute_focused', { sets: isolationSets, reps: '10–15', prefer: 'hip_thrust' }),
@@ -2533,7 +2533,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Legs B — Posterior Chain Focus',
           focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'hip_thrust' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
             be('glute_focused', { sets: isolationSets, reps: '15–20' }),
@@ -2593,7 +2593,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Lower body — quads, hamstrings, glutes, calves',
           exercises: [
             be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('hip_hinge', { reps: '8–12', sets: 3 }),
+            be('hip_hinge', { reps: '8–12', sets: 3, prefer: 'hip_thrust' }),
             be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
@@ -2665,7 +2665,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body D',
           focus: 'Posterior chain + arms volume',
           exercises: [
-            be('hip_hinge', { reps: '8–12', sets: 3 }),
+            be('hip_hinge', { reps: '8–12', sets: 3, prefer: 'hip_thrust' }),
             be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
             be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
             be('chest_isolation', { sets: isolationSets }),
@@ -2734,7 +2734,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Lower B — Posterior Chain',
           focus: 'RDL/deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'hip_thrust' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
@@ -2830,7 +2830,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body D',
           focus: 'Posterior chain + arms',
           exercises: [
-            be('hip_hinge', { reps: '8–12', sets: 3 }),
+            be('hip_hinge', { reps: '8–12', sets: 3, prefer: 'hip_thrust' }),
             be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
             be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
