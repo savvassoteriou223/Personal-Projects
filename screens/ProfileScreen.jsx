@@ -9,7 +9,6 @@ import { format, startOfWeek, eachDayOfInterval, endOfWeek, subWeeks } from 'dat
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import BodyCompositionCard from './BodyCompositionCard';
 import { VOLUME_TARGETS } from './programGenerator';
-import { Platform } from 'react-native';
 import { isHealthAvailable, isHealthAuthorized, requestHealthPermissions, disconnectHealth, getRecoveryData } from '../lib/healthService';
 
 const SCREEN_W = Dimensions.get('window').width;

@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
       callsUsed = 0;
     }
 
-    if (!profile?.is_admin && callsUsed >= 5) {
+    if (!profile?.is_admin && callsUsed >= 6) {
       return respond({ error: 'daily_limit_reached' }, 429);
     }
 

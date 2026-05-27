@@ -16,7 +16,9 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Used to scan food barcodes when logging nutrition.",
-        "NSPhotoLibraryUsageDescription": "Not used."
+        "NSPhotoLibraryUsageDescription": "Not used.",
+        "NSSpeechRecognitionUsageDescription": "Allow Helix to transcribe your voice into food descriptions.",
+        "NSMicrophoneUsageDescription": "Allow Helix to use your microphone to log food by voice."
       }
     },
     "android": {
@@ -33,7 +35,7 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.helixfit.app",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -72,7 +74,8 @@
         {
           "android": {
             "minSdkVersion": 26,
-            "enableProguardInReleaseBuilds": false
+            "enableProguardInReleaseBuilds": false,
+            "enableMinifyInReleaseBuilds": false
           }
         }
       ],
@@ -81,9 +84,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "c608deeb-5c1c-4085-be1d-a1869dfaabe9"
+        "projectId": "b34eb723-b7ca-4176-be39-5ee9f81ac340"
       }
     },
-    "owner": "thehelixapp"
+    "owner": "helixfitapp"
   }
 }

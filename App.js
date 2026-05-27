@@ -32,8 +32,21 @@ const RC_ENTITLEMENT = 'Helix Pro'; // matches Entitlement identifier in Revenue
 // ─── PREMIUM PAYWALL SCREEN ───────────────────────────────────────────────────
 
 function PremiumPaywall({ feature, onUpgrade, onRestore }) {
-  const [plan, setPlan] = useState('monthly'); // 'monthly' | 'yearly'
+  const [plan, setPlan] = useState('monthly');
   const [upgrading, setUpgrading] = useState(false);
+  const [prices, setPrices] = useState({ monthly: null, yearly: null });
+
+  useEffect(() => {
+    Purchases.getOfferings().then(offerings => {
+      const pkgs = offerings.current?.availablePackages || [];
+      const monthly = pkgs.find(p => p.packageType === 'MONTHLY');
+      const yearly = pkgs.find(p => p.packageType === 'ANNUAL');
+      setPrices({
+        monthly: monthly?.product?.priceString ?? null,
+        yearly: yearly?.product?.priceString ?? null,
+      });
+    }).catch(() => {});
+  }, []);
 
   const handleUpgradePress = async () => {
     if (upgrading) return;
@@ -93,7 +106,7 @@ function PremiumPaywall({ feature, onUpgrade, onRestore }) {
             onPress={() => setPlan('monthly')}
           >
             <Text style={[pw.planName, plan === 'monthly' && pw.planNameActive]}>Monthly</Text>
-            <Text style={[pw.planPrice, plan === 'monthly' && pw.planPriceActive]}>€9.99</Text>
+            <Text style={[pw.planPrice, plan === 'monthly' && pw.planPriceActive]}>{prices.monthly ?? '—'}</Text>
             <Text style={pw.planPer}>/ month</Text>
           </Pressable>
           <Pressable
@@ -102,8 +115,8 @@ function PremiumPaywall({ feature, onUpgrade, onRestore }) {
           >
             <View style={pw.saveBadge}><Text style={pw.saveBadgeText}>SAVE 50%</Text></View>
             <Text style={[pw.planName, plan === 'yearly' && pw.planNameActive]}>Yearly</Text>
-            <Text style={[pw.planPrice, plan === 'yearly' && pw.planPriceActive]}>€59.99</Text>
-            <Text style={pw.planPer}>€5 / month</Text>
+            <Text style={[pw.planPrice, plan === 'yearly' && pw.planPriceActive]}>{prices.yearly ?? '—'}</Text>
+            <Text style={pw.planPer}>/ year</Text>
           </Pressable>
         </View>
 
