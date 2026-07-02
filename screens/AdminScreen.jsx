@@ -29,12 +29,12 @@ export default function AdminScreen({ visible, onClose }) {
     const { error } = await supabase.from('admin_emails').insert({ email: trimmed });
     setLoading(false);
     if (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', 'Could not add this email. Please try again.');
       return;
     }
     // Grant premium immediately if they already have an account
     const { error: rpcError } = await supabase.rpc('grant_premium_to_email', { target_email: trimmed });
-    if (rpcError) Alert.alert('Warning', `Added to list but could not grant premium: ${rpcError.message}`);
+    if (rpcError) Alert.alert('Warning', 'Added to the list, but premium could not be granted automatically.');
     setNewEmail('');
     fetchEmails();
   };

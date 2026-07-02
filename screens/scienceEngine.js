@@ -2,6 +2,12 @@
 // All principles derived exclusively from peer-reviewed research
 // No proprietary content — sources cited for every claim
 //
+// NOTE: user-facing science TIPS and AI-coach grounding now live in
+// studiesLibrary.js (the single source of truth — concise, citable findings).
+// This file holds the structured CONSTANTS the program generator and screens
+// consume (volume targets, RPE scale, goal parameters). Keep findings phrased
+// for users in studiesLibrary.js; keep programming numbers here.
+//
 // Key sources:
 // [1] Schoenfeld, Ogborn & Krieger (2017) J Sports Sci 35(11):1073-1082
 // [2] Schoenfeld, Ogborn & Krieger (2016) Sports Med 46(11):1689-1697
@@ -12,6 +18,14 @@
 // [7] Zourdos et al. (2016) J Strength Cond Res 30(1):267-275
 // [8] Refalo et al. (2023) Sports Med 53(3):649-665
 // [9] Baz-Valle et al. (2022) J Hum Kinet 81:199-210
+// [10] Pelland, Remmert et al. (2025) Sports Med PMID:41343037 — volume dose-response meta-regression n=2058; +0.24%/set; 5–10 sets practical optimum
+// [11] Robinson, Pelland, Refalo et al. (2024) Sports Med DOI:10.1007/s40279-024-02069-2 — RIR dose-response meta-regression; closer to failure = more hypertrophy
+// [12] Enes et al. (2024) J Sports Sci PMID:38393985 — failure vs 1-2 RIR RCT n=18 trained; no significant hypertrophy difference
+// [13] Trommelen et al. (2023) Cell Reports Medicine — 100g protein meal > 25g over 12h; per-meal cap overturned
+// [14] Casuso & Goossens (2025) Nutrients PMID:40647175 — protein timing does not modify LBM; anabolic window extends hours not minutes
+// [15] Pashayee-Khamene et al. (2025) JISSN PMID:41433021 — creatine +1.39 kg FFM vs placebo; 61 trials pooled
+// [16] Xiao et al. (2025) Front Nutrition PMC:12537405 — caffeine SMD=0.42 velocity; 3-6 mg/kg 45-60 min pre
+// [17] Ding et al. (2025) Lancet Public Health DOI:10.1016/S2468-2667(25)00164-1 — steps meta-analysis n=57 studies; 7000 steps cuts mortality ~47%
 
 export const RPE_SCALE = [
   { rpe: 10,  rir: 0, label: 'Maximal effort',  description: 'Cannot complete another rep — true muscular failure' },
@@ -27,7 +41,7 @@ export const RPE_SCALE = [
 // Source: RPE scale adapted for resistance training by Zourdos et al. (2016) [7]
 
 export const EFFORT_GUIDELINES = {
-  research_summary: 'Proximity to failure is essential for maximizing hypertrophy regardless of rep range (Refalo et al., 2023 [8]). Training to complete failure is not necessary — 1-2 RIR produces equivalent growth while preserving recovery capacity.',
+  research_summary: 'Proximity to failure drives hypertrophy in a continuous dose-response: closer to failure = more growth (Robinson et al. 2024 [11] meta-regression). However, training to failure on every set impairs recovery and reduces weekly volume tolerance. Enes et al. (2024 [12]) RCT: no significant difference between failure and 1–2 RIR in 8 weeks of trained subjects. Stopping ≥4 reps short of failure consistently blunts the stimulus.',
   by_exercise_type: {
     primary_compounds: { target_rpe: '7–8', target_rir: '2–3', rationale: 'High systemic fatigue. RPE 7-8 provides adequate stimulus while preserving performance across subsequent sets.' },
     secondary_compounds: { target_rpe: '8–9', target_rir: '1–2', rationale: 'Moderate fatigue. Can train closer to failure while maintaining quality.' },
@@ -36,10 +50,10 @@ export const EFFORT_GUIDELINES = {
 };
 
 export const VOLUME_GUIDELINES = {
-  research_basis: 'Schoenfeld et al. (2017) [1] meta-analysis of 15 studies found a significant dose-response between weekly sets per muscle and hypertrophy (p=0.002). Each additional set increased muscle size by ~0.37%.',
-  minimum_effective: { sets_per_week: 10, source: 'Schoenfeld et al. (2017) [1]' },
-  optimal_range: { sets_per_week: '12–20', source: 'Baz-Valle et al. (2022) [9]; Schoenfeld et al. (2017) [1]' },
-  diminishing_returns: { threshold: '20+ sets per week', notes: 'Recovery cost begins to outweigh hypertrophic benefit beyond this threshold.' },
+  research_basis: 'Pelland, Remmert et al. (2025) [10] meta-regression of 67 studies (n=2058): +0.24% hypertrophy per additional weekly set — a downward revision from Schoenfeld 2017\'s +0.37% (larger dataset confirms diminishing returns). Minimum: 4 sets/week. Per-session ceiling: ~10–12 direct sets before undetectable marginal returns (Remmert & Pelland 2025 SportRxiv preprint).',
+  minimum_effective: { sets_per_week: 4, source: 'Pelland et al. (2025) [10]' },
+  optimal_range: { sets_per_week: '10–20', source: 'Pelland et al. (2025) [10]; Baz-Valle et al. (2022) [9]' },
+  diminishing_returns: { threshold: '20+ sets per week', notes: 'Gains continue but with steeply diminishing returns; recovery cost rises sharply. Inverted-U exists at very high volumes (40+ sets/week).' },
   by_experience: {
     beginner:     { weekly_sets: '10–12' },
     intermediate: { weekly_sets: '12–16' },

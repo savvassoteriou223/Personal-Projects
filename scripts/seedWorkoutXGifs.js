@@ -15,7 +15,8 @@ if (!SUPABASE_SERVICE_KEY) {
   console.error('Run: SUPABASE_SERVICE_KEY=your_service_role_key node scripts/seedWorkoutXGifs.js');
   process.exit(1);
 }
-const WORKOUTX_KEY         = 'wx_9ae8b2e1373122b966d61949dd5016a169b4bb2d5f861df3cca7e11b';
+const WORKOUTX_KEY         = process.env.WORKOUTX_KEY;
+if (!WORKOUTX_KEY) { console.error('Error: WORKOUTX_KEY env var is required.'); process.exit(1); }
 const WORKOUTX_GIF_BASE    = 'https://api.workoutxapp.com/v1/gifs';
 const REUPLOAD             = process.argv.includes('--reupload');
 
@@ -111,7 +112,8 @@ const ID_MAP = {
 
   // ── Back horizontal pull ─────────────────────────────────────────────────
   'barbell row':                                 '0027', // Barbell Bent Over Row
-  'pendley row deficit':                         '0027',
+  'pendley row deficit':                         '0027', // legacy spelling — keep so old logged sessions still resolve
+  'pendlay row deficit':                         '0027',
   't-bar row':                                   '1351', // Lever T-bar Reverse Grip Row
   'dumbbell row':                                '0292', // Dumbbell One Arm Bent-over Row
   'seated cable row close grip':                 '0213', // Cable Seated High Row (v-bar)

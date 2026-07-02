@@ -7,7 +7,7 @@
 // [2]  Kassiano et al. (2023) J Strength Cond Res 37(5):1135-1144 — long muscle length training superior
 // [3]  Maeo et al. (2024) Med Sci Sports Exerc — double hypertrophy from long-length hamstring training
 // [4]  Kubo, Ikebukuro & Yata (2019) Eur J Appl Physiol 119:1933-1942 — deeper squats more quad hypertrophy
-// [5]  Warneke et al. (2023) Sports Med 53:2055-2075 — stretch-mediated hypertrophy review
+// [5]  Warneke et al. (2023) Sports Med 53:2055-2075 — stretch-mediated hypertrophy review; updated by Warneke (2024) Sports Med Open: d=0.28 in humans (small but real); animal data greatly overstates human effect
 // [6]  Maeo et al. (2023) Eur J Sport Sci 23(7):1240-1250 — overhead extension 40% more tricep long head growth than pushdowns
 // [7]  Kassiano et al. (2023) J Strength Cond Res 37(9):1746-1753 — calf training at stretched position 15% growth vs 6.7% full ROM
 // [8]  Kinoshita et al. (2023) Front Physiol 14:1272106 — standing calf raise 9-12% gastrocnemius growth vs near 0% seated
@@ -22,6 +22,13 @@
 // [17] Del Vecchio et al. (2019) — neural adaptation plateaus at 2-4 weeks, justifying block rotation every 4-6 weeks
 // [18] Kassiano et al. (2022) — systematic variation enhances regional hypertrophy; random variation harms it
 // [19] Kennedy et al. (2024) — glute bridge superior to hip thrust for gluteus maximus EMG activation
+// [20] Kassiano et al. (2025) JSCR PMID:41379528 n=63 — leg extension vs squat: RF distal +17.5% (LE) vs +7.9% (squat); VL distal +18.2% (squat) vs +11.2% (LE)
+// [21] Maeo, Balshaw, Folland et al. (2024) Med Sci Sports Exerc PMID:38857522 — LSET +18% total hamstring vol; Nordic +11%; Nordic superior for semitendinosus (+24.4%); LSET superior for biceps femoris long head
+// [22] Neto et al. (2023) Front Physiol PMID:37461495 — hip thrust vs squat: similar gluteus maximus hypertrophy despite higher hip thrust EMG; EMG ≠ hypertrophy
+// [23] Nunes et al. (2024) Healthcare PMID:39120165 — Nordic umbrella review 17,260 subjects; significantly reduces hamstring strain; improves fascicle length
+// [24] Pelland, Remmert et al. (2025) Sports Med PMID:41343037 — volume dose-response n=2058; +0.24%/set; frequency negligible when volume equated
+// [25] Wolf et al. (2025) JSCR PMID:39959841 — lengthened partials similar to full ROM in trained; stretch advantage smaller than early data suggested
+// [26] Warneke et al. (2024) Sports Med Open DOI:10.1186/s40798-024-00706-8 — stretch hypertrophy d=0.28 in humans (small but significant); animal data does not scale to humans
 
 // ─── EQUIPMENT KEYS ─────────────────────────────────────────────────────────
 // 'barbell'       — barbell + rack
@@ -232,24 +239,24 @@ export const MOVEMENT_PATTERNS = {
         ],
       },
       {
-        id: 'incline_push_up',
-        name: 'Incline push-up',
+        id: 'decline_push_up',
+        name: 'Decline push-up (feet elevated)',
         equipment: ['bodyweight'],
         difficulty: 'beginner',
         stretch_position: true,
         progressive_overload: 'low',
         primary_alternative: false,
-        research_note: 'Hands elevated on a surface (bench, box, step) shifts the press angle to hit the upper chest — the same mechanical principle as incline pressing. The higher the surface, the easier the exercise; lower surface = harder and more upper chest emphasis. Kassiano et al. (2023): incline angle is required to recruit the clavicular head of the pectoralis. Add a weight vest or backpack for progressive overload. Progress to decline push-ups and pike push-ups as strength increases.',
-        reps: '12–20',
+        research_note: 'Feet elevated on a bench or box tilts the torso so the arms press upward relative to the body — the same line of pull as an incline press, recruiting the clavicular (upper) head of the pec. Note the naming flip versus benches: a feet-elevated (decline) push-up mimics an INCLINE press, while a hands-elevated (incline) push-up shifts toward the lower chest and is an easier regression. The higher the feet, the more upper chest and front delt. Add a weight vest or backpack for progressive overload.',
+        reps: '10–20',
         rest: '1–2 min',
         sets: 3,
         cues: [
-          'Place hands on a bench, step, or sturdy box — the lower the surface, the harder and more upper-chest-targeted',
-          'Hands slightly wider than shoulder width, fingers pointing forward or slightly out',
-          'Lower chest toward the surface — elbows at 45° from torso, not flared wide',
-          'Full range: chest touches (or nearly touches) the surface at the bottom',
+          'Place feet on a bench, box, or step — hands on the floor slightly wider than shoulder width',
+          'The higher your feet, the more the press shifts to upper chest and shoulders — start around knee height',
+          'Lower until your nose nearly touches the floor — elbows at 45° from torso, not flared wide',
           'Keep a rigid plank — hips level, core braced, do not sag or pike',
-          'For progressive overload: lower the surface height, add a weighted backpack, or wear a vest',
+          'Do not let your head drop toward the floor first — chest leads the descent',
+          'For progressive overload: raise the foot surface or add a weighted backpack or vest',
         ],
       },
       {
@@ -997,8 +1004,8 @@ export const MOVEMENT_PATTERNS = {
         ],
       },
       {
-        id: 'pendley_row',
-        name: 'Pendley row (deficit)',
+        id: 'pendley_row', // id kept as-is — referenced by stored program overrides
+        name: 'Pendlay row (deficit)',
         equipment: ['barbell'],
         difficulty: 'intermediate',
         stretch_position: true,
@@ -2272,7 +2279,7 @@ export const MOVEMENT_PATTERNS = {
         stretch_position: true,
         progressive_overload: 'high',
         primary_alternative: true,
-        research_note: 'The best exercise for the outer quad (vastus lateralis), especially near the knee. Going deep (past 90°) produces significantly more quad growth than shallow squats — depth is not optional (Kubo et al. 2019). Kassiano et al. (2026): squats grew the outer quad (VL) by +18.2% vs +11.2% with leg extensions — confirming squats and leg extensions grow different parts of the quad, and you need both.',
+        research_note: 'The best exercise for the vastus lateralis (outer quad), especially near the knee. Going deep (past 90°) produces significantly more quad growth than shallow squats — depth is not optional (Kubo et al. 2019 [4]). Kassiano et al. (2025) [20] RCT n=63: squats grew the VL distal by +18.2% vs leg extensions +11.2%. However, squats grew the rectus femoris poorly (+7.9% vs +17.5% with leg extensions). Add leg extensions to every quad session for complete quad development.',
         study: {
           title: 'Quad growth · deep vs shallow squat',
           n: 20,
@@ -2612,7 +2619,7 @@ export const MOVEMENT_PATTERNS = {
         stretch_position: true,
         progressive_overload: 'medium',
         primary_alternative: true,
-        research_note: 'The best exercise for the central quad (rectus femoris) — squats simply cannot replace it. Kassiano et al. (2026): leg extensions grew the rectus femoris by up to 22% more than squats. CRITICAL: lean back ~40° instead of sitting upright. Larsen et al. (2024): this one change produces nearly double the rectus femoris growth. Why? The rectus femoris crosses the hip joint — leaning back stretches it, and that stretch is what triggers growth.',
+        research_note: 'The only exercise that directly develops the rectus femoris — squats cannot replace it. Kassiano et al. (2025) [20] RCT n=63: leg extension grew the RF distal by +17.5% vs squats +7.9%; RF proximal +11.4% vs +2.0%. Squats were superior for VL (+18.2% vs +11.2%) — confirming squats and leg extensions train fundamentally different parts of the quad. CRITICAL: lean back ~40° in the seat. Larsen et al. (2024): this stretches the RF at the hip and nearly doubles RF growth. Always tilt the seat back.',
         reps: '12–20',
         rest: '1–2 min',
         sets: 2,
@@ -2623,6 +2630,27 @@ export const MOVEMENT_PATTERNS = {
           'Extend to FULL lockout — squeeze quads hard for 1 second at the top',
           'Lower SLOWLY — 2–3 seconds down. Feel the quad stretch at the bottom',
           'Toes slightly inward = more outer quad (vastus lateralis). Toes slightly outward = more inner quad (vastus medialis)',
+        ],
+      },
+      {
+        id: 'single_leg_extension',
+        name: 'Single-leg extension',
+        equipment: ['machines'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'The unilateral version of the leg extension. Training one leg at a time removes any side-to-side strength imbalance (the dominant leg cannot compensate) and lets you fully focus tension on the working quad, often improving the mind-muscle connection and end-range squeeze. Useful as a block-to-block rotation from the bilateral version, and it lets you push closer to failure safely since you are not fighting a heavy stack with both legs. As with the bilateral version, leaning the seat back ~40° stretches the rectus femoris for maximum growth.',
+        reps: '12–20 per leg',
+        rest: '1–2 min',
+        sets: 2,
+        cues: [
+          'Lean the seat back ~40° — same as the bilateral version. This stretches the rectus femoris and nearly doubles its growth',
+          'Load one leg into the pad just above the ankle; let the other leg hang relaxed',
+          'Extend to FULL lockout and squeeze the quad hard for 1 second at the top',
+          'Lower SLOWLY — 2–3 seconds down. Feel the stretch at the bottom before the next rep',
+          'Complete all reps on one leg, then switch. Start with your WEAKER leg and match the rep count on the stronger side',
+          'Toes slightly in = more outer quad; toes slightly out = more inner quad',
         ],
       },
       {
@@ -2781,7 +2809,7 @@ export const MOVEMENT_PATTERNS = {
         stretch_position: false,
         progressive_overload: 'high',
         primary_alternative: true,
-        research_note: 'Trains glutes at peak contraction — complementary to RDL which trains them at the stretched position. Together they cover the full range of glute hypertrophy. Kennedy et al. (2024): glute bridge (feet closer, hips lower) showed superior upper and lower gluteus maximus activation vs hip thrust — consider both. USE A PAD on the hip crease.',
+        research_note: 'Neto et al. (2023) [22] Front Physiol: hip thrust and squat produce similar gluteus maximus hypertrophy despite the hip thrust showing higher EMG activation — a key dissociation proving EMG does not predict hypertrophy. Both are effective; hip thrust offers better isolation with less quad involvement. Kennedy et al. (2024) [19]: glute bridge showed superior glute max EMG vs hip thrust — consider including both. Trains glutes at peak contraction; pair with RDL for lengthened-position stimulus. USE A PAD on the hip crease.',
         reps: '10–15',
         rest: '2 min',
         sets: 3,
@@ -2910,7 +2938,7 @@ export const MOVEMENT_PATTERNS = {
         load_position: 'stretch',
         progressive_overload: 'medium',
         primary_alternative: true,
-        research_note: 'Nippard preference over lying: hip flexed position = hamstrings at LONGER length than lying curl = superior hypertrophy stimulus. Research shows seated leg curl may produce 50% more hamstring growth than lying variation due to the stretched hip position.',
+        research_note: 'The highest-evidence hamstring hypertrophy exercise. Maeo, Balshaw & Folland et al. (2024) [21] Med Sci Sports Exerc: lengthened-state eccentric training (LSET — i.e. seated curl at long hip position) produced +18% total hamstring volume vs Nordic hamstring curl\'s +11%. LSET was clearly superior for biceps femoris long head (the bulk of the posterior thigh). The hip-flexed seated position stretches the hamstrings maximally — this is the mechanism. Always prefer seated over lying curls.',
         reps: '10–15',
         rest: '1–2 min',
         sets: 2,
@@ -2976,7 +3004,7 @@ export const MOVEMENT_PATTERNS = {
         load_position: 'stretch',
         progressive_overload: 'medium',
         primary_alternative: true,
-        research_note: 'Morin et al. (2025): Nordic exercise produced 24.3% semitendinosus hypertrophy with 37.4% strength gains. Van der Horst et al. (2015) RCT of 579 athletes: Nordic training reduced hamstring injury incidence by 72%. Most research-supported hamstring exercise for both hypertrophy and injury prevention. Trains eccentrically at very long lengths.',
+        research_note: 'Injury prevention gold standard. Nunes et al. (2024) umbrella review [23], 17,260 subjects: NHE significantly reduces hamstring strain and improves fascicle length. Maeo et al. (2024) [21]: Nordic = +24.4% semitendinosus hypertrophy — best exercise for ST development. However, for biceps femoris long head (the bulk of the posterior thigh), seated/lengthened-position curls outperform Nordic (+18% total volume vs +11%). Use Nordic for injury prevention and ST; pair with seated leg curls for complete hamstring hypertrophy.',
         reps: '4–8',
         rest: '2–3 min',
         sets: 3,
@@ -3067,6 +3095,69 @@ export const MOVEMENT_PATTERNS = {
           'At the widest point: squeeze outer glutes for 1 second',
           'Return SLOWLY — 2–3 seconds back in. Resist the machine',
           'Do NOT sit fully upright — the forward lean activates glute medius significantly more than the standard upright position',
+        ],
+      },
+      {
+        id: 'cable_hip_abduction',
+        name: 'Cable hip abduction (standing)',
+        equipment: ['cables'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'Standing cable abduction isolates the glute medius through a long range with constant cable tension, including a loaded stretch at the bottom (leg crossed slightly past midline) that the seated machine cannot provide. A strong free-weight-area alternative when the abduction machine is taken, and the standing position lets you train the medius in a more functional, upright pattern.',
+        reps: '15–20 per leg',
+        rest: '1–2 min',
+        sets: 2,
+        cues: [
+          'Attach an ankle cuff to the LOW pulley and fasten it to your outside ankle',
+          'Stand side-on to the machine, holding the frame for balance. Stack your weight on the inside (non-working) leg',
+          'Let the working leg cross slightly in front of midline — this is the loaded stretch',
+          'Keeping the leg straight, drive it OUT to the side as far as you can without leaning your torso',
+          'Squeeze the outer glute for 1 second at the top',
+          'Return SLOWLY against the cable — resist all the way back. Do not let it snap back',
+        ],
+      },
+      {
+        id: 'cable_kickback',
+        name: 'Cable glute kickback',
+        equipment: ['cables'],
+        difficulty: 'beginner',
+        stretch_position: false,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'The cable kickback loads the gluteus maximus at its shortest, fully-contracted position (full hip extension) with constant cable tension — the opposite end of the strength curve to lunges and hip thrusts, which load the stretched position. Including both stretch-biased and contraction-biased glute work covers the full strength curve. Unilateral, so it equalises left-right development and lets you focus entirely on squeezing one glute. A staple isolation for direct glute maximus work without loading the spine or quads.',
+        reps: '12–20 per leg',
+        rest: '1–2 min',
+        sets: 3,
+        cues: [
+          'Attach an ankle cuff to the LOW pulley and fasten it to your working ankle',
+          'Face the machine, hinge forward slightly at the hips and hold the frame for support',
+          'Keeping a slight bend in the knee, drive the working leg straight BACK using your glute — not your lower back',
+          'Squeeze the glute HARD at full hip extension and hold for 1 second',
+          'Do NOT arch your lower back to gain extra range — the movement comes from the hip, stop when the glute is fully contracted',
+          'Return SLOWLY against the cable. Complete all reps on one leg, then switch',
+        ],
+      },
+      {
+        id: 'cable_pull_through',
+        name: 'Cable pull-through',
+        equipment: ['cables'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'high',
+        primary_alternative: false,
+        research_note: 'The pull-through is a hip-hinge pattern loaded by the cable, training the glutes and hamstrings through a deep hip flexion stretch with the resistance vector pulling horizontally — which keeps tension high exactly where the glutes are most stretched. It delivers much of the glute and hamstring benefit of an RDL or hip thrust with far less spinal loading and a lower technical/fatigue cost, making it an excellent high-rep glute builder and a great option late in a session when the lower back is already fatigued.',
+        reps: '12–20',
+        rest: '1–2 min',
+        sets: 3,
+        cues: [
+          'Set a rope handle on the LOW pulley. Face away from the machine, straddle the cable, and grab the rope between your legs',
+          'Step forward to create tension, feet shoulder-width, soft knees',
+          'Hinge at the HIPS — push your butt back toward the machine, let the rope travel between your legs. Keep your back flat',
+          'Feel a deep stretch in the hamstrings and glutes at the bottom — shins stay vertical',
+          'Drive your HIPS FORWARD to stand tall, squeezing the glutes hard at the top. Do not lean back or use your arms to pull',
+          'Control the weight back into the next hinge — this is a hip hinge, not a squat and not an arm pull',
         ],
       },
       {
@@ -3534,11 +3625,30 @@ export function getBestExercise(patternKey, availableEquipment) {
   return exercises.find(ex => ex.primary_alternative) || exercises[0] || null;
 }
 
+// Equipment that supports proper external loading. When a user has any of
+// these, bodyweight-only rotation fillers (e.g. push-up variations) shouldn't
+// be programmed as main exercises — they can't be progressively overloaded
+// the way loaded movements can.
+const LOADED_EQUIPMENT = ['barbell', 'dumbbells', 'cables', 'machines', 'smith', 'kettlebells'];
+
 // Get all exercises for a pattern. primary_alternative: true exercises come first,
 // then the rotation pool in the order they appear in the library.
 export function getAllExercisesForPattern(patternKey, availableEquipment) {
-  return getExercisesForEquipment(patternKey, availableEquipment)
-    .sort((a, b) => (a.primary_alternative ? 0 : 1) - (b.primary_alternative ? 0 : 1));
+  let pool = getExercisesForEquipment(patternKey, availableEquipment);
+
+  // Gym users: drop bodyweight-only exercises from the selection pool unless
+  // they're a deliberate primary pick (Nordic curl, plank) or removing them
+  // would leave the pattern too thin to rotate through.
+  const hasLoadedGym = (availableEquipment || []).some(eq => LOADED_EQUIPMENT.includes(eq));
+  if (hasLoadedGym) {
+    const filtered = pool.filter(ex =>
+      ex.primary_alternative ||
+      !(ex.equipment.length === 1 && ex.equipment[0] === 'bodyweight')
+    );
+    if (filtered.length >= 2) pool = filtered;
+  }
+
+  return pool.sort((a, b) => (a.primary_alternative ? 0 : 1) - (b.primary_alternative ? 0 : 1));
 }
 
 // Get rotation alternatives for an exercise (same pattern, different exercise)

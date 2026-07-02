@@ -16,6 +16,7 @@
 // [11] Pelland et al. (2024) — volume primary driver, frequency graph flat
 
 import { MOVEMENT_PATTERNS, getBestExercise, getExercisesForEquipment, getAllExercisesForPattern, getAlternatives } from './movementLibrary';
+import { expandAllConditions } from '../lib/conditionsDb';
 
 // ─── VOLUME TARGETS PER MUSCLE ───────────────────────────────────────────────
 // Sets/muscle/week by experience level — hypertrophy focus
@@ -41,7 +42,19 @@ export const VOLUME_TARGETS = {
     beginner:     { min: 6,  optimal_low: 6,  optimal_high: 10 },
     intermediate: { min: 10, optimal_low: 10, optimal_high: 18 },
     advanced:     { min: 12, optimal_low: 14, optimal_high: 22 },
-    note: 'Side and rear delts need direct isolation — pressing only develops front delts',
+    note: 'Whole-deltoid total. Track side/rear heads separately (side_delts, rear_delts) — pressing only develops front delts',
+  },
+  side_delts: {
+    beginner:     { min: 4,  optimal_low: 5,  optimal_high: 9  },
+    intermediate: { min: 6,  optimal_low: 8,  optimal_high: 16 },
+    advanced:     { min: 10, optimal_low: 12, optimal_high: 22 },
+    note: 'Direct abduction work (lateral raises) — pressing barely contributes',
+  },
+  rear_delts: {
+    beginner:     { min: 3,  optimal_low: 4,  optimal_high: 8  },
+    intermediate: { min: 6,  optimal_low: 6,  optimal_high: 14 },
+    advanced:     { min: 8,  optimal_low: 10, optimal_high: 18 },
+    note: 'Direct isolation (face pulls, reverse pec deck) — rows add some indirect volume',
   },
   biceps: {
     beginner:     { min: 3,  optimal_low: 3,  optimal_high: 6  },
@@ -185,10 +198,10 @@ export const SPLITS = {
     name: 'Chest+Tri / Back+Bi / Shoulders / Legs',
     days: 4,
     frequency_per_muscle: 1,
-    optimality: 'good',
-    optimality_score: 7,
-    science_basis: 'Ramos-Campo et al. (2024): split vs full-body produces similar hypertrophy when volume is equated. Focused sessions allow higher per-session volume for each muscle group.',
-    honest_note: 'Classic muscle-group split. Each muscle hit once directly per week but with high focused volume. Research shows results similar to upper/lower when total volume is matched.',
+    optimality: 'suboptimal',
+    optimality_score: 5,
+    science_basis: 'Each muscle is trained only once per week. Schoenfeld et al. (2016) meta-analysis: 2×/week frequency is superior to 1×/week for hypertrophy when distributing the same volume. A single weekly session per muscle leaves growth on the table versus an upper/lower at the same 4 days.',
+    honest_note: 'The classic "bro split". It works, but it is the least optimal 4-day option — every muscle is trained just once per week. Evidence-based coaches (Nippard, Israetel, Helms) rank it below upper/lower for this reason. At 4 days, Upper/Lower trains everything twice and is the better choice for most lifters. Choose this only if you strongly prefer the one-muscle-per-day feel.',
     session_time_est: '55–75 min',
     day_structure: ['Chest + Triceps', 'Back + Biceps', 'Shoulders + Abs', 'Legs'],
     schedule_template: ['Monday', 'Tuesday', 'Thursday', 'Friday'],
@@ -213,10 +226,10 @@ export const SPLITS = {
     name: 'Push / Pull / Legs 6×/week',
     days: 6,
     frequency_per_muscle: 2,
-    optimality: 'good',
-    optimality_score: 7,
-    science_basis: 'Each muscle trained twice per week with high per-session volume. 6-day commitment required — each session is focused and shorter than full body workouts.',
-    honest_note: 'High commitment — 6 days/week. Works well for dedicated lifters. Warning: slightly upper-body biased (4 upper sessions vs 2 lower). Ensure adequate sleep and nutrition to recover.',
+    optimality: 'optimal',
+    optimality_score: 8,
+    science_basis: 'PPLPPL structure with two distinct leg days — every muscle, including quads, hamstrings and calves, is trained twice per week. This is the balanced version of PPL that avoids the single-leg-day frequency problem that makes most 6-day PPL programs suboptimal (Pelland et al. 2024: 2× frequency aids volume distribution).',
+    honest_note: 'A genuinely balanced 6-day split — legs are trained twice per week (Legs A and Legs B), not once, so there is no lower-body shortfall. High commitment: 6 days/week demands consistent sleep and nutrition to recover. Excellent for dedicated intermediate-advanced lifters.',
     session_time_est: '50–70 min',
     day_structure: ['Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B'],
     schedule_template: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -289,14 +302,18 @@ export function normalizeEquipment(onboardingEquipment = []) {
   if (raw.includes('barbell')) equipment.push('barbell');
   if (raw.includes('dumbbells')) equipment.push('dumbbells');
   if (raw.includes('cables')) equipment.push('cables');
-  if (raw.includes('machines')) equipment.push('machines');
+  if (raw.includes('machines')) equipment.push('machines', 'smith'); // gyms with machines have a Smith machine
   if (raw.includes('kettlebells')) equipment.push('kettlebells');
   if (raw.includes('resistance bands')) equipment.push('bands');
   if (raw.some(e => e.includes('bodyweight'))) equipment.push('bodyweight');
 
-  // Pull-up bar: available with a rack/machines, or assumed for bodyweight-only users
-  // (doorframe pull-up bars are €15 and fundamental to any bodyweight programme)
-  if (equipment.includes('barbell') || equipment.includes('machines') || equipment.includes('bodyweight')) {
+  // Pull-up bar is only available if the user explicitly selected it, or trains
+  // at a gym (a barbell rack / machine area always has a bar). Bodyweight-only
+  // users are NOT assumed to own one — otherwise pull-ups get programmed for
+  // people who have nothing to hang from. A bodyweight user who does have a bar
+  // ticks "Pull-up bar" to get them back.
+  const hasPullupBar = raw.some(e => e.includes('pull-up') || e.includes('pullup') || e.includes('pull up'));
+  if (hasPullupBar || equipment.includes('barbell') || equipment.includes('machines')) {
     if (!equipment.includes('pullup_bar')) equipment.push('pullup_bar');
   }
 
@@ -748,6 +765,107 @@ export const GOAL_COMBO_CALORIES = {
   athletic_bulk:     { multiplier: 1.08, proteinPerKg: 2.0 }, // +8% surplus, concurrent training
 };
 
+// ─── TDEE + NUTRITION TARGETS ─────────────────────────────────────────────────
+// Mifflin-St Jeor BMR × activity multiplier (O'Neill 2023, Sports Med)
+// More accurate than weight × 24 — accounts for height, age, sex, activity level
+export function calculateTDEE(weight_kg, height_cm, age, sex, weekly_workouts) {
+  if (!weight_kg || !height_cm || !age) return null;
+  const base = 10 * weight_kg + 6.25 * height_cm - 5 * age;
+  const sexOffset = sex === 'female' ? -161 : sex === 'male' ? 5 : -78; // other = midpoint
+  const bmr = base + sexOffset;
+  const activityMultiplier =
+    weekly_workouts <= 1 ? 1.2 :
+    weekly_workouts <= 2 ? 1.375 :
+    weekly_workouts <= 4 ? 1.55 :
+    weekly_workouts <= 6 ? 1.725 : 1.9;
+  return Math.round(bmr * activityMultiplier);
+}
+
+// Nutrition targets from TDEE + focus (Ruiz-Castellano 2021; Helms 2023; Morton 2018)
+// Returns base targets + training/rest day split (carbs ±40g, calories ±160 kcal)
+export function calculateNutritionTargets(tdee, weight_kg, nutrition_focus = 'maintain') {
+  if (!tdee || !weight_kg) return null;
+  const configs = {
+    cut:      { offset: -400, proteinPerKg: 2.2 },  // 0.5% BW/week loss; high protein to preserve muscle
+    bulk:     { offset: +250, proteinPerKg: 1.8 },  // ~5% surplus; surplus spares protein (Morton 2018)
+    maintain: { offset: 0,    proteinPerKg: 1.8 },
+    recomp:   { offset: -200, proteinPerKg: 2.4 },  // slight deficit; highest protein for simultaneous recomp
+  };
+  const { offset, proteinPerKg } = configs[nutrition_focus] || configs.maintain;
+  const calories = Math.max(1200, tdee + offset);
+  const protein = Math.round(weight_kg * proteinPerKg);
+  const fat = Math.max(Math.round(weight_kg * 0.5), Math.round(calories * 0.2 / 9)); // min 0.5g/kg or 20% kcal
+  const carbs = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4));
+
+  // Training day: +40g carbs (+160 kcal). Rest day: -40g carbs (-160 kcal).
+  // Protein and fat stay constant — only carbs shift for glycogen/recovery.
+  const carbShift = 40;
+  const calShift = carbShift * 4;
+
+  return {
+    caloric_target: calories,
+    protein_target: protein,
+    fat_target: fat,
+    carb_target: carbs,
+    training_caloric_target: calories + calShift,
+    training_carb_target: carbs + carbShift,
+    rest_caloric_target: Math.max(1200, calories - calShift),
+    rest_carb_target: Math.max(0, carbs - carbShift),
+  };
+}
+
+// ─── INJURY PROFILE → CONDITIONS ──────────────────────────────────────────────
+// Users pick a body part + how it feels, instead of needing a clinical diagnosis.
+// This maps that to the condition strings CONTRAINDICATION_MAP already understands.
+//
+// Severity tiers (resolved per-session):
+//   'good'  → no restrictions (cleared for full training today)
+//   'usual' → soft conditions only (modify / warn)
+//   'flare' → hard + soft conditions (unsafe lifts get substituted)
+export const INJURY_BODY_PARTS = [
+  { key: 'back',      label: 'Lower back' },
+  { key: 'knees',     label: 'Knees' },
+  { key: 'shoulders', label: 'Shoulders' },
+  { key: 'hips',      label: 'Hips' },
+  { key: 'elbows',    label: 'Elbows / wrists' },
+];
+
+const BODY_PART_CONDITIONS = {
+  back:      { usual: ['lower_back_disc_herniation'], flare: ['lower_back_disc_herniation', 'spondylolisthesis'] },
+  knees:     { usual: ['patellofemoral_syndrome'],    flare: ['severe_knee_osteoarthritis', 'patellofemoral_syndrome'] },
+  shoulders: { usual: ['shoulder_impingement'],       flare: ['shoulder_impingement', 'rotator_cuff_tear'] },
+  hips:      { usual: ['hip_labral_tear'],            flare: ['hip_labral_tear'] },
+  elbows:    { usual: ['elbow_tendinopathy'],         flare: ['lateral_epicondylitis', 'medial_epicondylitis', 'elbow_tendinopathy'] },
+};
+
+// injuryProfile: [{ body_part, severity: 'always'|'sometimes' }]
+// todayOverrides: { [body_part]: 'good'|'usual'|'flare' } — from the pre-workout check-in
+// Returns clinical condition strings to feed applyContraindicationFilters.
+export function getConditionsFromInjuryProfile(injuryProfile = [], todayOverrides = {}) {
+  const conditions = new Set();
+  for (const entry of injuryProfile) {
+    const map = BODY_PART_CONDITIONS[entry.body_part];
+    if (!map) continue;
+    // Today's check-in answer wins. Otherwise: 'always' → usual baseline, 'sometimes' → nothing.
+    let tier = todayOverrides[entry.body_part];
+    if (!tier) tier = entry.severity === 'always' ? 'usual' : null;
+    if (!tier || tier === 'good') continue;
+    (tier === 'flare' ? map.flare : map.usual).forEach(c => conditions.add(c));
+  }
+  return [...conditions];
+}
+
+// Apply contraindication filtering to a single workout (one day), not a full program.
+// Used at workout start once the pre-workout check-in has resolved today's conditions.
+export function applyContraindicationsToWorkout(workout, conditions = [], equipment = []) {
+  if (!conditions.length || !workout?.exercises) return workout;
+  const filtered = applyContraindicationFilters(
+    { days: [workout] },
+    { health_conditions: conditions, equipment }
+  );
+  return filtered.days[0];
+}
+
 function getGoalKey(goals = []) {
   return resolveGoalCombo(goals);
 }
@@ -805,26 +923,52 @@ function buildExercise(patternKey, equipment, overrides = {}) {
 
   const blockIndex = overrides.blockIndex || 0;
 
+  // Beginners: keep technically demanding lifts (front squat, deficit Pendlay
+  // row, Nordic curl) out of automatic selection and block rotation — they stay
+  // available as manual swaps.
+  let pool = allExercises;
+  if (overrides.level === 'beginner') {
+    const accessible = allExercises.filter(e => e.difficulty !== 'advanced');
+    // If the ONLY options for this pattern+equipment are advanced (e.g. hamstring
+    // isolation with a barbell only → just the Nordic curl), drop the slot rather
+    // than force an advanced lift on a beginner. Every split day filters out null
+    // slots, and the day's compounds still cover the muscle.
+    if (accessible.length === 0) return null;
+    pool = accessible;
+  }
+
+  // Skip/swap learning: exercises the user has repeatedly skipped are treated as
+  // disliked and dropped from automatic selection — unless that would empty the
+  // pattern, in which case we keep them (programming something beats nothing).
+  if (overrides.excludeIds?.length) {
+    const liked = pool.filter(e => !overrides.excludeIds.includes(e.id));
+    if (liked.length > 0) pool = liked;
+  }
+
   let ex;
   if (overrides.prefer) {
-    // Explicit preference always wins
-    ex = allExercises.find(e => e.id === overrides.prefer) || allExercises[0];
+    // Explicit preference wins — UNLESS the difficulty gate excluded it. Splits
+    // that prefer 'conventional_deadlift' (advanced) would otherwise force it on
+    // beginners, bypassing the safety gate; fall back to the best gated option
+    // (e.g. Romanian deadlift) in that case.
+    const preferred = allExercises.find(e => e.id === overrides.prefer);
+    ex = (preferred && pool.includes(preferred)) ? preferred : pool[0];
   } else {
     // Split pool into primary (anchor for block 0) and rotation alternatives
-    const primaries  = allExercises.filter(e => e.primary_alternative !== false);
-    const rotations  = allExercises.filter(e => e.primary_alternative === false);
+    const primaries  = pool.filter(e => e.primary_alternative !== false);
+    const rotations  = pool.filter(e => e.primary_alternative === false);
 
     if (blockIndex === 0 || rotations.length === 0) {
-      ex = primaries[0] || allExercises[0];
+      ex = primaries[0] || pool[0];
     } else {
       // Cycle through rotation alternatives; wrap around after exhausting the list
       const rotIdx = (blockIndex - 1) % rotations.length;
-      ex = rotations[rotIdx] || primaries[0] || allExercises[0];
+      ex = rotations[rotIdx] || primaries[0] || pool[0];
     }
   }
 
-  // Top 3 alternatives for in-session substitutions
-  const subs = allExercises.filter(e => e.id !== ex.id).slice(0, 3);
+  // Top 3 alternatives for in-session substitutions (same difficulty gate)
+  const subs = pool.filter(e => e.id !== ex.id).slice(0, 3);
 
   return {
     id: ex.id,
@@ -1451,6 +1595,63 @@ export function detectPlateaus(sets = [], profile = {}) {
   return plateaus;
 }
 
+// ─── PROACTIVE COACH PROMPT ──────────────────────────────────────────────────
+// A pocket personal trainer reaches out instead of waiting to be asked. Given
+// the signals already computed on the home screen, pick the single most
+// important thing the coach should raise today (or null if all is well).
+// Returns { key, title, body, ask } — `ask` is the question to pre-fill the
+// coach with when the user taps the nudge.
+export function getProactiveCoachPrompt({
+  daysSinceLastSession = null,
+  weeklyWorkoutsTarget = 3,
+  deload = null,
+  plateaus = [],
+  recoveryLabel = null,
+} = {}) {
+  // 1. Recovery comes first — training hard on a low-recovery day is the most
+  //    time-sensitive call.
+  if (recoveryLabel === 'Low') {
+    return {
+      key: 'recovery',
+      title: 'Recovery is low today',
+      body: 'Your sleep/HRV suggest you’re under-recovered. Consider lighter loads or a rest day.',
+      ask: 'My recovery is low today — should I still train, and if so how should I adjust?',
+    };
+  }
+  // 2. Deload due — accumulated fatigue over weeks.
+  if (deload) {
+    return {
+      key: 'deload',
+      title: 'You’re due a deload',
+      body: deload.reason || 'You’ve trained hard for several weeks without a break. A deload week will let you grow into the work.',
+      ask: 'Should I take a deload this week, and how should I structure it?',
+    };
+  }
+  // 3. A lift has stalled.
+  if (plateaus && plateaus.length > 0) {
+    const name = plateaus[0].exercise || plateaus[0].exercise_name || plateaus[0].name || 'a lift';
+    return {
+      key: 'plateau',
+      title: `${name} has stalled`,
+      body: 'No progress here for a few weeks. Worth changing the stimulus or checking recovery.',
+      ask: `${name} has stalled for weeks — how should I break through the plateau?`,
+    };
+  }
+  // 4. Missed sessions — only nudge once the gap clearly exceeds their cadence.
+  if (typeof daysSinceLastSession === 'number') {
+    const expectedGap = Math.max(2, Math.ceil(7 / Math.max(1, weeklyWorkoutsTarget)));
+    if (daysSinceLastSession >= expectedGap + 3) {
+      return {
+        key: 'missed',
+        title: 'Let’s get back to it',
+        body: `It’s been ${daysSinceLastSession} days since your last session. Want to adjust this week’s plan to ease back in?`,
+        ask: `I haven’t trained in ${daysSinceLastSession} days — how should I restart without overdoing it?`,
+      };
+    }
+  }
+  return null;
+}
+
 // ─── DELOAD DETECTOR ─────────────────────────────────────────────────────────
 // Two modes (Bell & Darragh 2025):
 //   1. Preplanned — triggers after 6 weeks of consistent training with no natural break
@@ -1621,7 +1822,7 @@ export const PROGRESSIVE_OVERLOAD = {
 // repRange: string like '8–12' (matches PROGRESSIVE_OVERLOAD.repRanges keys)
 // Returns: { status, note, lastWeight, lastReps, increment_kg? }
 export function checkReadyToProgress(sets = [], exerciseName, repRange) {
-  const exerciseSets = sets
+  const exerciseSets = (sets || [])
     .filter(s => s.exercise_name === exerciseName && s.weight_kg && s.reps && s.completed_at)
     .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
 
@@ -1638,8 +1839,11 @@ export function checkReadyToProgress(sets = [], exerciseName, repRange) {
 
   // Parse ceiling from repRange
   const rangeConfig = repRange ? PROGRESSIVE_OVERLOAD.repRanges[repRange] : null;
-  const ceiling = rangeConfig?.ceiling ?? parseInt(repRange?.split('–')?.[1]) ?? 12;
-  const increment = rangeConfig?.barbell ?? 2.5;
+  // parseInt yields NaN (not null) on bad input, so `?? 12` never fired.
+  // Accept both en-dash and hyphen rep ranges.
+  const parsedCeiling = parseInt(repRange?.split(/[–-]/)?.[1], 10);
+  const ceiling = rangeConfig?.ceiling ?? (Number.isNaN(parsedCeiling) ? 12 : parsedCeiling);
+  const defaultIncrement = rangeConfig?.barbell ?? 2.5;
 
   const allHitCeiling = lastReps.every(r => r >= ceiling);
 
@@ -1663,6 +1867,29 @@ export function checkReadyToProgress(sets = [], exerciseName, repRange) {
     recentDates.length >= PROGRESSIVE_OVERLOAD.stallThreshold &&
     sessionWeights.every(w => w === sessionWeights[0]) &&
     sessionAvgReps.every(r => Math.abs(r - sessionAvgReps[0]) < 0.5);
+
+  // Adaptive increment: rather than a flat 2.5 kg for everyone, learn this user's
+  // own demonstrated jump on THIS lift from history (median of their positive
+  // weight steps). Cold-start falls back to an exercise-type default — isolation
+  // and small-muscle work micro-loads, compounds jump bigger.
+  const chronWeights = Object.keys(byDate)
+    .sort((a, b) => new Date(a) - new Date(b))
+    .map(d => byDate[d][0]?.weight_kg)
+    .filter(w => typeof w === 'number');
+  const positiveSteps = [];
+  for (let i = 1; i < chronWeights.length; i++) {
+    const step = +(chronWeights[i] - chronWeights[i - 1]).toFixed(2);
+    if (step > 0) positiveSteps.push(step);
+  }
+  let increment;
+  if (positiveSteps.length >= 2) {
+    positiveSteps.sort((a, b) => a - b);
+    increment = positiveSteps[Math.floor(positiveSteps.length / 2)]; // their typical jump
+  } else {
+    const resolved = resolveExerciseByName(exerciseName);
+    const ISOLATION = new Set(['biceps', 'triceps', 'shoulders_side_delt', 'rear_delt', 'upper_traps', 'forearms', 'core']);
+    increment = (resolved && ISOLATION.has(resolved.patternKey)) ? 1.25 : defaultIncrement;
+  }
 
   if (allHitCeiling) {
     return {
@@ -1922,15 +2149,23 @@ function buildSubstituteExercise(patternKey, rawEx, originalSets, originalRpe) {
 // Hard-blocked exercises are replaced with safe substitutes where possible.
 // Soft-blocked exercises are kept and flagged with a warning note.
 // profile.health_conditions: string[] — e.g. ['shoulder_impingement', 'knee_replacement']
+
 export function applyContraindicationFilters(program, profile) {
-  const conditions = profile.health_conditions || [];
-  if (conditions.length === 0) return program;
+  const raw = profile.health_conditions || [];
+  if (raw.length === 0) return program;
+  const conditions = expandAllConditions(raw);
 
   const equipment = normalizeEquipment(profile.equipment || []);
 
-  const days = program.days.map(day => ({
-    ...day,
-    exercises: day.exercises
+  const days = program.days.map(day => {
+    // Day-level awareness: a substitute must not duplicate an exercise or a
+    // movement pattern already programmed on this day — two slots resolving to
+    // the same pattern means double volume for one subregion and a hole where
+    // the blocked subregion was. Better to drop the slot than unbalance the day.
+    const dayPatterns = new Set((day.exercises || []).map(e => e?.pattern));
+    const usedIds = new Set((day.exercises || []).map(e => e?.id));
+
+    const exercises = (day.exercises || [])
       .map(ex => {
         const rules = CONTRAINDICATION_MAP[ex.pattern] || [];
         const matched = rules.filter(r => r.conditions.some(c => conditions.includes(c)));
@@ -1938,15 +2173,19 @@ export function applyContraindicationFilters(program, profile) {
 
         const hardBlock = matched.find(r => r.hard);
         if (hardBlock) {
-          // Try to find a safe substitute in a related pattern
+          // Try to find a safe substitute in a related pattern — but only if
+          // that pattern isn't already trained on this day
           const subPatternKey = PATTERN_SUBSTITUTES[ex.pattern];
-          if (subPatternKey) {
+          if (subPatternKey && !dayPatterns.has(subPatternKey)) {
             const subRules = CONTRAINDICATION_MAP[subPatternKey] || [];
             const subBlocked = subRules.some(r => r.hard && r.conditions.some(c => conditions.includes(c)));
             if (!subBlocked) {
-              const candidates = getAllExercisesForPattern(subPatternKey, equipment);
+              const candidates = getAllExercisesForPattern(subPatternKey, equipment)
+                .filter(e => !usedIds.has(e.id));
               const best = candidates.find(e => e.primary_alternative) || candidates[0];
               if (best) {
+                usedIds.add(best.id);
+                dayPatterns.add(subPatternKey);
                 return buildSubstituteExercise(subPatternKey, best, ex.sets, { early: ex.early_rpe, last: ex.last_rpe });
               }
             }
@@ -1958,8 +2197,12 @@ export function applyContraindicationFilters(program, profile) {
         const softNote = matched.map(r => r.reason).join(' ');
         return { ...ex, contraindication_note: softNote, contraindication_level: 'soft' };
       })
-      .filter(Boolean),
-  }));
+      .filter(Boolean);
+
+    // Safety net: this filter runs at display time (TodayScreen), after the
+    // generator's own dedup pass — re-check for duplicates it may introduce
+    return { ...day, exercises: deduplicateDayExercises(exercises, equipment, profile.trainingExperience || 'beginner') };
+  });
 
   return { ...program, days };
 }
@@ -1987,6 +2230,60 @@ export function applyContraindicationFilters(program, profile) {
 //   preferExerciseId?: string
 //   sets?: number | reps?: string | rpe?: number
 // }
+// Skip/swap learning: given raw exercise_skips rows, return the ids of exercises
+// the user has skipped >= threshold times. The generator drops these from
+// automatic selection — the "3+ skips = implicit swap" signal the schema intended.
+export function computeDislikedExerciseIds(skipRows = [], threshold = 3) {
+  const counts = {};
+  for (const r of skipRows) {
+    const key = (r?.exercise_name || '').toLowerCase().trim();
+    if (key) counts[key] = (counts[key] || 0) + 1;
+  }
+  const ids = new Set();
+  for (const [name, n] of Object.entries(counts)) {
+    if (n >= threshold) {
+      const resolved = resolveExerciseByName(name);
+      if (resolved?.exerciseId) ids.add(resolved.exerciseId);
+    }
+  }
+  return [...ids];
+}
+
+// Durable coach memory: turn the user's recorded "dislike" facts into exercise
+// ids the generator should drop — so telling the coach "I hate lunges" stops
+// lunges being programmed, the same as repeatedly skipping them.
+export function dislikedExerciseIdsFromNotes(notes = []) {
+  const ids = new Set();
+  for (const f of notes || []) {
+    if (f?.category === 'dislike' && f.exercise_name) {
+      const r = resolveExerciseByName(f.exercise_name);
+      if (r?.exerciseId) ids.add(r.exerciseId);
+    }
+  }
+  return [...ids];
+}
+
+// Resolve an exercise NAME (as proposed by the AI coach) to its id + pattern key,
+// so a "replace with X" actually places X — instead of rebuilding the slot blindly.
+export function resolveExerciseByName(name) {
+  if (!name) return null;
+  const target = name.toLowerCase().trim();
+  // Exact match first
+  for (const [patternKey, pattern] of Object.entries(MOVEMENT_PATTERNS)) {
+    const ex = pattern.exercises.find(e => e.name.toLowerCase().trim() === target);
+    if (ex) return { exerciseId: ex.id, patternKey };
+  }
+  // Fuzzy contains match (handles "Bulgarian split squat" vs "Bulgarian split squat (dumbbell)")
+  for (const [patternKey, pattern] of Object.entries(MOVEMENT_PATTERNS)) {
+    const ex = pattern.exercises.find(e => {
+      const n = e.name.toLowerCase();
+      return n.includes(target) || target.includes(n);
+    });
+    if (ex) return { exerciseId: ex.id, patternKey };
+  }
+  return null;
+}
+
 export function applyPermanentEdit(program, edit, equipment = []) {
   if (!program?.days) return program;
 
@@ -2072,23 +2369,141 @@ export function applySessionSwap(sessionPlan, swap, equipment = []) {
   return { ...sessionPlan, exercises };
 }
 
+// ─── DUPLICATE EXERCISE GUARD ────────────────────────────────────────────────
+// After a day is built, if the same exercise ID appears more than once (happens
+// when a pattern's primary falls back to an already-used exercise due to
+// equipment constraints), replace duplicates with the next unused alternative
+// from the same pattern. If no alternative exists, keeps the duplicate rather
+// than dropping the slot.
+// Apply the same difficulty gate buildExercise uses, so dedup substitutions and
+// their suggested swaps never hand a beginner an advanced lift. Falls back to the
+// full pool only if gating would leave nothing.
+function gatePoolByLevel(pool, level) {
+  if (level === 'beginner' && Array.isArray(pool)) {
+    const accessible = pool.filter(e => e.difficulty !== 'advanced');
+    if (accessible.length > 0) return accessible;
+  }
+  return pool || [];
+}
+
+function deduplicateDayExercises(exercises, equipment, level = 'intermediate', excludeIds = []) {
+  const usedIds = new Set();
+  const usedNames = new Set();
+  const firstById = new Map(); // id -> the kept output exercise (for set-merging)
+  const out = [];
+  for (const ex of exercises) {
+    if (!ex) { out.push(ex); continue; }
+    if (!usedIds.has(ex.id) && !usedNames.has(ex.name)) {
+      usedIds.add(ex.id); usedNames.add(ex.name);
+      firstById.set(ex.id, ex);
+      out.push(ex);
+      continue;
+    }
+    // Duplicate — find a distinct alternative from the same pattern, gated to the
+    // user's level (no advanced swaps for beginners) and avoiding disliked picks.
+    let pool = gatePoolByLevel(
+      getAllExercisesForPattern
+        ? getAllExercisesForPattern(ex.pattern, equipment)
+        : getExercisesForEquipment(ex.pattern, equipment),
+      level,
+    );
+    if (excludeIds.length) {
+      const liked = pool.filter(e => !excludeIds.includes(e.id));
+      if (liked.length > 0) pool = liked;
+    }
+    const alt = pool?.find(e => !usedIds.has(e.id) && !usedNames.has(e.name));
+    if (!alt) {
+      // No distinct option for this equipment/level — merge the slot's sets into
+      // the first occurrence (capped) rather than show the same movement twice.
+      const first = firstById.get(ex.id);
+      if (first && typeof first.sets === 'number' && typeof ex.sets === 'number') {
+        first.sets = Math.min(8, first.sets + ex.sets);
+      }
+      continue;
+    }
+    usedIds.add(alt.id); usedNames.add(alt.name);
+    const subs = (pool || []).filter(e => e.id !== alt.id).slice(0, 3);
+    const replaced = {
+      ...ex,
+      id: alt.id,
+      name: alt.name,
+      research_note: alt.research_note ?? '',
+      cues: alt.cues ?? [],
+      study: alt.study ?? null,
+      progression_path: alt.progression_path ?? null,
+      sub1: subs[0]?.name || null,
+      sub2: subs[1]?.name || null,
+      sub3: subs[2]?.name || null,
+      sub1_id: subs[0]?.id || null,
+      sub2_id: subs[1]?.id || null,
+      sub3_id: subs[2]?.id || null,
+    };
+    firstById.set(alt.id, replaced);
+    out.push(replaced);
+  }
+  return out;
+}
+
+// ─── SPORT-AWARE SCHEDULE ────────────────────────────────────────────────────
+// Builds a schedule_template that avoids days occupied by sport sessions.
+// Spaces strength days as evenly as possible across the remaining days.
+const ALL_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+function buildDynamicSchedule(strengthDayCount, occupiedDays) {
+  const available = ALL_DAYS.filter(d => !occupiedDays.includes(d));
+  if (available.length === 0 || strengthDayCount === 0) return ALL_DAYS.slice(0, strengthDayCount);
+  const count = Math.min(strengthDayCount, available.length);
+  const step = available.length / count;
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(available[Math.round(i * step)]);
+  }
+  return result;
+}
+
 // ─── PROGRAM BUILDER ─────────────────────────────────────────────────────────
 
 // blockIndex: which training block this is (0 = first block, 1 = second, ...).
 // Passing blockIndex > 0 rotates exercises within each movement pattern,
 // cycling through rotation alternatives in library order.
 // blockStartDate: ISO date string — used in the return value for rotation tracking.
-export function generateProgram(profile, blockIndex = 0, blockStartDate = null) {
+export function generateProgram(profile, blockIndex = 0, blockStartDate = null, opts = {}) {
   const equipment = normalizeEquipment(profile.equipment || []);
   const split = selectSplit(profile);
+  // Exercise ids the user has repeatedly skipped/swapped away (computed by the
+  // caller from exercise_skips) — dropped from automatic selection. See `be`.
+  const dislikedIds = opts.dislikedIds || [];
   const goals = profile.goals || [];
   const gp = getGoalProfile(goals); // full goal profile object
   const level = getLevelFromProfile(profile);
+  // Experience-based volume scaling. Hypertrophy follows a dose-response that keeps
+  // rising with diminishing returns and is steeper the more trained the lifter is
+  // (Schoenfeld, Ogborn & Krieger 2017 J Sports Sci; Pelland/Nuckols et al. 2026
+  // Sports Med 56:481-505; Enes et al. 2024 J Appl Physiol — progressively raising
+  // volume beats holding it static in trained lifters). Beginners grow on less and
+  // should not accrue junk volume; advanced lifters need more. The factor scales
+  // the whole program around the intermediate baseline the splits are designed at.
+  // SAME factor for both sexes — per-set hypertrophy does not differ by sex
+  // (Refalo, Nuckols et al. 2025 PeerJ 13:e19042); women simply tolerate the top
+  // of the range better via faster intra/inter-set recovery (Hunter 2014).
+  const LEVEL_VOLUME_FACTOR = { beginner: 0.8, intermediate: 1.0, advanced: 1.2 };
+  const volumeFactor = LEVEL_VOLUME_FACTOR[level] || 1.0;
+  // Sex-based lower-body emphasis. Same weekly volume per muscle for both — the
+  // accessory slots just point at quads (male/other/unset) or glutes (female),
+  // keeping every muscle inside its target range either way.
+  const isFemale = (profile?.sex || '').toLowerCase() === 'female';
 
   // be() — block-aware exercise builder. Threads blockIndex automatically so
-  // exercise selection rotates each time a new block is generated.
-  const be = (patternKey, overrides = {}) =>
-    buildExercise(patternKey, equipment, { blockIndex, ...overrides });
+  // exercise selection rotates each time a new block is generated, then scales
+  // the set count by the experience-based volume factor.
+  const be = (patternKey, overrides = {}) => {
+    const ex = buildExercise(patternKey, equipment, { blockIndex, level, excludeIds: dislikedIds, ...overrides });
+    if (ex && typeof ex.sets === 'number' && volumeFactor !== 1.0) {
+      ex.sets = Math.max(1, Math.round(ex.sets * volumeFactor));
+    }
+    if (ex) ex._pattern = patternKey;
+    return ex;
+  };
 
   // Pull rep ranges, sets, RPE from goal profile
   const compoundReps = gp.compoundReps;
@@ -2109,13 +2524,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'day_a',
           name: 'Full Body A',
-          focus: 'Quad + Chest + Back focus',
+          focus: isFemale ? 'Squat · Chest · Back · Glutes' : 'Squat · Chest · Back · Quads',
           exercises: [
             be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            // Lower-body emphasis (sex tilt): quads for male/other, glutes for female
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
@@ -2126,14 +2544,18 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'day_b',
           name: 'Full Body B',
-          focus: 'Hip hinge + Shoulders + Vertical pull focus',
+          focus: isFemale ? 'Hinge · Incline · Vertical pull · Glutes' : 'Hinge · Incline · Vertical pull · Quads',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'romanian_deadlift' }),
+            be('chest_incline_push', { reps: compoundReps, sets: compoundSets }),
             be('back_vertical_pull', { reps: compoundReps, sets: compoundSets }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            // Lower-body emphasis (sex tilt): both get a quad squat here so women
+            // still hit quad volume; the glute lean for women lives on Day A (hip thrust)
+            isFemale
+              ? be('squat_pattern', { prefer: 'hack_squat', sets: isolationSets, reps: isolationReps })
+              : be('squat_pattern', { prefer: 'leg_press', sets: isolationSets, reps: isolationReps }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
@@ -2150,54 +2572,52 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'day_a',
           name: 'Full Body A',
-          focus: 'Strength focus — lower reps on compounds',
+          focus: isFemale ? 'Squat · Push · Glutes' : 'Squat · Push · Quads',
           exercises: [
             be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets }),
-            be('biceps', { sets: isolationSets }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('calves', { sets: isolationSets }),
+            be('back_vertical_pull', { reps: '8–12', sets: compoundSets, prefer: 'lat_pulldown' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            // Lower tilt: quad iso (male) vs glute (female)
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
-            be('core', { sets: 3, reps: '10–15', prefer: 'cable_crunch' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
           id: 'day_b',
           name: 'Full Body B',
-          focus: 'Hypertrophy focus — moderate reps',
+          focus: 'Hinge · Pull · Hamstrings',
           exercises: [
-            be('hip_hinge', { reps: '8–12', sets: compoundSets }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
-            be('back_vertical_pull', { reps: '8–12', sets: compoundSets, prefer: 'chin_up' }),
-            be('shoulders_vertical_push', { reps: '8–12', sets: compoundSets }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets }),
-            be('biceps', { sets: isolationSets }),
+            be('hip_hinge', { reps: '8–12', sets: compoundSets, prefer: 'romanian_deadlift' }),
+            be('chest_incline_push', { reps: '8–12', sets: compoundSets }),
+            be('back_horizontal_pull', { reps: '8–12', sets: compoundSets }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('rear_delt', { sets: isolationSets, reps: '15–20' }),
             be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
           id: 'day_c',
           name: 'Full Body C',
-          focus: 'Volume focus — isolation and weak points',
+          focus: isFemale ? 'Legs (glute lean) · volume' : 'Legs (quad lean) · volume',
           exercises: [
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '10–15', sets: 3, prefer: 'lat_pulldown' }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
-            be('hip_hinge', { sets: 2, reps: '10–15', prefer: 'hip_thrust' }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('rear_delt', { sets: isolationSets }),
-            be('shoulders_side_delt', { sets: isolationSets }),
-            be('triceps', { sets: isolationSets }),
-            be('calves', { sets: isolationSets }),
+            be('squat_pattern', { reps: '8–12', sets: compoundSets, prefer: 'leg_press' }),
+            be('chest_horizontal_push', { reps: '10–15', sets: isolationSets, prefer: 'machine_chest_press' }),
+            be('back_vertical_pull', { reps: '10–15', sets: compoundSets, prefer: 'close_grip_lat_pulldown' }),
+            // Tilt: female gets a glute slot here; male spends it on rear delts (the most undertrained head)
+            isFemale
+              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
+              : be('rear_delt', { sets: isolationSets, reps: '15–20' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            be('biceps', { sets: isolationSets, reps: isolationReps }),
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
+            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
           ].filter(Boolean),
         },
       ];
@@ -2224,15 +2644,20 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         },
         {
           id: 'lower_a',
-          name: 'Lower A — Quad Focus',
-          focus: 'Heavy squat, leg extension reclined 40°, seated curl, calves',
+          name: isFemale ? 'Lower A — Squat + Glutes' : 'Lower A — Squat + Quads',
+          focus: 'Heavy squat, RDL, then quad or glute emphasis',
           exercises: [
             be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hip_hinge', { reps: '6–10', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
+            be('hip_hinge', { reps: '8–12', sets: compoundSets, prefer: 'romanian_deadlift' }),
+            // Emphasis tilt 1
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            // Emphasis tilt 2: female → glute isolation, male → extra calves
+            isFemale
+              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
+              : be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
             be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
@@ -2248,6 +2673,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('chest_isolation', { sets: isolationSets, reps: isolationReps }),
             be('chest_decline', { sets: isolationSets, reps: '12–15' }),
             be('shoulders_side_delt', { sets: isolationSets, reps: '15–20' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
             gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
@@ -2260,15 +2686,20 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         },
         {
           id: 'lower_b',
-          name: 'Lower B — Posterior Chain',
-          focus: 'RDL, hip thrust, hamstrings, glutes, calves',
+          name: isFemale ? 'Lower B — Deadlift + Glutes' : 'Lower B — Deadlift + Quads',
+          focus: 'Deadlift, squat variation, then quad or glute emphasis',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'hip_thrust' }),
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
+            be('squat_pattern', { reps: '8–12', sets: compoundSets, prefer: 'hack_squat' }),
+            // Emphasis tilt 1
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
+            // Emphasis tilt 2: female → glute isolation, male → extra calves
+            isFemale
+              ? be('glute_focused', { prefer: 'kettlebell_hip_thrust', sets: isolationSets, reps: '12–20' })
+              : be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
             be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
@@ -2342,11 +2773,19 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           exercises: [
             be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('hip_hinge', { reps: '8–12', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Mid-block tilts toward sex: male = quad lean, female = glute lean
+            ...(isFemale
+              ? [
+                  be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' }),
+                  be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' }),
+                  be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
+                  be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+                ]
+              : [
+                  be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
+                  be('squat_pattern', { sets: isolationSets, reps: '12–15', prefer: 'leg_press' }),
+                  be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+                ]),
             be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
             be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
@@ -2382,6 +2821,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('back_inner', { reps: '10–15', sets: 3 }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
             gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15', prefer: 'barbell_shrug' }) : null,
             be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
             be('biceps', { sets: 2, reps: isolationReps, prefer: 'standing_hammer_curl' }),
@@ -2429,8 +2869,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('glute_focused', { sets: isolationSets, reps: '10–15', prefer: 'hip_thrust' }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Lower-body tilt (stays lower): male quad lean, female glute lean
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('squat_pattern', { prefer: 'leg_press', sets: isolationSets, reps: '10–15' }),
+            isFemale
+              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: 2, reps: '15–20' })
+              : be('quad_isolation', { sets: 2, reps: '12–15' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
             be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
@@ -2459,10 +2904,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'push_a',
           name: 'Push A — Chest Focus',
-          focus: 'Incline press, chest isolation, side delts x2, overhead tricep extension',
+          focus: 'Flat bench, incline press, chest isolation, side delts x2, overhead tricep extension',
           exercises: [
-            be('chest_incline_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
+            // Flat press anchors the day — the sternocostal (mid/lower) pec needs
+            // horizontal pressing; incline alone leaves it understimulated
+            // (regional hypertrophy: incline grows clavicular, flat grows sternocostal).
+            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
+            be('chest_incline_push', { reps: '8–12', sets: isolationSets }),
             be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
             be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
             be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
@@ -2508,6 +2956,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           exercises: [
             be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('shoulders_side_delt', { sets: 3, reps: '12–20' }),
+            be('shoulders_side_delt', { sets: 3, reps: '15–20', prefer: 'cable_lateral_raise' }),
             be('chest_incline_push', { reps: '8–12', sets: 2, prefer: 'incline_dumbbell_press' }),
             be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'overhead_tricep_extension' }),
             be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
@@ -2519,7 +2968,8 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Vertical pull volume, inner back, face pull, reverse pec deck, Bayesian curl + hammer curl',
           exercises: [
             be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
+            // 2 sets (not 3) keeps weekly direct back volume at the 20-set ceiling
+            be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
             be('back_inner', { reps: '12–15', sets: 3 }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
@@ -2533,11 +2983,17 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Legs B — Posterior Chain Focus',
           focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
           exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'hip_thrust' }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'romanian_deadlift' }),
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Glute slot: male keeps compound lunge, female dedicated glute (hip thrust)
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('glute_focused', { sets: isolationSets, reps: '12–15', prefer: 'walking_lunge' }),
+            // Tilt (stays lower): male quad (leg press), female glute (abduction)
+            isFemale
+              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'hip_abduction_machine' })
+              : be('squat_pattern', { sets: 2, reps: '12–15', prefer: 'leg_press' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
             be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
             be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
@@ -2553,52 +3009,56 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
         {
           id: 'full_body',
           name: 'Full Body',
-          focus: 'Full body — compounds only, higher intensity',
+          focus: 'Compounds + ' + (isFemale ? 'glute' : 'quad') + ' emphasis',
           exercises: [
             be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
             be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3 }),
-            be('hip_hinge', { reps: compoundReps, sets: 3 }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets }),
+            be('back_vertical_pull', { reps: '8–12', sets: compoundSets, prefer: 'lat_pulldown' }),
+            be('hip_hinge', { reps: '8–12', sets: isolationSets, prefer: 'romanian_deadlift' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            // Lower tilt: quad iso (male) vs glute (female)
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
+            be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
         {
           id: 'upper',
           name: 'Upper Body',
-          focus: 'Upper body — chest, back, shoulders, arms',
+          focus: 'Chest, back, shoulders, arms',
           exercises: [
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
-            be('chest_isolation', { sets: isolationSets }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
+            be('chest_incline_push', { reps: '8–12', sets: compoundSets }),
+            be('back_horizontal_pull', { reps: '8–12', sets: compoundSets }),
+            be('chest_horizontal_push', { reps: '10–15', sets: isolationSets, prefer: 'machine_chest_press' }),
+            be('back_vertical_pull', { reps: '10–15', sets: isolationSets, prefer: 'close_grip_lat_pulldown' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '15–20', prefer: 'cable_lateral_raise' }),
+            be('rear_delt', { sets: isolationSets, reps: '15–20', prefer: 'face_pull' }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: 2 }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
           ].filter(Boolean),
         },
         {
           id: 'lower',
-          name: 'Lower Body',
-          focus: 'Lower body — quads, hamstrings, glutes, calves',
+          name: isFemale ? 'Lower Body — Glute focus' : 'Lower Body — Quad focus',
+          focus: 'Squat, hinge, then quad or glute emphasis',
           exercises: [
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('hip_hinge', { reps: '8–12', sets: 3, prefer: 'hip_thrust' }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
-            be('calves', { sets: isolationSets }),
+            be('squat_pattern', { reps: '8–12', sets: compoundSets, prefer: 'leg_press' }),
+            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
+            // Emphasis tilt 1
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
+            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
+            // Emphasis tilt 2: female → glute, male → calves
+            isFemale
+              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
+              : be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
+            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
         },
@@ -2618,7 +3078,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            // Tilt: female glute (hip thrust), male extra side delt
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
@@ -2631,7 +3094,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Hip hinge + vertical push/pull focus',
           exercises: [
             be('hip_hinge', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            // Tilt: female glute (hip abduction), male rear delt
+            isFemale
+              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
+              : be('rear_delt', { sets: isolationSets, reps: '15–20' }),
             be('back_vertical_pull', { reps: '6–10', sets: 3 }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
             be('chest_incline_push', { reps: '8–12', sets: 3, prefer: 'incline_dumbbell_press' }),
@@ -2651,10 +3117,15 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
             be('quad_isolation', { sets: isolationSets }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
+            // Triceps here instead of a 4th ham-curl day — hams are already covered by
+            // the curls on A/B/D plus the B and D hinges; this balances arm volume.
+            be('triceps', { sets: isolationSets, reps: isolationReps }),
             be('rear_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Tilt: female glute (hip abduction), male extra side delt
+            isFemale
+              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
+              : be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
             be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
             be('forearms', { sets: 2, reps: isolationReps, optional: true }),
@@ -2665,8 +3136,11 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           name: 'Full Body D',
           focus: 'Posterior chain + arms volume',
           exercises: [
-            be('hip_hinge', { reps: '8–12', sets: 3, prefer: 'hip_thrust' }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            be('hip_hinge', { reps: '8–12', sets: 3, prefer: isFemale ? 'hip_thrust' : 'romanian_deadlift' }),
+            // Tilt: female glute (hip thrust), male quad (leg extension)
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
             be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
             be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
@@ -2722,6 +3196,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('back_vertical_pull', { reps: '8–12', sets: 4 }),
             be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
             be('chest_decline', { sets: isolationSets, reps: '12–15' }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
             be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
             be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
             be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
@@ -2738,7 +3213,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('squat_pattern', { reps: '8–12', sets: 3 }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('glute_focused', { sets: isolationSets }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Tilt (stays lower): male calves, female glute (abduction)
+            isFemale
+              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'hip_abduction_machine' })
+              : be('calves', { sets: 2, prefer: 'standing_calf_raise' }),
             be('calves', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
@@ -2790,7 +3268,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            // Lower tilt (stays lower): male quad, female glute (keeps walking lunge)
+            isFemale
+              ? be('glute_focused', { sets: isolationSets, reps: '12–15', prefer: 'walking_lunge' })
+              : be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('core', { sets: isolationSets }),
             be('forearms', { sets: 2, reps: isolationReps, optional: true }),
@@ -2802,9 +3283,14 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
           focus: 'Hip hinge + vertical pull + triceps',
           exercises: [
             be('hip_hinge', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
+            // Tilt: female glute (hip thrust); male gets side delts here — Day B already
+            // has a leg curl + RDL, so a 2nd curl was redundant; full-body day, not a leg day
+            isFemale
+              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
+              : be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
             be('back_vertical_pull', { reps: '6–10', sets: 3 }),
             be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
+            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
             be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets }),
@@ -2820,7 +3306,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('chest_incline_push', { reps: '8–12', sets: 3 }),
             be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
             be('quad_isolation', { sets: isolationSets }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Lower tilt (stays lower): male hamstring, female glute (abduction)
+            isFemale
+              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'hip_abduction_machine' })
+              : be('hamstring_isolation', { sets: 2, reps: isolationReps, prefer: 'lying_leg_curl' }),
             be('shoulders_side_delt', { sets: isolationSets }),
             be('core', { sets: isolationSets }),
           ].filter(Boolean),
@@ -2835,7 +3324,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
             be('chest_isolation', { sets: isolationSets }),
             be('hamstring_isolation', { sets: isolationSets }),
             be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: 2, reps: '15–20', prefer: 'cable_hip_abduction' }),
+            // Lower tilt (stays lower): male calves, female glute (bridge)
+            isFemale
+              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'glute_bridge' })
+              : be('calves', { sets: 2, prefer: 'standing_calf_raise' }),
             be('triceps', { sets: isolationSets, reps: isolationReps }),
             be('calves', { sets: isolationSets }),
             be('forearms', { sets: 2, reps: isolationReps, optional: true }),
@@ -2865,7 +3357,40 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
       days = [];
   }
 
+  // ── Dedup pass: no exercise should appear twice in the same day. If it does,
+  // swap the duplicate for a different exercise from the same movement pattern. ──
+  days = days.map(day => {
+    if (!day.exercises) return day;
+    const seen = new Set();
+    const exercises = day.exercises.map(ex => {
+      if (!ex?.name) return ex;
+      if (!seen.has(ex.name)) { seen.add(ex.name); return ex; }
+      // Duplicate — try an alternative from the same pattern not already used
+      // today, gated to the user's level so a beginner never gets an advanced swap.
+      const pool = ex.pattern ? gatePoolByLevel(getAllExercisesForPattern?.(ex.pattern, equipment) || [], level) : [];
+      const alt = pool.find(e => !seen.has(e.name));
+      if (alt) {
+        const rebuilt = buildExercise(ex.pattern, equipment, { prefer: alt.id, sets: ex.sets, reps: ex.reps, level });
+        if (rebuilt?.name && !seen.has(rebuilt.name)) { seen.add(rebuilt.name); return rebuilt; }
+      }
+      seen.add(ex.name);
+      return ex;
+    });
+    return { ...day, exercises };
+  });
+
   const blockLengthWeeks = getBlockLength(level);
+
+  days = days.map(day => ({
+    ...day,
+    exercises: deduplicateDayExercises(day.exercises || [], equipment, level, dislikedIds),
+  }));
+
+  const sportEntries = (profile.sports || []).filter(s => s?.days?.length > 0);
+  const occupiedDays = [...new Set(sportEntries.flatMap(s => s.days))];
+  const scheduleTemplate = occupiedDays.length > 0
+    ? buildDynamicSchedule(days.length, occupiedDays)
+    : split.schedule_template;
 
   return {
     id: split.id,
@@ -2874,7 +3399,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
     days_per_week: split.days,
     level,
     session_time: split.session_time_est,
-    schedule: split.schedule_template,
+    schedule: scheduleTemplate,
     rest_between: split.rest_between || [],
     science_basis: split.science_basis,
     honest_note: split.honest_note,
@@ -2893,11 +3418,96 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null) 
     // ── Program metadata ───────────────────────────────────────────────────
     warnings: generateWarnings(profile, split),
     volume_targets: VOLUME_TARGETS,
+    sport_sessions: sportEntries.flatMap(s => s.days.map(d => ({ day: d, sport: s.label || s.key }))),
     days: days.map((day, i) => ({
       ...day,
-      scheduled_day: split.schedule_template[i] || null,
+      scheduled_day: scheduleTemplate[i] || null,
     })),
   };
+}
+
+// ─── OPTIONAL-DAY VOLUME REBALANCING ─────────────────────────────────────────
+// An optional specialisation day (e.g. the Shoulders Day) piles a big block of
+// isolation volume onto one or two muscle heads on top of the main split. If the
+// lifter actually COMPLETES it in a given week, the main days' isolation for
+// those heads would push the weekly total past its optimal ceiling. This trims
+// the main-day isolation sets for the affected heads back down so the weekly
+// total lands at the head's optimal_high — compounds and presses are never
+// touched, and the trim only happens in weeks the optional day was done.
+//
+// Maps an optional day id → the heads it loads and the exercise pattern that
+// feeds each head (used to find the matching isolation slots on the main days).
+const OPTIONAL_DAY_HEADS = {
+  optional_shoulders: [
+    { head: 'side_delts', pattern: 'shoulders_side_delt' },
+    { head: 'rear_delts', pattern: 'rear_delt' },
+  ],
+};
+
+export function rebalanceForCompletedOptionalDays(program, completedDayNames = []) {
+  if (!program?.days?.length) return program;
+  const completed = new Set(
+    (completedDayNames || []).map(n => n?.toLowerCase().trim()).filter(Boolean)
+  );
+  if (!completed.size) return program;
+
+  const tier = program.level || 'intermediate';
+
+  // For every optional day that was completed this week, total the sets it adds
+  // to each head so we know how much the main days need to give back.
+  const headInfo = {}; // head -> { pattern, optionalSets }
+  program.days.forEach(d => {
+    if (!d.optional || !completed.has(d.name?.toLowerCase().trim())) return;
+    (OPTIONAL_DAY_HEADS[d.id] || []).forEach(({ head, pattern }) => {
+      const added = (d.exercises || [])
+        .filter(ex => ex.pattern === pattern)
+        .reduce((n, ex) => n + (ex.sets || 0), 0);
+      if (!headInfo[head]) headInfo[head] = { pattern, optionalSets: 0 };
+      headInfo[head].optionalSets += added;
+    });
+  });
+  if (!Object.keys(headInfo).length) return program;
+
+  // Clone days + exercises so we can adjust set counts without mutating the
+  // generated program (which is cached / reused elsewhere).
+  const days = program.days.map(d => ({
+    ...d,
+    exercises: (d.exercises || []).map(ex => ({ ...ex })),
+  }));
+
+  Object.entries(headInfo).forEach(([head, { pattern, optionalSets }]) => {
+    const target = VOLUME_TARGETS[head]?.[tier]?.optimal_high;
+    if (!target) return;
+
+    // Isolation slots for this head on the main (non-optional) days only.
+    const slots = [];
+    days.forEach(d => {
+      if (d.optional) return;
+      d.exercises.forEach(ex => { if (ex.pattern === pattern) slots.push(ex); });
+    });
+    const mainTotal = slots.reduce((n, ex) => n + (ex.sets || 0), 0);
+    let excess = (mainTotal + optionalSets) - target;
+    if (excess <= 0) return; // already within range — leave it alone
+
+    // Trim one set at a time off the currently-largest slot so the cut is spread
+    // out rather than gutting a single exercise.
+    while (excess > 0 && slots.some(ex => (ex.sets || 0) > 0)) {
+      const biggest = slots
+        .filter(ex => (ex.sets || 0) > 0)
+        .sort((a, b) => (b.sets || 0) - (a.sets || 0))[0];
+      biggest.sets -= 1;
+      excess -= 1;
+    }
+  });
+
+  // Drop any isolation slot that was trimmed all the way to zero.
+  const trimPatterns = new Set(Object.values(headInfo).map(h => h.pattern));
+  days.forEach(d => {
+    if (d.optional) return;
+    d.exercises = d.exercises.filter(ex => !(trimPatterns.has(ex.pattern) && (ex.sets || 0) <= 0));
+  });
+
+  return { ...program, days, volume_rebalanced: true };
 }
 
 // ─── LEVEL DETECTOR ──────────────────────────────────────────────────────────

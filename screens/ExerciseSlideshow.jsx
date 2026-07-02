@@ -4,8 +4,10 @@ import {
   StyleSheet, StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function ExerciseSlideshow({ exercise, visible, onClose }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   if (!exercise) return null;
 
@@ -35,7 +37,7 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
               )}
             </View>
             <Pressable onPress={onClose} style={styles.doneBtn}>
-              <Text style={styles.doneBtnText}>Done</Text>
+              <Text style={styles.doneBtnText}>{t('common.done')}</Text>
             </Pressable>
           </View>
         </View>
@@ -45,7 +47,7 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
           {/* ── Technique cues ── */}
           {exercise.cues?.length > 0 && (
             <View style={styles.cuesSection}>
-              <Text style={styles.sectionLabel}>TECHNIQUE CUES</Text>
+              <Text style={styles.sectionLabel}>{t('cards.slideshow.techniqueCues')}</Text>
               {exercise.cues.map((cue, i) => (
                 <View key={i} style={styles.cueRow}>
                   <View style={styles.cueNum}>
@@ -60,7 +62,7 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
           {/* ── Research note ── */}
           {exercise.research_note && (
             <View style={styles.researchSection}>
-              <Text style={styles.sectionLabel}>WHY THIS EXERCISE</Text>
+              <Text style={styles.sectionLabel}>{t('cards.slideshow.whyThisExercise')}</Text>
               <View style={styles.researchCard}>
                 <Text style={styles.researchText}>{exercise.research_note}</Text>
               </View>

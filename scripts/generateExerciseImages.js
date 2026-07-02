@@ -18,9 +18,13 @@
 const { createClient } = require('@supabase/supabase-js');
 const OpenAI = require('openai');
 
-const SUPABASE_URL        = 'https://guvvzimnucttjjzmpsvp.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
-  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1dnZ6aW1udWN0dGpqem1wc3ZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjIzNzg2NCwiZXhwIjoyMDkxODEzODY0fQ.aZQ2Bth5LlolhfKtn9fBeIsknTx-jCLmn1zxw096LKs';
+const SUPABASE_URL        = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error('Missing env. Run: SUPABASE_URL=... SUPABASE_SERVICE_KEY=... OPENAI_API_KEY=... node scripts/generateExerciseImages.js');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { persistSession: false },

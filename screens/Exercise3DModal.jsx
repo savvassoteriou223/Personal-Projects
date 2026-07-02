@@ -8,6 +8,7 @@ import {
   SafeAreaView, StatusBar,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useTranslation } from 'react-i18next';
 import { getExercise3DData } from './exercise3DData';
 
 // ─── VIEWER HTML ─────────────────────────────────────────────────────────────
@@ -173,6 +174,7 @@ drawFrame();
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function Exercise3DModal({ exerciseName, onClose }) {
+  const { t } = useTranslation();
   const data = getExercise3DData(exerciseName);
   const [slideIdx, setSlideIdx] = useState(0);
   const webRef = useRef(null);
@@ -207,7 +209,7 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>{exerciseName}</Text>
           <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
-            <Text style={styles.closeBtnText}>Done</Text>
+            <Text style={styles.closeBtnText}>{t('common.done')}</Text>
           </Pressable>
         </View>
 
@@ -233,7 +235,7 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
             disabled={slideIdx === 0}
           >
             <Text style={[styles.navArrow, slideIdx === 0 && styles.navArrowDim]}>‹</Text>
-            <Text style={[styles.navLabel, slideIdx === 0 && styles.navLabelDim]}>Prev</Text>
+            <Text style={[styles.navLabel, slideIdx === 0 && styles.navLabelDim]}>{t('cards.threeD.prev')}</Text>
           </Pressable>
 
           <Text style={styles.slideCount}>{slideIdx + 1} / {totalSlides}</Text>
@@ -243,12 +245,12 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
             onPress={nextSlide}
             disabled={slideIdx === totalSlides - 1}
           >
-            <Text style={[styles.navLabel, slideIdx === totalSlides - 1 && styles.navLabelDim]}>Next</Text>
+            <Text style={[styles.navLabel, slideIdx === totalSlides - 1 && styles.navLabelDim]}>{t('cards.threeD.next')}</Text>
             <Text style={[styles.navArrow, slideIdx === totalSlides - 1 && styles.navArrowDim]}>›</Text>
           </Pressable>
         </View>
 
-        <Text style={styles.hint}>Drag to rotate · Swipe slides with arrows</Text>
+        <Text style={styles.hint}>{t('cards.threeD.hint')}</Text>
 
       </SafeAreaView>
     </Modal>

@@ -30,6 +30,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import MuscleMap from './MuscleMap';
+import { useTranslation } from 'react-i18next';
+import { getExerciseInsight } from './studiesLibrary';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -90,6 +92,7 @@ function CueRow({ index, text }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
+  const { t } = useTranslation();
   const [researchOpen, setResearchOpen] = useState(false);
 
   if (!exercise || !pattern) return null;
@@ -161,11 +164,31 @@ export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
 
       {/* ── Technique cues ── */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>TECHNIQUE</Text>
+        <Text style={styles.sectionLabel}>{t('cards.exerciseDetail.technique')}</Text>
         {exercise.cues.map((cue, i) => (
           <CueRow key={i} index={i} text={cue} />
         ))}
       </View>
+
+      {/* ── Key insight — the concise, evidence-based "why this exercise" ── */}
+      {(() => {
+        const insight = getExerciseInsight({ name: exercise.name, primaryMuscles: pattern?.muscles });
+        if (!insight) return null;
+        return (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t('cards.exerciseDetail.whyHere')}</Text>
+            <View style={styles.insightCard}>
+              <Text style={styles.insightText}>{insight.insight}</Text>
+              {insight.metric && (
+                <Text style={styles.insightMetric}>
+                  {insight.metric.this} vs {insight.metric.control} · {insight.metric.method}
+                </Text>
+              )}
+              <Text style={styles.insightCite}>{insight.cite}</Text>
+            </View>
+          </View>
+        );
+      })()}
 
       {/* ── Research note (collapsible) ── */}
       {exercise.research_note && (
@@ -175,7 +198,7 @@ export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
             onPress={() => setResearchOpen(o => !o)}
             activeOpacity={0.7}
           >
-            <Text style={styles.sectionLabel}>RESEARCH</Text>
+            <Text style={styles.sectionLabel}>{t('cards.exerciseDetail.research')}</Text>
             <Text style={styles.researchToggle}>{researchOpen ? '▲ Less' : '▼ More'}</Text>
           </TouchableOpacity>
           {researchOpen && (
@@ -189,7 +212,7 @@ export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
       {/* ── Progression path (if exists) ── */}
       {exercise.progression_path && (
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>PROGRESSION PATH</Text>
+          <Text style={styles.sectionLabel}>{t('cards.exerciseDetail.progressionPath')}</Text>
           {exercise.progression_path.map((step, i) => (
             <View key={i} style={styles.progressionRow}>
               <View style={[styles.progressionDot, i === 0 && { backgroundColor: C.green }]} />
@@ -362,6 +385,34 @@ const styles = StyleSheet.create({
     color: C.textSecond,
     fontSize: 12,
     lineHeight: 19,
+  },
+
+  // Key insight (concise evidence-based "why")
+  insightCard: {
+    backgroundColor: C.green + '14',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: C.green + '40',
+    borderLeftWidth: 3,
+    borderLeftColor: C.green,
+    padding: 12,
+  },
+  insightText: {
+    color: C.textPrimary,
+    fontSize: 13.5,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  insightMetric: {
+    color: C.green,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 6,
+  },
+  insightCite: {
+    color: C.textMuted,
+    fontSize: 11,
+    marginTop: 6,
   },
 
   // Progression

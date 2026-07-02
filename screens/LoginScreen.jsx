@@ -1,42 +1,17 @@
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
+import { friendlyAuthError } from '../lib/errorMessage';
 
 export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecovery }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [lastCharVisible, setLastCharVisible] = useState(false);
-  const maskTimer = useRef(null);
-  const prevPasswordLen = useRef(0);
-
-  const handlePasswordChange = (newMasked) => {
-    const prevLen = prevPasswordLen.current;
-    const newLen = newMasked.length;
-    let newActual;
-    if (newLen > prevLen) {
-      const added = newMasked.slice(prevLen);
-      newActual = password + added;
-      setLastCharVisible(true);
-      if (maskTimer.current) clearTimeout(maskTimer.current);
-      maskTimer.current = setTimeout(() => setLastCharVisible(false), 700);
-    } else {
-      newActual = password.slice(0, newLen);
-      setLastCharVisible(false);
-      if (maskTimer.current) clearTimeout(maskTimer.current);
-    }
-    prevPasswordLen.current = newLen;
-    setPassword(newActual);
-  };
-
-  const displayPassword = showPassword
-    ? password
-    : password.length === 0
-      ? ''
-      : '•'.repeat(password.length - (lastCharVisible ? 1 : 0)) + (lastCharVisible ? password[password.length - 1] : '');
   const [mode, setMode] = useState('login');
 
  // 'login' | 'reset' | 'reset_code'
@@ -44,38 +19,38 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
   const [resetCode, setResetCode] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) { setError('Please fill in all fields.'); return; }
+    if (!email || !password) { setError(t('auth.errors.fillAll')); return; }
     setLoading(true);
     setError('');
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { setError(error.message); setLoading(false); return; }
+      if (error) { setError(friendlyAuthError(error, t)); setLoading(false); return; }
       // SIGNED_IN event navigates away. Fallback in case it never fires.
       setTimeout(() => setLoading(false), 8000);
     } catch (e) {
-      setError(e.message || 'Sign in failed.');
+      setError(friendlyAuthError(e, t));
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
-    if (!email) { setError('Enter your email address.'); return; }
+    if (!email) { setError(t('auth.errors.enterEmail')); return; }
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     setLoading(false);
-    if (error) { setError(error.message); return; }
+    if (error) { setError(friendlyAuthError(error, t)); return; }
     setMode('reset_code');
   };
 
   const handleResetCode = async () => {
-    if (!resetCode) { setError('Enter the code from your email.'); return; }
+    if (!resetCode) { setError(t('auth.errors.enterCode')); return; }
     setLoading(true);
     setError('');
     onRecovery && onRecovery();
     const { error } = await supabase.auth.verifyOtp({ email, token: resetCode.trim(), type: 'email' });
     setLoading(false);
-    if (error) { onRecovery && onRecovery(false); setError('Invalid or expired code.'); return; }
+    if (error) { onRecovery && onRecovery(false); setError(t('auth.errors.invalidCode')); return; }
   };
 
   const switchToReset = () => { setMode('reset'); setError(''); setResetSent(false); setResetCode(''); };
@@ -87,19 +62,19 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <Pressable onPress={switchToReset} style={{ paddingBottom: 24 }}>
-              <Text style={{ color: '#71717A', fontSize: 15 }}>← Back</Text>
+              <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.back')}</Text>
             </Pressable>
 
-            <Text style={styles.title}>Check your email</Text>
-            <Text style={styles.sub}>Enter the 6-digit code we sent to {email}.</Text>
+            <Text style={styles.title}>{t('auth.code.title')}</Text>
+            <Text style={styles.sub}>{t('auth.code.subtitle', { email })}</Text>
 
-            <Text style={styles.label}>Code</Text>
+            <Text style={styles.label}>{t('auth.code.label')}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.inputInner}
                 value={resetCode}
                 onChangeText={setResetCode}
-                placeholder="Enter code"
+                placeholder={t('auth.code.placeholder')}
                 placeholderTextColor="#3D3D4A"
                 keyboardType="number-pad"
                 autoCapitalize="none"
@@ -115,7 +90,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
             >
               {loading
                 ? <ActivityIndicator color="#111114" />
-                : <Text style={styles.btnText}>Verify</Text>
+                : <Text style={styles.btnText}>{t('auth.code.verify')}</Text>
               }
             </Pressable>
           </ScrollView>
@@ -130,19 +105,19 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <Pressable onPress={switchToLogin} style={{ paddingBottom: 24 }}>
-              <Text style={{ color: '#71717A', fontSize: 15 }}>← Back to sign in</Text>
+              <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.backToSignIn')}</Text>
             </Pressable>
 
-            <Text style={styles.title}>Reset password</Text>
-            <Text style={styles.sub}>We'll send a reset link to your email.</Text>
+            <Text style={styles.title}>{t('auth.reset.title')}</Text>
+            <Text style={styles.sub}>{t('auth.reset.subtitle')}</Text>
 
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>{t('auth.email')}</Text>
             <View style={styles.inputWrap}>
               <TextInput
                 style={styles.inputInner}
                 value={email}
                 onChangeText={setEmail}
-                placeholder="you@email.com"
+                placeholder={t('auth.emailPlaceholder')}
                 placeholderTextColor="#3D3D4A"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -158,7 +133,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
             >
               {loading
                 ? <ActivityIndicator color="#111114" />
-                : <Text style={styles.btnText}>Send reset code</Text>
+                : <Text style={styles.btnText}>{t('auth.reset.sendCode')}</Text>
               }
             </Pressable>
           </ScrollView>
@@ -172,44 +147,45 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <Pressable onPress={onGoBack} style={{ paddingBottom: 24 }}>
-            <Text style={{ color: '#71717A', fontSize: 15 }}>← Back</Text>
+            <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.back')}</Text>
           </Pressable>
 
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.sub}>Sign in to your Helix account</Text>
+          <Text style={styles.title}>{t('auth.login.title')}</Text>
+          <Text style={styles.sub}>{t('auth.login.subtitle')}</Text>
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t('auth.email')}</Text>
           <View style={styles.inputWrap}>
             <TextInput
               style={styles.inputInner}
               value={email}
               onChangeText={setEmail}
-              placeholder="you@email.com"
+              placeholder={t('auth.emailPlaceholder')}
               placeholderTextColor="#3D3D4A"
               keyboardType="email-address"
               autoCapitalize="none"
             />
           </View>
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t('auth.password')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={[styles.inputInner, { flex: 1 }]}
-              value={displayPassword}
-              onChangeText={handlePasswordChange}
-              placeholder="Your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              placeholder={t('auth.login.passwordPlaceholder')}
               placeholderTextColor="#3D3D4A"
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
             />
             <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-              <Text style={styles.eyeText}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <Text style={styles.eyeText}>{showPassword ? t('auth.hide') : t('auth.show')}</Text>
             </Pressable>
           </View>
 
           <Pressable onPress={switchToReset} style={styles.forgotLink}>
-            <Text style={styles.forgotText}>Forgot password?</Text>
+            <Text style={styles.forgotText}>{t('auth.login.forgot')}</Text>
           </Pressable>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -221,13 +197,13 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
           >
             {loading
               ? <ActivityIndicator color="#111114" />
-              : <Text style={styles.btnText}>Sign in</Text>
+              : <Text style={styles.btnText}>{t('auth.login.signIn')}</Text>
             }
           </Pressable>
 
           <Pressable onPress={onGoToSignup} style={styles.switchLink}>
             <Text style={styles.switchText}>
-              Don't have an account? <Text style={styles.switchHighlight}>Sign up</Text>
+              {t('auth.login.noAccount')} <Text style={styles.switchHighlight}>{t('auth.login.signUp')}</Text>
             </Text>
           </Pressable>
         </ScrollView>

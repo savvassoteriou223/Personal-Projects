@@ -32,6 +32,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Ellipse, Circle, G, Defs, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -471,6 +472,7 @@ export default function MuscleMap({
   showLabels = false,
   showLegend = true,
 }) {
+  const { t } = useTranslation();
   const { figH, figW, panelGap } = SIZES[size] || SIZES.md;
   const { primAnt, primPost, secAnt, secPost } = buildActiveSets(primary, secondary);
 
@@ -482,8 +484,8 @@ export default function MuscleMap({
       {/* Labels row */}
       {showLabels && (
         <View style={[styles.labelRow, { width: figW * 2 + panelGap }]}>
-          <Text style={[styles.viewLabel, { width: figW }]}>Front</Text>
-          <Text style={[styles.viewLabel, { width: figW }]}>Back</Text>
+          <Text style={[styles.viewLabel, { width: figW }]}>{t('cards.muscleMap.front')}</Text>
+          <Text style={[styles.viewLabel, { width: figW }]}>{t('cards.muscleMap.back')}</Text>
         </View>
       )}
 
@@ -501,8 +503,8 @@ export default function MuscleMap({
       {/* Legend */}
       {showLegend && (hasPrimary || hasSecondary) && (
         <View style={styles.legend}>
-          {hasPrimary   && <LegendDot color={C.primary}   label="Primary" />}
-          {hasSecondary && <LegendDot color={C.secondary} label="Secondary" />}
+          {hasPrimary   && <LegendDot color={C.primary}   label={t('cards.muscleMap.primary')} />}
+          {hasSecondary && <LegendDot color={C.secondary} label={t('cards.muscleMap.secondary')} />}
         </View>
       )}
     </View>

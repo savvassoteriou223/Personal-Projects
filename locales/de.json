@@ -1,0 +1,1090 @@
+{
+  "common": {
+    "continue": "Weiter",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "done": "Fertig",
+    "back": "Zurück",
+    "next": "Weiter",
+    "skip": "Überspringen",
+    "retry": "Erneut versuchen",
+    "close": "Schließen",
+    "delete": "Löschen",
+    "discard": "Verwerfen"
+  },
+  "language": {
+    "title": "Sprache",
+    "subtitle": "Wähle deine Sprache",
+    "settingsLabel": "Sprache"
+  },
+  "welcome": {
+    "tagline": "Wissenschaftsbasiertes Training, smarte Ernährung\nund KI-Coaching an einem Ort.",
+    "getStarted": "Loslegen",
+    "haveAccount": "Ich habe bereits ein Konto"
+  },
+  "auth": {
+    "back": "Zurück",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "show": "Anzeigen",
+    "hide": "Verbergen",
+    "email": "E-Mail",
+    "emailPlaceholder": "du@email.com",
+    "password": "Passwort",
+    "login": {
+      "title": "Willkommen zurück",
+      "subtitle": "Melde dich bei deinem Helix-Konto an",
+      "passwordPlaceholder": "Dein Passwort",
+      "forgot": "Passwort vergessen?",
+      "signIn": "Anmelden",
+      "noAccount": "Noch kein Konto?",
+      "signUp": "Registrieren"
+    },
+    "reset": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Wir senden dir einen 6-stelligen Code per E-Mail.",
+      "sendCode": "Code senden"
+    },
+    "code": {
+      "title": "Prüfe deine E-Mails",
+      "subtitle": "Gib den 6-stelligen Code ein, den wir an {{email}} gesendet haben.",
+      "label": "Code",
+      "placeholder": "Code eingeben",
+      "verify": "Bestätigen"
+    },
+    "signup": {
+      "title": "Konto erstellen",
+      "subtitle": "Für immer kostenlos. Upgrade, wann du willst.",
+      "name": "Name",
+      "namePlaceholder": "Alex",
+      "dob": "Geburtsdatum",
+      "sex": "Geschlecht",
+      "sexSub": "Wird zur Berechnung deiner Kalorienziele verwendet.",
+      "male": "Männlich",
+      "female": "Weiblich",
+      "other": "Divers",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPlaceholder": "Passwort wiederholen",
+      "minChars": "Mind. 8 Zeichen",
+      "createAccount": "Konto erstellen",
+      "legal": "Mit der Registrierung akzeptierst du unsere Nutzungsbedingungen und Datenschutzrichtlinie.",
+      "haveAccount": "Hast du bereits ein Konto?",
+      "signIn": "Anmelden"
+    },
+    "emailSent": {
+      "title": "Prüfe deine E-Mails",
+      "text": "Wir haben einen Bestätigungslink an {{email}} gesendet. Tippe darauf, um dein Konto zu aktivieren — das dauert nur eine Sekunde.",
+      "resend": "Nichts erhalten? E-Mail erneut senden"
+    },
+    "newPassword": {
+      "title": "Neues Passwort festlegen",
+      "subtitle": "Wähle ein sicheres Passwort für dein Konto.",
+      "label": "Neues Passwort",
+      "confirmLabel": "Passwort bestätigen",
+      "placeholder": "Mind. 8 Zeichen",
+      "confirmPlaceholder": "Passwort wiederholen",
+      "submit": "Passwort aktualisieren"
+    },
+    "success": {
+      "title": "Passwort aktualisiert",
+      "text": "Du wirst jetzt angemeldet."
+    },
+    "errors": {
+      "fillAll": "Bitte fülle alle Felder aus.",
+      "fillBoth": "Bitte fülle beide Felder aus.",
+      "enterEmail": "Gib deine E-Mail-Adresse ein.",
+      "enterCode": "Gib den Code aus deiner E-Mail ein.",
+      "invalidCode": "Ungültiger oder abgelaufener Code.",
+      "signInFailed": "Anmeldung fehlgeschlagen.",
+      "validDob": "Bitte gib ein gültiges Geburtsdatum ein.",
+      "minAge": "Du musst mindestens 13 Jahre alt sein, um dich zu registrieren.",
+      "passwordShort": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein."
+    }
+  },
+  "weekdaysShort": {
+    "mon": "Mo",
+    "tue": "Di",
+    "wed": "Mi",
+    "thu": "Do",
+    "fri": "Fr",
+    "sat": "Sa",
+    "sun": "So"
+  },
+  "onboarding": {
+    "stepLabel": "Schritt {{step}} von {{total}}",
+    "next": "Weiter",
+    "optional": "(optional)",
+    "step1": {
+      "title": "Beginnen wir mit\ndeinen Körperdaten",
+      "sub": "Werden zur Berechnung deiner Kalorienziele und deines BMI verwendet.",
+      "height": "Größe (cm)",
+      "heightPlaceholder": "z. B. 178",
+      "weight": "Aktuelles Gewicht (kg)",
+      "weightPlaceholder": "z. B. 85",
+      "bmi": "Dein BMI",
+      "bmiRange": "Gesunder Gewichtsbereich: {{low}}kg – {{high}}kg"
+    },
+    "bmiCategory": {
+      "underweight": "Untergewicht",
+      "healthy": "Gesund",
+      "overweight": "Übergewicht",
+      "obese": "Adipositas"
+    },
+    "step2": {
+      "title": "Was sind deine Ziele?",
+      "sub": "Dein gesunder Bereich ist {{low}}–{{high}}kg. Du bist bei {{weight}}kg.\nWähle alles Zutreffende aus.",
+      "targetWeight": "Zielgewicht (kg)",
+      "targetPlaceholder": "z. B. 75",
+      "estimate": "In gesundem Tempo erreichst du {{target}}kg in ~{{weeks}} Wochen"
+    },
+    "goals": {
+      "lose": "Fett verlieren",
+      "gain": "Muskeln aufbauen",
+      "strength": "Kraft aufbauen",
+      "aesthetics": "Ästhetik",
+      "endurance": "Ausdauer verbessern",
+      "maintain": "Gesund bleiben"
+    },
+    "step3": {
+      "title": "Wie lange trainierst\ndu schon?",
+      "sub": "Das kalibriert dein Trainingsvolumen und die Komplexität des Programms."
+    },
+    "experience": {
+      "under_6m": {
+        "label": "Weniger als 6 Monate",
+        "sublabel": "Gerade erst angefangen"
+      },
+      "6m_to_2y": {
+        "label": "6 Monate – 2 Jahre",
+        "sublabel": "Grundlagen aufbauen"
+      },
+      "2y_to_4y": {
+        "label": "2 – 4 Jahre",
+        "sublabel": "Konstant dabei"
+      },
+      "over_4y": {
+        "label": "Über 4 Jahre",
+        "sublabel": "Sehr erfahren"
+      }
+    },
+    "step4": {
+      "title": "Dein Trainingsplan",
+      "sub": "Wir erstellen deinen Plan rund um deine Verfügbarkeit.",
+      "days": "Tage pro Woche",
+      "sessionLength": "Trainingsdauer",
+      "equipment": "Verfügbares Equipment",
+      "sports": "Sport & Aktivitäten",
+      "sportsHint": "Deine Krafteinheiten werden um deine Sporttage herum geplant.",
+      "sportDays": "{{sport}} — an welchen Tagen?"
+    },
+    "equipment": {
+      "barbell": "Langhantel",
+      "dumbbells": "Kurzhanteln",
+      "cables": "Kabelzug",
+      "machines": "Maschinen",
+      "bodyweight": "Nur Körpergewicht",
+      "pullupBar": "Klimmzugstange",
+      "kettlebells": "Kettlebells",
+      "bands": "Widerstandsbänder"
+    },
+    "sports": {
+      "swimming": "Schwimmen",
+      "running": "Laufen",
+      "cycling": "Radfahren",
+      "football": "Fußball",
+      "basketball": "Basketball",
+      "tennis": "Tennis / Rückschlagsport",
+      "martial_arts": "Kampfsport"
+    },
+    "step5": {
+      "title": "Welche Nahrungsergänzung\nnimmst du?",
+      "sub": "Dein KI-Coach nutzt diese, um dir relevantere Tipps zu geben. Optional — tippe auf \"Keine\", wenn du keine nimmst.",
+      "other": "Andere Präparate",
+      "otherPlaceholder": "z. B. Ashwagandha",
+      "add": "Hinzufügen"
+    },
+    "supplements": {
+      "whey": "Whey-Protein",
+      "creatine": "Kreatin",
+      "preworkout": "Pre-Workout",
+      "multivitamin": "Multivitamin",
+      "omega3": "Omega-3",
+      "vitaminD": "Vitamin D",
+      "magnesium": "Magnesium",
+      "bcaas": "BCAAs",
+      "collagen": "Kollagen",
+      "none": "Keine"
+    },
+    "step6": {
+      "title": "Problemzonen?",
+      "sub": "Suche oder scrolle. Tippe auf alles, was dir Probleme bereitet.",
+      "noIssues": "Keine Probleme",
+      "noIssuesSelected": "Keine Probleme ✓",
+      "searchPlaceholder": "Suchen — z. B. Knie, Schulter, Rücken…",
+      "severitySub": "Wie würdest du es gerade beschreiben?",
+      "postSurgery": "Nach OP",
+      "postSurgeryDesc": "Hatte eine Operation in diesem Bereich",
+      "surgeryTitle": "Wie lange ist die\nOperation her?",
+      "note": "Übungen, die betroffene Bereiche belasten, werden durch sicherere Alternativen ersetzt."
+    },
+    "step7": {
+      "title": "Dein persönlicher Plan\nist fertig",
+      "calorieTarget": "Tägliches Kalorienziel",
+      "kcal": "kcal",
+      "maintenance": "Erhaltung: ~{{tdee}} kcal · {{focus}}",
+      "focusCut": "-400 kcal Defizit",
+      "focusBulk": "+250 kcal Überschuss",
+      "focusRecomp": "-200 kcal Rekomposition",
+      "focusMaintain": "Erhaltung",
+      "protein": "Protein",
+      "carbs": "Kohlenhydrate",
+      "fat": "Fett",
+      "trainingPlan": "Trainingsplan",
+      "schedule": "{{days}} Tage/Woche · {{len}} Min. Einheiten",
+      "goalsLabel": "Ziele: {{list}}",
+      "experienceLabel": "Erfahrung: {{label}}",
+      "targetLabel": "Ziel: {{target}}kg in ~{{weeks}} Wochen",
+      "supplementsNoted": "Präparate erfasst",
+      "conditionsFiltered": "Beschwerden (Programm gefiltert)",
+      "start": "Training starten"
+    },
+    "feedback": {
+      "optimal": "Optimal",
+      "good": "Gut",
+      "suboptimal": "Suboptimal",
+      "msgMuscle4": "Jede Muskelgruppe wird zweimal pro Woche trainiert — das wissenschaftlich belegte Minimum für maximale Hypertrophie.",
+      "msgMuscle3": "Guter Ausgangspunkt. Ganzkörper-Einheiten treffen jeden Muskel 3-mal pro Woche. Etwas weniger Volumen pro Muskel als optimal, aber effektiv.",
+      "msgMuscle2": "2 Tage liegen unter dem wissenschaftlichen Minimum für optimales Muskelwachstum. Ergebnisse kommen, aber deutlich langsamer. Erwäge, wenn möglich, einen dritten Tag.",
+      "msgEndurance": "Für Ausdauerziele werden höhere Wiederholungsbereiche und kürzere Pausen priorisiert. Beständigkeit zählt mehr als Häufigkeit.",
+      "msgFat": "Beim Fettabbau erhält Krafttraining die Muskulatur im Kaloriendefizit. Dichteres Training hält die Herzfrequenz hoch.",
+      "msgDefault": "Dein Plan wird für die gewählten Ziele optimiert."
+    },
+    "alerts": {
+      "invalidHeightTitle": "Ungültige Größe",
+      "invalidHeightMsg": "Bitte gib eine Größe zwischen 100 und 250 cm ein.",
+      "invalidWeightTitle": "Ungültiges Gewicht",
+      "invalidWeightMsg": "Bitte gib ein Gewicht zwischen 20 und 300 kg ein.",
+      "selectGoalTitle": "Ziel auswählen",
+      "selectGoalMsg": "Bitte wähle mindestens ein Ziel, um fortzufahren.",
+      "invalidTargetTitle": "Ungültiges Zielgewicht",
+      "invalidTargetMsg": "Bitte gib ein Zielgewicht zwischen 20 und 300 kg ein.",
+      "selectExpTitle": "Erfahrung auswählen",
+      "selectExpMsg": "Bitte wähle dein Erfahrungslevel im Gym.",
+      "selectEquipTitle": "Equipment auswählen",
+      "selectEquipMsg": "Bitte wähle mindestens eine Equipment-Option.",
+      "selectSuppTitle": "Präparate auswählen",
+      "selectSuppMsg": "Bitte wähle mindestens eine Option, oder tippe auf \"Keine\", wenn du keine Präparate nimmst.",
+      "healthTitle": "Gesundheitliche Beschwerden",
+      "healthMsg": "Bitte wähle relevante Beschwerden, oder tippe auf \"Keine Probleme\", wenn du keine hast."
+    }
+  },
+  "dates": {
+    "today": "Heute",
+    "yesterday": "Gestern"
+  },
+  "nutrition": {
+    "title": "Ernährung",
+    "upgrade": "Upgrade für KI-Erfassung",
+    "greetingMorning": "Guten Morgen",
+    "greetingAfternoon": "Guten Tag",
+    "greetingEvening": "Guten Abend",
+    "trainingDay": "Trainingstag",
+    "restDay": "Ruhetag",
+    "target": "Ziel: {{cal}} kcal · {{protein}}g Protein{{carbs}}",
+    "carbsUp": " · mehr Kohlenhydrate",
+    "carbsModerate": " · moderate Kohlenhydrate",
+    "train": "Training",
+    "rest": "Ruhe",
+    "kcalEaten": "kcal gegessen",
+    "remaining": "übrig",
+    "over": "drüber",
+    "targetLabel": "Ziel",
+    "macros": {
+      "protein": "Protein",
+      "carbs": "Kohlenhydrate",
+      "fat": "Fett"
+    },
+    "meals": {
+      "breakfast": "Frühstück",
+      "lunch": "Mittagessen",
+      "dinner": "Abendessen",
+      "snack": "Snacks"
+    },
+    "nothingLogged": "Nichts erfasst",
+    "kcal": "{{value}} kcal",
+    "add": "+ Hinzufügen",
+    "mealMacros": "P: {{p}}g · K: {{c}}g · F: {{f}}g",
+    "insights": {
+      "lowProtein": {
+        "breakfast": "Wenig Protein — griechischer Joghurt, Eier oder ein Shake helfen, dein Morgenziel zu erreichen.",
+        "lunch": "Wenig Protein — füge Hähnchen, Thunfisch oder Hülsenfrüchte hinzu, um diese Mahlzeit auszugleichen.",
+        "dinner": "Wenig Protein — Fisch, mageres Rind oder Tofu bringen dich näher an dein Ziel.",
+        "snack": "Wenig Protein — Hüttenkäse oder ein Proteinriegel würden diesen Snack aufwerten.",
+        "default": "Erwäge eine Proteinquelle, um dein Tagesziel zu erreichen."
+      },
+      "highFat": {
+        "breakfast": "Fettreiches Frühstück ({{g}}g) — viel Fett am frühen Morgen kann die Verdauung verlangsamen.",
+        "lunch": "Fettreiches Mittagessen ({{g}}g) — Fett gleichmäßiger zu verteilen hilft bei der Aufnahme.",
+        "dinner": "Fettreiches Abendessen ({{g}}g) — könnte dein Tagesfettziel überschreiten.",
+        "snack": "Fettreicher Snack ({{g}}g) — Nüsse und Käse summieren sich schnell.",
+        "default": "Fettreiche Mahlzeit ({{g}}g) — prüfe dein Tagesfettziel."
+      },
+      "highCarb": {
+        "breakfast": "Kohlenhydratreiches Frühstück ({{g}}g) — super vor dem Training, aber kombiniere es mit Protein, um ein Energietief zu vermeiden.",
+        "lunch": "Kohlenhydratreiches Mittagessen ({{g}}g) — erwäge mehr Protein, um diese Mahlzeit auszugleichen.",
+        "dinner": "Kohlenhydratreiches Abendessen ({{g}}g) — könnte dein Tagesziel überschreiten.",
+        "snack": "Kohlenhydratreicher Snack ({{g}}g) — eine Kombi aus Protein und Fett gibt länger Energie.",
+        "default": "Kohlenhydratreiche Mahlzeit ({{g}}g) — prüfe dein Tageskohlenhydratziel."
+      },
+      "fatHeavyLowProtein": "Fettlastig und proteinarm — tausche einige Fettquellen gegen mageres Protein.",
+      "highCalSnack": "Kalorienreicher Snack — erwäge, ihn zu teilen oder etwas weniger Energiedichtes zu wählen, wenn du im Defizit bist.",
+      "lightMeal": "Leichte Mahlzeit — achte darauf, dass der Rest des Tages dein Tageskalorienziel erreicht.",
+      "goodProtein": "Gutes Protein. Kombiniere es mit komplexen Kohlenhydraten wie Haferflocken oder Vollkornbrot für anhaltende Energie."
+    }
+  },
+  "nutritionLog": {
+    "title": "Essen erfassen",
+    "recent": "Zuletzt",
+    "describePlaceholder": "Beschreibe, was du gegessen hast — oder mach unten ein Foto.",
+    "premiumNote": "Die KI-Erfassung ist eine Helix-Pro-Funktion. Nutze die manuelle Eingabe unten, um kostenlos zu tracken.",
+    "calculate": "Berechnen",
+    "manualEntry": "Manuelle Eingabe",
+    "confirmMeal": "Mahlzeit bestätigen",
+    "confirmTip": "Tippe auf einen Wert, um ihn zu bearbeiten, falls etwas nicht stimmt.",
+    "grams": "Gramm",
+    "total": "Gesamt",
+    "logMeal": "Mahlzeit erfassen",
+    "foodName": "Lebensmittelname",
+    "addTo": "Zu {{meal}} hinzufügen",
+    "macroAbbr": {
+      "kcal": "kcal",
+      "protein": "P",
+      "carbs": "K",
+      "fat": "F"
+    },
+    "manualMacros": {
+      "calories": "Kalorien",
+      "protein": "Protein g",
+      "carbs": "Kohlenhydrate g",
+      "fat": "Fett g"
+    },
+    "alerts": {
+      "permissionTitle": "Berechtigung erforderlich",
+      "micPermission": "Für die Spracheingabe wird Mikrofonzugriff benötigt.",
+      "photoPermission": "Zugriff auf die Fotomediathek wird benötigt.",
+      "cameraPermission": "Kamerazugriff wird benötigt.",
+      "dailyLimitTitle": "Tageslimit erreicht",
+      "dailyLimitMsg": "Du hast deine 6 täglichen KI-Essenseinträge aufgebraucht. Zurücksetzung um Mitternacht.",
+      "premiumTitle": "Premium erforderlich",
+      "premiumMsg": "Die KI-Ernährungserfassung erfordert ein Helix-Pro-Abo.",
+      "sessionTitle": "Sitzung abgelaufen",
+      "sessionMsg": "Bitte melde dich ab und wieder an.",
+      "noItemsTitle": "Keine Einträge gefunden",
+      "noItemsMsg": "Beschreibe deine Mahlzeit detaillierter oder mach ein klareres Foto.",
+      "photoLargeTitle": "Foto zu groß",
+      "photoLargeMsg": "Dieses Foto ist zu groß zum Verarbeiten. Versuch es erneut — Helix nutzt eine kleinere Version.",
+      "invalidPhotoTitle": "Ungültiges Foto",
+      "invalidPhotoMsg": "Dieses Bild konnte nicht gelesen werden. Mach das Foto bitte erneut.",
+      "calcFailTitle": "Berechnung fehlgeschlagen",
+      "calcFailMsg": "Netzwerkfehler. Prüfe deine Verbindung.",
+      "logFailTitle": "Erfassung fehlgeschlagen",
+      "logFailMsg": "Konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "logFailMsgShort": "Konnte nicht gespeichert werden.",
+      "nameRequiredTitle": "Name erforderlich",
+      "nameRequiredMsg": "Gib einen Lebensmittelnamen ein."
+    }
+  },
+  "levels": {
+    "beginner": "Anfänger",
+    "intermediate": "Fortgeschritten",
+    "advanced": "Profi"
+  },
+  "program": {
+    "start": "Starten",
+    "chooseSplit": "Split wählen",
+    "daysQuestion": "Wie viele Tage pro Woche?",
+    "rankedForGoals": "Eingestuft nach deinen Zielen: {{goals}}",
+    "recommendedSplits": "Empfohlene Splits",
+    "noSplits": "Keine Splits verfügbar.",
+    "rankBest": "Beste Wahl",
+    "rank2": "2. Option",
+    "rank3": "3. Option",
+    "rankN": "Option {{n}}",
+    "perWeek": "{{days}}×/Woche",
+    "freqPerMuscle": "{{freq}}× Freq./Muskel",
+    "whyThisSplit": "Warum dieser Split",
+    "currentSplit": "Aktueller Split",
+    "selectSplit": "Diesen Split wählen",
+    "myProgram": "Mein Programm",
+    "completeOnboarding": "Schließe das Onboarding ab, um dein Programm zu erhalten.",
+    "changeSplit": "Split ändern",
+    "scienceBasis": "Wissenschaftliche Grundlage",
+    "dayNum": "Tag {{n}}",
+    "restCount": "{{count}} Pause",
+    "daysPerWeek": "{{days}} Tage/Woche",
+    "tabs": {
+      "research": "Forschung",
+      "goal": "Dein Ziel",
+      "progression": "Progression"
+    },
+    "goalParams": {
+      "frequency": "Frequenz",
+      "repRange": "Wdh.-Bereich",
+      "intensity": "Intensität"
+    },
+    "warnings": {
+      "optimal": "Optimal",
+      "warning": "Warnung",
+      "note": "Hinweis",
+      "info": "Info"
+    },
+    "workouts": "Workouts",
+    "exercises": "{{count}} Übungen",
+    "optionalDay": "OPTIONALER TAG",
+    "sets": "Sätze",
+    "reps": "Wdh.",
+    "restLabel": "Pause",
+    "earlyRpe": "RPE frühe Sätze ~{{rpe}}",
+    "lastRpe": "RPE letzter Satz ~{{rpe}}",
+    "substitutes": "Alternativen: ",
+    "hideDetails": "Details ausblenden ▲",
+    "learnSimple": "Erfahre warum + wie ▼",
+    "showTechnique": "Technik + Forschung zeigen ▼",
+    "whatDoesThisDo": "Was bewirkt das?",
+    "whyExercise": "Warum diese Übung",
+    "techniqueCues": "Technik-Hinweise",
+    "progressionPath": "Progressionspfad",
+    "saveFailTitle": "Speichern fehlgeschlagen",
+    "saveFailMsg": "Dein Programm konnte nicht aktualisiert werden. Bitte versuche es erneut."
+  },
+  "workout": {
+    "alerts": {
+      "dupTitle": "Bereits im heutigen Workout",
+      "dupMsg": "\"{{name}}\" ist heute schon eingeplant — beim Ersetzen hast du es doppelt. Fortfahren?",
+      "doItAnyway": "Trotzdem machen",
+      "replaceTitle": "Übung ersetzen?",
+      "replaceMsg": "Du hast für diese Übung bereits Sätze erfasst. Beim Tausch werden sie gelöscht.",
+      "replace": "Ersetzen",
+      "saveFailTitle": "Speichern fehlgeschlagen",
+      "saveFailMsg": "Dein Workout konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "cancelTitle": "Workout abbrechen?",
+      "cancelMsg": "Deine erfassten Sätze werden nicht gespeichert.",
+      "keepGoing": "Weitermachen"
+    },
+    "finish": {
+      "title": "Einheit abgeschlossen",
+      "duration": "Dauer",
+      "setsDone": "Sätze erledigt",
+      "exercises": "Übungen",
+      "howFeel": "Wie hat sich das angefühlt?",
+      "howHard": "Wie hart war es? (RPE {{rpe}}/10)",
+      "tapToRate": "Tippen, um deine Einheit zu bewerten",
+      "rpeEasy": "Leicht — erwäge nächste Einheit mehr Gewicht",
+      "rpeGood": "Guter Trainingsbereich",
+      "rpeHigh": "Hohe Anstrengung — starke Arbeit",
+      "rpeMax": "Maximale Anstrengung — sorge vor der nächsten Einheit für volle Erholung",
+      "nextTargets": "Ziele für die nächste Einheit",
+      "saving": "Speichern...",
+      "save": "Workout speichern"
+    },
+    "simpleRpe": {
+      "easy": "Leicht",
+      "solid": "Solide",
+      "max": "Maximal",
+      "easySub": "Hatte noch viel im Tank",
+      "solidSub": "Fordernd, aber kontrolliert",
+      "maxSub": "Alles gegeben — volle Erholung nötig"
+    },
+    "coach": "Coach",
+    "finishBtn": "Beenden",
+    "restWarning": "! Du hast {{session}} vor {{hours}}h trainiert. Überlappende Muskeln so bald zu trainieren kann die Erholung einschränken.",
+    "dismiss": "Schließen",
+    "restTimer": "Pause · {{time}}",
+    "skip": "Überspringen",
+    "exNumber": "{{n}} von {{total}}",
+    "howTo": "▶ Anleitung",
+    "contraSub": "Wegen deiner Beschwerden ersetzt",
+    "presc": {
+      "sets": "Sätze",
+      "reps": "Wdh.",
+      "rest": "Pause",
+      "effort": "Aufwand",
+      "rpe": "RPE",
+      "lastSetHard": "Letzter Satz hart"
+    },
+    "swap": "Tauschen: ",
+    "replaceExercise": "Übung ersetzen…",
+    "setsTitle": "Sätze",
+    "bw": "KG",
+    "plates": "Scheiben",
+    "lastTime": "Letztes Mal: {{weight}}kg",
+    "lastTimeReps": "Letztes Mal: {{weight}}kg × {{reps}}",
+    "setHeader": {
+      "set": "Satz",
+      "kg": "kg",
+      "reps": "Wdh.",
+      "done": "Fertig"
+    },
+    "nextUp": "Als Nächstes",
+    "completeWorkout": "Workout abschließen",
+    "upNext": "Als Nächstes",
+    "plate": {
+      "title": "Scheibenrechner",
+      "barWeight": "Stangengewicht",
+      "barKg": "{{w}} kg",
+      "targetPlaceholder": "Zielgewicht (kg)",
+      "barOnlyNote": "Nur die Stange — keine Scheiben nötig.",
+      "eachSide": "Pro Seite",
+      "barOnly": "Nur Stange",
+      "total": "Gesamt: {{achieved}} kg",
+      "totalClosest": "Gesamt: {{achieved}} kg (am nächsten an {{target}} kg)"
+    },
+    "replaceModal": {
+      "title": "{{name}} ersetzen",
+      "note_one": "Du trainierst gerade {{muscle}}. Wähle eine beliebige Übung — die Wahl eines anderen Muskels verschiebt den {{count}} Satz dieses Slots heute auf diesen Muskel.",
+      "note_other": "Du trainierst gerade {{muscle}}. Wähle eine beliebige Übung — die Wahl eines anderen Muskels verschiebt die {{count}} Sätze dieses Slots heute auf diesen Muskel.",
+      "thisMuscle": "diesen Muskel",
+      "current": "  • aktuell",
+      "searchPlaceholder": "Übungen suchen…",
+      "all": "Alle",
+      "noResults": "Keine Übungen entsprechen deiner Suche."
+    }
+  },
+  "coach": {
+    "title": "KI-Coach",
+    "subtitle": "Wissenschaftsbasiert · Merkt sich dein Training",
+    "reset": "Zurücksetzen",
+    "resetTitle": "Coach-Gedächtnis zurücksetzen?",
+    "resetMsg": "Der Coach vergisst deine bisherigen Gespräche und fängt neu an. Dein Programm und Fortschritt bleiben unberührt.",
+    "resetConfirm": "Zurücksetzen",
+    "monthlyMessages": "Monatliche Nachrichten",
+    "limitReached": "Monatslimit erreicht. Zurücksetzung am 1.",
+    "ask": "Frag deinen Coach",
+    "askSub": "Fragt, berät und bearbeitet dein Programm. Zum Ausprobieren tippen:",
+    "examples": {
+      "swapLabel": "Übung tauschen",
+      "swapPrompt": "Tausche eine meiner Übungen gegen eine bessere Option",
+      "shouldersLabel": "Mehr Schultern",
+      "shouldersPrompt": "Füge meinem Push-Tag mehr seitliche Schultern hinzu",
+      "glutesLabel": "Gesäß-fokussierte Beine",
+      "glutesPrompt": "Mach meinen Bein-Tag stärker gesäßfokussiert",
+      "easeOffLabel": "Diese Woche kürzertreten",
+      "easeOffPrompt": "Streiche diese Woche bei jeder Übung einen Satz"
+    },
+    "limitPlaceholder": "Monatslimit erreicht",
+    "inputPlaceholder": "z. B. Füge meinem nächsten Push-Tag mehr Schultern hinzu",
+    "noAnswer": "Keine Antwort generiert.",
+    "failedConnect": "Verbindung fehlgeschlagen.",
+    "failedConnectCheck": "Verbindung fehlgeschlagen. Prüfe deine Internetverbindung.",
+    "altPrompt": "Gib mir eine andere Alternative zu {{what}}{{where}}. Wähle einfach die beste — frag mich nicht, schlage sie direkt vor.",
+    "thatExercise": "diese Übung",
+    "onDay": " am {{day}}",
+    "proposesAdding": "Coach schlägt vor hinzuzufügen",
+    "proposesChanging": "Coach schlägt eine Änderung vor",
+    "proposesN": "Coach schlägt {{count}} Änderungen vor",
+    "addExercise": "Übung hinzufügen",
+    "sessionOnly": "Nur diese Einheit",
+    "permanent": "Dauerhafte Änderung",
+    "setsCount": "{{n}} Sätze",
+    "restSuffix": " · {{rest}} Pause",
+    "saving": "Speichern...",
+    "apply": "Anwenden",
+    "alternative": "Alternative",
+    "applyAll": "Alle anwenden",
+    "dismissAll": "Alle verwerfen",
+    "saved": "Zu deinem Programm hinzugefügt. Es erscheint in deinem nächsten Workout.",
+    "thinking": "Denke nach...",
+    "askBtn": "Fragen",
+    "weeklyInsight": "Wöchentliche Analyse",
+    "weeklyInsightSub": "Analysiert dein Volumen, PRs und jüngste Einheiten anhand von Forschungszielen",
+    "insightEmpty": "Tippe unten für eine personalisierte Wochenanalyse auf Basis deiner Trainingsdaten.",
+    "analysing": "Analysiere...",
+    "refreshInsight": "Analyse aktualisieren",
+    "generateInsight": "Analyse erstellen",
+    "quickQuestions": "Schnelle Fragen",
+    "quick": {
+      "neglecting": "Welche Muskelgruppe vernachlässige ich am meisten?",
+      "frequency": "Ist meine Trainingsfrequenz optimal?",
+      "prioritise": "Welche Übung sollte ich nächste Einheit priorisieren?",
+      "recovering": "Erhole ich mich genug zwischen den Einheiten?"
+    },
+    "alerts": {
+      "cantApplyTitle": "Konnte nicht angewendet werden",
+      "cantApplyMsg": "Diese Übung konnte nicht in der Bibliothek gefunden werden. Versuch den Alternativ-Button oder formuliere die Anfrage um.",
+      "replaceTitle": "Übung ersetzen",
+      "replaceMsg": "Das ändert es jetzt. Auch für zukünftige Workouts beibehalten?",
+      "justThis": "Nur dieses Workout",
+      "nowFuture": "Jetzt & zukünftig",
+      "someFailedTitle": "Einige Änderungen fehlgeschlagen",
+      "someFailedMsg": "Eine oder mehrere Übungen konnten nicht in der Bibliothek gefunden werden.",
+      "applyAllTitle": "Alle Änderungen anwenden",
+      "applyAllMsg": "Wann sollen diese wirksam werden?",
+      "thisWorkoutOnly": "Nur dieses Workout",
+      "allFuture": "Alle zukünftigen Workouts"
+    },
+    "alternativesFor": "Bewertete Alternativen für {{name}}",
+    "thisExercise": "diese Übung",
+    "useThis": "Verwenden",
+    "weeklyReview": "Wochenrückblick",
+    "weeklyReviewLoading": "Dein Wochenrückblick wird erstellt…",
+    "memoryTitle": "Was sich dein Coach merkt",
+    "memorySub": "Fakten, die dein Coach nutzt, um Beratung und Programm anzupassen. Entferne alles, was nicht mehr zutrifft.",
+    "memoryForget": "Vergessen",
+    "memoryForgetTitle": "Das vergessen?",
+    "memoryForgetMsg": "Dein Coach nutzt diesen Fakt nicht mehr für dein Programm.",
+    "noteCat": {
+      "dislike": "Abneigung",
+      "injury": "Verletzung",
+      "preference": "Präferenz",
+      "goal": "Ziel",
+      "note": "Notiz"
+    }
+  },
+  "profile": {
+    "tabs": {
+      "profile": "Profil",
+      "data": "Volumen",
+      "prs": "Rekorde",
+      "health": "Gesundheit"
+    },
+    "admin": "Admin",
+    "signOut": "Abmelden",
+    "noName": "Kein Name",
+    "streak": "Serie",
+    "insightsTitle": "Was dein Training antreibt",
+    "myProfile": "Mein Profil",
+    "edit": "Bearbeiten",
+    "fields": {
+      "name": "Name",
+      "weight": "Gewicht (kg)",
+      "height": "Größe (cm)",
+      "targetWeight": "Zielgewicht (kg)"
+    },
+    "daysPerWeek": "Tage pro Woche",
+    "sessionLength": "Trainingsdauer",
+    "experienceLevel": "Erfahrungslevel",
+    "goals": "Ziele",
+    "equipment": "Verfügbares Equipment",
+    "equipmentSub": "Dein Programm enthält nur Übungen, die du machen kannst.",
+    "bioSex": "Biologisches Geschlecht",
+    "sexMale": "Männlich",
+    "sexFemale": "Weiblich",
+    "sexOther": "Keine Angabe",
+    "nutritionFocus": "Ernährungsfokus",
+    "nutritionFocusSub": "Passt deine täglichen Kalorien- und Makroziele automatisch an.",
+    "focus": {
+      "cut": "Diät",
+      "cutSub": "Fett verlieren",
+      "bulk": "Lean Bulk",
+      "bulkSub": "Muskeln aufbauen",
+      "maintain": "Halten",
+      "maintainSub": "Schlank bleiben",
+      "recomp": "Rekomp",
+      "recompSub": "Beides"
+    },
+    "calculatedTargets": "Berechnete Ziele",
+    "maintenanceTdee": "Erhaltung (TDEE): ~{{tdee}} kcal",
+    "targetsLine": "{{cal}} kcal · {{protein}}g Protein · {{carbs}}g Kohlenhydrate · {{fat}}g Fett",
+    "savedAuto": "Wird automatisch gespeichert, wenn du auf Speichern tippst",
+    "whatTrain": "Was trainierst du?",
+    "whatTrainSub": "Wähle alles Zutreffende — hilft dem KI-Coach, relevante Tipps zu geben.",
+    "activities": {
+      "weights": "Krafttraining",
+      "running": "Laufen",
+      "walking": "Gehen",
+      "swimming": "Schwimmen",
+      "cycling": "Radfahren",
+      "hiit": "HIIT"
+    },
+    "sports": "Sport & Aktivitäten",
+    "sportsSub": "Krafteinheiten werden um deine Sporttage herum geplant.",
+    "sportDays": "{{sport}} — an welchen Tagen?",
+    "injuries": "Verletzungen",
+    "injuriesSub": "Wähle, was dich stört und wie oft. Vor jedem Workout fragen wir, wie es sich anfühlt, und passen die Übungen an — keine Diagnose nötig.",
+    "injNone": "Keine",
+    "injSometimes": "Manchmal",
+    "injAlways": "Immer",
+    "injuriesConditions": "Verletzungen & Beschwerden",
+    "injuriesConditionsSub": "Suche oder scrolle, um alles hinzuzufügen, was dein Training beeinflusst.",
+    "searchPlaceholder": "Suchen — z. B. Knie, Schulter, Rücken…",
+    "severityQuestion": "{{condition}} — wie schlimm ist es?",
+    "postSurgery": "Nach OP",
+    "postSurgeryDesc": "Hatte eine Operation in diesem Bereich",
+    "surgeryWhen": "Wie lange ist die Operation her?",
+    "expSub": {
+      "beginner": "< 2 Jahre",
+      "intermediate": "2–4 Jahre",
+      "advanced": "Über 4 Jahre"
+    },
+    "fieldName": "Name",
+    "fieldWeight": "Gewicht",
+    "fieldHeight": "Größe",
+    "fieldTarget": "Ziel",
+    "fieldTraining": "Training",
+    "fieldExperience": "Erfahrung",
+    "fieldNutrition": "Ernährung",
+    "fieldSports": "Sport",
+    "fieldConditions": "Beschwerden",
+    "trainingVal": "{{days}}×/Woche · {{min}} Min.",
+    "nutritionNotSet": "Nicht festgelegt",
+    "nutritionSuffix": " · {{cal}} kcal · {{protein}}g Protein",
+    "logWeight": "Heutiges Gewicht erfassen",
+    "weightPlaceholder": "kg — nüchtern, täglich zur gleichen Zeit",
+    "weightSaved": "✓ Gespeichert",
+    "logBtn": "Erfassen",
+    "weightTip": "Wiege dich jeden Morgen nach dem Aufwachen, vor dem Essen. Gleiche Bedingungen täglich ergeben den genauesten Trend.",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "deleteAccount": "Konto löschen",
+    "deleteAccountSub": "Entfernt dauerhaft all deine Daten. Kann nicht rückgängig gemacht werden.",
+    "weekThis": "Diese Woche",
+    "weekLast": "Letzte Woche",
+    "weekAgo": "vor {{n}} Wo.",
+    "setsCount": "{{n}} Sätze",
+    "chartTitle": "{{muscle}} · {{week}}",
+    "targetNote": "Ziel ({{level}}): {{range}} · Schoenfeld et al. (2017)",
+    "setsPerWeek": "{{low}}–{{high}} Sätze/Woche",
+    "dayBreakdown": "Tagesaufschlüsselung",
+    "daySets": "{{n}}S",
+    "personalRecords": "Persönliche Rekorde — {{count}} Übungen",
+    "noPrs": "Noch keine Rekorde — schließe Workouts ab, um sie zu erfassen.",
+    "prVal": "{{weight}}kg × {{reps}}",
+    "prOrm": "~{{orm}}kg 1RM",
+    "healthData": "Gesundheitsdaten",
+    "healthWebOnly": "Gesundheits-Integrationen sind nur auf iOS- und Android-Geräten verfügbar.",
+    "healthInstall": "Installiere die App aus dem App Store oder Play Store, um Gesundheits-Integrationen zu aktivieren.",
+    "connect": "{{provider}} verbinden",
+    "providerApple": "Apple Health",
+    "providerHC": "Health Connect",
+    "healthDesc": "Helix liest deine Schlafdauer, HRV und deinen Ruhepuls, um einen täglichen Erholungsstatus anzuzeigen. Es werden keine Daten geschrieben oder geteilt.\n\nDeine Smartwatch synchronisiert über ihre eigene App{{companion}} mit {{provider}} — Helix liest von dort, nicht direkt von der Uhr.",
+    "companionAndroid": " (Samsung Health, Fitbit, Garmin Connect…)",
+    "connecting": "Verbinde...",
+    "connectBtn": "Verbinden",
+    "todayRecovery": "Heutige Erholung",
+    "noHealthToday": "Keine Gesundheitsdaten für heute gefunden. Stelle sicher, dass deine Uhr synchronisiert hat.",
+    "sleep": "Schlaf",
+    "hrv": "HRV",
+    "restingHr": "Ruhepuls",
+    "dataSources": "Datenquellen",
+    "sourceSleep": "Schlafdauer",
+    "sourceSleepDesc": "Letzte 18 Stunden Schlafphasen von deiner Uhr",
+    "sourceHrvDescIos": "Herzfrequenzvariabilität (SDNN) aus Apple Health",
+    "sourceHrvDescAndroid": "Herzfrequenzvariabilität (RMSSD) aus Health Connect",
+    "sourceRhr": "Ruheherzfrequenz",
+    "sourceRhrDesc": "Über Nacht von deiner Uhr gemessen",
+    "disconnect": "Gesundheitsdaten trennen",
+    "alerts": {
+      "connectedNoDataTitle": "Verbunden — noch keine Daten",
+      "connectedNoDataIos": "Helix hat sich mit Apple Health verbunden, aber keine Daten gefunden. Falls du den Zugriff abgelehnt hast, aktiviere ihn unter Health → Teilen → Apps → Helix. Andernfalls stelle sicher, dass deine Uhr Schlaf, HRV und Herzfrequenz mit der Health-App synchronisiert.",
+      "connectedNoDataAndroid": "Helix hat sich mit Health Connect verbunden, aber keine Daten gefunden. Öffne die App deiner Uhr (Samsung Health, Fitbit, Garmin Connect…) und aktiviere die Synchronisierung mit Health Connect — Helix übernimmt sie dann automatisch.",
+      "ok": "OK",
+      "openSettings": "Einstellungen öffnen",
+      "hcRequiredTitle": "Health Connect erforderlich",
+      "hcRequiredMsg": "Helix liest Uhrendaten über Google Health Connect, das auf diesem Telefon nicht installiert ist.",
+      "install": "Installieren",
+      "updateHcTitle": "Health Connect aktualisieren",
+      "updateHcMsg": "Deine Health-Connect-App muss aktualisiert werden, bevor Helix Daten lesen kann.",
+      "permissionNeededTitle": "Berechtigung erforderlich",
+      "permissionNeededIos": "Helix benötigt Zugriff in der Health-App. Öffne Health → Teilen → Apps → Helix und erlaube Schlaf, Herzfrequenz und Schritte.",
+      "permissionNeededAndroid": "Helix benötigt Gesundheitsberechtigungen. Versuche es erneut oder erteile den Zugriff direkt in den Health-Connect-Einstellungen — der Hinweis erscheint nach mehreren Ablehnungen evtl. nicht mehr.",
+      "tryAgain": "Erneut versuchen",
+      "couldNotConnectTitle": "Verbindung fehlgeschlagen",
+      "couldNotConnectMsg": "Die Verbindung der Gesundheitsdaten ist fehlgeschlagen.",
+      "saveFailTitle": "Speichern fehlgeschlagen",
+      "saveFailMsg": "Dein Profil konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "programUpdatingTitle": "Programm wird aktualisiert",
+      "programUpdatingMsg": "Dein Equipment oder deine Beschwerden haben sich geändert. Dein Programm wird beim nächsten Öffnen von Heute automatisch aktualisiert.",
+      "deleteTitle": "Konto löschen",
+      "deleteMsg": "Dies löscht dauerhaft dein Konto, alle Workouts, Ernährungseinträge und Fortschrittsdaten. Kann nicht rückgängig gemacht werden.",
+      "deletePermanently": "Dauerhaft löschen",
+      "errorTitle": "Fehler",
+      "deleteError": "Konto konnte nicht gelöscht werden. Bitte versuche es erneut oder kontaktiere den Support."
+    }
+  },
+  "progress": {
+    "loading": "Lädt…",
+    "sections": {
+      "overview": "Übersicht",
+      "strengthTrend": "Krafttrend · geschätztes 1RM",
+      "mostImproved": "Am meisten verbessert · letzte 90 Tage",
+      "strengthLevel": "Kraftniveau",
+      "bodyWeight": "Körpergewicht · 7-Tage-Durchschnitt",
+      "fatigue": "Ermüdung · Ø RPE pro Woche",
+      "cardioFreq": "Cardio-Frequenz",
+      "sessionDuration": "Trainingsdauer",
+      "trainingBlock": "Trainingsblock",
+      "consistency": "Trainingskonstanz"
+    },
+    "overview": {
+      "sessions": "Einheiten",
+      "totalSets": "Sätze gesamt",
+      "avgDuration": "Ø Dauer",
+      "streak": "Serie",
+      "empty": "Schließe dein erstes Workout ab, um Fortschritt zu erfassen."
+    },
+    "empty": {
+      "trend": "Erfasse mehr Einheiten, um diesen Trend zu sehen",
+      "benchmark": "Erfasse Bankdrücken, Kniebeuge oder Kreuzheben, um dein Kraftniveau zu sehen",
+      "noSessions": "Noch keine Einheiten erfasst",
+      "weight4days": "Erfasse dein Körpergewicht an mindestens 4 Tagen",
+      "blockTracking": "Starte dein erstes Workout, um die Blockverfolgung zu beginnen"
+    },
+    "levels": {
+      "beginner": "Anfänger",
+      "novice": "Neuling",
+      "intermediate": "Fortgeschritten",
+      "advanced": "Profi",
+      "elite": "Elite"
+    },
+    "benchmark": {
+      "est1rm": "gesch. 1RM",
+      "toLevel": "{{gap}}kg bis {{level}}"
+    },
+    "mostImprovedRow": "{{first}}kg → {{last}}kg gesch. 1RM",
+    "weight": {
+      "sevenDayAvg": "7-Tage-Ø",
+      "daily": "Täglich",
+      "proteinAvg": "Protein · 7-Tage-Ø",
+      "proteinTargetSuffix": "/{{target}}g Ziel",
+      "recompUp": "Kraft +{{delta}}kg bei sinkendem Gewicht — Rekomposition funktioniert",
+      "recompDown": "Kraft sinkt um {{delta}}kg — erhöhe Protein oder verlangsame die Diät",
+      "proteinOk": "✓ Erhalt der Magermasse gesichert",
+      "proteinLow": "{{n}}g unter dem Ziel — Risiko von Muskelverlust"
+    },
+    "block": {
+      "num": "Block {{n}}",
+      "remaining": "{{days}} Tage übrig · {{pct}}% abgeschlossen",
+      "complete": "Block abgeschlossen — neue Übungen ab nächster Einheit"
+    },
+    "rpe": {
+      "scale": "Skala 1–10 · Wahrgenommene Anstrengung pro Einheit erfasst",
+      "high": "RPE {{rpe}} diese Woche — hohe Ermüdung. Erwäge einen Deload oder eine leichtere Einheit.",
+      "rising": "RPE steigt auf {{rpe}} — Ermüdung sammelt sich an. Achte auf Erholung.",
+      "easy": "RPE {{rpe}} — Einheiten fühlen sich leicht an. Gib mehr Gas oder erhöhe die Last.",
+      "optimal": "RPE {{rpe}} — im optimalen Trainingsbereich. Halte diese Intensität."
+    },
+    "duration": {
+      "up": "Dauer +{{min}}min seit Beginn — aerobe Kapazität verbessert sich.",
+      "flat": "Dauer gleichbleibend. Trainiere 5min länger pro Einheit für VO₂max-Zuwächse."
+    },
+    "e1rm": {
+      "up": "Erhöhe das Gewicht in der nächsten {{ex}}-Einheit — {{delta}}kg in {{weeks}} Einheiten gewonnen.",
+      "down": "{{ex}} ist um {{delta}}kg gesunken — prüfe Schlaf, Kalorien oder reduziere Ermüdung.",
+      "stall": "{{ex}} stagniert. Füge erst 1 Wdh. pro Satz hinzu, bevor du das Gewicht erhöhst."
+    },
+    "weightV": {
+      "losingFast": "Verlust {{rate}}kg/Woche — zu schnell. Iss 200–300 Kalorien mehr, um Muskeln zu schützen.",
+      "losingOptimal": "Verlust {{rate}}kg/Woche — optimaler Bereich. Halte dieses Defizit.",
+      "stable": "Gewicht stabil. Reduziere 200 Kalorien/Tag oder füge eine Cardio-Einheit hinzu, um den Fettabbau neu zu starten.",
+      "gaining": "Zunahme {{rate}}kg/Woche. Prüfe, ob das ein gewollter Aufbau ist — wenn nicht, reduziere die Kalorien."
+    },
+    "consistencyV": {
+      "excellent": "{{avg}} Einheiten/Woche — exzellent. Halte diese Frequenz.",
+      "solid": "{{avg}} Einheiten/Woche — solide. Füge eine Einheit hinzu, um den Fortschritt zu beschleunigen.",
+      "schedule3": "{{avg}} Einheiten/Woche — plane diese Woche eine 3. Einheit ein.",
+      "low": "{{avg}} Einheiten/Woche — Konstanz ist gerade dein Problem Nr. 1. Buche diese Woche 3 Einheiten."
+    },
+    "cardioV": {
+      "optimal": "{{avg}} Einheiten/Woche — im optimalen VO₂max-Bereich. Halten.",
+      "good": "{{avg}} Einheiten/Woche — gut. Füge 1 weitere hinzu, um die kardiorespiratorische Anpassung zu maximieren.",
+      "below": "{{avg}} Einheiten/Woche — unter optimal. Plane diese Woche eine 3. Cardio-Einheit ein.",
+      "tooLow": "{{avg}} Einheiten/Woche — zu wenig für Ausdauerzuwächse. Ziel: mindestens 3–5 Einheiten/Woche."
+    },
+    "strengthLevelV": "{{gap}}kg bis {{level}} bei {{lift}} — fokussiere hier."
+  },
+  "cards": {
+    "cardio": {
+      "title": "Aktivität erfassen",
+      "type": "Typ",
+      "types": {
+        "run": "Laufen",
+        "walk": "Gehen",
+        "swim": "Schwimmen",
+        "cycle": "Rad",
+        "other": "Sonstiges"
+      },
+      "duration": "Dauer (Min.)",
+      "durationPlaceholder": "45",
+      "distance": "Distanz ({{unit}})",
+      "stroke": "Stil",
+      "effort": "Aufwand",
+      "rpe": {
+        "easy": "Leicht",
+        "easySub": "Konnte mich unterhalten",
+        "moderate": "Mittel",
+        "moderateSub": "Angenehm anstrengend",
+        "hard": "Hart",
+        "hardSub": "Nahe am Limit"
+      },
+      "saving": "Speichern...",
+      "save": "Einheit speichern",
+      "missingDurationTitle": "Dauer fehlt",
+      "missingDurationMsg": "Gib an, wie lange die Einheit war.",
+      "errorTitle": "Fehler",
+      "errorMsg": "Konnte nicht gespeichert werden. Versuch es erneut."
+    },
+    "exerciseDetail": {
+      "technique": "TECHNIK",
+      "whyHere": "WARUM HIER",
+      "research": "FORSCHUNG",
+      "progressionPath": "PROGRESSIONSPFAD"
+    },
+    "slideshow": {
+      "techniqueCues": "TECHNIK-HINWEISE",
+      "whyThisExercise": "WARUM DIESE ÜBUNG"
+    },
+    "muscleMap": {
+      "front": "Vorne",
+      "back": "Hinten",
+      "primary": "Primär",
+      "secondary": "Sekundär"
+    },
+    "threeD": {
+      "prev": "Zurück",
+      "next": "Weiter",
+      "hint": "Zum Drehen ziehen · Folien mit Pfeilen wischen"
+    },
+    "bodyComp": {
+      "title": "Körperzusammensetzung",
+      "empty": "Erfasse dein Gewicht täglich für die Trendanalyse. Nach 7 Tagen siehst du deinen gleitenden Durchschnitt, die Veränderungsrate und die Prognose zu deinem Ziel.",
+      "cutting": "Diät",
+      "building": "Aufbau",
+      "maintaining": "Halten",
+      "calculating": "Berechne…",
+      "ratePerWeek": "{{rate}} kg/Woche",
+      "dailyWeight": "Tägliches Gewicht",
+      "sevenDayAverage": "7-Tage-Durchschnitt",
+      "target": "Ziel",
+      "targetSvg": "Ziel",
+      "avg7": "7-Tage-Ø",
+      "toTarget": "bis zum Ziel",
+      "weighIns": "Wägungen",
+      "projection": "Bei deinem aktuellen Tempo erreichst du {{target}} kg in etwa {{weeks}} Wochen ({{date}}).",
+      "projectionDisclaimer": "Die Veränderungsrate schwankt von Woche zu Woche — das ist eine Richtung, keine Garantie.",
+      "alerts": {
+        "waterTitle": "Wahrscheinlich Wassereinlagerung",
+        "waterBody": "Dein Gewicht ist in den letzten 2 Tagen schnell gestiegen. Forschung zeigt, dass die Wassereinlagerung im Menstruationszyklus im Schnitt ~0,5kg beträgt und an Tag 1 der Blutung ihren Höhepunkt erreicht (Kanellakis et al. 2023). Das ist kein Fettzuwachs.",
+        "muscleLossTitle": "Risiko von Muskelverlust",
+        "muscleLossBody": "Konstanter Verlust von über 1kg/Woche. Forschung zeigt, dass 20–40% des bei diesem Tempo verlorenen Gewichts aus Muskeln stammen. Verringere das Defizit oder erhöhe das Protein über 1,6g/kg Körpergewicht.",
+        "gainFastTitle": "Zu schnelle Zunahme",
+        "gainFastBody": "Auf deinem Trainingsniveau fügt eine Zunahme über ~0,12kg/Woche hauptsächlich Fett hinzu, nicht Muskeln. Erwäge, deinen Überschuss zu reduzieren.",
+        "stalledTitle": "Fortschritt stagniert",
+        "stalledBody": "Das Gewicht hat sich trotz deines Ziels seit über 2 Wochen kaum bewegt. Sieh dir den Plateau-Abschnitt für evidenzbasierte nächste Schritte an."
+      }
+    }
+  },
+  "today": {
+    "greetingMorning": "Guten Morgen",
+    "greetingAfternoon": "Guten Tag",
+    "greetingEvening": "Guten Abend",
+    "block": {
+      "newTitle": "Neuer Block gestartet",
+      "newSub": "Deine Übungen wurden rotiert, damit dein Körper sich weiter anpasst. Gleiche Bewegungen, neuer Reiz.",
+      "pill": "Block {{block}} · Woche {{week}} von {{total}}"
+    },
+    "readiness": {
+      "ready": "Bereit",
+      "moderate": "Mäßig",
+      "low": "Niedrig",
+      "adviceModerate": "HRV unter deinem Ausgangswert. Reduziere heute das Gewicht bei Grundübungen um 10%.",
+      "adviceLow": "HRV deutlich unter dem Ausgangswert. Reduziere die Last, lass die letzte Isolationsübung weg oder mach einen Ruhetag.",
+      "sleepStat": "{{hours}}h Schlaf",
+      "hrvStat": "HRV {{ms}}ms",
+      "baselineSuffix": " ({{sign}}{{pct}}% vs. Ausgangswert)",
+      "rhrStat": "{{bpm}} bpm Ruhepuls"
+    },
+    "session": {
+      "todayLabel": "HEUTIGE EINHEIT",
+      "exercises": "{{count}} Übungen",
+      "sets": "{{count}} Sätze",
+      "more": "+{{count}} weitere Übungen",
+      "completed": "✓ Heute erledigt",
+      "nextUp": "Als Nächstes · {{name}}",
+      "start": "Training starten"
+    },
+    "rest": {
+      "title": "Ruhetag",
+      "sub": "In der Erholung wachsen deine Muskeln wirklich. Priorisiere heute Schlaf und Protein."
+    },
+    "cardio": {
+      "title": "Cardio & Ausdauer",
+      "lastSessions_one": "Letzte {{count}} Einheit",
+      "lastSessions_other": "Letzte {{count}} Einheiten",
+      "log": "+ Erfassen",
+      "empty": "Noch keine Einheiten erfasst. Tippe auf + Erfassen, um Laufen, Schwimmen, Gehen oder Radfahren hinzuzufügen.",
+      "minutes": "{{count}} Min.",
+      "run": "Laufen",
+      "walk": "Gehen",
+      "swim": "Schwimmen",
+      "cycle": "Radfahren",
+      "other": "Aktivität"
+    },
+    "recovery": {
+      "title": "Muskelerholung",
+      "sub": "Basierend auf deinem jüngsten Training",
+      "daysAgo": "vor {{count}}T",
+      "never": "Nie"
+    },
+    "volume": {
+      "title": "Volumen diese Woche",
+      "sub": "Sätze pro Muskel — letzte 7 Tage",
+      "belowMin": "Unter Minimum",
+      "belowOpt": "Unter Optimum",
+      "inRange": "Im Bereich",
+      "target": "Min {{min}} · Opt {{low}}–{{high}}",
+      "junkTitle": "Junk-Volumen",
+      "junkText": "{{muscles}} — über der Grenze, ab der zusätzliche Sätze keinen Muskel mehr aufbauen und das Verletzungsrisiko erhöhen. Verteile diesen Aufwand lieber auf schwächere Muskeln.",
+      "junkMuscle": "{{label}} ({{count}} Sätze)"
+    },
+    "deload": {
+      "fatigueDetected": "Ermüdung erkannt",
+      "weeksTraining": "{{weeks}} Wochen konstantes Training",
+      "setsCut": "Sätze reduziert",
+      "weight": "Gewicht",
+      "duration": "Dauer",
+      "durationDays": "7 Tage",
+      "rirTarget": "RIR-Ziel",
+      "same": "Gleich",
+      "thisWeek": "Diese Woche:"
+    },
+    "proactive": {
+      "tapToAsk": "Tippen, um deinen Coach zu fragen →"
+    },
+    "plateau": {
+      "title": "Plateau erkannt",
+      "progress": "{{days}} Tage ohne Fortschritt · Geschätztes 1RM: {{rm}}kg",
+      "whatToDo": "Was zu tun ist:"
+    },
+    "lastSession": {
+      "title": "Letzte Einheit",
+      "minutes": "{{count}} Min.",
+      "rpe": "RPE {{value}}"
+    },
+    "modal": {
+      "setsPerMuscle": "SÄTZE PRO MUSKEL",
+      "noData": "Keine Satzdaten gefunden.",
+      "minutes": "{{count}} Min.",
+      "rpe": "RPE {{value}}"
+    },
+    "checkIn": {
+      "title": "Bevor du startest",
+      "sub": "Wie fühlt sich jeder Bereich heute an? Wir passen das Training entsprechend an.",
+      "good": "Gut",
+      "usual": "Wie üblich",
+      "flare": "Schub",
+      "start": "Training starten"
+    },
+    "muscles": {
+      "chest": "Brust",
+      "back": "Rücken",
+      "shoulders": "Schultern",
+      "biceps": "Bizeps",
+      "triceps": "Trizeps",
+      "quads": "Quadrizeps",
+      "hamstrings": "Beinbeuger",
+      "glutes": "Gesäß",
+      "calves": "Waden",
+      "forearms": "Unterarme",
+      "abs": "Bauch"
+    }
+  }
+}

@@ -1,33 +1,26 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
-import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment } from './programGenerator';
+import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment, getConditionsFromInjuryProfile, applyContraindicationsToWorkout, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, getProactiveCoachPrompt, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS } from './programGenerator';
+import { buildVolumeView } from './volumeEngine';
+import { maybeSendProactiveNudge } from '../lib/notificationService';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
+import CardioLogModal from './CardioLogModal';
+import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
+import { Platform } from 'react-native';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-// Build exercise → raw muscles map from movementLibrary
-function buildExerciseMuscleMap() {
-  const map = {};
-  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
-    pattern.exercises.forEach(ex => {
-      map[ex.name.toLowerCase()] = pattern.muscles.map(m => m.toLowerCase());
-    });
-  });
-  return map;
-}
-
-const EXERCISE_MUSCLE_MAP = buildExerciseMuscleMap();
 
 // Normalise raw library muscle names → display group keys used in MUSCLE_DISPLAY
 function normaliseMuscle(raw) {
   const r = raw.toLowerCase();
   if (r === 'chest' || r === 'upper chest' || r === 'lower chest') return 'chest';
-  if (r === 'lats' || r === 'lower back' || r === 'traps' || r === 'upper traps' ||
+  if (r === 'lats' || r === 'traps' || r === 'upper traps' ||
       r === 'upper trapezius' || r === 'levator scapulae') return 'back';
   if (r === 'shoulders' || r === 'anterior delts' || r === 'side deltoids' ||
       r === 'rear delts' || r === 'rear deltoids' || r === 'external rotators') return 'shoulders';
@@ -42,13 +35,7 @@ function normaliseMuscle(raw) {
   return null; // ignore: external rotators on their own, etc.
 }
 
-function getMusclesForExercise(exerciseName) {
-  const raw = EXERCISE_MUSCLE_MAP[exerciseName?.toLowerCase()] || [];
-  const keys = [...new Set(raw.map(normaliseMuscle).filter(Boolean))];
-  return keys;
-}
-
-// Primary muscle only — for volume counting so rows don't inflate biceps etc.
+// Primary muscle only — for volume counting and recovery so rows don't inflate biceps etc.
 const EXERCISE_PRIMARY_MAP = (() => {
   const map = {};
   Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
@@ -108,13 +95,17 @@ const MUSCLE_DISPLAY = {
   abs:        'Abs',
 };
 
-export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
+export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoach }) {
+  const { t } = useTranslation();
+  const navigation = useNavigation();
   const [program, setProgram] = useState(null);
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [todayCompleted, setTodayCompleted] = useState(false);
   const [tomorrowWorkout, setTomorrowWorkout] = useState(null);
   const [muscleRecovery, setMuscleRecovery] = useState({});
   const [weeklyVolume, setWeeklyVolume] = useState({});
+  const [weekVolumeSets, setWeekVolumeSets] = useState([]); // raw working sets, last 7 days, for the head-level engine
+  const [showVolumeDetail, setShowVolumeDetail] = useState(false);
   const [lastSession, setLastSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -124,6 +115,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
   const [sessionMuscles, setSessionMuscles] = useState([]);
   const [blockData, setBlockData] = useState(null);
   const [blockJustRotated, setBlockJustRotated] = useState(false);
+  const [showCardioLog, setShowCardioLog] = useState(false);
+  const [recentCardio, setRecentCardio] = useState([]);
+  const [readiness, setReadiness] = useState(null); // { status, label, color, advice, hrv, sleep, rhr, vsBaseline }
+  const [injuryCheckIn, setInjuryCheckIn] = useState(null); // { workout, answers } when modal is open
+  const [proactivePrompt, setProactivePrompt] = useState(null); // coach's proactive check-in for today
 
   const todayName = DAYS[new Date().getDay()];
   const tomorrowName = DAYS[(new Date().getDay() + 1) % 7];
@@ -156,6 +152,24 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
     loadData().finally(() => clearTimeout(safetyTimer));
   }, []));
 
+  // Proactive coach: once data is loaded, pick the single most important thing a
+  // trainer would raise today and (rate-limited) send it as a notification.
+  useEffect(() => {
+    if (loading) return;
+    const daysSinceLastSession = lastSession?.created_at
+      ? Math.floor((Date.now() - new Date(lastSession.created_at).getTime()) / 86400000)
+      : null;
+    const prompt = getProactiveCoachPrompt({
+      daysSinceLastSession,
+      weeklyWorkoutsTarget: profile?.weekly_workouts || 3,
+      deload: deloadSuggestion,
+      plateaus,
+      recoveryLabel: readiness?.label,
+    });
+    setProactivePrompt(prompt);
+    if (prompt) maybeSendProactiveNudge(prompt);
+  }, [loading, lastSession, deloadSuggestion, plateaus, readiness, profile]);
+
   const loadData = async () => {
     try {
       const user = await getCurrentUser();
@@ -164,7 +178,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       // Load profile
       const { data: prof } = await supabase
         .from('profiles')
-        .select('id, name, trainingExperience, equipment, weekly_workouts, goals, selected_split')
+        .select('id, name, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes')
         .eq('id', user.id)
         .single();
 
@@ -223,7 +237,21 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
         setBlockData(block);
 
-        let prog = generateProgram(prof, block.block_index, block.block_start_date);
+        // Skip/swap learning: exercises skipped 3+ times in the last 90 days are
+        // treated as disliked and dropped from the generated program.
+        const skipsSince = new Date();
+        skipsSince.setDate(skipsSince.getDate() - 90);
+        const { data: skipRows } = await supabase
+          .from('exercise_skips')
+          .select('exercise_name')
+          .eq('user_id', user.id)
+          .gte('skipped_at', skipsSince.toISOString());
+        const dislikedIds = [...new Set([
+          ...computeDislikedExerciseIds(skipRows || []),
+          ...dislikedExerciseIdsFromNotes(prof.coach_notes || []),
+        ])];
+
+        let prog = generateProgram(prof, block.block_index, block.block_start_date, { dislikedIds });
 
         // Apply any permanent AI coach edits on top of the generated program
         const { data: overrides } = await supabase
@@ -248,56 +276,91 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           });
         }
 
-        prog = applyContraindicationFilters(prog, prof);
+        // Merge baseline injury conditions (always-on body parts) with any explicit health conditions
+        const baselineInjuryConditions = getConditionsFromInjuryProfile(prof.injury_profile || []);
+        const mergedConditions = [...new Set([...(prof.health_conditions || []), ...baselineInjuryConditions])];
+        prog = applyContraindicationFilters(prog, { ...prof, health_conditions: mergedConditions });
 
-        setProgram(prog);
-
-        // Today's workout
-        const todayIdx = prog.schedule.indexOf(todayName);
-        const todayWk = todayIdx !== -1 ? prog.days[todayIdx] : null;
-        if (todayWk) setTodayWorkout(todayWk);
-
-        // Tomorrow's workout — calculated after sessions load below
-        // so we can skip workouts already completed today
+        // ── Completion-based schedule ──────────────────────────────────────
+        // Rest days are still weekday-driven (today is a rest day if this split
+        // assigns no slot to this weekday). But the WORKOUT shown is the next one
+        // DUE in the rotation based on what you've actually completed — a missed
+        // workout is never skipped; it stays "due" until you do it. Completing any
+        // workout (even out of order) advances the rotation from there.
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0); // local midnight — avoids UTC offset bug
 
+        // Recent sessions, newest first: finds the last completed rotation workout
+        // (the "due" pointer) and whether one was completed today.
         const { data: recentSessions } = await supabase
           .from('workout_sessions')
           .select('name, completed_at')
           .eq('user_id', user.id)
-          .gte('completed_at', todayStart.toISOString())
-          .order('completed_at', { ascending: false });
+          .order('completed_at', { ascending: false })
+          .limit(30);
 
-        // Names of workouts already done today
+        // Volume rebalance: if an optional specialisation day (e.g. Shoulders Day)
+        // was actually completed in the last 7 days, trim the now-redundant
+        // isolation sets it duplicates from the main days so the weekly total for
+        // those heads doesn't overshoot. Done before setProgram so both the
+        // overview and the served workout reflect the rebalanced volume.
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const completedThisWeek = (recentSessions || [])
+          .filter(s => new Date(s.completed_at) >= weekAgo)
+          .map(s => s.name);
+        prog = rebalanceForCompletedOptionalDays(prog, completedThisWeek);
+
+        setProgram(prog);
+
+        const isTrainingDayToday = prog.schedule.indexOf(todayName) !== -1;
+        const rotation = prog.days || [];
+        const rotationNames = rotation.map(d => d.name?.toLowerCase().trim());
+
         const completedTodayNames = new Set(
-          (recentSessions || []).map(s => s.name?.toLowerCase().trim())
+          (recentSessions || [])
+            .filter(s => new Date(s.completed_at) >= todayStart)
+            .map(s => s.name?.toLowerCase().trim())
         );
 
-        setTodayCompleted(!!todayWk && completedTodayNames.has(todayWk.name?.toLowerCase().trim()));
-
-        // Find the next scheduled workout day (always show it so the button is never missing)
-        let foundTomorrow = null;
-        for (let offset = 1; offset <= 7; offset++) {
-          const checkDay = DAYS[(new Date().getDay() + offset) % 7];
-          const checkIdx = prog.schedule.indexOf(checkDay);
-          if (checkIdx !== -1 && prog.days[checkIdx]) {
-            foundTomorrow = prog.days[checkIdx];
-            break;
+        // Due = the workout AFTER the most recently completed one (before today).
+        let dueIndex = 0;
+        if (rotation.length) {
+          const lastPrior = (recentSessions || []).find(s =>
+            new Date(s.completed_at) < todayStart &&
+            rotationNames.includes(s.name?.toLowerCase().trim())
+          );
+          if (lastPrior) {
+            const lastIdx = rotationNames.indexOf(lastPrior.name.toLowerCase().trim());
+            dueIndex = (lastIdx + 1) % rotation.length;
           }
         }
-        setTomorrowWorkout(foundTomorrow);
+        const dueWorkout = rotation.length ? rotation[dueIndex] : null;
+        const dueDoneToday = !!dueWorkout && completedTodayNames.has(dueWorkout.name?.toLowerCase().trim());
+
+        // Show the due workout on a training day (it waits, never auto-skips) or if
+        // it was already done today; show rest (null) on a rest day. Unconditional
+        // set so a rest day clears any stale workout from a previous load.
+        const todayWk = (isTrainingDayToday || dueDoneToday) ? dueWorkout : null;
+        setTodayWorkout(todayWk);
+        setTodayCompleted(dueDoneToday);
+
+        // Next up: after today's workout it's the following rotation slot; on a rest
+        // day the next thing to do is the still-pending due workout.
+        const nextAfterDue = rotation.length ? rotation[(dueIndex + 1) % rotation.length] : null;
+        setTomorrowWorkout(todayWk ? nextAfterDue : dueWorkout);
       }
 
-      // Load last 14 days of sessions + sets
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      // Load last 30 days of sessions + sets — plateau/deload analysis needs the
+      // full 30-day window; recovery and weekly volume filter their own ranges.
+      const historyStart = new Date();
+      historyStart.setDate(historyStart.getDate() - 30);
 
       const { data: sessions } = await supabase
         .from('workout_sessions')
-        .select('id, created_at, name, duration_min, perceived_exertion')
+        .select('id, created_at, completed_at, name, duration_min, perceived_exertion')
         .eq('user_id', user.id)
-        .gte('created_at', twoWeeksAgo.toISOString())
+        .gte('created_at', historyStart.toISOString())
         .order('created_at', { ascending: false });
 
       if (sessions?.length > 0) {
@@ -308,7 +371,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
         const sessionIds = sessions.map(s => s.id);
         const { data: sets } = await supabase
           .from('completed_sets')
-          .select('exercise_name, session_id, created_at')
+          .select('exercise_name, session_id, created_at, weight_kg, reps')
           .in('session_id', sessionIds);
 
         if (!sets?.length) {
@@ -323,13 +386,26 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           const sessionDateMap = {};
           sessions.forEach(s => { sessionDateMap[s.id] = new Date(s.created_at); });
 
-          // Calculate last trained date per muscle
-          const lastTrainedPerMuscle = {};
+          // Calculate last trained date per muscle — primary muscle only, so a
+          // shoulders day (OHP secondaries: triceps/upper chest) doesn't reset
+          // the recovery clock for chest and triceps. A single light accessory
+          // (e.g. 3 sets of shrugs → back) isn't enough stimulus to count either:
+          // a muscle only lights up if the session gave it ≥2 exercises or ≥5 sets.
+          const perSessionMuscle = {}; // session_id -> muscle -> { count, exercises }
           sets.forEach(set => {
-            const muscles = getMusclesForExercise(set.exercise_name);
-            const sessionDate = sessionDateMap[set.session_id];
+            const muscle = getPrimaryMuscleForExercise(set.exercise_name);
+            if (!muscle) return;
+            const muscles = (perSessionMuscle[set.session_id] ??= {});
+            const entry = (muscles[muscle] ??= { count: 0, exercises: new Set() });
+            entry.count += 1;
+            entry.exercises.add(set.exercise_name.toLowerCase());
+          });
+          const lastTrainedPerMuscle = {};
+          Object.entries(perSessionMuscle).forEach(([sessionId, muscles]) => {
+            const sessionDate = sessionDateMap[sessionId];
             if (!sessionDate) return;
-            muscles.forEach(muscle => {
+            Object.entries(muscles).forEach(([muscle, entry]) => {
+              if (entry.exercises.size < 2 && entry.count < 5) return;
               if (!lastTrainedPerMuscle[muscle] || sessionDate > lastTrainedPerMuscle[muscle]) {
                 lastTrainedPerMuscle[muscle] = sessionDate;
               }
@@ -363,13 +439,20 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
             if (primary) volume[primary] = (volume[primary] || 0) + 1;
           });
           setWeeklyVolume(volume);
+          // Raw sets feed the head-level engine (direct + indirect per muscle head).
+          setWeekVolumeSets(weekSets.map(s => ({ exercise_name: s.exercise_name })));
 
           // ── Plateau and deload detection ─────────────────────────────────
           // Pull last 30 days of sets for plateau analysis
           const thirtyDaysAgo = subDays(new Date(), 30);
+          const sessionRpeMap = {};
+          sessions.forEach(s => { sessionRpeMap[s.id] = s.perceived_exertion; });
           const setsWithDates = sets.map(s => ({
             ...s,
             completed_at: sessionDateMap[s.session_id]?.toISOString(),
+            // Per-set RPE isn't logged — use the session's perceived exertion,
+            // which is what the deload autoregulation averages per session anyway.
+            rpe: sessionRpeMap[s.session_id] ?? null,
           })).filter(s => s.completed_at && new Date(s.completed_at) >= thirtyDaysAgo);
 
           const detectedPlateaus = detectPlateaus(setsWithDates, prof);
@@ -380,11 +463,102 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
         }
       }
 
+      // ── Health log upsert + readiness ────────────────────────────────────
+      if (user) {
+        const authorized = await isHealthAuthorized();
+        if (authorized) {
+          const health = await getRecoveryData();
+          if (health.sleep !== null || health.hrv !== null || health.rhr !== null) {
+            const today = format(new Date(), 'yyyy-MM-dd'); // local date, not UTC
+            const source = Platform.OS === 'ios' ? 'healthkit' : 'health_connect';
+            await supabase.from('daily_health_logs').upsert({
+              user_id: user.id,
+              date: today,
+              sleep_hours: health.sleep,
+              hrv_ms: health.hrv,
+              resting_hr: health.rhr,
+              steps: health.steps,
+              source,
+            }, { onConflict: 'user_id,date' });
+
+            // HRV baseline from last 14 days (excluding today)
+            const { data: recentLogs } = await supabase
+              .from('daily_health_logs')
+              .select('hrv_ms, sleep_hours, date')
+              .eq('user_id', user.id)
+              .not('hrv_ms', 'is', null)
+              .order('date', { ascending: false })
+              .limit(15);
+
+            // Baseline excludes today's log explicitly — slice(1) wrongly dropped
+            // yesterday whenever today's row was missing from the HRV-filtered list.
+            const priorLogs = (recentLogs || []).filter(r => r.date !== today);
+            const baseline = priorLogs.length >= 3
+              ? Math.round(priorLogs.reduce((s, r) => s + r.hrv_ms, 0) / priorLogs.length)
+              : null;
+
+            const todayHrv = health.hrv;
+            let status = health.status;
+
+            // Override with HRV-vs-baseline when we have enough data
+            if (baseline && todayHrv) {
+              const ratio = todayHrv / baseline;
+              const vsBaseline = Math.round((ratio - 1) * 100);
+              if (ratio >= 0.9) status = { label: t('today.readiness.ready'), color: '#1D9E75', advice: null };
+              else if (ratio >= 0.75) status = { label: t('today.readiness.moderate'), color: '#BA7517', advice: t('today.readiness.adviceModerate') };
+              else status = { label: t('today.readiness.low'), color: '#E24B4A', advice: t('today.readiness.adviceLow') };
+
+              setReadiness({ ...status, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline, baseline });
+            } else if (status) {
+              setReadiness({ ...status, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline: null, baseline: null });
+            }
+          }
+        }
+      }
+
+      // Load recent cardio sessions
+      if (user) {
+        const { data: cardioSessions } = await supabase
+          .from('workout_sessions')
+          .select('id, name, session_type, duration_min, distance_km, cardio_subtype, completed_at')
+          .eq('user_id', user.id)
+          .neq('session_type', 'strength')
+          .order('completed_at', { ascending: false })
+          .limit(5);
+        if (cardioSessions?.length) setRecentCardio(cardioSessions);
+      }
+
       setLoading(false);
     } catch (err) {
       console.error('TodayScreen error:', err);
       setLoading(false);
     }
+  };
+
+  // Start a workout — if the user has injuries, run the pre-workout check-in first
+  const beginWorkout = (workout) => {
+    const w = { ...workout, trainingExperience: profile?.trainingExperience };
+    const injuries = profile?.injury_profile || [];
+    if (injuries.length === 0) {
+      onStartWorkout && onStartWorkout(w);
+      return;
+    }
+    // Default each body part to its baseline tier (always → usual, sometimes → good)
+    const answers = {};
+    injuries.forEach(i => { answers[i.body_part] = i.severity === 'always' ? 'usual' : 'good'; });
+    setInjuryCheckIn({ workout: w, answers });
+  };
+
+  const confirmInjuryCheckIn = () => {
+    const { workout, answers } = injuryCheckIn;
+    const todayConditions = getConditionsFromInjuryProfile(profile?.injury_profile || [], answers);
+    const filtered = applyContraindicationsToWorkout(
+      workout,
+      todayConditions,
+      normalizeEquipment(profile?.equipment || [])
+    );
+    setInjuryCheckIn(null);
+    onStartWorkout && onStartWorkout(filtered);
   };
 
   if (loading) return (
@@ -395,9 +569,9 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
   const greeting = (() => {
     const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return t('today.greetingMorning');
+    if (h < 17) return t('today.greetingAfternoon');
+    return t('today.greetingEvening');
   })();
 
   return (
@@ -413,9 +587,9 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       {/* Block rotation banner */}
       {blockJustRotated && (
         <View style={styles.blockBanner}>
-          <Text style={styles.blockBannerTitle}>New block started</Text>
+          <Text style={styles.blockBannerTitle}>{t('today.block.newTitle')}</Text>
           <Text style={styles.blockBannerSub}>
-            Your exercises have rotated to keep your body adapting. Same movements, fresh stimulus.
+            {t('today.block.newSub')}
           </Text>
         </View>
       )}
@@ -424,23 +598,43 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       {blockData && !blockJustRotated && (
         <View style={styles.blockPill}>
           <Text style={styles.blockPillText}>
-            Block {blockData.block_index + 1} · Week {Math.max(1, Math.ceil((Date.now() - new Date(blockData.block_start_date).getTime()) / (7 * 86400000)))} of {getBlockLength(profile?.trainingExperience || 'beginner')}
+            {t('today.block.pill', { block: blockData.block_index + 1, week: Math.max(1, Math.ceil((Date.now() - new Date(blockData.block_start_date).getTime()) / (7 * 86400000))), total: getBlockLength(profile?.trainingExperience || 'beginner') })}
           </Text>
+        </View>
+      )}
+
+      {/* Recovery readiness */}
+      {readiness && (
+        <View style={[styles.readinessCard, { borderColor: readiness.color + '44', backgroundColor: readiness.color + '10' }]}>
+          <View style={styles.readinessRow}>
+            <View style={[styles.readinessDot, { backgroundColor: readiness.color }]} />
+            <Text style={[styles.readinessLabel, { color: readiness.color }]}>{readiness.label}</Text>
+            <View style={styles.readinessStats}>
+              {readiness.sleep !== null && <Text style={styles.readinessStat}>{t('today.readiness.sleepStat', { hours: readiness.sleep })}</Text>}
+              {readiness.hrv !== null && (
+                <Text style={styles.readinessStat}>
+                  {t('today.readiness.hrvStat', { ms: readiness.hrv })}{readiness.vsBaseline !== null ? t('today.readiness.baselineSuffix', { sign: readiness.vsBaseline > 0 ? '+' : '', pct: readiness.vsBaseline }) : ''}
+                </Text>
+              )}
+              {readiness.rhr !== null && <Text style={styles.readinessStat}>{t('today.readiness.rhrStat', { bpm: readiness.rhr })}</Text>}
+            </View>
+          </View>
+          {readiness.advice && <Text style={[styles.readinessAdvice, { color: readiness.color }]}>{readiness.advice}</Text>}
         </View>
       )}
 
       {/* Today's session or rest day */}
       {todayWorkout ? (
         <View style={styles.sessionCard}>
-          <Text style={styles.sessionLabel}>TODAY'S SESSION</Text>
+          <Text style={styles.sessionLabel}>{t('today.session.todayLabel')}</Text>
           <Text style={styles.sessionName}>{todayWorkout.name}</Text>
           <Text style={styles.sessionFocus}>{todayWorkout.focus}</Text>
           <View style={styles.sessionMeta}>
             <View style={styles.sessionMetaChip}>
-              <Text style={styles.sessionMetaText}>{todayWorkout.exercises?.length || 0} exercises</Text>
+              <Text style={styles.sessionMetaText}>{t('today.session.exercises', { count: todayWorkout.exercises?.length || 0 })}</Text>
             </View>
             <View style={styles.sessionMetaChip}>
-              <Text style={styles.sessionMetaText}>{todayWorkout.exercises?.reduce((s,e)=>s+e.sets,0) || 0} sets</Text>
+              <Text style={styles.sessionMetaText}>{t('today.session.sets', { count: todayWorkout.exercises?.reduce((s,e)=>s+e.sets,0) || 0 })}</Text>
             </View>
           </View>
           {/* Exercise preview */}
@@ -453,56 +647,103 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
               </View>
             ))}
             {(todayWorkout.exercises?.length || 0) > 4 && (
-              <Text style={styles.moreText}>+{todayWorkout.exercises.length - 4} more exercises</Text>
+              <Text style={styles.moreText}>{t('today.session.more', { count: todayWorkout.exercises.length - 4 })}</Text>
             )}
           </View>
           {todayCompleted ? (
             <>
               <View style={styles.completedBadge}>
-                <Text style={styles.completedBadgeText}>✓ Completed today</Text>
+                <Text style={styles.completedBadgeText}>{t('today.session.completed')}</Text>
               </View>
               {tomorrowWorkout && (
-                <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout({ ...tomorrowWorkout, trainingExperience: profile?.trainingExperience })}>
-                  <Text style={styles.startBtnText}>Next up · {tomorrowWorkout.name.split('—')[0].trim()}</Text>
+                <Pressable style={styles.startBtn} onPress={() => beginWorkout(tomorrowWorkout)}>
+                  <Text style={styles.startBtnText}>{t('today.session.nextUp', { name: tomorrowWorkout.name.split('—')[0].trim() })}</Text>
                 </Pressable>
               )}
             </>
           ) : (
-            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout({ ...todayWorkout, trainingExperience: profile?.trainingExperience })}>
-              <Text style={styles.startBtnText}>Start Workout</Text>
+            <Pressable style={styles.startBtn} onPress={() => beginWorkout(todayWorkout)}>
+              <Text style={styles.startBtnText}>{t('today.session.start')}</Text>
             </Pressable>
           )}
         </View>
       ) : (
         <View style={styles.restCard}>
-          <Text style={styles.restTitle}>Rest day</Text>
-          <Text style={styles.restSub}>Recovery is when your muscles actually grow. Prioritize sleep and protein today.</Text>
+          <Text style={styles.restTitle}>{t('today.rest.title')}</Text>
+          <Text style={styles.restSub}>{t('today.rest.sub')}</Text>
           {tomorrowWorkout && (
-            <Pressable style={styles.startBtn} onPress={() => onStartWorkout && onStartWorkout({ ...tomorrowWorkout, trainingExperience: profile?.trainingExperience })}>
-              <Text style={styles.startBtnText}>Next up · {tomorrowWorkout.name.split('—')[0].trim()}</Text>
+            <Pressable style={styles.startBtn} onPress={() => beginWorkout(tomorrowWorkout)}>
+              <Text style={styles.startBtnText}>{t('today.session.nextUp', { name: tomorrowWorkout.name.split('—')[0].trim() })}</Text>
             </Pressable>
           )}
         </View>
       )}
 
+      {/* Cardio log */}
+      <View style={styles.section}>
+        <View style={styles.cardioHeader}>
+          <View>
+            <Text style={styles.sectionTitle}>{t('today.cardio.title')}</Text>
+            {recentCardio.length > 0 && (
+              <Text style={styles.sectionSub}>{t('today.cardio.lastSessions', { count: recentCardio.length })}</Text>
+            )}
+          </View>
+          <Pressable style={styles.cardioLogBtn} onPress={() => setShowCardioLog(true)}>
+            <Text style={styles.cardioLogBtnText}>{t('today.cardio.log')}</Text>
+          </Pressable>
+        </View>
+
+        {recentCardio.length === 0 ? (
+          <View style={styles.cardioEmpty}>
+            <Text style={styles.cardioEmptyText}>{t('today.cardio.empty')}</Text>
+          </View>
+        ) : (
+          recentCardio.map(s => {
+            const typeLabel = t(`today.cardio.${s.session_type}`, { defaultValue: s.session_type });
+            const distStr = s.distance_km
+              ? s.session_type === 'swim'
+                ? `${Math.round(s.distance_km * 1000)}m`
+                : `${s.distance_km}km`
+              : null;
+            const pace = s.distance_km && s.duration_min && s.session_type !== 'swim'
+              ? (s.duration_min / s.distance_km).toFixed(1) + ' min/km'
+              : null;
+            const sub = [s.cardio_subtype, distStr, pace].filter(Boolean).join(' · ');
+            const dayLabel = isToday(new Date(s.completed_at)) ? t('dates.today')
+              : isYesterday(new Date(s.completed_at)) ? t('dates.yesterday')
+              : format(new Date(s.completed_at), 'MMM d');
+            return (
+              <View key={s.id} style={styles.cardioRow}>
+                <View style={styles.cardioRowLeft}>
+                  <Text style={styles.cardioRowType}>{typeLabel}</Text>
+                  {sub ? <Text style={styles.cardioRowSub}>{sub}</Text> : null}
+                </View>
+                <View style={styles.cardioRowRight}>
+                  <Text style={styles.cardioRowDur}>{t('today.cardio.minutes', { count: s.duration_min })}</Text>
+                  <Text style={styles.cardioRowDate}>{dayLabel}</Text>
+                </View>
+              </View>
+            );
+          })
+        )}
+      </View>
+
       {/* Muscle recovery */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Muscle recovery</Text>
-        <Text style={styles.sectionSub}>Based on your recent training history</Text>
+        <Text style={styles.sectionTitle}>{t('today.recovery.title')}</Text>
+        <Text style={styles.sectionSub}>{t('today.recovery.sub')}</Text>
         <View style={styles.muscleGrid}>
-          {Object.entries(MUSCLE_DISPLAY).map(([muscle, label]) => {
+          {Object.keys(MUSCLE_DISPLAY).map((muscle) => {
             const r = muscleRecovery[muscle];
             const status = r?.status || 'fresh';
             const rc = RECOVERY_COLORS[status];
             return (
               <View key={muscle} style={[styles.muscleChip, { backgroundColor: rc.bg, borderColor: rc.color + '44' }]}>
-                <Text style={[styles.muscleChipName, { color: rc.color }]}>{label}</Text>
+                <Text style={[styles.muscleChipName, { color: rc.color }]}>{t(`today.muscles.${muscle}`)}</Text>
                 <Text style={[styles.muscleChipStatus, { color: rc.color }]}>
-                  {status === 'trained_today' ? 'Today'
-                    : r?.daysSince === 1 ? '1d ago'
-                    : r?.daysSince === 2 ? '2d ago'
-                    : r?.daysSince == null ? 'Never'
-                    : `${r?.daysSince}d ago`}
+                  {status === 'trained_today' ? t('dates.today')
+                    : r?.daysSince == null ? t('today.recovery.never')
+                    : t('today.recovery.daysAgo', { count: r.daysSince })}
                 </Text>
               </View>
             );
@@ -512,91 +753,108 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
 
       {/* Weekly volume */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>This week's volume</Text>
-        <Text style={styles.sectionSub}>Sets per muscle — last 7 days</Text>
+        <Text style={styles.sectionTitle}>{t('today.volume.title')}</Text>
+        <Text style={styles.sectionSub}>{t('today.volume.sub')}</Text>
 
         {/* Legend */}
         <View style={styles.volumeLegend}>
           <View style={styles.volumeLegendItem}>
             <View style={[styles.volumeLegendDot, { backgroundColor: '#E24B4A' }]} />
-            <Text style={styles.volumeLegendLabel}>Below minimum</Text>
+            <Text style={styles.volumeLegendLabel}>{t('today.volume.belowMin')}</Text>
           </View>
           <View style={styles.volumeLegendItem}>
             <View style={[styles.volumeLegendDot, { backgroundColor: '#BA7517' }]} />
-            <Text style={styles.volumeLegendLabel}>Below optimal</Text>
+            <Text style={styles.volumeLegendLabel}>{t('today.volume.belowOpt')}</Text>
           </View>
           <View style={styles.volumeLegendItem}>
             <View style={[styles.volumeLegendDot, { backgroundColor: '#1D9E75' }]} />
-            <Text style={styles.volumeLegendLabel}>In range</Text>
+            <Text style={styles.volumeLegendLabel}>{t('today.volume.inRange')}</Text>
           </View>
         </View>
 
+        {/* Simple ↔ per-head detail toggle */}
+        <Pressable onPress={() => setShowVolumeDetail(v => !v)} style={styles.volumeDetailToggle}>
+          <Text style={styles.volumeDetailToggleText}>
+            {showVolumeDetail
+              ? t('today.volume.hideDetail', { defaultValue: 'Hide per-head detail' })
+              : t('today.volume.showDetail', { defaultValue: 'Show per-head detail' })}
+          </Text>
+        </Pressable>
+
         {(() => {
-          const volumeTargets = getVolumeTargets(profile?.trainingExperience);
-          const junkMuscles = [];
-          const rows = Object.entries(MUSCLE_DISPLAY).map(([muscle, label]) => {
-            const done = weeklyVolume[muscle] || 0;
-            const target = volumeTargets[muscle];
-            if (!target) return null;
-            const junkThreshold = Math.round(target.optimal_high * 1.5);
-            const isJunk = done > junkThreshold;
-            const isOver = done > target.optimal_high;
-            if (isJunk) junkMuscles.push({ label, done, junkThreshold });
+          const tier = profile?.trainingExperience || 'beginner';
+          const view = buildVolumeView(weekVolumeSets, tier);
+          const fmt = (n) => (Number.isInteger(n) ? `${n}` : n.toFixed(1));
 
-            // Bar scale: full width = optimal_high. Min marker at (min/optimal_high)%
-            const minMarkerPct = (target.min / target.optimal_high) * 100;
-            const fillPct = Math.min(done / target.optimal_high, 1) * 100;
-            const overflowPct = isOver
-              ? Math.min((done - target.optimal_high) / (junkThreshold - target.optimal_high), 1) * 28
-              : 0;
+          // Junk-volume callout: any group/head whose DIRECT volume is >1.5× optimal.
+          const junk = [];
+          view.forEach(g => {
+            if (g.split) {
+              g.heads.forEach(h => {
+                if (h.target && h.direct > h.target.optimal_high * 1.5)
+                  junk.push({ label: t(`today.heads.${h.key}`, { defaultValue: h.key }), count: h.direct });
+              });
+            } else if (g.target && g.done > g.target.optimal_high * 1.5) {
+              junk.push({ label: t(`today.muscles.${g.key}`, { defaultValue: g.key }), count: g.done });
+            }
+          });
 
-            const fillColor = isJunk ? '#E24B4A'
-              : isOver ? '#BA7517'
-              : done < target.min ? '#E24B4A'
-              : done < target.optimal_low ? '#BA7517'
-              : '#1D9E75';
-
-            // Status label shown to right of bar
-            const statusText = `${done}`;
-            const statusSub = isJunk ? 'Too much'
-              : isOver ? `${done}/${target.optimal_high} ↑`
-              : done === 0 ? `0 — aim ${target.min}+`
-              : done < target.min ? `${done}/${target.min} min`
-              : done < target.optimal_low ? `${done}/${target.optimal_high} opt`
-              : `${done}/${target.optimal_high}`;
-
+          const Bar = ({ done, target, color }) => {
+            const high = target?.optimal_high || Math.max(done, 1);
+            const fillPct = Math.min(done / high, 1) * 100;
             return (
-              <View key={muscle} style={styles.volumeRow}>
-                {/* Muscle name + min/opt labels */}
-                <View style={styles.volumeNameCol}>
-                  <Text style={styles.volumeMuscleName}>{label}</Text>
-                  <Text style={styles.volumeTargetLabel}>
-                    Min {target.min} · Opt {target.optimal_low}–{target.optimal_high}
-                  </Text>
-                </View>
-
-                {/* Bar */}
-                <View style={styles.volumeBarTrack}>
-                  <View style={[styles.volumeBarFill, { width: `${fillPct}%`, backgroundColor: fillColor }]} />
-                </View>
-
-                {/* Count */}
-                <Text style={[styles.volumeCount, { color: fillColor }]}>{statusText}</Text>
+              <View style={styles.volumeBarTrack}>
+                <View style={[styles.volumeBarFill, { width: `${fillPct}%`, backgroundColor: color }]} />
               </View>
             );
-          });
+          };
+
+          const targetLabel = (tgt) =>
+            t('today.volume.target', { min: tgt.min, low: tgt.optimal_low, high: tgt.optimal_high });
 
           return (
             <>
-              {rows}
-              {junkMuscles.length > 0 && (
+              {view.map(g => {
+                const label = t(`today.muscles.${g.key}`, { defaultValue: g.key });
+                return (
+                  <View key={g.key} style={showVolumeDetail ? styles.volumeGroupBlock : null}>
+                    <View style={styles.volumeRow}>
+                      <View style={styles.volumeNameCol}>
+                        <Text style={styles.volumeMuscleName}>{label}</Text>
+                        {!!g.target && <Text style={styles.volumeTargetLabel}>{targetLabel(g.target)}</Text>}
+                      </View>
+                      <Bar done={g.done} target={g.target} color={g.color} />
+                      <Text style={[styles.volumeCount, { color: g.color }]}>{fmt(g.done)}</Text>
+                    </View>
+
+                    {showVolumeDetail && g.heads.map(h => {
+                      const headLabel = t(`today.heads.${h.key}`, { defaultValue: h.key });
+                      const subParts = [];
+                      subParts.push(h.target ? targetLabel(h.target) : t('today.volume.fromCompounds', { defaultValue: 'from compounds' }));
+                      if (h.indirect > 0) subParts.push(t('today.volume.indirect', { n: fmt(h.indirect), defaultValue: `+${fmt(h.indirect)} indirect` }));
+                      return (
+                        <View key={h.key} style={styles.volumeHeadRow}>
+                          <View style={styles.volumeNameCol}>
+                            <Text style={styles.volumeHeadName}>{headLabel}</Text>
+                            <Text style={styles.volumeTargetLabel}>{subParts.join(' · ')}</Text>
+                          </View>
+                          {h.target ? <Bar done={h.direct} target={h.target} color={h.color} /> : <View style={styles.volumeBarTrack} />}
+                          <Text style={[styles.volumeCount, { color: h.target ? h.color : '#71717A' }]}>{fmt(h.direct)}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })}
+
+              {junk.length > 0 && (
                 <View style={styles.junkWarning}>
                   <View style={styles.junkWarningHeader}>
                     <Ionicons name="warning" size={12} color="#E24B4A" style={{ marginTop: 1 }} />
-                    <Text style={styles.junkWarningTitle}>Junk volume</Text>
+                    <Text style={styles.junkWarningTitle}>{t('today.volume.junkTitle')}</Text>
                   </View>
                   <Text style={styles.junkWarningText}>
-                    {junkMuscles.map(m => `${m.label} (${m.done} sets)`).join(', ')} — past the ceiling where extra sets stop building muscle and increase injury risk. Spread that effort to lagging muscles instead.
+                    {t('today.volume.junkText', { muscles: junk.map(m => t('today.volume.junkMuscle', { label: m.label, count: m.count })).join(', ') })}
                   </Text>
                 </View>
               )}
@@ -621,7 +879,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
               <View style={styles.deloadHeaderText}>
                 <Text style={styles.deloadTitle}>{deloadSuggestion.headline}</Text>
                 <Text style={styles.deloadTrigger}>
-                  {deloadSuggestion.trigger === 'autoreg' ? 'Fatigue detected' : `${deloadSuggestion.weeksTraining} weeks of consistent training`}
+                  {deloadSuggestion.trigger === 'autoreg' ? t('today.deload.fatigueDetected') : t('today.deload.weeksTraining', { weeks: deloadSuggestion.weeksTraining })}
                 </Text>
               </View>
             </View>
@@ -638,21 +896,21 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
                 <Text style={styles.deloadStatValue}>
                   {Math.round(deloadSuggestion.volumeReduction * 100)}%
                 </Text>
-                <Text style={styles.deloadStatLabel}>Sets cut</Text>
+                <Text style={styles.deloadStatLabel}>{t('today.deload.setsCut')}</Text>
               </View>
               <View style={styles.deloadStat}>
                 <Text style={styles.deloadStatValue}>
-                  {deloadSuggestion.keepIntensity ? 'Same' : '−20%'}
+                  {deloadSuggestion.keepIntensity ? t('today.deload.same') : '−20%'}
                 </Text>
-                <Text style={styles.deloadStatLabel}>Weight</Text>
+                <Text style={styles.deloadStatLabel}>{t('today.deload.weight')}</Text>
               </View>
               <View style={styles.deloadStat}>
-                <Text style={styles.deloadStatValue}>7 days</Text>
-                <Text style={styles.deloadStatLabel}>Duration</Text>
+                <Text style={styles.deloadStatValue}>{t('today.deload.durationDays')}</Text>
+                <Text style={styles.deloadStatLabel}>{t('today.deload.duration')}</Text>
               </View>
               <View style={styles.deloadStat}>
                 <Text style={styles.deloadStatValue}>3–4</Text>
-                <Text style={styles.deloadStatLabel}>RIR target</Text>
+                <Text style={styles.deloadStatLabel}>{t('today.deload.rirTarget')}</Text>
               </View>
             </View>
 
@@ -664,7 +922,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
             )}
 
             {/* Instructions */}
-            <Text style={styles.deloadInstructionsTitle}>This week:</Text>
+            <Text style={styles.deloadInstructionsTitle}>{t('today.deload.thisWeek')}</Text>
             {deloadSuggestion.instructions.map((instruction, i) => (
               <View key={i} style={styles.deloadInstruction}>
                 <Text style={styles.deloadInstructionNum}>{i + 1}</Text>
@@ -678,10 +936,31 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
         </View>
       )}
 
+      {/* Proactive coach check-in — the trainer raises the most important thing
+          today; tapping opens the Coach with the question already sent. */}
+      {proactivePrompt && (
+        <View style={styles.section}>
+          <Pressable
+            style={({ pressed }) => [styles.coachNudgeCard, pressed && { opacity: 0.7 }]}
+            onPress={() => {
+              onAskCoach?.(proactivePrompt.ask);
+              navigation.navigate('Coach');
+            }}
+          >
+            <View style={styles.coachNudgeHeader}>
+              <Ionicons name="chatbubble-ellipses" size={18} color="#7C9Cff" style={{ marginTop: 1 }} />
+              <Text style={styles.coachNudgeTitle}>{proactivePrompt.title}</Text>
+            </View>
+            <Text style={styles.coachNudgeBody}>{proactivePrompt.body}</Text>
+            <Text style={styles.coachNudgeHint}>{t('today.proactive.tapToAsk')}</Text>
+          </Pressable>
+        </View>
+      )}
+
       {/* Plateau alerts */}
       {plateaus.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Plateau detected</Text>
+          <Text style={styles.sectionTitle}>{t('today.plateau.title')}</Text>
           {plateaus.map((p, i) => (
             <View key={i} style={[styles.plateauCard, p.type === 'confirmed' && styles.plateauCardConfirmed]}>
               <View style={styles.plateauHeader}>
@@ -693,11 +972,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
                 />
                 <View style={styles.plateauHeaderText}>
                   <Text style={styles.plateauExercise}>{p.exercise}</Text>
-                  <Text style={styles.plateauDays}>{p.days} days without progress · Est. 1RM: {p.est1rm}kg</Text>
+                  <Text style={styles.plateauDays}>{t('today.plateau.progress', { days: p.days, rm: p.est1rm })}</Text>
                 </View>
               </View>
               <Text style={styles.plateauMessage}>{p.message}</Text>
-              <Text style={styles.plateauFixTitle}>What to do:</Text>
+              <Text style={styles.plateauFixTitle}>{t('today.plateau.whatToDo')}</Text>
               {p.interventions.map((intervention, j) => (
                 <Text key={j} style={styles.plateauIntervention}>· {intervention}</Text>
               ))}
@@ -710,22 +989,22 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
       {/* Last session */}
       {lastSession && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Last session</Text>
+          <Text style={styles.sectionTitle}>{t('today.lastSession.title')}</Text>
           <Pressable style={styles.lastSessionCard} onPress={openSessionDetail}>
             <View style={styles.lastSessionLeft}>
               <Text style={styles.lastSessionName}>{lastSession.name}</Text>
               <Text style={styles.lastSessionDate}>
-                {isToday(new Date(lastSession.created_at)) ? 'Today'
-                  : isYesterday(new Date(lastSession.created_at)) ? 'Yesterday'
+                {isToday(new Date(lastSession.created_at)) ? t('dates.today')
+                  : isYesterday(new Date(lastSession.created_at)) ? t('dates.yesterday')
                   : format(new Date(lastSession.created_at), 'EEE, MMM d')}
               </Text>
             </View>
             <View style={styles.lastSessionRight}>
               {lastSession.duration_min > 0 && (
-                <Text style={styles.lastSessionStat}>{lastSession.duration_min} min</Text>
+                <Text style={styles.lastSessionStat}>{t('today.lastSession.minutes', { count: lastSession.duration_min })}</Text>
               )}
               {lastSession.perceived_exertion && (
-                <Text style={styles.lastSessionRpe}>RPE {lastSession.perceived_exertion}</Text>
+                <Text style={styles.lastSessionRpe}>{t('today.lastSession.rpe', { value: lastSession.perceived_exertion })}</Text>
               )}
             </View>
           </Pressable>
@@ -738,22 +1017,22 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
           <Pressable style={styles.modalCard} onPress={e => e.stopPropagation()}>
             <Text style={styles.modalTitle}>{lastSession?.name}</Text>
             <Text style={styles.modalSub}>
-              {lastSession && (isToday(new Date(lastSession.created_at)) ? 'Today'
-                : isYesterday(new Date(lastSession.created_at)) ? 'Yesterday'
+              {lastSession && (isToday(new Date(lastSession.created_at)) ? t('dates.today')
+                : isYesterday(new Date(lastSession.created_at)) ? t('dates.yesterday')
                 : format(new Date(lastSession.created_at), 'EEE, MMM d'))}
-              {lastSession?.duration_min > 0 ? `  ·  ${lastSession.duration_min} min` : ''}
-              {lastSession?.perceived_exertion ? `  ·  RPE ${lastSession.perceived_exertion}` : ''}
+              {lastSession?.duration_min > 0 ? `  ·  ${t('today.modal.minutes', { count: lastSession.duration_min })}` : ''}
+              {lastSession?.perceived_exertion ? `  ·  ${t('today.modal.rpe', { value: lastSession.perceived_exertion })}` : ''}
             </Text>
 
-            <Text style={styles.modalSectionLabel}>SETS PER MUSCLE</Text>
+            <Text style={styles.modalSectionLabel}>{t('today.modal.setsPerMuscle')}</Text>
             {sessionMuscles.length === 0 ? (
-              <Text style={styles.modalEmpty}>No set data found.</Text>
+              <Text style={styles.modalEmpty}>{t('today.modal.noData')}</Text>
             ) : (
               (() => {
                 const max = sessionMuscles[0]?.sets || 1;
                 return sessionMuscles.map(({ muscle, sets }) => (
                   <View key={muscle} style={styles.muscleRow}>
-                    <Text style={styles.muscleLabel}>{MUSCLE_DISPLAY[muscle] || muscle}</Text>
+                    <Text style={styles.muscleLabel}>{t(`today.muscles.${muscle}`, { defaultValue: MUSCLE_DISPLAY[muscle] || muscle })}</Text>
                     <View style={styles.muscleBarBg}>
                       <View style={[styles.muscleBarFill, { width: `${(sets / max) * 100}%` }]} />
                     </View>
@@ -764,7 +1043,51 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout }) {
             )}
 
             <Pressable style={styles.modalClose} onPress={() => setShowSessionDetail(false)}>
-              <Text style={styles.modalCloseText}>Close</Text>
+              <Text style={styles.modalCloseText}>{t('common.close')}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <CardioLogModal
+        visible={showCardioLog}
+        onClose={() => setShowCardioLog(false)}
+        onSaved={() => {
+          lastLoadedAt.current = 0;
+          loadData();
+        }}
+      />
+
+      {/* Pre-workout injury check-in */}
+      <Modal visible={!!injuryCheckIn} transparent animationType="slide" onRequestClose={() => setInjuryCheckIn(null)}>
+        <Pressable style={styles.checkInOverlay} onPress={() => setInjuryCheckIn(null)}>
+          <Pressable style={styles.checkInCard} onPress={e => e.stopPropagation()}>
+            <Text style={styles.checkInTitle}>{t('today.checkIn.title')}</Text>
+            <Text style={styles.checkInSub}>{t('today.checkIn.sub')}</Text>
+
+            {(profile?.injury_profile || []).map(injury => {
+              const bp = INJURY_BODY_PARTS.find(b => b.key === injury.body_part);
+              const answer = injuryCheckIn?.answers[injury.body_part];
+              return (
+                <View key={injury.body_part} style={styles.checkInRow}>
+                  <Text style={styles.checkInBodyPart}>{bp?.label || injury.body_part}</Text>
+                  <View style={styles.checkInOptions}>
+                    {[['good', t('today.checkIn.good')], ['usual', t('today.checkIn.usual')], ['flare', t('today.checkIn.flare')]].map(([val, label]) => (
+                      <Pressable
+                        key={val}
+                        style={[styles.checkInOpt, answer === val && styles.checkInOptActive]}
+                        onPress={() => setInjuryCheckIn(s => ({ ...s, answers: { ...s.answers, [injury.body_part]: val } }))}
+                      >
+                        <Text style={[styles.checkInOptText, answer === val && styles.checkInOptTextActive]}>{label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+
+            <Pressable style={styles.checkInStartBtn} onPress={confirmInjuryCheckIn}>
+              <Text style={styles.checkInStartText}>{t('today.checkIn.start')}</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -781,6 +1104,28 @@ const styles = StyleSheet.create({
   header: { padding: 24, paddingTop: 16 },
   greeting: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
   dateText: { fontSize: 13, color: '#71717A', marginTop: 2 },
+  checkInOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
+  checkInCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
+  checkInTitle: { fontSize: 20, fontWeight: '700', color: '#FFFFFF', marginBottom: 6 },
+  checkInSub: { fontSize: 13, color: '#71717A', marginBottom: 20, lineHeight: 19 },
+  checkInRow: { marginBottom: 16 },
+  checkInBodyPart: { fontSize: 13, fontWeight: '600', color: '#E4E4E8', marginBottom: 8 },
+  checkInOptions: { flexDirection: 'row', gap: 8 },
+  checkInOpt: { flex: 1, backgroundColor: '#2C2C35', borderRadius: 10, paddingVertical: 11, alignItems: 'center', borderWidth: 0.5, borderColor: '#3D3D4A' },
+  checkInOptActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
+  checkInOptText: { fontSize: 13, fontWeight: '600', color: '#71717A' },
+  checkInOptTextActive: { color: '#111114' },
+  checkInStartBtn: { backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
+  checkInStartText: { color: '#111114', fontSize: 15, fontWeight: '600' },
+
+  readinessCard: { marginHorizontal: 16, marginBottom: 12, borderRadius: 12, padding: 14, borderWidth: 0.5 },
+  readinessRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  readinessDot: { width: 8, height: 8, borderRadius: 4 },
+  readinessLabel: { fontSize: 13, fontWeight: '700' },
+  readinessStats: { flexDirection: 'row', gap: 10, flexWrap: 'wrap', flex: 1 },
+  readinessStat: { fontSize: 11, color: '#71717A' },
+  readinessAdvice: { fontSize: 12, marginTop: 8, lineHeight: 18 },
+
   blockBanner: { marginHorizontal: 16, marginBottom: 12, backgroundColor: '#1D9E7522', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E75' },
   blockBannerTitle: { fontSize: 14, fontWeight: '700', color: '#1D9E75', marginBottom: 3 },
   blockBannerSub: { fontSize: 12, color: '#A1A1AA', lineHeight: 17 },
@@ -820,6 +1165,20 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 4 },
   sectionSub: { fontSize: 11, color: '#71717A', marginBottom: 14 },
 
+  // Cardio section
+  cardioHeader:       { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 },
+  cardioLogBtn:       { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 0.5, borderColor: '#3D3D4A' },
+  cardioLogBtnText:   { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
+  cardioEmpty:        { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  cardioEmptyText:    { fontSize: 13, color: '#52525B', lineHeight: 19 },
+  cardioRow:          { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
+  cardioRowLeft:      { flex: 1 },
+  cardioRowType:      { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
+  cardioRowSub:       { fontSize: 11, color: '#71717A' },
+  cardioRowRight:     { alignItems: 'flex-end' },
+  cardioRowDur:       { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
+  cardioRowDate:      { fontSize: 11, color: '#52525B' },
+
   // Muscle recovery grid
   muscleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   muscleChip: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 0.5, minWidth: '30%', flex: 1 },
@@ -838,6 +1197,11 @@ const styles = StyleSheet.create({
   volumeBarTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#2C2C35' },
   volumeBarFill: { height: 6, borderRadius: 3 },
   volumeCount: { fontSize: 11, fontWeight: '700', width: 36, textAlign: 'right' },
+  volumeDetailToggle: { alignSelf: 'flex-start', marginBottom: 14, paddingVertical: 4, paddingHorizontal: 0 },
+  volumeDetailToggleText: { fontSize: 12, fontWeight: '600', color: '#1D9E75' },
+  volumeGroupBlock: { marginBottom: 10, paddingBottom: 6, borderBottomWidth: 0.5, borderBottomColor: '#1F1F27' },
+  volumeHeadRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginLeft: 14, gap: 10 },
+  volumeHeadName: { fontSize: 12, color: '#A1A1AA', fontWeight: '500' },
   junkWarning: { marginTop: 10, backgroundColor: '#1A0E0E', borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: '#E24B4A44' },
   junkWarningHeader: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 5 },
   junkWarningTitle: { fontSize: 12, fontWeight: '700', color: '#E24B4A' },
@@ -877,6 +1241,11 @@ const styles = StyleSheet.create({
   plateauScience: { fontSize: 9, color: '#3F3F50', marginTop: 10, fontStyle: 'italic', lineHeight: 14 },
 
   // Last session
+  coachNudgeCard: { backgroundColor: '#15161F', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#3A3F66' },
+  coachNudgeHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 6 },
+  coachNudgeTitle: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', flex: 1 },
+  coachNudgeBody: { fontSize: 13, color: '#A1A1AA', lineHeight: 19 },
+  coachNudgeHint: { fontSize: 12, color: '#7C9Cff', fontWeight: '600', marginTop: 8 },
   lastSessionCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   lastSessionLeft: { flex: 1, paddingRight: 10 },
   lastSessionName: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 3 },

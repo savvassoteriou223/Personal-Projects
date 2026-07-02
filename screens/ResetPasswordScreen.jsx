@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
+import { friendlyAuthError } from '../lib/errorMessage';
 
 export default function ResetPasswordScreen({ onDone }) {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -13,16 +16,16 @@ export default function ResetPasswordScreen({ onDone }) {
   const [done, setDone] = useState(false);
 
   const handleSubmit = async () => {
-    if (!password || !confirm) { setError('Please fill in both fields.'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
-    if (password !== confirm) { setError('Passwords do not match.'); return; }
+    if (!password || !confirm) { setError(t('auth.errors.fillBoth')); return; }
+    if (password.length < 8) { setError(t('auth.errors.passwordShort')); return; }
+    if (password !== confirm) { setError(t('auth.errors.passwordMismatch')); return; }
 
     setLoading(true);
     setError('');
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setLoading(false);
 
-    if (updateError) { setError(updateError.message); return; }
+    if (updateError) { setError(friendlyAuthError(updateError, t)); return; }
     setDone(true);
     setTimeout(() => onDone && onDone(), 1500);
   };
@@ -31,8 +34,8 @@ export default function ResetPasswordScreen({ onDone }) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={styles.successBox}>
-          <Text style={styles.successTitle}>Password updated</Text>
-          <Text style={styles.successText}>You're being signed in now.</Text>
+          <Text style={styles.successTitle}>{t('auth.success.title')}</Text>
+          <Text style={styles.successText}>{t('auth.success.text')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -48,36 +51,36 @@ export default function ResetPasswordScreen({ onDone }) {
         contentContainerStyle={{ padding: 24, justifyContent: 'center', flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Set new password</Text>
-        <Text style={styles.sub}>Choose a strong password for your account.</Text>
+        <Text style={styles.title}>{t('auth.newPassword.title')}</Text>
+        <Text style={styles.sub}>{t('auth.newPassword.subtitle')}</Text>
 
-        <Text style={styles.label}>New password</Text>
+        <Text style={styles.label}>{t('auth.newPassword.label')}</Text>
         <View style={styles.inputRow}>
           <TextInput
             style={[styles.inputInner, { flex: 1 }]}
             value={password}
             onChangeText={setPassword}
-            placeholder="Min. 8 characters"
+            placeholder={t('auth.newPassword.placeholder')}
             placeholderTextColor="#3D3D4A"
             secureTextEntry={!showPassword}
           />
           <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-            <Text style={styles.eyeText}>{showPassword ? 'Hide' : 'Show'}</Text>
+            <Text style={styles.eyeText}>{showPassword ? t('auth.hide') : t('auth.show')}</Text>
           </Pressable>
         </View>
 
-        <Text style={styles.label}>Confirm password</Text>
+        <Text style={styles.label}>{t('auth.newPassword.confirmLabel')}</Text>
         <View style={styles.inputRow}>
           <TextInput
             style={[styles.inputInner, { flex: 1 }]}
             value={confirm}
             onChangeText={setConfirm}
-            placeholder="Repeat password"
+            placeholder={t('auth.newPassword.confirmPlaceholder')}
             placeholderTextColor="#3D3D4A"
             secureTextEntry={!showConfirm}
           />
           <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
-            <Text style={styles.eyeText}>{showConfirm ? 'Hide' : 'Show'}</Text>
+            <Text style={styles.eyeText}>{showConfirm ? t('auth.hide') : t('auth.show')}</Text>
           </Pressable>
         </View>
 
@@ -90,7 +93,7 @@ export default function ResetPasswordScreen({ onDone }) {
         >
           {loading
             ? <ActivityIndicator color="#111114" />
-            : <Text style={styles.btnText}>Update password</Text>
+            : <Text style={styles.btnText}>{t('auth.newPassword.submit')}</Text>
           }
         </Pressable>
       </ScrollView>

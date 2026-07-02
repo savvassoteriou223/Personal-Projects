@@ -2,10 +2,12 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import { generateProgram, getRankedSplits, SPLITS } from './programGenerator';
 import { GOAL_PARAMETERS } from './scienceEngine';
 import StudyChart from './StudyChart';
+import { getExerciseInsight } from './studiesLibrary';
 
 const DAYS_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -15,9 +17,10 @@ const OPTIMALITY_COLORS = {
   suboptimal: '#E24B4A',
 };
 
-const RANK_LABELS = ['Best match', '2nd option', '3rd option'];
+const RANK_KEYS = ['rankBest', 'rank2', 'rank3'];
 
 export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewDay, onClose }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState(null);
   const [program, setProgram] = useState(null);
@@ -51,7 +54,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
       selected_split: splitId,
       weekly_workouts: days,
     }).eq('id', user.id);
-    if (error) { Alert.alert('Save failed', 'Could not update your program. Please try again.'); return; }
+    if (error) { Alert.alert(t('program.saveFailTitle'), t('program.saveFailMsg')); return; }
     const newProfile = { ...profile, selected_split: splitId, weekly_workouts: days };
     setProfile(newProfile);
     const { data: block } = await supabase.from('program_blocks').select('block_index, block_start_date').eq('user_id', user.id).maybeSingle();
@@ -68,10 +71,10 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <View style={styles.headerNav}>
             <Pressable onPress={onClose} style={styles.backBtnWrapper}>
-              <Text style={styles.backBtn}>← Back</Text>
+              <Text style={styles.backBtn}>← {t('common.back')}</Text>
             </Pressable>
             <Pressable style={styles.startBtn} onPress={() => onStartWorkout({ ...previewDay, trainingExperience: profile?.trainingExperience })}>
-              <Text style={styles.startBtnText}>Start</Text>
+              <Text style={styles.startBtnText}>{t('program.start')}</Text>
             </Pressable>
           </View>
           <Text style={styles.title}>{previewLabel}</Text>
@@ -97,14 +100,14 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
         <View style={styles.header}>
           <View style={styles.headerNav}>
             <Pressable onPress={() => setSelectingDays(false)} style={styles.backBtnWrapper}>
-              <Text style={styles.backBtn}>← Back</Text>
+              <Text style={styles.backBtn}>← {t('common.back')}</Text>
             </Pressable>
           </View>
-          <Text style={styles.title}>Choose split</Text>
+          <Text style={styles.title}>{t('program.chooseSplit')}</Text>
         </View>
 
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
-          <Text style={styles.selectorLabel}>How many days per week?</Text>
+          <Text style={styles.selectorLabel}>{t('program.daysQuestion')}</Text>
           <View style={styles.daysRow}>
             {DAYS_OPTIONS.map(d => (
               <Pressable
@@ -119,14 +122,14 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
 
           {profile?.goals?.length > 0 && (
             <Text style={styles.goalContext}>
-              Ranked for your goals: {profile.goals.join(', ')}
+              {t('program.rankedForGoals', { goals: profile.goals.map(g => t(`onboarding.goals.${g}`, { defaultValue: g })).join(', ') })}
             </Text>
           )}
 
-          <Text style={styles.selectorLabel}>Recommended splits</Text>
+          <Text style={styles.selectorLabel}>{t('program.recommendedSplits')}</Text>
 
           {rankedSplits.length === 0 ? (
-            <Text style={styles.emptyText}>No splits available.</Text>
+            <Text style={styles.emptyText}>{t('program.noSplits')}</Text>
           ) : (
             rankedSplits.map((split, i) => {
               const isActive = profile?.selected_split === split.id ||
@@ -139,14 +142,14 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                     <View style={styles.splitCardLeft}>
                       <View style={[styles.rankBadge, { backgroundColor: i === 0 ? '#FFFFFF0D' : '#2C2C35' }]}>
                         <Text style={[styles.rankBadgeText, { color: i === 0 ? '#E4E4E8' : '#71717A' }]}>
-                          {RANK_LABELS[i] || `Option ${i + 1}`}
+                          {RANK_KEYS[i] ? t(`program.${RANK_KEYS[i]}`) : t('program.rankN', { n: i + 1 })}
                         </Text>
                       </View>
                       <Text style={styles.splitName}>{split.name}</Text>
                     </View>
                     {isActive && (
                       <View style={styles.activeCheck}>
-                        <Text style={styles.activeCheckText}>Done</Text>
+                        <Text style={styles.activeCheckText}>{t('common.done')}</Text>
                       </View>
                     )}
                   </View>
@@ -154,14 +157,14 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   <View style={styles.splitMeta}>
                     <View style={[styles.metaChip, { borderColor: optColor + '44' }]}>
                       <Text style={[styles.metaChipText, { color: optColor }]}>
-                        {split.optimality.charAt(0).toUpperCase() + split.optimality.slice(1)}
+                        {t(`onboarding.feedback.${split.optimality}`, { defaultValue: split.optimality })}
                       </Text>
                     </View>
                     <View style={styles.metaChip}>
-                      <Text style={styles.metaChipText}>{split.days}×/week</Text>
+                      <Text style={styles.metaChipText}>{t('program.perWeek', { days: split.days })}</Text>
                     </View>
                     <View style={styles.metaChip}>
-                      <Text style={styles.metaChipText}>{split.frequency_per_muscle}× freq/muscle</Text>
+                      <Text style={styles.metaChipText}>{t('program.freqPerMuscle', { freq: split.frequency_per_muscle })}</Text>
                     </View>
                     <View style={styles.metaChip}>
                       <Text style={styles.metaChipText}>{split.session_time_est}</Text>
@@ -169,7 +172,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   </View>
 
                   <View style={styles.whyCard}>
-                    <Text style={styles.whyLabel}>Why this split</Text>
+                    <Text style={styles.whyLabel}>{t('program.whyThisSplit')}</Text>
                     <Text style={styles.whyText}>{split.rank_why}</Text>
                   </View>
 
@@ -188,7 +191,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                     onPress={() => saveSplitChoice(split.id, draftDays)}
                   >
                     <Text style={[styles.selectSplitBtnText, isActive && styles.selectSplitBtnTextActive]}>
-                      {isActive ? 'Current split' : 'Select this split'}
+                      {isActive ? t('program.currentSplit') : t('program.selectSplit')}
                     </Text>
                   </Pressable>
                 </View>
@@ -202,8 +205,8 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
 
   if (!program) return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}><View style={styles.headerNav}><Text style={styles.title}>My Program</Text></View></View>
-      <View style={styles.empty}><Text style={styles.emptyText}>Complete onboarding to get your program.</Text></View>
+      <View style={styles.header}><View style={styles.headerNav}><Text style={styles.title}>{t('program.myProgram')}</Text></View></View>
+      <View style={styles.empty}><Text style={styles.emptyText}>{t('program.completeOnboarding')}</Text></View>
     </SafeAreaView>
   );
 
@@ -214,13 +217,13 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
         <View style={styles.header}>
           <View style={styles.headerNav}>
             <Pressable onPress={() => setSelectedDay(null)} style={styles.backBtnWrapper}>
-              <Text style={styles.backBtn}>← Back</Text>
+              <Text style={styles.backBtn}>← {t('common.back')}</Text>
             </Pressable>
             <Pressable style={styles.startBtn} onPress={() => {
               setSelectedDay(null);
               onStartWorkout && onStartWorkout({ ...selectedDay, trainingExperience: profile?.trainingExperience });
             }}>
-              <Text style={styles.startBtnText}>Start</Text>
+              <Text style={styles.startBtnText}>{t('program.start')}</Text>
             </Pressable>
           </View>
           {(() => { const [label, sub] = selectedDay.name.split(' — '); return (<>
@@ -230,7 +233,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
         </View>
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
           <View style={styles.scienceCard}>
-            <Text style={styles.scienceLabel}>Science basis</Text>
+            <Text style={styles.scienceLabel}>{t('program.scienceBasis')}</Text>
             <Text style={styles.scienceText}>{program.science_basis}</Text>
           </View>
           {selectedDay.focus && (
@@ -254,9 +257,9 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
         <View style={styles.header}>
           <View style={styles.headerNav}>
-            <Text style={styles.title}>My Program</Text>
+            <Text style={styles.title}>{t('program.myProgram')}</Text>
             <Pressable style={styles.changeSplitBtn} onPress={() => setSelectingDays(true)}>
-              <Text style={styles.changeSplitBtnText}>Change split</Text>
+              <Text style={styles.changeSplitBtnText}>{t('program.changeSplit')}</Text>
             </Pressable>
           </View>
         </View>
@@ -274,7 +277,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                 return (
                   <View key={day.id || day.name} style={styles.sessionSequenceItem}>
                     <View style={styles.sessionDayPill}>
-                      <Text style={styles.sessionDayNum}>Day {i + 1}</Text>
+                      <Text style={styles.sessionDayNum}>{t('program.dayNum', { n: i + 1 })}</Text>
                       <Text style={styles.sessionDayName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{day.name.split('—')[0].trim()}</Text>
                     </View>
                     {!isLast && (
@@ -282,7 +285,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                         <View style={styles.restArrowLine} />
                         {rest > 0 && (
                           <Text style={styles.restArrowLabel}>
-                            {rest === 1 ? '1 rest' : `${rest} rest`}
+                            {t('program.restCount', { count: rest })}
                           </Text>
                         )}
                         <View style={styles.restArrowLine} />
@@ -295,14 +298,14 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
           </ScrollView>
           <View style={styles.programMeta}>
             <View style={styles.metaChip}>
-              <Text style={styles.metaChipText}>{program.days_per_week} days/week</Text>
+              <Text style={styles.metaChipText}>{t('program.daysPerWeek', { days: program.days_per_week })}</Text>
             </View>
             <View style={styles.metaChip}>
               <Text style={styles.metaChipText}>{program.session_time}</Text>
             </View>
             <View style={styles.metaChip}>
               <Text style={styles.metaChipText}>
-                {program.level ? program.level.charAt(0).toUpperCase() + program.level.slice(1) : ''}
+                {program.level ? t(`levels.${program.level}`, { defaultValue: program.level }) : ''}
               </Text>
             </View>
           </View>
@@ -312,21 +315,21 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
             const primaryGoal = profile?.goals?.[0];
             const gp = primaryGoal ? GOAL_PARAMETERS[primaryGoal] : null;
             const tabs = [
-              { key: 'research', label: 'Research' },
-              ...(gp ? [{ key: 'goal', label: 'Your goal' }] : []),
-              { key: 'progression', label: 'Progression' },
+              { key: 'research', label: t('program.tabs.research') },
+              ...(gp ? [{ key: 'goal', label: t('program.tabs.goal') }] : []),
+              { key: 'progression', label: t('program.tabs.progression') },
             ];
             return (
               <View style={styles.infoAccordion}>
                 <View style={styles.infoTabRow}>
-                  {tabs.map(t => (
+                  {tabs.map(tab => (
                     <Pressable
-                      key={t.key}
-                      style={[styles.infoTab, openInfo === t.key && styles.infoTabActive]}
-                      onPress={() => setOpenInfo(openInfo === t.key ? null : t.key)}
+                      key={tab.key}
+                      style={[styles.infoTab, openInfo === tab.key && styles.infoTabActive]}
+                      onPress={() => setOpenInfo(openInfo === tab.key ? null : tab.key)}
                     >
-                      <Text style={[styles.infoTabText, openInfo === t.key && styles.infoTabTextActive]}>
-                        {t.label} {openInfo === t.key ? '▲' : '▼'}
+                      <Text style={[styles.infoTabText, openInfo === tab.key && styles.infoTabTextActive]}>
+                        {tab.label} {openInfo === tab.key ? '▲' : '▼'}
                       </Text>
                     </Pressable>
                   ))}
@@ -349,9 +352,9 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                     <Text style={styles.infoPanelText}>{gp.key_finding}</Text>
                     <Text style={styles.infoPanelCitation}>{gp.citation}</Text>
                     <View style={styles.goalParamsRow}>
-                      <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.frequency}</Text><Text style={styles.goalParamLabel}>Frequency</Text></View>
-                      <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.rep_range}</Text><Text style={styles.goalParamLabel}>Rep range</Text></View>
-                      <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.intensity}</Text><Text style={styles.goalParamLabel}>Intensity</Text></View>
+                      <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.frequency}</Text><Text style={styles.goalParamLabel}>{t('program.goalParams.frequency')}</Text></View>
+                      <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.rep_range}</Text><Text style={styles.goalParamLabel}>{t('program.goalParams.repRange')}</Text></View>
+                      <View style={styles.goalParam}><Text style={styles.goalParamVal}>{gp.intensity}</Text><Text style={styles.goalParamLabel}>{t('program.goalParams.intensity')}</Text></View>
                     </View>
                   </View>
                 )}
@@ -372,9 +375,9 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
               const color = w.level === 'high' ? '#E24B4A'
                 : w.level === 'success' ? '#1D9E75'
                 : w.level === 'medium' ? '#BA7517' : '#FFFFFF';
-              const label = w.level === 'success' ? 'Optimal'
-                : w.level === 'high' ? 'Warning'
-                : w.level === 'medium' ? 'Note' : 'Info';
+              const label = w.level === 'success' ? t('program.warnings.optimal')
+                : w.level === 'high' ? t('program.warnings.warning')
+                : w.level === 'medium' ? t('program.warnings.note') : t('program.warnings.info');
               return (
                 <View key={i} style={[styles.warningCard, { borderColor: color }]}>
                   <View style={styles.warningHeader}>
@@ -392,13 +395,13 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
         )}
 
         <View style={styles.daysSection}>
-          <Text style={styles.sectionTitle}>Workouts</Text>
+          <Text style={styles.sectionTitle}>{t('program.workouts')}</Text>
           {program.days.filter(d => !d.optional).map((day, i) => (
             <Pressable key={i} style={styles.dayCard} onPress={() => setSelectedDay(day)}>
               <View style={styles.dayCardLeft}>
                 <Text style={styles.dayCardName}>{day.name}</Text>
                 <Text style={styles.dayCardFocus}>{day.focus}</Text>
-                <Text style={styles.dayCardCount}>{day.exercises.length} exercises</Text>
+                <Text style={styles.dayCardCount}>{t('program.exercises', { count: day.exercises.length })}</Text>
               </View>
               <Text style={styles.dayCardArrow}>›</Text>
             </Pressable>
@@ -409,7 +412,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
           <View style={styles.optionalSection}>
             <View style={styles.optionalSectionHeader}>
               <View style={styles.optionalDivider} />
-              <Text style={styles.optionalSectionTitle}>OPTIONAL DAY</Text>
+              <Text style={styles.optionalSectionTitle}>{t('program.optionalDay')}</Text>
               <View style={styles.optionalDivider} />
             </View>
             {program.days.filter(d => d.optional).map((day, i) => (
@@ -418,7 +421,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   <Text style={styles.dayCardName}>{day.name}</Text>
                   <Text style={styles.dayCardFocusOptional}>{day.focus}</Text>
                   {day.tip && <Text style={styles.dayCardTip}>{day.tip}</Text>}
-                  <Text style={styles.dayCardCount}>{day.exercises.length} exercises</Text>
+                  <Text style={styles.dayCardCount}>{t('program.exercises', { count: day.exercises.length })}</Text>
                 </View>
                 <Text style={styles.dayCardArrow}>›</Text>
               </Pressable>
@@ -450,6 +453,7 @@ function getMuscleColor(muscles) {
 }
 
 function ExerciseCard({ ex, isSimple = false }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const borderColor = getMuscleColor(ex.muscles);
   return (
@@ -465,28 +469,28 @@ function ExerciseCard({ ex, isSimple = false }) {
         <View style={styles.prescriptionRow}>
           <View style={styles.prescriptionBox}>
             <Text style={styles.prescriptionVal}>{ex.sets}</Text>
-            <Text style={styles.prescriptionLabel}>Sets</Text>
+            <Text style={styles.prescriptionLabel}>{t('program.sets')}</Text>
           </View>
           <View style={styles.prescriptionBox}>
             <Text style={styles.prescriptionVal}>{ex.reps}</Text>
-            <Text style={styles.prescriptionLabel}>Reps</Text>
+            <Text style={styles.prescriptionLabel}>{t('program.reps')}</Text>
           </View>
           <View style={styles.prescriptionBox}>
             <Text style={styles.prescriptionVal}>{ex.rest}</Text>
-            <Text style={styles.prescriptionLabel}>Rest</Text>
+            <Text style={styles.prescriptionLabel}>{t('program.restLabel')}</Text>
           </View>
         </View>
         <View style={styles.rpeRow}>
           <View style={styles.rpeBox}>
-            <Text style={styles.rpeBadge}>Early sets RPE ~{ex.early_rpe}</Text>
+            <Text style={styles.rpeBadge}>{t('program.earlyRpe', { rpe: ex.early_rpe })}</Text>
           </View>
           <View style={styles.rpeBox}>
-            <Text style={[styles.rpeBadge, styles.rpeLast]}>Last set RPE ~{ex.last_rpe}</Text>
+            <Text style={[styles.rpeBadge, styles.rpeLast]}>{t('program.lastRpe', { rpe: ex.last_rpe })}</Text>
           </View>
         </View>
         {(ex.sub1 || ex.sub2 || ex.sub3) && (
           <View style={styles.subRow}>
-            <Text style={styles.subLabel}>Substitutes: </Text>
+            <Text style={styles.subLabel}>{t('program.substitutes')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, flex: 1 }}>
               {[
                 { name: ex.sub1, equip: ex.sub1_equipment },
@@ -504,23 +508,33 @@ function ExerciseCard({ ex, isSimple = false }) {
         {(ex.research_note || ex.cues?.length > 0) && (
           <Text style={styles.expandHint}>
             {expanded
-              ? 'Hide details ▲'
-              : isSimple ? 'Learn why + how to do it ▼' : 'Show technique + research ▼'}
+              ? t('program.hideDetails')
+              : isSimple ? t('program.learnSimple') : t('program.showTechnique')}
           </Text>
         )}
       </Pressable>
       {expanded && (
         <View style={styles.expandedSection}>
+          {(() => {
+            const insight = getExerciseInsight(ex);
+            return insight ? (
+              <View style={{ backgroundColor: '#1D9E7514', borderRadius: 10, borderWidth: 1, borderColor: '#1D9E7540', borderLeftWidth: 3, borderLeftColor: '#1D9E75', padding: 12, marginBottom: 12 }}>
+                <Text style={{ color: '#F1F0F5', fontSize: 13.5, lineHeight: 20, fontWeight: '500' }}>{insight.insight}</Text>
+                {insight.metric && <Text style={{ color: '#1D9E75', fontSize: 12, fontWeight: '700', marginTop: 6 }}>{insight.metric.this} vs {insight.metric.control} · {insight.metric.method}</Text>}
+                <Text style={{ color: '#52525B', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
+              </View>
+            ) : null;
+          })()}
           {ex.study && <StudyChart study={ex.study} />}
           {ex.research_note && (
             <View style={styles.researchNote}>
-              <Text style={styles.scienceLabel}>{isSimple ? 'What does this do?' : 'Why this exercise'}</Text>
+              <Text style={styles.scienceLabel}>{isSimple ? t('program.whatDoesThisDo') : t('program.whyExercise')}</Text>
               <Text style={styles.researchNoteText}>{ex.research_note}</Text>
             </View>
           )}
           {ex.cues?.length > 0 && (
             <View style={styles.cuesSection}>
-              <Text style={styles.scienceLabel}>Technique cues</Text>
+              <Text style={styles.scienceLabel}>{t('program.techniqueCues')}</Text>
               {ex.cues.map((cue, i) => (
                 <View key={i} style={styles.cueRow}>
                   <Text style={styles.cueDot}>•</Text>
@@ -531,7 +545,7 @@ function ExerciseCard({ ex, isSimple = false }) {
           )}
           {ex.progression_path?.length > 0 && (
             <View style={styles.cuesSection}>
-              <Text style={styles.scienceLabel}>Progression path</Text>
+              <Text style={styles.scienceLabel}>{t('program.progressionPath')}</Text>
               {ex.progression_path.map((step, i) => (
                 <View key={i} style={styles.cueRow}>
                   <Text style={styles.cueDot}>{i + 1}.</Text>

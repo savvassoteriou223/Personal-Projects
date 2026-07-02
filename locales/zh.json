@@ -1,0 +1,1090 @@
+{
+  "common": {
+    "continue": "继续",
+    "cancel": "取消",
+    "save": "保存",
+    "done": "完成",
+    "back": "返回",
+    "next": "下一步",
+    "skip": "跳过",
+    "retry": "重试",
+    "close": "关闭",
+    "delete": "删除",
+    "discard": "放弃"
+  },
+  "language": {
+    "title": "语言",
+    "subtitle": "选择你的语言",
+    "settingsLabel": "语言"
+  },
+  "welcome": {
+    "tagline": "科学训练、智能营养，\n以及 AI 教练，尽在一处。",
+    "getStarted": "开始",
+    "haveAccount": "我已有账户"
+  },
+  "auth": {
+    "back": "返回",
+    "backToSignIn": "返回登录",
+    "show": "显示",
+    "hide": "隐藏",
+    "email": "邮箱",
+    "emailPlaceholder": "you@email.com",
+    "password": "密码",
+    "login": {
+      "title": "欢迎回来",
+      "subtitle": "登录你的 Helix 账户",
+      "passwordPlaceholder": "你的密码",
+      "forgot": "忘记密码？",
+      "signIn": "登录",
+      "noAccount": "还没有账户？",
+      "signUp": "注册"
+    },
+    "reset": {
+      "title": "重置密码",
+      "subtitle": "我们会向你的邮箱发送一个 6 位验证码。",
+      "sendCode": "发送验证码"
+    },
+    "code": {
+      "title": "查看你的邮箱",
+      "subtitle": "输入我们发送到 {{email}} 的 6 位验证码。",
+      "label": "验证码",
+      "placeholder": "输入验证码",
+      "verify": "验证"
+    },
+    "signup": {
+      "title": "创建账户",
+      "subtitle": "永久免费。随时可升级。",
+      "name": "姓名",
+      "namePlaceholder": "Alex",
+      "dob": "出生日期",
+      "sex": "性别",
+      "sexSub": "用于计算你的卡路里目标。",
+      "male": "男",
+      "female": "女",
+      "other": "其他",
+      "confirmPassword": "确认密码",
+      "confirmPlaceholder": "再次输入密码",
+      "minChars": "至少 8 个字符",
+      "createAccount": "创建账户",
+      "legal": "注册即表示你同意我们的服务条款和隐私政策。",
+      "haveAccount": "已有账户？",
+      "signIn": "登录"
+    },
+    "emailSent": {
+      "title": "查看你的邮箱",
+      "text": "我们已向 {{email}} 发送确认链接。点击它即可激活账户 — 仅需一秒。",
+      "resend": "没收到？重新发送邮件"
+    },
+    "newPassword": {
+      "title": "设置新密码",
+      "subtitle": "为你的账户选择一个强密码。",
+      "label": "新密码",
+      "confirmLabel": "确认密码",
+      "placeholder": "至少 8 个字符",
+      "confirmPlaceholder": "再次输入密码",
+      "submit": "更新密码"
+    },
+    "success": {
+      "title": "密码已更新",
+      "text": "正在为你登录。"
+    },
+    "errors": {
+      "fillAll": "请填写所有字段。",
+      "fillBoth": "请填写两个字段。",
+      "enterEmail": "请输入你的邮箱地址。",
+      "enterCode": "请输入邮件中的验证码。",
+      "invalidCode": "验证码无效或已过期。",
+      "signInFailed": "登录失败。",
+      "validDob": "请输入有效的出生日期。",
+      "minAge": "注册需年满 13 岁。",
+      "passwordShort": "密码至少需要 8 个字符。",
+      "passwordMismatch": "两次密码不一致。"
+    }
+  },
+  "weekdaysShort": {
+    "mon": "一",
+    "tue": "二",
+    "wed": "三",
+    "thu": "四",
+    "fri": "五",
+    "sat": "六",
+    "sun": "日"
+  },
+  "onboarding": {
+    "stepLabel": "第 {{step}} 步，共 {{total}} 步",
+    "next": "下一步",
+    "optional": "（可选）",
+    "step1": {
+      "title": "先从\n你的身体数据开始",
+      "sub": "用于计算你的卡路里目标和 BMI。",
+      "height": "身高 (cm)",
+      "heightPlaceholder": "例如 178",
+      "weight": "当前体重 (kg)",
+      "weightPlaceholder": "例如 85",
+      "bmi": "你的 BMI",
+      "bmiRange": "健康体重范围：{{low}}kg – {{high}}kg"
+    },
+    "bmiCategory": {
+      "underweight": "偏瘦",
+      "healthy": "健康",
+      "overweight": "超重",
+      "obese": "肥胖"
+    },
+    "step2": {
+      "title": "你的目标是什么？",
+      "sub": "你的健康范围是 {{low}}–{{high}}kg。你目前是 {{weight}}kg。\n选择所有适用项。",
+      "targetWeight": "目标体重 (kg)",
+      "targetPlaceholder": "例如 75",
+      "estimate": "以健康速度，你将在约 {{weeks}} 周内达到 {{target}}kg"
+    },
+    "goals": {
+      "lose": "减脂",
+      "gain": "增肌",
+      "strength": "增强力量",
+      "aesthetics": "塑形",
+      "endurance": "提升耐力",
+      "maintain": "保持健康"
+    },
+    "step3": {
+      "title": "你已经训练\n多久了？",
+      "sub": "这会校准你的训练量和计划复杂度。"
+    },
+    "experience": {
+      "under_6m": {
+        "label": "少于 6 个月",
+        "sublabel": "刚刚开始"
+      },
+      "6m_to_2y": {
+        "label": "6 个月 – 2 年",
+        "sublabel": "打基础阶段"
+      },
+      "2y_to_4y": {
+        "label": "2 – 4 年",
+        "sublabel": "稳定训练者"
+      },
+      "over_4y": {
+        "label": "4 年以上",
+        "sublabel": "经验丰富"
+      }
+    },
+    "step4": {
+      "title": "你的训练安排",
+      "sub": "我们将根据你的时间安排来制定计划。",
+      "days": "每周天数",
+      "sessionLength": "每次时长",
+      "equipment": "可用器械",
+      "sports": "运动与活动",
+      "sportsHint": "力量训练将围绕你的运动日来安排。",
+      "sportDays": "{{sport}} — 哪几天？"
+    },
+    "equipment": {
+      "barbell": "杠铃",
+      "dumbbells": "哑铃",
+      "cables": "拉索",
+      "machines": "器械",
+      "bodyweight": "仅自重",
+      "pullupBar": "引体杆",
+      "kettlebells": "壶铃",
+      "bands": "弹力带"
+    },
+    "sports": {
+      "swimming": "游泳",
+      "running": "跑步",
+      "cycling": "骑行",
+      "football": "足球",
+      "basketball": "篮球",
+      "tennis": "网球 / 持拍运动",
+      "martial_arts": "武术"
+    },
+    "step5": {
+      "title": "你服用\n哪些补剂？",
+      "sub": "你的 AI 教练会用这些来给出更贴合的建议。可选 — 若不服用请点击「无」。",
+      "other": "其他补剂",
+      "otherPlaceholder": "例如 南非醉茄",
+      "add": "添加"
+    },
+    "supplements": {
+      "whey": "乳清蛋白",
+      "creatine": "肌酸",
+      "preworkout": "训练前补剂",
+      "multivitamin": "复合维生素",
+      "omega3": "欧米伽-3",
+      "vitaminD": "维生素 D",
+      "magnesium": "镁",
+      "bcaas": "BCAA",
+      "collagen": "胶原蛋白",
+      "none": "无"
+    },
+    "step6": {
+      "title": "有不适部位吗？",
+      "sub": "搜索或滚动。点击任何让你不适的部位。",
+      "noIssues": "没有问题",
+      "noIssuesSelected": "没有问题 ✓",
+      "searchPlaceholder": "搜索 — 例如膝盖、肩膀、背部…",
+      "severitySub": "你现在会如何描述它？",
+      "postSurgery": "术后",
+      "postSurgeryDesc": "这个部位做过手术",
+      "surgeryTitle": "手术是\n多久以前？",
+      "note": "会对受影响部位施加负荷的动作将被替换为更安全的替代动作。"
+    },
+    "step7": {
+      "title": "你的个人计划\n已就绪",
+      "calorieTarget": "每日卡路里目标",
+      "kcal": "千卡",
+      "maintenance": "维持：~{{tdee}} 千卡 · {{focus}}",
+      "focusCut": "-400 千卡 热量缺口",
+      "focusBulk": "+250 千卡 热量盈余",
+      "focusRecomp": "-200 千卡 体重重组",
+      "focusMaintain": "维持",
+      "protein": "蛋白质",
+      "carbs": "碳水",
+      "fat": "脂肪",
+      "trainingPlan": "训练计划",
+      "schedule": "每周 {{days}} 天 · 每次 {{len}} 分钟",
+      "goalsLabel": "目标：{{list}}",
+      "experienceLabel": "经验：{{label}}",
+      "targetLabel": "目标：约 {{weeks}} 周内 {{target}}kg",
+      "supplementsNoted": "已记录补剂",
+      "conditionsFiltered": "状况（已筛选计划）",
+      "start": "开始训练"
+    },
+    "feedback": {
+      "optimal": "最佳",
+      "good": "良好",
+      "suboptimal": "次优",
+      "msgMuscle4": "每个肌群每周将训练两次 — 这是研究支持的最大化肌肥大的最低标准。",
+      "msgMuscle3": "不错的起点。全身训练将让每块肌肉每周受到 3 次刺激。每块肌肉的训练量略低于最佳，但仍然有效。",
+      "msgMuscle2": "2 天低于最佳肌肉增长的研究最低标准。会有效果，但明显更慢。如有可能，考虑增加第三天。",
+      "msgEndurance": "对于耐力目标，将优先采用更高的次数范围和更短的休息。坚持比频率更重要。",
+      "msgFat": "对于减脂，力量训练能在热量缺口中保留肌肉。更高密度的训练能让心率保持升高。",
+      "msgDefault": "你的安排将针对所选目标进行优化。"
+    },
+    "alerts": {
+      "invalidHeightTitle": "身高无效",
+      "invalidHeightMsg": "请输入 100 到 250 cm 之间的身高。",
+      "invalidWeightTitle": "体重无效",
+      "invalidWeightMsg": "请输入 20 到 300 kg 之间的体重。",
+      "selectGoalTitle": "选择一个目标",
+      "selectGoalMsg": "请至少选择一个目标以继续。",
+      "invalidTargetTitle": "目标体重无效",
+      "invalidTargetMsg": "请输入 20 到 300 kg 之间的目标体重。",
+      "selectExpTitle": "选择你的经验",
+      "selectExpMsg": "请选择你的健身经验水平。",
+      "selectEquipTitle": "选择器械",
+      "selectEquipMsg": "请至少选择一项器械。",
+      "selectSuppTitle": "选择补剂",
+      "selectSuppMsg": "请至少选择一项，或在不服用补剂时点击「无」。",
+      "healthTitle": "健康状况",
+      "healthMsg": "请选择相关状况，或在没有时点击「没有问题」。"
+    }
+  },
+  "dates": {
+    "today": "今天",
+    "yesterday": "昨天"
+  },
+  "nutrition": {
+    "title": "营养",
+    "upgrade": "升级以使用 AI 记录",
+    "greetingMorning": "早上好",
+    "greetingAfternoon": "下午好",
+    "greetingEvening": "晚上好",
+    "trainingDay": "训练日",
+    "restDay": "休息日",
+    "target": "目标：{{cal}} 千卡 · {{protein}}g 蛋白质{{carbs}}",
+    "carbsUp": " · 高碳水",
+    "carbsModerate": " · 适量碳水",
+    "train": "训练",
+    "rest": "休息",
+    "kcalEaten": "千卡已摄入",
+    "remaining": "剩余",
+    "over": "超出",
+    "targetLabel": "目标",
+    "macros": {
+      "protein": "蛋白质",
+      "carbs": "碳水",
+      "fat": "脂肪"
+    },
+    "meals": {
+      "breakfast": "早餐",
+      "lunch": "午餐",
+      "dinner": "晚餐",
+      "snack": "加餐"
+    },
+    "nothingLogged": "尚无记录",
+    "kcal": "{{value}} 千卡",
+    "add": "+ 添加",
+    "mealMacros": "蛋: {{p}}g · 碳: {{c}}g · 脂: {{f}}g",
+    "insights": {
+      "lowProtein": {
+        "breakfast": "蛋白质偏低 — 希腊酸奶、鸡蛋或一杯奶昔有助于达到你的早晨目标。",
+        "lunch": "蛋白质偏低 — 加入鸡肉、金枪鱼或豆类来平衡这一餐。",
+        "dinner": "蛋白质偏低 — 鱼、瘦牛肉或豆腐能让它更接近你的目标。",
+        "snack": "蛋白质偏低 — 白软干酪或一根蛋白棒能加强这次加餐。",
+        "default": "考虑加入一份蛋白质来源以达到每日目标。"
+      },
+      "highFat": {
+        "breakfast": "高脂早餐（{{g}}g）— 早晨摄入大量脂肪可能减慢消化。",
+        "lunch": "高脂午餐（{{g}}g）— 更均匀地分配脂肪有助于吸收。",
+        "dinner": "高脂晚餐（{{g}}g）— 可能让你超出每日脂肪目标。",
+        "snack": "高脂加餐（{{g}}g）— 坚果和奶酪累积得很快。",
+        "default": "高脂一餐（{{g}}g）— 检查你的每日脂肪目标。"
+      },
+      "highCarb": {
+        "breakfast": "高碳早餐（{{g}}g）— 训练前很好，但搭配蛋白质以避免能量骤降。",
+        "lunch": "高碳午餐（{{g}}g）— 考虑加入更多蛋白质来平衡这一餐。",
+        "dinner": "高碳晚餐（{{g}}g）— 可能让你超出每日目标。",
+        "snack": "高碳加餐（{{g}}g）— 蛋白质与脂肪搭配能提供更持久的能量。",
+        "default": "高碳一餐（{{g}}g）— 检查你的每日碳水目标。"
+      },
+      "fatHeavyLowProtein": "脂肪偏多而蛋白质偏低 — 试着把部分脂肪来源换成瘦蛋白。",
+      "highCalSnack": "高热量加餐 — 若你处于热量缺口，考虑分成两份或选择能量密度更低的食物。",
+      "lightMeal": "清淡的一餐 — 确保一天的其余部分能补足你的每日卡路里目标。",
+      "goodProtein": "蛋白质不错。搭配燕麦或全麦面包等复合碳水以获得持久能量。"
+    }
+  },
+  "nutritionLog": {
+    "title": "记录食物",
+    "recent": "最近",
+    "describePlaceholder": "描述你吃了什么 — 或在下方拍照。",
+    "premiumNote": "AI 记录是 Helix Pro 功能。使用下方的手动录入即可免费记录。",
+    "calculate": "计算",
+    "manualEntry": "手动录入",
+    "confirmMeal": "确认餐食",
+    "confirmTip": "如有不对，点击任意数值即可编辑。",
+    "grams": "克",
+    "total": "合计",
+    "logMeal": "记录餐食",
+    "foodName": "食物名称",
+    "addTo": "添加到{{meal}}",
+    "macroAbbr": {
+      "kcal": "千卡",
+      "protein": "蛋",
+      "carbs": "碳",
+      "fat": "脂"
+    },
+    "manualMacros": {
+      "calories": "卡路里",
+      "protein": "蛋白质 g",
+      "carbs": "碳水 g",
+      "fat": "脂肪 g"
+    },
+    "alerts": {
+      "permissionTitle": "需要权限",
+      "micPermission": "语音输入需要麦克风权限。",
+      "photoPermission": "需要照片库权限。",
+      "cameraPermission": "需要相机权限。",
+      "dailyLimitTitle": "已达每日上限",
+      "dailyLimitMsg": "你已用完每日 6 次 AI 食物记录。将于午夜重置。",
+      "premiumTitle": "需要 Premium",
+      "premiumMsg": "AI 营养记录需要 Helix Pro 订阅。",
+      "sessionTitle": "会话已过期",
+      "sessionMsg": "请退出后重新登录。",
+      "noItemsTitle": "未找到食物",
+      "noItemsMsg": "尝试更详细地描述你的餐食，或拍一张更清晰的照片。",
+      "photoLargeTitle": "照片过大",
+      "photoLargeMsg": "该照片太大无法处理。请重试 — Helix 将使用较小的版本。",
+      "invalidPhotoTitle": "照片无效",
+      "invalidPhotoMsg": "无法读取该图片。请重新拍照。",
+      "calcFailTitle": "无法计算",
+      "calcFailMsg": "网络错误。请检查你的连接。",
+      "logFailTitle": "记录失败",
+      "logFailMsg": "无法保存。请重试。",
+      "logFailMsgShort": "无法保存。",
+      "nameRequiredTitle": "需要名称",
+      "nameRequiredMsg": "请输入食物名称。"
+    }
+  },
+  "levels": {
+    "beginner": "初级",
+    "intermediate": "中级",
+    "advanced": "高级"
+  },
+  "program": {
+    "start": "开始",
+    "chooseSplit": "选择分化",
+    "daysQuestion": "每周几天？",
+    "rankedForGoals": "按你的目标排序：{{goals}}",
+    "recommendedSplits": "推荐分化",
+    "noSplits": "暂无可用分化。",
+    "rankBest": "最佳匹配",
+    "rank2": "第 2 选项",
+    "rank3": "第 3 选项",
+    "rankN": "选项 {{n}}",
+    "perWeek": "{{days}}×/周",
+    "freqPerMuscle": "{{freq}}× 频率/肌肉",
+    "whyThisSplit": "为何选这个分化",
+    "currentSplit": "当前分化",
+    "selectSplit": "选择这个分化",
+    "myProgram": "我的计划",
+    "completeOnboarding": "完成设置以获取你的计划。",
+    "changeSplit": "更换分化",
+    "scienceBasis": "科学依据",
+    "dayNum": "第 {{n}} 天",
+    "restCount": "{{count}} 休息",
+    "daysPerWeek": "每周 {{days}} 天",
+    "tabs": {
+      "research": "研究",
+      "goal": "你的目标",
+      "progression": "进阶"
+    },
+    "goalParams": {
+      "frequency": "频率",
+      "repRange": "次数范围",
+      "intensity": "强度"
+    },
+    "warnings": {
+      "optimal": "最佳",
+      "warning": "警告",
+      "note": "提示",
+      "info": "信息"
+    },
+    "workouts": "训练",
+    "exercises": "{{count}} 个动作",
+    "optionalDay": "可选日",
+    "sets": "组数",
+    "reps": "次数",
+    "restLabel": "休息",
+    "earlyRpe": "前几组 RPE ~{{rpe}}",
+    "lastRpe": "最后一组 RPE ~{{rpe}}",
+    "substitutes": "替代动作：",
+    "hideDetails": "隐藏详情 ▲",
+    "learnSimple": "了解原因 + 如何做 ▼",
+    "showTechnique": "查看技术 + 研究 ▼",
+    "whatDoesThisDo": "这有什么作用？",
+    "whyExercise": "为何选这个动作",
+    "techniqueCues": "技术要点",
+    "progressionPath": "进阶路径",
+    "saveFailTitle": "保存失败",
+    "saveFailMsg": "无法更新你的计划。请重试。"
+  },
+  "workout": {
+    "alerts": {
+      "dupTitle": "已在今天的训练中",
+      "dupMsg": "「{{name}}」今天已安排 — 替换会让它出现两次。继续吗？",
+      "doItAnyway": "仍然继续",
+      "replaceTitle": "替换动作？",
+      "replaceMsg": "你已为此动作记录了组数。替换将清除它们。",
+      "replace": "替换",
+      "saveFailTitle": "保存失败",
+      "saveFailMsg": "无法保存你的训练。请重试。",
+      "cancelTitle": "取消训练？",
+      "cancelMsg": "你记录的组数将不会被保存。",
+      "keepGoing": "继续"
+    },
+    "finish": {
+      "title": "本次完成",
+      "duration": "时长",
+      "setsDone": "完成组数",
+      "exercises": "动作",
+      "howFeel": "感觉如何？",
+      "howHard": "有多难？（RPE {{rpe}}/10）",
+      "tapToRate": "点击为本次评分",
+      "rpeEasy": "轻松 — 考虑下次增加重量",
+      "rpeGood": "良好的训练区间",
+      "rpeHigh": "高强度 — 干得漂亮",
+      "rpeMax": "极限强度 — 下次训练前请确保充分恢复",
+      "nextTargets": "下次训练目标",
+      "saving": "保存中...",
+      "save": "保存训练"
+    },
+    "simpleRpe": {
+      "easy": "轻松",
+      "solid": "扎实",
+      "max": "极限",
+      "easySub": "还留有不少余力",
+      "solidSub": "有挑战但可控",
+      "maxSub": "全力以赴 — 需要充分恢复"
+    },
+    "coach": "教练",
+    "finishBtn": "结束",
+    "restWarning": "！你在 {{hours}} 小时前训练了{{session}}。这么快训练重叠的肌肉可能会限制恢复。",
+    "dismiss": "忽略",
+    "restTimer": "休息 · {{time}}",
+    "skip": "跳过",
+    "exNumber": "{{n}} / {{total}}",
+    "howTo": "▶ 如何做",
+    "contraSub": "因你的健康状况已替换",
+    "presc": {
+      "sets": "组数",
+      "reps": "次数",
+      "rest": "休息",
+      "effort": "强度",
+      "rpe": "RPE",
+      "lastSetHard": "最后一组拼尽全力"
+    },
+    "swap": "替换：",
+    "replaceExercise": "替换动作…",
+    "setsTitle": "组数",
+    "bw": "自重",
+    "plates": "配重",
+    "lastTime": "上次：{{weight}}kg",
+    "lastTimeReps": "上次：{{weight}}kg × {{reps}}",
+    "setHeader": {
+      "set": "组",
+      "kg": "kg",
+      "reps": "次数",
+      "done": "完成"
+    },
+    "nextUp": "下一个",
+    "completeWorkout": "完成训练",
+    "upNext": "接下来",
+    "plate": {
+      "title": "配重计算器",
+      "barWeight": "杠铃杆重量",
+      "barKg": "{{w}} kg",
+      "targetPlaceholder": "目标重量 (kg)",
+      "barOnlyNote": "仅用空杆 — 无需配重片。",
+      "eachSide": "每侧",
+      "barOnly": "仅空杆",
+      "total": "合计：{{achieved}} kg",
+      "totalClosest": "合计：{{achieved}} kg（最接近 {{target}} kg）"
+    },
+    "replaceModal": {
+      "title": "替换 {{name}}",
+      "note_one": "你现在正在训练{{muscle}}。选择任意动作 — 选择不同的肌肉会把这个位置的 {{count}} 组转移到那块肌肉，仅限今天的训练。",
+      "note_other": "你现在正在训练{{muscle}}。选择任意动作 — 选择不同的肌肉会把这个位置的 {{count}} 组转移到那块肌肉，仅限今天的训练。",
+      "thisMuscle": "这块肌肉",
+      "current": "  • 当前",
+      "searchPlaceholder": "搜索动作…",
+      "all": "全部",
+      "noResults": "没有符合搜索的动作。"
+    }
+  },
+  "coach": {
+    "title": "AI 教练",
+    "subtitle": "基于科学 · 记住你的训练",
+    "reset": "重置",
+    "resetTitle": "重置教练记忆？",
+    "resetMsg": "教练将忘记你过去的对话并从头开始。你的计划和进度不受影响。",
+    "resetConfirm": "重置",
+    "monthlyMessages": "每月消息",
+    "limitReached": "已达每月上限。每月 1 号重置。",
+    "ask": "问问你的教练",
+    "askSub": "提问、给建议并修改你的计划。点击试试：",
+    "examples": {
+      "swapLabel": "替换一个动作",
+      "swapPrompt": "把我的一个动作换成更好的选择",
+      "shouldersLabel": "更多肩部",
+      "shouldersPrompt": "在我的推日加入更多侧束三角肌",
+      "glutesLabel": "侧重臀部的腿日",
+      "glutesPrompt": "让我的腿日更侧重臀部",
+      "easeOffLabel": "本周减量",
+      "easeOffPrompt": "本周每个动作各减一组"
+    },
+    "limitPlaceholder": "已达每月上限",
+    "inputPlaceholder": "例如 在我下次推日加入更多肩部",
+    "noAnswer": "未生成回答。",
+    "failedConnect": "连接失败。",
+    "failedConnectCheck": "连接失败。请检查你的网络连接。",
+    "altPrompt": "给我一个{{what}}{{where}}的不同替代动作。直接选最好的 — 不用问我，直接提议。",
+    "thatExercise": "那个动作",
+    "onDay": "（{{day}}）",
+    "proposesAdding": "教练建议添加",
+    "proposesChanging": "教练建议更改",
+    "proposesN": "教练建议 {{count}} 项更改",
+    "addExercise": "添加动作",
+    "sessionOnly": "仅本次",
+    "permanent": "永久更改",
+    "setsCount": "{{n}} 组",
+    "restSuffix": " · {{rest}} 休息",
+    "saving": "保存中...",
+    "apply": "应用",
+    "alternative": "替代",
+    "applyAll": "全部应用",
+    "dismissAll": "全部忽略",
+    "saved": "已加入你的计划。将出现在你的下次训练中。",
+    "thinking": "思考中...",
+    "askBtn": "提问",
+    "weeklyInsight": "每周洞察",
+    "weeklyInsightSub": "对照研究目标分析你的训练量、PR 和近期训练",
+    "insightEmpty": "点击下方，基于你的训练数据获取个性化的每周分析。",
+    "analysing": "分析中...",
+    "refreshInsight": "刷新洞察",
+    "generateInsight": "生成洞察",
+    "quickQuestions": "快捷问题",
+    "quick": {
+      "neglecting": "我最忽视哪个肌群？",
+      "frequency": "我的训练频率是否最佳？",
+      "prioritise": "下次训练我应优先做哪个动作？",
+      "recovering": "我在训练之间恢复得够吗？"
+    },
+    "alerts": {
+      "cantApplyTitle": "无法应用",
+      "cantApplyMsg": "该动作在动作库中未匹配到。试试「替代」按钮或重新表述请求。",
+      "replaceTitle": "替换动作",
+      "replaceMsg": "这会立即更改。是否也保留到将来的训练？",
+      "justThis": "仅本次训练",
+      "nowFuture": "现在及以后",
+      "someFailedTitle": "部分更改失败",
+      "someFailedMsg": "一个或多个动作在动作库中未匹配到。",
+      "applyAllTitle": "应用所有更改",
+      "applyAllMsg": "应何时生效？",
+      "thisWorkoutOnly": "仅本次训练",
+      "allFuture": "所有未来训练"
+    },
+    "alternativesFor": "{{name}} 的推荐替代动作",
+    "thisExercise": "这个动作",
+    "useThis": "使用",
+    "weeklyReview": "本周回顾",
+    "weeklyReviewLoading": "正在生成你的每周回顾…",
+    "memoryTitle": "教练记住的信息",
+    "memorySub": "教练用来调整建议和计划的信息。删除任何不再适用的内容。",
+    "memoryForget": "忘记",
+    "memoryForgetTitle": "忘记这条？",
+    "memoryForgetMsg": "教练将不再用这条信息来调整你的计划。",
+    "noteCat": {
+      "dislike": "不喜欢",
+      "injury": "伤病",
+      "preference": "偏好",
+      "goal": "目标",
+      "note": "备注"
+    }
+  },
+  "profile": {
+    "tabs": {
+      "profile": "个人资料",
+      "data": "训练量",
+      "prs": "PR",
+      "health": "健康"
+    },
+    "admin": "管理员",
+    "signOut": "退出登录",
+    "noName": "无姓名",
+    "streak": "连续",
+    "insightsTitle": "驱动你训练的因素",
+    "myProfile": "我的资料",
+    "edit": "编辑",
+    "fields": {
+      "name": "姓名",
+      "weight": "体重 (kg)",
+      "height": "身高 (cm)",
+      "targetWeight": "目标体重 (kg)"
+    },
+    "daysPerWeek": "每周天数",
+    "sessionLength": "每次时长",
+    "experienceLevel": "经验水平",
+    "goals": "目标",
+    "equipment": "可用器械",
+    "equipmentSub": "你的计划只会包含你能做的动作。",
+    "bioSex": "生理性别",
+    "sexMale": "男",
+    "sexFemale": "女",
+    "sexOther": "不愿透露",
+    "nutritionFocus": "营养重点",
+    "nutritionFocusSub": "自动调整你的每日卡路里和宏量目标。",
+    "focus": {
+      "cut": "减脂",
+      "cutSub": "减脂",
+      "bulk": "干净增肌",
+      "bulkSub": "增肌",
+      "maintain": "维持",
+      "maintainSub": "保持精瘦",
+      "recomp": "重组",
+      "recompSub": "两者"
+    },
+    "calculatedTargets": "计算出的目标",
+    "maintenanceTdee": "维持 (TDEE)：~{{tdee}} 千卡",
+    "targetsLine": "{{cal}} 千卡 · {{protein}}g 蛋白质 · {{carbs}}g 碳水 · {{fat}}g 脂肪",
+    "savedAuto": "点击保存时自动保存",
+    "whatTrain": "你训练什么？",
+    "whatTrainSub": "选择所有适用项 — 帮助 AI 教练给出相关建议。",
+    "activities": {
+      "weights": "力量训练",
+      "running": "跑步",
+      "walking": "步行",
+      "swimming": "游泳",
+      "cycling": "骑行",
+      "hiit": "HIIT"
+    },
+    "sports": "运动与活动",
+    "sportsSub": "力量训练将围绕你的运动日来安排。",
+    "sportDays": "{{sport}} — 哪几天？",
+    "injuries": "伤病",
+    "injuriesSub": "选择困扰你的部位及频率。每次训练前我们会询问当天的感觉并相应调整动作 — 无需诊断。",
+    "injNone": "无",
+    "injSometimes": "有时",
+    "injAlways": "总是",
+    "injuriesConditions": "伤病与状况",
+    "injuriesConditionsSub": "搜索或滚动以添加任何影响你训练的情况。",
+    "searchPlaceholder": "搜索 — 例如膝盖、肩膀、背部…",
+    "severityQuestion": "{{condition}} — 有多严重？",
+    "postSurgery": "术后",
+    "postSurgeryDesc": "这个部位做过手术",
+    "surgeryWhen": "手术是多久以前？",
+    "expSub": {
+      "beginner": "< 2 年",
+      "intermediate": "2–4 年",
+      "advanced": "4 年以上"
+    },
+    "fieldName": "姓名",
+    "fieldWeight": "体重",
+    "fieldHeight": "身高",
+    "fieldTarget": "目标",
+    "fieldTraining": "训练",
+    "fieldExperience": "经验",
+    "fieldNutrition": "营养",
+    "fieldSports": "运动",
+    "fieldConditions": "状况",
+    "trainingVal": "{{days}}×/周 · {{min}} 分钟",
+    "nutritionNotSet": "未设置",
+    "nutritionSuffix": " · {{cal}} 千卡 · {{protein}}g 蛋白质",
+    "logWeight": "记录今天的体重",
+    "weightPlaceholder": "kg — 空腹，每天同一时间",
+    "weightSaved": "✓ 已保存",
+    "logBtn": "记录",
+    "weightTip": "每天早晨醒来后、进食前称重。每天相同的条件能给出最准确的趋势。",
+    "privacyPolicy": "隐私政策",
+    "deleteAccount": "删除账户",
+    "deleteAccountSub": "永久删除你的所有数据。无法撤销。",
+    "weekThis": "本周",
+    "weekLast": "上周",
+    "weekAgo": "{{n}} 周前",
+    "setsCount": "{{n}} 组",
+    "chartTitle": "{{muscle}} · {{week}}",
+    "targetNote": "目标（{{level}}）：{{range}} · Schoenfeld et al. (2017)",
+    "setsPerWeek": "{{low}}–{{high}} 组/周",
+    "dayBreakdown": "每日明细",
+    "daySets": "{{n}}组",
+    "personalRecords": "个人记录 — {{count}} 个动作",
+    "noPrs": "暂无 PR — 完成训练即可开始记录。",
+    "prVal": "{{weight}}kg × {{reps}}",
+    "prOrm": "~{{orm}}kg 1RM",
+    "healthData": "健康数据",
+    "healthWebOnly": "健康集成仅在 iOS 和 Android 设备上可用。",
+    "healthInstall": "从 App Store 或 Play Store 安装应用以启用健康集成。",
+    "connect": "连接 {{provider}}",
+    "providerApple": "Apple Health",
+    "providerHC": "Health Connect",
+    "healthDesc": "Helix 读取你的睡眠时长、HRV 和静息心率，以显示每日恢复状态。不会写入或共享任何数据。\n\n你的智能手表通过自己的配套应用{{companion}}与 {{provider}} 同步 — Helix 从那里读取，而非直接从手表读取。",
+    "companionAndroid": "（Samsung Health、Fitbit、Garmin Connect…）",
+    "connecting": "连接中...",
+    "connectBtn": "连接",
+    "todayRecovery": "今日恢复",
+    "noHealthToday": "未找到今天的健康数据。请确认你的手表已同步。",
+    "sleep": "睡眠",
+    "hrv": "HRV",
+    "restingHr": "静息心率",
+    "dataSources": "数据来源",
+    "sourceSleep": "睡眠时长",
+    "sourceSleepDesc": "来自你手表的最近 18 小时睡眠阶段",
+    "sourceHrvDescIos": "来自 Apple Health 的心率变异性（SDNN）",
+    "sourceHrvDescAndroid": "来自 Health Connect 的心率变异性（RMSSD）",
+    "sourceRhr": "静息心率",
+    "sourceRhrDesc": "由你的手表在夜间测量",
+    "disconnect": "断开健康数据",
+    "alerts": {
+      "connectedNoDataTitle": "已连接 — 暂无数据",
+      "connectedNoDataIos": "Helix 已连接到 Apple Health 但未找到数据。若你拒绝了访问，请在「健康」→「共享」→「App」→ Helix 中启用。否则请确认你的手表将睡眠、HRV 和心率同步到「健康」App。",
+      "connectedNoDataAndroid": "Helix 已连接到 Health Connect 但未找到数据。打开你手表的配套应用（Samsung Health、Fitbit、Garmin Connect…）并启用与 Health Connect 的同步 — Helix 随后会自动获取。",
+      "ok": "好",
+      "openSettings": "打开设置",
+      "hcRequiredTitle": "需要 Health Connect",
+      "hcRequiredMsg": "Helix 通过 Google Health Connect 读取手表数据，但此手机未安装它。",
+      "install": "安装",
+      "updateHcTitle": "更新 Health Connect",
+      "updateHcMsg": "你的 Health Connect 应用需要更新，Helix 才能读取数据。",
+      "permissionNeededTitle": "需要权限",
+      "permissionNeededIos": "Helix 需要「健康」App 中的访问权限。打开「健康」→「共享」→「App」→ Helix，并允许睡眠、心率和步数。",
+      "permissionNeededAndroid": "Helix 需要健康权限。请重试，或直接在 Health Connect 设置中授予访问 — 多次拒绝后提示可能不再出现。",
+      "tryAgain": "重试",
+      "couldNotConnectTitle": "无法连接",
+      "couldNotConnectMsg": "健康数据连接失败。",
+      "saveFailTitle": "保存失败",
+      "saveFailMsg": "无法保存你的资料。请重试。",
+      "programUpdatingTitle": "正在更新计划",
+      "programUpdatingMsg": "你的器械或健康状况已更改。下次打开「今天」时，你的计划将自动更新。",
+      "deleteTitle": "删除账户",
+      "deleteMsg": "这将永久删除你的账户、所有训练、营养记录和进度数据。无法撤销。",
+      "deletePermanently": "永久删除",
+      "errorTitle": "错误",
+      "deleteError": "无法删除账户。请重试或联系支持。"
+    }
+  },
+  "progress": {
+    "loading": "加载中…",
+    "sections": {
+      "overview": "概览",
+      "strengthTrend": "力量趋势 · 估算 1RM",
+      "mostImproved": "进步最大 · 近 90 天",
+      "strengthLevel": "力量水平",
+      "bodyWeight": "体重 · 7 天平均",
+      "fatigue": "疲劳 · 每周平均 RPE",
+      "cardioFreq": "有氧频率",
+      "sessionDuration": "单次时长",
+      "trainingBlock": "训练周期",
+      "consistency": "训练一致性"
+    },
+    "overview": {
+      "sessions": "次数",
+      "totalSets": "总组数",
+      "avgDuration": "平均时长",
+      "streak": "连续",
+      "empty": "完成你的第一次训练，开始追踪进度。"
+    },
+    "empty": {
+      "trend": "记录更多训练以查看此趋势",
+      "benchmark": "记录卧推、深蹲或硬拉以查看你的力量水平",
+      "noSessions": "尚无训练记录",
+      "weight4days": "至少记录 4 天的体重",
+      "blockTracking": "开始你的第一次训练以启动周期追踪"
+    },
+    "levels": {
+      "beginner": "初级",
+      "novice": "新手",
+      "intermediate": "中级",
+      "advanced": "高级",
+      "elite": "精英"
+    },
+    "benchmark": {
+      "est1rm": "估算 1RM",
+      "toLevel": "距「{{level}}」还差 {{gap}}kg"
+    },
+    "mostImprovedRow": "{{first}}kg → {{last}}kg 估算 1RM",
+    "weight": {
+      "sevenDayAvg": "7 天平均",
+      "daily": "每日",
+      "proteinAvg": "蛋白质 · 7 天平均",
+      "proteinTargetSuffix": "/{{target}}g 目标",
+      "recompUp": "力量 +{{delta}}kg 而体重下降 — 体重重组奏效",
+      "recompDown": "力量下降 {{delta}}kg — 增加蛋白质或放缓减脂",
+      "proteinOk": "✓ 已保住瘦体重",
+      "proteinLow": "低于目标 {{n}}g — 有掉肌肉的风险"
+    },
+    "block": {
+      "num": "周期 {{n}}",
+      "remaining": "剩余 {{days}} 天 · 完成 {{pct}}%",
+      "complete": "周期完成 — 下次训练加载新动作"
+    },
+    "rpe": {
+      "scale": "1–10 分级 · 每次记录的自觉用力程度",
+      "high": "本周 RPE {{rpe}} — 疲劳偏高。考虑减量或更轻松的一次。",
+      "rising": "RPE 升至 {{rpe}} — 疲劳在累积。注意恢复。",
+      "easy": "RPE {{rpe}} — 训练感觉轻松。加把劲或增加负荷。",
+      "optimal": "RPE {{rpe}} — 处于最佳训练区间。保持这个强度。"
+    },
+    "duration": {
+      "up": "时长比开始时 +{{min}}分钟 — 有氧能力在提升。",
+      "flat": "时长持平。每次多练 5 分钟以提升 VO₂max。"
+    },
+    "e1rm": {
+      "up": "下次{{ex}}训练增加重量 — {{weeks}} 次训练增长 {{delta}}kg。",
+      "down": "{{ex}}下降了 {{delta}}kg — 检查睡眠、热量或减少疲劳。",
+      "stall": "{{ex}}停滞了。增加重量前，先尝试每组多做 1 次。"
+    },
+    "weightV": {
+      "losingFast": "每周减 {{rate}}kg — 太快了。多吃 200–300 卡路里以保护肌肉。",
+      "losingOptimal": "每周减 {{rate}}kg — 理想范围。保持这个热量缺口。",
+      "stable": "体重稳定。每天减少 200 卡路里或增加一次有氧以重启减脂。",
+      "gaining": "每周增 {{rate}}kg。确认这是否为有意增肌 — 否则减少热量。"
+    },
+    "consistencyV": {
+      "excellent": "每周 {{avg}} 次 — 优秀。保持这个频率。",
+      "solid": "每周 {{avg}} 次 — 扎实。增加一次以加快进度。",
+      "schedule3": "每周 {{avg}} 次 — 本周安排第 3 次。",
+      "low": "每周 {{avg}} 次 — 一致性是你当前的头号问题。本周预约 3 次训练。"
+    },
+    "cardioV": {
+      "optimal": "每周 {{avg}} 次 — 处于最佳 VO₂max 范围。保持。",
+      "good": "每周 {{avg}} 次 — 不错。再加 1 次以最大化心肺适应。",
+      "below": "每周 {{avg}} 次 — 低于最佳。本周安排第 3 次有氧。",
+      "tooLow": "每周 {{avg}} 次 — 对耐力增长来说太少。目标：每周至少 3–5 次。"
+    },
+    "strengthLevelV": "{{lift}}距「{{level}}」还差 {{gap}}kg — 重点练这里。"
+  },
+  "cards": {
+    "cardio": {
+      "title": "记录活动",
+      "type": "类型",
+      "types": {
+        "run": "跑步",
+        "walk": "步行",
+        "swim": "游泳",
+        "cycle": "骑行",
+        "other": "其他"
+      },
+      "duration": "时长（分钟）",
+      "durationPlaceholder": "45",
+      "distance": "距离（{{unit}}）",
+      "stroke": "泳姿",
+      "effort": "强度",
+      "rpe": {
+        "easy": "轻松",
+        "easySub": "能正常交谈",
+        "moderate": "中等",
+        "moderateSub": "舒适地吃力",
+        "hard": "吃力",
+        "hardSub": "接近极限"
+      },
+      "saving": "保存中...",
+      "save": "保存活动",
+      "missingDurationTitle": "缺少时长",
+      "missingDurationMsg": "请输入本次活动的时长。",
+      "errorTitle": "错误",
+      "errorMsg": "无法保存。请重试。"
+    },
+    "exerciseDetail": {
+      "technique": "技术",
+      "whyHere": "为何在此",
+      "research": "研究",
+      "progressionPath": "进阶路径"
+    },
+    "slideshow": {
+      "techniqueCues": "技术要点",
+      "whyThisExercise": "为何选这个动作"
+    },
+    "muscleMap": {
+      "front": "正面",
+      "back": "背面",
+      "primary": "主要",
+      "secondary": "次要"
+    },
+    "threeD": {
+      "prev": "上一个",
+      "next": "下一个",
+      "hint": "拖动以旋转 · 用箭头切换幻灯片"
+    },
+    "bodyComp": {
+      "title": "身体成分",
+      "empty": "每天记录体重以进行趋势分析。7 天后你将看到移动平均、变化速率以及到目标的预测。",
+      "cutting": "减脂",
+      "building": "增肌",
+      "maintaining": "维持",
+      "calculating": "计算中…",
+      "ratePerWeek": "{{rate}} kg/周",
+      "dailyWeight": "每日体重",
+      "sevenDayAverage": "7 天平均",
+      "target": "目标",
+      "targetSvg": "目标",
+      "avg7": "7 天平均",
+      "toTarget": "距目标",
+      "weighIns": "次称重",
+      "projection": "按你当前的速度，你将在约 {{weeks}} 周内（{{date}}）达到 {{target}} kg。",
+      "projectionDisclaimer": "变化速率每周不同 — 这是一个方向，而非保证。",
+      "alerts": {
+        "waterTitle": "可能是水分潴留",
+        "waterBody": "你的体重在过去 2 天内快速上升。研究表明月经周期的水分潴留平均约 0.5kg，并在经期第 1 天达到峰值（Kanellakis et al. 2023）。这不是脂肪增加。",
+        "muscleLossTitle": "掉肌肉风险",
+        "muscleLossBody": "持续每周减重超过 1kg。研究表明以这种速度减掉的总体重中有 20–40% 来自肌肉。放缓热量缺口或将蛋白质提高到每公斤体重 1.6g 以上。",
+        "gainFastTitle": "增重过快",
+        "gainFastBody": "以你的训练水平，每周增重快于约 0.12kg 主要增加的是脂肪而非肌肉。考虑减少你的热量盈余。",
+        "stalledTitle": "进度停滞",
+        "stalledBody": "尽管有目标，体重已超过 2 周没有明显变化。查看平台期部分获取基于证据的后续步骤。"
+      }
+    }
+  },
+  "today": {
+    "greetingMorning": "早上好",
+    "greetingAfternoon": "下午好",
+    "greetingEvening": "晚上好",
+    "block": {
+      "newTitle": "新周期已开始",
+      "newSub": "你的动作已轮换，以让身体持续适应。相同的动作，新的刺激。",
+      "pill": "周期 {{block}} · 第 {{week}} 周，共 {{total}} 周"
+    },
+    "readiness": {
+      "ready": "就绪",
+      "moderate": "中等",
+      "low": "偏低",
+      "adviceModerate": "HRV 低于你的基线。今天考虑把复合动作的重量降低 10%。",
+      "adviceLow": "HRV 明显低于基线。降低负荷、跳过最后一个孤立动作，或安排一个休息日。",
+      "sleepStat": "{{hours}}小时睡眠",
+      "hrvStat": "HRV {{ms}}ms",
+      "baselineSuffix": "（较基线 {{sign}}{{pct}}%）",
+      "rhrStat": "静息 {{bpm}} bpm"
+    },
+    "session": {
+      "todayLabel": "今天的训练",
+      "exercises": "{{count}} 个动作",
+      "sets": "{{count}} 组",
+      "more": "还有 +{{count}} 个动作",
+      "completed": "✓ 今天已完成",
+      "nextUp": "下一个 · {{name}}",
+      "start": "开始训练"
+    },
+    "rest": {
+      "title": "休息日",
+      "sub": "肌肉真正生长发生在恢复时。今天优先保证睡眠和蛋白质。"
+    },
+    "cardio": {
+      "title": "有氧与耐力",
+      "lastSessions_one": "最近 {{count}} 次",
+      "lastSessions_other": "最近 {{count}} 次",
+      "log": "+ 记录",
+      "empty": "尚无记录。点击 + 记录以添加跑步、游泳、步行或骑行。",
+      "minutes": "{{count}} 分钟",
+      "run": "跑步",
+      "walk": "步行",
+      "swim": "游泳",
+      "cycle": "骑行",
+      "other": "活动"
+    },
+    "recovery": {
+      "title": "肌肉恢复",
+      "sub": "基于你近期的训练历史",
+      "daysAgo": "{{count}}天前",
+      "never": "从未"
+    },
+    "volume": {
+      "title": "本周训练量",
+      "sub": "每块肌肉的组数 — 近 7 天",
+      "belowMin": "低于最低",
+      "belowOpt": "低于最佳",
+      "inRange": "在范围内",
+      "target": "最低 {{min}} · 最佳 {{low}}–{{high}}",
+      "junkTitle": "无效训练量",
+      "junkText": "{{muscles}} — 已超过上限，额外的组数不再增肌反而增加受伤风险。把这份努力转给落后的肌肉。",
+      "junkMuscle": "{{label}}（{{count}} 组）"
+    },
+    "deload": {
+      "fatigueDetected": "检测到疲劳",
+      "weeksTraining": "{{weeks}} 周的持续训练",
+      "setsCut": "削减组数",
+      "weight": "重量",
+      "duration": "时长",
+      "durationDays": "7 天",
+      "rirTarget": "RIR 目标",
+      "same": "不变",
+      "thisWeek": "本周："
+    },
+    "proactive": {
+      "tapToAsk": "点击向你的教练提问 →"
+    },
+    "plateau": {
+      "title": "检测到平台期",
+      "progress": "{{days}} 天无进展 · 估算 1RM：{{rm}}kg",
+      "whatToDo": "该怎么做："
+    },
+    "lastSession": {
+      "title": "上次训练",
+      "minutes": "{{count}} 分钟",
+      "rpe": "RPE {{value}}"
+    },
+    "modal": {
+      "setsPerMuscle": "每块肌肉的组数",
+      "noData": "未找到组数数据。",
+      "minutes": "{{count}} 分钟",
+      "rpe": "RPE {{value}}"
+    },
+    "checkIn": {
+      "title": "开始之前",
+      "sub": "今天各部位感觉如何？我们会相应调整训练。",
+      "good": "良好",
+      "usual": "和平常一样",
+      "flare": "发作",
+      "start": "开始训练"
+    },
+    "muscles": {
+      "chest": "胸",
+      "back": "背",
+      "shoulders": "肩",
+      "biceps": "肱二头肌",
+      "triceps": "肱三头肌",
+      "quads": "股四头肌",
+      "hamstrings": "腘绳肌",
+      "glutes": "臀",
+      "calves": "小腿",
+      "forearms": "前臂",
+      "abs": "腹"
+    }
+  }
+}

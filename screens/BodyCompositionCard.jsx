@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { analyseBodyComposition } from './BodyCompositionEngine';
 
 const SCREEN_W = Dimensions.get('window').width;
@@ -12,6 +13,7 @@ const PAD = { top: 16, bottom: 28, left: 36, right: 12 };
 // ─── MINI LINE CHART ─────────────────────────────────────────────────────────
 
 function WeightChart({ movingAvgs, targetWeight }) {
+  const { t } = useTranslation();
   if (!movingAvgs || movingAvgs.length < 2) return null;
 
   const allRaw = movingAvgs.map(m => m.raw);
@@ -100,7 +102,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           textAnchor="end"
           opacity={0.8}
         >
-          target
+          {t('cards.bodyComp.targetSvg')}
         </SvgText>
       )}
 
@@ -149,6 +151,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
 // ─── MAIN CARD ────────────────────────────────────────────────────────────────
 
 export default function BodyCompositionCard({ metrics = [], profile = {} }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   const analysis = useMemo(() => analyseBodyComposition(metrics, profile), [metrics, profile]);
@@ -156,9 +159,9 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
   if (!analysis || analysis.dataPoints < 2) {
     return (
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Body composition</Text>
+        <Text style={styles.cardTitle}>{t('cards.bodyComp.title')}</Text>
         <Text style={styles.emptyText}>
-          Log your weight daily for trend analysis. After 7 days you will see your moving average, rate of change, and projection to your target.
+          {t('cards.bodyComp.empty')}
         </Text>
       </View>
     );
@@ -167,19 +170,19 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
   const { movingAvgs, currentAvg, weeklyRate, trend, pace, projection, waterSpike, muscleLossRisk, excessFatRisk, stalled } = analysis;
   const targetWeight = profile.target_weight_kg;
 
-  const trendLabel = trend === 'cutting' ? 'Cutting' : trend === 'gaining' ? 'Building' : 'Maintaining';
+  const trendLabel = trend === 'cutting' ? t('cards.bodyComp.cutting') : trend === 'gaining' ? t('cards.bodyComp.building') : t('cards.bodyComp.maintaining');
   const trendColor = trend === 'cutting' ? '#FFFFFF' : trend === 'gaining' ? '#1D9E75' : '#71717A';
 
   const rateStr = weeklyRate !== null
-    ? `${weeklyRate > 0 ? '+' : ''}${weeklyRate.toFixed(2)} kg/week`
-    : 'Calculating…';
+    ? t('cards.bodyComp.ratePerWeek', { rate: `${weeklyRate > 0 ? '+' : ''}${weeklyRate.toFixed(2)}` })
+    : t('cards.bodyComp.calculating');
 
   return (
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.cardTitle}>Body composition</Text>
+          <Text style={styles.cardTitle}>{t('cards.bodyComp.title')}</Text>
           <View style={styles.trendRow}>
             <View style={[styles.trendBadge, { borderColor: trendColor + '44' }]}>
               <Text style={[styles.trendLabel, { color: trendColor }]}>{trendLabel}</Text>
@@ -202,16 +205,16 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#3D3D4A' }]} />
-          <Text style={styles.legendText}>Daily weight</Text>
+          <Text style={styles.legendText}>{t('cards.bodyComp.dailyWeight')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#FFFFFF' }]} />
-          <Text style={styles.legendText}>7-day average</Text>
+          <Text style={styles.legendText}>{t('cards.bodyComp.sevenDayAverage')}</Text>
         </View>
         {targetWeight && (
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: '#1D9E75' }]} />
-            <Text style={styles.legendText}>Target</Text>
+            <Text style={styles.legendText}>{t('cards.bodyComp.target')}</Text>
           </View>
         )}
       </View>
@@ -220,12 +223,12 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{currentAvg} kg</Text>
-          <Text style={styles.statLabel}>7-day avg</Text>
+          <Text style={styles.statLabel}>{t('cards.bodyComp.avg7')}</Text>
         </View>
         {targetWeight && (
           <View style={styles.stat}>
             <Text style={styles.statValue}>{Math.abs(currentAvg - targetWeight).toFixed(1)} kg</Text>
-            <Text style={styles.statLabel}>to target</Text>
+            <Text style={styles.statLabel}>{t('cards.bodyComp.toTarget')}</Text>
           </View>
         )}
         {projection && (
@@ -236,7 +239,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
         )}
         <View style={styles.stat}>
           <Text style={styles.statValue}>{analysis.dataPoints}</Text>
-          <Text style={styles.statLabel}>weigh-ins</Text>
+          <Text style={styles.statLabel}>{t('cards.bodyComp.weighIns')}</Text>
         </View>
       </View>
 
@@ -255,14 +258,10 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       {projection && (
         <View style={styles.projectionCard}>
           <Text style={styles.projectionText}>
-            At your current pace you will reach{' '}
-            <Text style={styles.projectionHighlight}>{targetWeight} kg</Text>
-            {' '}in approximately{' '}
-            <Text style={styles.projectionHighlight}>{projection.weeks} weeks</Text>
-            {' '}({projection.targetDate}).
+            {t('cards.bodyComp.projection', { target: targetWeight, weeks: projection.weeks, date: projection.targetDate })}
           </Text>
           <Text style={styles.projectionDisclaimer}>
-            Rate of change varies week to week — this is a direction, not a guarantee.
+            {t('cards.bodyComp.projectionDisclaimer')}
           </Text>
         </View>
       )}
@@ -272,9 +271,9 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
         <View style={styles.alertCard}>
           <Ionicons name="water" size={18} color="#1D9E75" style={styles.alertIcon} />
           <View style={styles.alertText}>
-            <Text style={styles.alertTitle}>Likely water retention</Text>
+            <Text style={styles.alertTitle}>{t('cards.bodyComp.alerts.waterTitle')}</Text>
             <Text style={styles.alertBody}>
-              Your weight has risen quickly in the last 2 days. Research shows menstrual cycle water retention averages ~0.5kg and peaks on day 1 of flow (Kanellakis et al. 2023). This is not fat gain.
+              {t('cards.bodyComp.alerts.waterBody')}
             </Text>
           </View>
         </View>
@@ -284,9 +283,9 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
         <View style={[styles.alertCard, styles.alertCardRed]}>
           <Ionicons name="warning" size={18} color="#E24B4A" style={styles.alertIcon} />
           <View style={styles.alertText}>
-            <Text style={[styles.alertTitle, styles.alertTitleRed]}>Muscle loss risk</Text>
+            <Text style={[styles.alertTitle, styles.alertTitleRed]}>{t('cards.bodyComp.alerts.muscleLossTitle')}</Text>
             <Text style={styles.alertBody}>
-              Losing more than 1kg/week consistently. Research shows 20–40% of total weight lost at this rate comes from muscle. Slow the deficit or increase protein above 1.6g/kg bodyweight.
+              {t('cards.bodyComp.alerts.muscleLossBody')}
             </Text>
           </View>
         </View>
@@ -296,9 +295,9 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
         <View style={[styles.alertCard, styles.alertCardAmber]}>
           <Ionicons name="trending-up" size={18} color="#BA7517" style={styles.alertIcon} />
           <View style={styles.alertText}>
-            <Text style={[styles.alertTitle, styles.alertTitleAmber]}>Gaining too fast</Text>
+            <Text style={[styles.alertTitle, styles.alertTitleAmber]}>{t('cards.bodyComp.alerts.gainFastTitle')}</Text>
             <Text style={styles.alertBody}>
-              At your training level, gaining faster than ~0.12kg/week primarily adds fat, not muscle. Consider reducing your surplus.
+              {t('cards.bodyComp.alerts.gainFastBody')}
             </Text>
           </View>
         </View>
@@ -308,9 +307,9 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
         <View style={[styles.alertCard, styles.alertCardAmber]}>
           <Ionicons name="pause-circle" size={18} color="#BA7517" style={styles.alertIcon} />
           <View style={styles.alertText}>
-            <Text style={[styles.alertTitle, styles.alertTitleAmber]}>Progress stalled</Text>
+            <Text style={[styles.alertTitle, styles.alertTitleAmber]}>{t('cards.bodyComp.alerts.stalledTitle')}</Text>
             <Text style={styles.alertBody}>
-              Weight hasn't moved meaningfully in 2+ weeks despite your goal. See the plateau section for evidence-based next steps.
+              {t('cards.bodyComp.alerts.stalledBody')}
             </Text>
           </View>
         </View>

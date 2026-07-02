@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
-  TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
+  TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 
-const MEALS = [
-  { key: 'breakfast', label: 'Breakfast' },
-  { key: 'lunch', label: 'Lunch' },
-  { key: 'dinner', label: 'Dinner' },
-  { key: 'snack', label: 'Snacks' },
-];
+const MEAL_KEYS = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+// Speech-recognition locale per app language.
+const SPEECH_LOCALES = { en: 'en-US', es: 'es-ES', de: 'de-DE', fr: 'fr-FR', it: 'it-IT', pt: 'pt-BR', ru: 'ru-RU', zh: 'zh-CN' };
 
 function autoMeal() {
   const h = new Date().getHours();
@@ -24,13 +25,28 @@ function autoMeal() {
   return 'dinner';
 }
 
-export default function NutritionLogScreen({ onClose, initialMeal }) {
+export default function NutritionLogScreen({ onClose, initialMeal, isPremium }) {
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const [selectedMeal, setSelectedMeal] = useState(initialMeal || autoMeal());
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [isListening, setIsListening] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [entries, setEntries] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [recentItems, setRecentItems] = useState([]);
+
+  // Manual entry state
+  const [showManual, setShowManual] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualCal, setManualCal] = useState('');
+  const [manualP, setManualP] = useState('');
+  const [manualC, setManualC] = useState('');
+  const [manualF, setManualF] = useState('');
+
+  const today = format(new Date(), 'yyyy-MM-dd'); // local date, not UTC
 
   useSpeechRecognitionEvent('start', () => setIsListening(true));
   useSpeechRecognitionEvent('end', () => setIsListening(false));
@@ -40,26 +56,10 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
     if (text) setDescription(text);
   });
 
-  const toggleSpeech = async () => {
-    if (isListening) {
-      ExpoSpeechRecognitionModule.stop();
-      return;
-    }
-    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-    if (!granted) {
-      Alert.alert('Permission required', 'Microphone access is needed for voice input.');
-      return;
-    }
-    setDescription('');
-    ExpoSpeechRecognitionModule.start({ lang: 'en-US', interimResults: true });
-  };
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [entries, setEntries] = useState([]);
-  const [saving, setSaving] = useState(false);
-
-  const today = new Date().toISOString().split('T')[0];
-
-  useEffect(() => { loadEntries(); }, []);
+  useEffect(() => {
+    loadEntries();
+    loadRecentItems();
+  }, []);
 
   const loadEntries = async () => {
     try {
@@ -75,73 +75,121 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
     } catch {}
   };
 
+  const loadRecentItems = async () => {
+    try {
+      const user = await getCurrentUser();
+      if (!user) return;
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const { data } = await supabase
+        .from('nutrition_logs')
+        .select('food_name, calories, protein_g, carbs_g, fat_g')
+        .eq('user_id', user.id)
+        .neq('date', today)
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(60);
+      if (data) {
+        const seen = new Set();
+        const unique = data.filter(e => {
+          if (seen.has(e.food_name)) return false;
+          seen.add(e.food_name);
+          return true;
+        }).slice(0, 8);
+        setRecentItems(unique);
+      }
+    } catch {}
+  };
+
+  const toggleSpeech = async () => {
+    if (isListening) { ExpoSpeechRecognitionModule.stop(); return; }
+    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!granted) { Alert.alert(t('nutritionLog.alerts.permissionTitle'), t('nutritionLog.alerts.micPermission')); return; }
+    setDescription('');
+    ExpoSpeechRecognitionModule.start({ lang: SPEECH_LOCALES[i18n.language?.split('-')[0]] || 'en-US', interimResults: true });
+  };
+
+  const callNutritionAI = async (body) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('unauthorised');
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/nutrition-ai`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify(body),
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) {
+      if (res.status === 429) throw new Error('daily_limit');
+      if (res.status === 403) throw new Error('premium_required');
+      if (res.status === 401) throw new Error('session_expired');
+      throw new Error(json.error || 'ai_unavailable');
+    }
+    if (!json?.items?.length) throw new Error('no_items');
+    return json;
+  };
+
+  const handleAIError = (err) => {
+    if (err.message === 'daily_limit') Alert.alert(t('nutritionLog.alerts.dailyLimitTitle'), t('nutritionLog.alerts.dailyLimitMsg'));
+    else if (err.message === 'premium_required') Alert.alert(t('nutritionLog.alerts.premiumTitle'), t('nutritionLog.alerts.premiumMsg'));
+    else if (err.message === 'session_expired') Alert.alert(t('nutritionLog.alerts.sessionTitle'), t('nutritionLog.alerts.sessionMsg'));
+    else if (err.message === 'no_items') Alert.alert(t('nutritionLog.alerts.noItemsTitle'), t('nutritionLog.alerts.noItemsMsg'));
+    else if (err.message === 'image_too_large') Alert.alert(t('nutritionLog.alerts.photoLargeTitle'), t('nutritionLog.alerts.photoLargeMsg'));
+    else if (err.message === 'invalid_image') Alert.alert(t('nutritionLog.alerts.invalidPhotoTitle'), t('nutritionLog.alerts.invalidPhotoMsg'));
+    // Never surface the raw err.message — it can leak the backend hostname on a
+    // network error. Show a connection hint or the generic calc-fail message.
+    else if (/fetch|network|resolve|host|timeout|connection|offline/i.test(err?.message || ''))
+      Alert.alert(t('nutritionLog.alerts.calcFailTitle'), t('auth.errors.connection', { defaultValue: 'Couldn’t connect. Check your internet connection and try again.' }));
+    else Alert.alert(t('nutritionLog.alerts.calcFailTitle'), t('nutritionLog.alerts.calcFailMsg'));
+  };
+
   const calculate = async () => {
     if (!description.trim()) return;
     setLoading(true);
     setResult(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('unauthorised');
-
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/nutrition-ai`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ description: description.trim() }),
-        }
-      );
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 429) {
-          Alert.alert('Daily limit reached', 'You have used your 5 daily AI food logs. Resets at midnight.');
-          setLoading(false);
-          return;
-        }
-        if (res.status === 403) {
-          Alert.alert('Premium required', 'AI nutrition logging requires a Helix Pro subscription.');
-          setLoading(false);
-          return;
-        }
-        if (res.status === 401) {
-          Alert.alert('Session expired', 'Please log out and log back in.');
-          setLoading(false);
-          return;
-        }
-        const errCode = json.error || 'ai_unavailable';
-        console.error('nutrition-ai error response:', res.status, errCode);
-        Alert.alert('Could not calculate', `Error: ${errCode}. Please try again.`);
-        setLoading(false);
-        return;
-      }
-
-      if (!json?.items?.length) {
-        Alert.alert('No items found', 'Try describing your meal in more detail.');
-        setLoading(false);
-        return;
-      }
-
+      const json = await callNutritionAI({ description: description.trim() });
       setResult({ items: json.items, totals: json.totals });
-    } catch (err) {
-      console.error('nutrition calc error:', err);
-      Alert.alert('Could not calculate', err.message || 'Network error. Check your connection.');
-    }
+    } catch (err) { handleAIError(err); }
     setLoading(false);
   };
 
+  const calculateFromImage = async (imageBase64) => {
+    setLoading(true);
+    setResult(null);
+    try {
+      const json = await callNutritionAI({ image: imageBase64 });
+      setResult({ items: json.items, totals: json.totals });
+    } catch (err) { handleAIError(err); }
+    setLoading(false);
+  };
+
+  const pickPhoto = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) { Alert.alert(t('nutritionLog.alerts.permissionTitle'), t('nutritionLog.alerts.photoPermission')); return; }
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.35, base64: true });
+    if (!res.canceled && res.assets[0]?.base64) {
+      await calculateFromImage(`data:image/jpeg;base64,${res.assets[0].base64}`);
+    }
+  };
+
+  const takePhoto = async () => {
+    const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!granted) { Alert.alert(t('nutritionLog.alerts.permissionTitle'), t('nutritionLog.alerts.cameraPermission')); return; }
+    const res = await ImagePicker.launchCameraAsync({ quality: 0.35, base64: true });
+    if (!res.canceled && res.assets[0]?.base64) {
+      await calculateFromImage(`data:image/jpeg;base64,${res.assets[0].base64}`);
+    }
+  };
 
   const updateItem = (index, field, raw) => {
     const val = parseInt(raw, 10);
     const items = result.items.map((item, i) =>
       i === index ? { ...item, [field]: isNaN(val) ? 0 : val } : item
     );
-    const totals = recalcTotals(items);
-    setResult({ items, totals });
+    setResult({ items, totals: recalcTotals(items) });
   };
 
   const updateGrams = (index, raw) => {
@@ -149,26 +197,13 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
     const items = result.items.map((item, i) => {
       if (i !== index || !item.per100) return i === index ? { ...item, grams: raw } : item;
       const m = isNaN(g) || g <= 0 ? 0 : g / 100;
-      return {
-        ...item,
-        grams: raw,
-        quantity: `${raw}g`,
-        calories: Math.round(item.per100.kcal * m),
-        protein_g: Math.round(item.per100.protein * m),
-        carbs_g: Math.round(item.per100.carbs * m),
-        fat_g: Math.round(item.per100.fat * m),
-      };
+      return { ...item, grams: raw, quantity: `${raw}g`, calories: Math.round(item.per100.kcal * m), protein_g: Math.round(item.per100.protein * m), carbs_g: Math.round(item.per100.carbs * m), fat_g: Math.round(item.per100.fat * m) };
     });
     setResult({ items, totals: recalcTotals(items) });
   };
 
   const recalcTotals = (items) => items.reduce(
-    (acc, item) => ({
-      calories: acc.calories + (Number(item.calories) || 0),
-      protein_g: acc.protein_g + (Number(item.protein_g) || 0),
-      carbs_g: acc.carbs_g + (Number(item.carbs_g) || 0),
-      fat_g: acc.fat_g + (Number(item.fat_g) || 0),
-    }),
+    (acc, item) => ({ calories: acc.calories + (Number(item.calories) || 0), protein_g: acc.protein_g + (Number(item.protein_g) || 0), carbs_g: acc.carbs_g + (Number(item.carbs_g) || 0), fat_g: acc.fat_g + (Number(item.fat_g) || 0) }),
     { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
   );
 
@@ -182,35 +217,51 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
     setSaving(true);
     const user = await getCurrentUser();
     if (!user) { setSaving(false); return; }
-
     const rows = result.items.map(item => ({
-      user_id: user.id,
-      date: today,
-      meal_type: selectedMeal,
+      user_id: user.id, date: today, meal_type: selectedMeal,
       food_name: `${item.name} (${item.quantity})`,
-      calories: item.calories,
-      protein_g: item.protein_g,
-      carbs_g: item.carbs_g,
-      fat_g: item.fat_g,
-      servings: 1,
+      calories: item.calories, protein_g: item.protein_g, carbs_g: item.carbs_g, fat_g: item.fat_g, servings: 1,
     }));
-
-    const { data, error } = await supabase
-      .from('nutrition_logs')
-      .insert(rows)
-      .select();
-
-    if (error) {
-      Alert.alert('Log failed', 'Could not save. Please try again.');
-      setSaving(false);
-      return;
-    }
-
+    const { data, error } = await supabase.from('nutrition_logs').insert(rows).select();
+    if (error) { Alert.alert(t('nutritionLog.alerts.logFailTitle'), t('nutritionLog.alerts.logFailMsg')); setSaving(false); return; }
     if (data) setEntries(prev => [...prev, ...data]);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setResult(null);
     setDescription('');
     setSaving(false);
+    loadRecentItems();
+  };
+
+  const quickAdd = async (item) => {
+    const user = await getCurrentUser();
+    if (!user) return;
+    const { data, error } = await supabase.from('nutrition_logs').insert({
+      user_id: user.id, date: today, meal_type: selectedMeal,
+      food_name: item.food_name, calories: item.calories,
+      protein_g: item.protein_g, carbs_g: item.carbs_g, fat_g: item.fat_g, servings: 1,
+    }).select();
+    if (!error && data) {
+      setEntries(prev => [...prev, ...data]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const logManual = async () => {
+    if (!manualName.trim()) { Alert.alert(t('nutritionLog.alerts.nameRequiredTitle'), t('nutritionLog.alerts.nameRequiredMsg')); return; }
+    const user = await getCurrentUser();
+    if (!user) return;
+    const { data, error } = await supabase.from('nutrition_logs').insert({
+      user_id: user.id, date: today, meal_type: selectedMeal,
+      food_name: manualName.trim(),
+      calories: parseInt(manualCal) || 0, protein_g: parseInt(manualP) || 0,
+      carbs_g: parseInt(manualC) || 0, fat_g: parseInt(manualF) || 0, servings: 1,
+    }).select();
+    if (error) { Alert.alert(t('nutritionLog.alerts.logFailTitle'), t('nutritionLog.alerts.logFailMsgShort')); return; }
+    if (data) setEntries(prev => [...prev, ...data]);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setShowManual(false);
+    setManualName(''); setManualCal(''); setManualP(''); setManualC(''); setManualF('');
+    loadRecentItems();
   };
 
   const deleteEntry = async (id) => {
@@ -220,188 +271,144 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
 
   const mealEntries = entries.filter(e => e.meal_type === selectedMeal);
   const mealTotals = mealEntries.reduce(
-    (acc, e) => ({
-      calories: acc.calories + (e.calories || 0),
-      protein: acc.protein + (e.protein_g || 0),
-      carbs: acc.carbs + (e.carbs_g || 0),
-      fat: acc.fat + (e.fat_g || 0),
-    }),
+    (acc, e) => ({ calories: acc.calories + (e.calories || 0), protein: acc.protein + (e.protein_g || 0), carbs: acc.carbs + (e.carbs_g || 0), fat: acc.fat + (e.fat_g || 0) }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.title}>Log food</Text>
-        <Pressable onPress={onClose}>
-          <Text style={styles.doneBtn}>Done</Text>
-        </Pressable>
+    <KeyboardAvoidingView style={st.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={[st.header, { paddingTop: insets.top + 16 }]}>
+        <Text style={st.title}>{t('nutritionLog.title')}</Text>
+        <Pressable onPress={onClose}><Text style={st.doneBtn}>{t('common.done')}</Text></Pressable>
       </View>
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 60 }}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
+
         {/* Meal tabs */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.mealTabs}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
-        >
-          {MEALS.map(m => (
-            <Pressable
-              key={m.key}
-              style={[styles.mealTab, selectedMeal === m.key && styles.mealTabActive]}
-              onPress={() => setSelectedMeal(m.key)}
-            >
-              <Text style={[styles.mealTabText, selectedMeal === m.key && styles.mealTabTextActive]}>
-                {m.label}
-              </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={st.mealTabs} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+          {MEAL_KEYS.map(mealKey => (
+            <Pressable key={mealKey} style={[st.mealTab, selectedMeal === mealKey && st.mealTabActive]} onPress={() => setSelectedMeal(mealKey)}>
+              <Text style={[st.mealTabText, selectedMeal === mealKey && st.mealTabTextActive]}>{t(`nutrition.meals.${mealKey}`)}</Text>
             </Pressable>
           ))}
         </ScrollView>
 
-        {/* Input */}
-        <View style={styles.inputCard}>
-          <TextInput
-            style={styles.input}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Type what you've eaten. The more detail you give, the more accurate the result."
-            placeholderTextColor="#3D3D4A"
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            editable={!loading}
-          />
-          <View style={styles.inputActions}>
-            <Pressable
-              style={[styles.micBtn, isListening && styles.micBtnActive]}
-              onPress={toggleSpeech}
-              disabled={loading}
-            >
-              <Ionicons
-                name={isListening ? 'mic' : 'mic-outline'}
-                size={18}
-                color={isListening ? '#E24B4A' : '#71717A'}
-              />
-              <Text style={[styles.micBtnText, isListening && styles.micBtnTextActive]}>
-                {isListening ? 'Listening...' : 'Voice'}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[styles.calcBtn, (!description.trim() || loading) && styles.calcBtnDisabled]}
-              onPress={calculate}
-              disabled={!description.trim() || loading}
-            >
-              {loading
-                ? <ActivityIndicator color="#111114" size="small" />
-                : <Text style={styles.calcBtnText}>Calculate</Text>
-              }
-            </Pressable>
+        {/* Quick-add */}
+        {recentItems.length > 0 && (
+          <View style={st.quickAddSection}>
+            <Text style={st.quickAddLabel}>{t('nutritionLog.recent')}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              {recentItems.map((item, i) => (
+                <Pressable key={i} style={st.quickAddChip} onPress={() => quickAdd(item)}>
+                  <Text style={st.quickAddName} numberOfLines={1}>{item.food_name.split(' (')[0]}</Text>
+                  <Text style={st.quickAddCal}>{t('nutrition.kcal', { value: item.calories })}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
+        )}
+
+        {/* Input card */}
+        <View style={st.inputCard}>
+          {isPremium ? (
+            <>
+              <TextInput
+                style={st.input}
+                value={description}
+                onChangeText={setDescription}
+                placeholder={t('nutritionLog.describePlaceholder')}
+                placeholderTextColor="#3D3D4A"
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                editable={!loading}
+              />
+              <View style={st.inputActions}>
+                <Pressable style={[st.iconBtn, isListening && st.iconBtnActive]} onPress={toggleSpeech} disabled={loading}>
+                  <Ionicons name={isListening ? 'mic' : 'mic-outline'} size={18} color={isListening ? '#E24B4A' : '#71717A'} />
+                </Pressable>
+                <Pressable style={st.iconBtn} onPress={takePhoto} disabled={loading}>
+                  <Ionicons name="camera-outline" size={18} color="#71717A" />
+                </Pressable>
+                <Pressable style={st.iconBtn} onPress={pickPhoto} disabled={loading}>
+                  <Ionicons name="image-outline" size={18} color="#71717A" />
+                </Pressable>
+                <Pressable style={[st.calcBtn, (!description.trim() || loading) && st.calcBtnDisabled]} onPress={calculate} disabled={!description.trim() || loading}>
+                  {loading ? <ActivityIndicator color="#111114" size="small" /> : <Text style={st.calcBtnText}>{t('nutritionLog.calculate')}</Text>}
+                </Pressable>
+              </View>
+            </>
+          ) : (
+            <View style={st.premiumNote}>
+              <Text style={st.premiumNoteText}>{t('nutritionLog.premiumNote')}</Text>
+            </View>
+          )}
         </View>
+
+        {/* Manual entry button */}
+        <Pressable style={st.manualBtn} onPress={() => setShowManual(true)}>
+          <Ionicons name="create-outline" size={14} color="#71717A" />
+          <Text style={st.manualBtnText}>{t('nutritionLog.manualEntry')}</Text>
+        </Pressable>
 
         {/* Confirmation card */}
         {result && (
-          <View style={styles.resultCard}>
-            <Text style={styles.resultHeading}>Confirm meal</Text>
-            <Text style={styles.resultTip}>Tap any value to edit it if something looks off.</Text>
-
+          <View style={st.resultCard}>
+            <Text style={st.resultHeading}>{t('nutritionLog.confirmMeal')}</Text>
+            <Text style={st.resultTip}>{t('nutritionLog.confirmTip')}</Text>
             {result.items.map((item, i) => (
-              <View key={i} style={styles.resultItem}>
-                <View style={styles.resultItemHeader}>
-                  <Text style={styles.resultItemName} numberOfLines={1}>{item.name}</Text>
-                  <Pressable onPress={() => removeItem(i)} hitSlop={8}>
-                    <Text style={styles.removeBtnText}>✕</Text>
-                  </Pressable>
+              <View key={i} style={st.resultItem}>
+                <View style={st.resultItemHeader}>
+                  <Text style={st.resultItemName} numberOfLines={1}>{item.name}</Text>
+                  <Pressable onPress={() => removeItem(i)} hitSlop={8}><Text style={st.removeBtnText}>✕</Text></Pressable>
                 </View>
-                <View style={styles.editFields}>
+                <View style={st.editFields}>
                   {item.per100 && (
-                    <View style={styles.editField}>
-                      <TextInput
-                        style={styles.editInput}
-                        value={item.grams}
-                        onChangeText={v => updateGrams(i, v)}
-                        keyboardType="decimal-pad"
-                        selectTextOnFocus
-                      />
-                      <Text style={styles.editLabel}>grams</Text>
+                    <View style={st.editField}>
+                      <TextInput style={st.editInput} value={item.grams} onChangeText={v => updateGrams(i, v)} keyboardType="decimal-pad" selectTextOnFocus />
+                      <Text style={st.editLabel}>{t('nutritionLog.grams')}</Text>
                     </View>
                   )}
-                  {[
-                    { label: 'kcal', field: 'calories' },
-                    { label: 'P', field: 'protein_g' },
-                    { label: 'C', field: 'carbs_g' },
-                    { label: 'F', field: 'fat_g' },
-                  ].map(({ label, field }) => (
-                    <View key={field} style={styles.editField}>
-                      <TextInput
-                        style={[styles.editInput, item.per100 && styles.editInputReadonly]}
-                        value={String(item[field])}
-                        onChangeText={v => !item.per100 && updateItem(i, field, v)}
-                        keyboardType="number-pad"
-                        selectTextOnFocus
-                        editable={!item.per100}
-                      />
-                      <Text style={styles.editLabel}>{label}</Text>
+                  {[{ label: t('nutritionLog.macroAbbr.kcal'), field: 'calories' }, { label: t('nutritionLog.macroAbbr.protein'), field: 'protein_g' }, { label: t('nutritionLog.macroAbbr.carbs'), field: 'carbs_g' }, { label: t('nutritionLog.macroAbbr.fat'), field: 'fat_g' }].map(({ label, field }) => (
+                    <View key={field} style={st.editField}>
+                      <TextInput style={[st.editInput, item.per100 && st.editInputReadonly]} value={String(item[field])} onChangeText={v => !item.per100 && updateItem(i, field, v)} keyboardType="number-pad" selectTextOnFocus editable={!item.per100} />
+                      <Text style={st.editLabel}>{label}</Text>
                     </View>
                   ))}
                 </View>
               </View>
             ))}
-
-            <View style={styles.resultTotals}>
-              <Text style={styles.totalLabel}>Total</Text>
+            <View style={st.resultTotals}>
+              <Text style={st.totalLabel}>{t('nutritionLog.total')}</Text>
               <View style={{ flex: 1 }} />
-              <Text style={styles.totalMacros}>
-                P: {result.totals.protein_g}g · C: {result.totals.carbs_g}g · F: {result.totals.fat_g}g
-              </Text>
-              <Text style={styles.totalCal}>{result.totals.calories} kcal</Text>
+              <Text style={st.totalMacros}>{t('nutrition.mealMacros', { p: result.totals.protein_g, c: result.totals.carbs_g, f: result.totals.fat_g })}</Text>
+              <Text style={st.totalCal}>{t('nutrition.kcal', { value: result.totals.calories })}</Text>
             </View>
-
-            <View style={styles.resultActions}>
-              <Pressable
-                style={[styles.logBtn, saving && styles.logBtnDisabled]}
-                onPress={logMeal}
-                disabled={saving}
-              >
-                {saving
-                  ? <ActivityIndicator color="#111114" size="small" />
-                  : <Text style={styles.logBtnText}>Log meal</Text>
-                }
+            <View style={st.resultActions}>
+              <Pressable style={[st.logBtn, saving && st.logBtnDisabled]} onPress={logMeal} disabled={saving}>
+                {saving ? <ActivityIndicator color="#111114" size="small" /> : <Text style={st.logBtnText}>{t('nutritionLog.logMeal')}</Text>}
               </Pressable>
             </View>
           </View>
         )}
 
-        {/* Logged entries for selected meal */}
+        {/* Logged entries */}
         {mealEntries.length > 0 && (
-          <View style={styles.entriesSection}>
-            <View style={styles.entriesHeader}>
-              <Text style={styles.entriesTitle}>
-                {MEALS.find(m => m.key === selectedMeal)?.label}
-              </Text>
-              <Text style={styles.entriesTotalCal}>{Math.round(mealTotals.calories)} kcal</Text>
+          <View style={st.entriesSection}>
+            <View style={st.entriesHeader}>
+              <Text style={st.entriesTitle}>{t(`nutrition.meals.${selectedMeal}`)}</Text>
+              <Text style={st.entriesTotalCal}>{t('nutrition.kcal', { value: Math.round(mealTotals.calories) })}</Text>
             </View>
-            <Text style={styles.entriesTotalMacros}>
-              P: {Math.round(mealTotals.protein)}g · C: {Math.round(mealTotals.carbs)}g · F: {Math.round(mealTotals.fat)}g
-            </Text>
+            <Text style={st.entriesTotalMacros}>{t('nutrition.mealMacros', { p: Math.round(mealTotals.protein), c: Math.round(mealTotals.carbs), f: Math.round(mealTotals.fat) })}</Text>
             {mealEntries.map(entry => (
-              <View key={entry.id} style={styles.entryRow}>
+              <View key={entry.id} style={st.entryRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.entryName} numberOfLines={1}>{entry.food_name}</Text>
-                  <Text style={styles.entryMacros}>
-                    P: {Math.round(entry.protein_g)}g · C: {Math.round(entry.carbs_g)}g · F: {Math.round(entry.fat_g)}g
-                  </Text>
+                  <Text style={st.entryName} numberOfLines={1}>{entry.food_name}</Text>
+                  <Text style={st.entryMacros}>{t('nutrition.mealMacros', { p: Math.round(entry.protein_g), c: Math.round(entry.carbs_g), f: Math.round(entry.fat_g) })}</Text>
                 </View>
-                <Text style={styles.entryCal}>{Math.round(entry.calories)} kcal</Text>
-                <Pressable onPress={() => deleteEntry(entry.id)} style={styles.deleteBtn} hitSlop={8}>
-                  <Text style={styles.deleteText}>✕</Text>
+                <Text style={st.entryCal}>{t('nutrition.kcal', { value: Math.round(entry.calories) })}</Text>
+                <Pressable onPress={() => deleteEntry(entry.id)} style={st.deleteBtn} hitSlop={8}>
+                  <Text style={st.deleteText}>✕</Text>
                 </Pressable>
               </View>
             ))}
@@ -409,89 +416,81 @@ export default function NutritionLogScreen({ onClose, initialMeal }) {
         )}
       </ScrollView>
 
+      {/* Manual entry modal */}
+      <Modal visible={showManual} transparent animationType="slide" onRequestClose={() => setShowManual(false)}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <Pressable style={st.modalOverlay} onPress={() => setShowManual(false)}>
+            <Pressable style={[st.modalCard, { paddingBottom: insets.bottom + 20 }]} onPress={e => e.stopPropagation()}>
+              <Text style={st.modalTitle}>{t('nutritionLog.manualEntry')}</Text>
+              <TextInput style={st.modalInput} value={manualName} onChangeText={setManualName} placeholder={t('nutritionLog.foodName')} placeholderTextColor="#3D3D4A" />
+              <View style={st.modalMacroRow}>
+                {[['calories', manualCal, setManualCal], ['protein', manualP, setManualP], ['carbs', manualC, setManualC], ['fat', manualF, setManualF]].map(([macroKey, val, setter]) => (
+                  <View key={macroKey} style={st.modalMacroField}>
+                    <TextInput style={st.modalMacroInput} value={val} onChangeText={setter} keyboardType="number-pad" placeholder="0" placeholderTextColor="#3D3D4A" />
+                    <Text style={st.modalMacroLabel}>{t(`nutritionLog.manualMacros.${macroKey}`)}</Text>
+                  </View>
+                ))}
+              </View>
+              <Pressable style={st.logBtn} onPress={logManual}>
+                <Text style={st.logBtnText}>{t('nutritionLog.addTo', { meal: t(`nutrition.meals.${selectedMeal}`) })}</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
+const st = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13' },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 20, paddingTop: 16, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35',
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 16, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
   title: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
   doneBtn: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-
   mealTabs: { paddingVertical: 16 },
-  mealTab: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: '#1A1A20', borderWidth: 0.5, borderColor: '#2C2C35',
-  },
+  mealTab: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#1A1A20', borderWidth: 0.5, borderColor: '#2C2C35' },
   mealTabActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF44' },
   mealTabText: { fontSize: 13, color: '#71717A', fontWeight: '500' },
   mealTabTextActive: { color: '#FFFFFF' },
 
-  inputCard: {
-    marginHorizontal: 20, marginBottom: 16,
-    backgroundColor: '#1A1A20', borderRadius: 16,
-    padding: 16, borderWidth: 0.5, borderColor: '#2C2C35',
-  },
-  input: {
-    color: '#FFFFFF', fontSize: 15, lineHeight: 22,
-    minHeight: 72, marginBottom: 12,
-  },
+  quickAddSection: { paddingHorizontal: 20, marginBottom: 12 },
+  quickAddLabel: { fontSize: 10, color: '#52525B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  quickAddChip: { backgroundColor: '#1A1A20', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 0.5, borderColor: '#2C2C35', maxWidth: 130 },
+  quickAddName: { fontSize: 12, color: '#FFFFFF', fontWeight: '500', marginBottom: 2 },
+  quickAddCal: { fontSize: 10, color: '#52525B' },
+
+  inputCard: { marginHorizontal: 20, marginBottom: 8, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  input: { color: '#FFFFFF', fontSize: 15, lineHeight: 22, minHeight: 72, marginBottom: 12 },
   inputActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  micBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 13,
-    borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35',
-    backgroundColor: '#12121A',
-  },
-  micBtnActive: { borderColor: '#E24B4A33', backgroundColor: '#E24B4A11' },
-  micBtnText: { fontSize: 13, color: '#71717A', fontWeight: '500' },
-  micBtnTextActive: { color: '#E24B4A' },
-  calcBtn: {
-    flex: 1, backgroundColor: '#FFFFFF', borderRadius: 12,
-    paddingVertical: 13, alignItems: 'center',
-  },
+  iconBtn: { padding: 12, borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', backgroundColor: '#12121A' },
+  iconBtnActive: { borderColor: '#E24B4A33', backgroundColor: '#E24B4A11' },
+  calcBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
   calcBtnDisabled: { opacity: 0.35 },
   calcBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
+  premiumNote: { padding: 4 },
+  premiumNoteText: { fontSize: 13, color: '#52525B', lineHeight: 20 },
 
-  resultCard: {
-    marginHorizontal: 20, marginBottom: 16,
-    backgroundColor: '#1A1A20', borderRadius: 16,
-    padding: 16, borderWidth: 0.5, borderColor: '#2C2C35',
-  },
+  manualBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginBottom: 16, paddingVertical: 4 },
+  manualBtnText: { fontSize: 13, color: '#71717A' },
+
+  resultCard: { marginHorizontal: 20, marginBottom: 16, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
   resultHeading: { fontSize: 13, color: '#71717A', fontWeight: '500', marginBottom: 4 },
   resultTip: { fontSize: 11, color: '#3D3D4A', marginBottom: 12 },
-  resultItem: {
-    paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35',
-  },
+  resultItem: { paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
   resultItemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   resultItemName: { fontSize: 14, color: '#FFFFFF', fontWeight: '500', flex: 1, marginRight: 8 },
   removeBtnText: { color: '#52525B', fontSize: 12 },
   editFields: { flexDirection: 'row', gap: 8 },
   editField: { alignItems: 'center' },
-  editInput: {
-    backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 4, paddingVertical: 6,
-    color: '#FFFFFF', fontSize: 13, width: 56, textAlign: 'center',
-  },
+  editInput: { backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 4, paddingVertical: 6, color: '#FFFFFF', fontSize: 13, width: 56, textAlign: 'center' },
   editInputReadonly: { color: '#71717A' },
   editLabel: { fontSize: 10, color: '#52525B', marginTop: 3 },
-
-  resultTotals: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingTop: 12, marginTop: 2, gap: 8,
-  },
+  resultTotals: { flexDirection: 'row', alignItems: 'center', paddingTop: 12, marginTop: 2, gap: 8 },
   totalLabel: { fontSize: 13, color: '#FFFFFF', fontWeight: '600' },
   totalMacros: { fontSize: 11, color: '#71717A' },
   totalCal: { fontSize: 14, color: '#FFFFFF', fontWeight: '700', minWidth: 58, textAlign: 'right' },
-
   resultActions: { flexDirection: 'row', gap: 8, marginTop: 14 },
-  logBtn: {
-    flex: 1, backgroundColor: '#FFFFFF',
-    borderRadius: 12, paddingVertical: 12, alignItems: 'center',
-  },
+  logBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   logBtnDisabled: { opacity: 0.4 },
   logBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
 
@@ -500,14 +499,19 @@ const styles = StyleSheet.create({
   entriesTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
   entriesTotalCal: { fontSize: 14, color: '#FFFFFF', fontWeight: '600' },
   entriesTotalMacros: { fontSize: 11, color: '#52525B', marginBottom: 10 },
-  entryRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#1A1A20', gap: 8,
-  },
+  entryRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#1A1A20', gap: 8 },
   entryName: { fontSize: 14, color: '#FFFFFF', fontWeight: '500' },
   entryMacros: { fontSize: 11, color: '#71717A', marginTop: 2 },
   entryCal: { fontSize: 13, color: '#A1A1AA', fontWeight: '500' },
   deleteBtn: { paddingLeft: 4 },
   deleteText: { color: '#52525B', fontSize: 12 },
 
+  modalOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 12 },
+  modalTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  modalInput: { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 15 },
+  modalMacroRow: { flexDirection: 'row', gap: 8 },
+  modalMacroField: { flex: 1, alignItems: 'center' },
+  modalMacroInput: { backgroundColor: '#2C2C35', borderRadius: 8, padding: 10, color: '#FFFFFF', fontSize: 15, width: '100%', textAlign: 'center', marginBottom: 4 },
+  modalMacroLabel: { fontSize: 10, color: '#52525B' },
 });

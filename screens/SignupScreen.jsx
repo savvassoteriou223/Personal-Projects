@@ -3,8 +3,11 @@ import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, Scroll
 import * as Linking from 'expo-linking';
 import { supabase } from '../supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+import { friendlyAuthError } from '../lib/errorMessage';
 
 export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [dobDay, setDobDay] = useState('');
@@ -17,33 +20,6 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [lastCharVisiblePw, setLastCharVisiblePw] = useState(false);
-  const [lastCharVisibleCf, setLastCharVisibleCf] = useState(false);
-  const maskTimerPw = useRef(null);
-  const maskTimerCf = useRef(null);
-  const prevPwLen = useRef(0);
-  const prevCfLen = useRef(0);
-
-  const makePasswordHandler = (getValue, setValue, prevLen, setVisible, timer) => (newMasked) => {
-    const pLen = prevLen.current;
-    const nLen = newMasked.length;
-    let newActual;
-    if (nLen > pLen) {
-      newActual = getValue() + newMasked.slice(pLen);
-      setVisible(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setVisible(false), 700);
-    } else {
-      newActual = getValue().slice(0, nLen);
-      setVisible(false);
-      if (timer.current) clearTimeout(timer.current);
-    }
-    prevLen.current = nLen;
-    setValue(newActual);
-  };
-
-  const maskValue = (val, visible, show) =>
-    show ? val : val.length === 0 ? '' : '•'.repeat(val.length - (visible ? 1 : 0)) + (visible ? val[val.length - 1] : '');
   const [emailSent, setEmailSent] = useState(false);
 
   const monthRef = useRef();
@@ -51,7 +27,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
 
   const handleSignup = async () => {
     if (!name || !email || !dobDay || !dobMonth || !dobYear || !sex || !password || !confirm) {
-      setError('Please fill in all fields.'); return;
+      setError(t('auth.errors.fillAll')); return;
     }
     const day = parseInt(dobDay, 10);
     const month = parseInt(dobMonth, 10);
@@ -62,19 +38,19 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
       day < 1 || day > 31 || month < 1 || month > 12 ||
       year < 1900 || year > now.getFullYear()
     ) {
-      setError('Please enter a valid date of birth.'); return;
+      setError(t('auth.errors.validDob')); return;
     }
     const dob = new Date(year, month - 1, day);
     if (dob.getMonth() + 1 !== month || dob.getDate() !== day) {
-      setError('Please enter a valid date of birth.'); return;
+      setError(t('auth.errors.validDob')); return;
     }
     let age = now.getFullYear() - dob.getFullYear();
     const monthDiff = now.getMonth() - dob.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) age--;
-    if (age < 13 || age > 120) { setError('You must be at least 13 to sign up.'); return; }
+    if (age < 13 || age > 120) { setError(t('auth.errors.minAge')); return; }
 
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
-    if (password !== confirm) { setError('Passwords do not match.'); return; }
+    if (password.length < 8) { setError(t('auth.errors.passwordShort')); return; }
+    if (password !== confirm) { setError(t('auth.errors.passwordMismatch')); return; }
 
     setLoading(true);
     setError('');
@@ -91,7 +67,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
     });
 
     setLoading(false);
-    if (signUpError) { setError(signUpError.message); return; }
+    if (signUpError) { setError(friendlyAuthError(signUpError, t)); return; }
     if (data.session) {
       // Email confirmation disabled — navigate immediately.
       onSignup && onSignup();
@@ -105,13 +81,13 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
     return (
       <SafeAreaView style={[styles.container, { padding: 24, justifyContent: 'center', flex: 1 }]} edges={['top', 'bottom']}>
         <View style={styles.sentBox}>
-          <Text style={styles.sentTitle}>Check your email</Text>
+          <Text style={styles.sentTitle}>{t('auth.emailSent.title')}</Text>
           <Text style={styles.sentText}>
-            We sent a confirmation link to {email}. Tap it to activate your account — it only takes a second.
+            {t('auth.emailSent.text', { email })}
           </Text>
         </View>
         <Pressable onPress={onGoToLogin} style={[styles.btn, { marginTop: 24 }]}>
-          <Text style={styles.btnText}>Back to sign in</Text>
+          <Text style={styles.btnText}>{t('auth.backToSignIn')}</Text>
         </Pressable>
         <Pressable
           onPress={async () => {
@@ -119,7 +95,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           }}
           style={{ alignItems: 'center', marginTop: 16 }}
         >
-          <Text style={{ color: '#71717A', fontSize: 14 }}>Didn't get it? Resend email</Text>
+          <Text style={{ color: '#71717A', fontSize: 14 }}>{t('auth.emailSent.resend')}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -138,32 +114,32 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           showsVerticalScrollIndicator={false}
         >
           <Pressable onPress={onGoBack} style={{ paddingBottom: 24 }}>
-            <Text style={{ color: '#71717A', fontSize: 15 }}>← Back</Text>
+            <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.back')}</Text>
           </Pressable>
 
-          <Text style={styles.title}>Create account</Text>
-          <Text style={styles.sub}>Free forever. Upgrade when you're ready.</Text>
+          <Text style={styles.title}>{t('auth.signup.title')}</Text>
+          <Text style={styles.sub}>{t('auth.signup.subtitle')}</Text>
 
-          <Text style={styles.label}>Name</Text>
+          <Text style={styles.label}>{t('auth.signup.name')}</Text>
           <View style={styles.inputWrap}>
             <TextInput
               style={styles.inputInner}
               value={name}
               onChangeText={setName}
-              placeholder="Alex"
+              placeholder={t('auth.signup.namePlaceholder')}
               placeholderTextColor="#3D3D4A"
               autoCapitalize="words"
               returnKeyType="next"
             />
           </View>
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t('auth.email')}</Text>
           <View style={styles.inputWrap}>
             <TextInput
               style={styles.inputInner}
               value={email}
               onChangeText={setEmail}
-              placeholder="you@email.com"
+              placeholder={t('auth.emailPlaceholder')}
               placeholderTextColor="#3D3D4A"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -171,7 +147,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
             />
           </View>
 
-          <Text style={styles.label}>Date of birth</Text>
+          <Text style={styles.label}>{t('auth.signup.dob')}</Text>
           <View style={styles.dobRow}>
             <View style={[styles.inputWrap, styles.dobDay]}>
               <TextInput
@@ -213,58 +189,57 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
             </View>
           </View>
 
-          <View style={styles.row}>
-            <View style={styles.rowHalf}>
-              <Text style={styles.label}>Sex</Text>
-              <View style={styles.sexRow}>
-                {['Male', 'Female'].map(s => (
-                  <Pressable
-                    key={s}
-                    style={[styles.sexBtn, sex === s.toLowerCase() && styles.sexBtnActive]}
-                    onPress={() => setSex(s.toLowerCase())}
-                  >
-                    <Text style={[styles.sexBtnText, sex === s.toLowerCase() && styles.sexBtnTextActive]}>
-                      {s}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
+          <Text style={styles.label}>{t('auth.signup.sex')}</Text>
+          <Text style={styles.inputSub}>{t('auth.signup.sexSub')}</Text>
+          <View style={styles.sexRow}>
+            {[['male', t('auth.signup.male')], ['female', t('auth.signup.female')], ['other', t('auth.signup.other')]].map(([val, label]) => (
+              <Pressable
+                key={val}
+                style={[styles.sexBtn, sex === val && styles.sexBtnActive]}
+                onPress={() => setSex(val)}
+              >
+                <Text style={[styles.sexBtnText, sex === val && styles.sexBtnTextActive]}>{label}</Text>
+              </Pressable>
+            ))}
           </View>
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t('auth.password')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={[styles.inputInner, { flex: 1 }]}
-              value={maskValue(password, lastCharVisiblePw, showPassword)}
-              onChangeText={makePasswordHandler(() => password, setPassword, prevPwLen, setLastCharVisiblePw, maskTimerPw)}
-              placeholder="Min. 8 characters"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              placeholder={t('auth.signup.minChars')}
               placeholderTextColor="#3D3D4A"
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
+              textContentType="newPassword"
               returnKeyType="next"
             />
             <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-              <Text style={styles.eyeText}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <Text style={styles.eyeText}>{showPassword ? t('auth.hide') : t('auth.show')}</Text>
             </Pressable>
           </View>
 
-          <Text style={styles.label}>Confirm password</Text>
+          <Text style={styles.label}>{t('auth.signup.confirmPassword')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={[styles.inputInner, { flex: 1 }]}
-              value={maskValue(confirm, lastCharVisibleCf, showConfirm)}
-              onChangeText={makePasswordHandler(() => confirm, setConfirm, prevCfLen, setLastCharVisibleCf, maskTimerCf)}
-              placeholder="Repeat password"
+              value={confirm}
+              onChangeText={setConfirm}
+              secureTextEntry={!showConfirm}
+              placeholder={t('auth.signup.confirmPlaceholder')}
               placeholderTextColor="#3D3D4A"
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
+              textContentType="newPassword"
               returnKeyType="done"
             />
             <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
-              <Text style={styles.eyeText}>{showConfirm ? 'Hide' : 'Show'}</Text>
+              <Text style={styles.eyeText}>{showConfirm ? t('auth.hide') : t('auth.show')}</Text>
             </Pressable>
           </View>
 
@@ -277,17 +252,17 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           >
             {loading
               ? <ActivityIndicator color="#111114" />
-              : <Text style={styles.btnText}>Create account</Text>
+              : <Text style={styles.btnText}>{t('auth.signup.createAccount')}</Text>
             }
           </Pressable>
 
           <Text style={styles.legal}>
-            By signing up you agree to our Terms of Service and Privacy Policy.
+            {t('auth.signup.legal')}
           </Text>
 
           <Pressable onPress={onGoToLogin} style={styles.switchLink}>
             <Text style={styles.switchText}>
-              Already have an account? <Text style={styles.switchHighlight}>Sign in</Text>
+              {t('auth.signup.haveAccount')} <Text style={styles.switchHighlight}>{t('auth.signup.signIn')}</Text>
             </Text>
           </Pressable>
         </ScrollView>
@@ -301,6 +276,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
   sub: { fontSize: 15, color: '#71717A', marginBottom: 40 },
   label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
+  inputSub: { fontSize: 12, color: '#52525B', marginTop: -4, marginBottom: 8 },
   inputWrap: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   inputInner: { padding: 16, color: '#FFFFFF', fontSize: 16, backgroundColor: 'transparent' },
   inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },

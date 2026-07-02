@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Dimensions, Alert, KeyboardAvoidingView, Platform, Modal, AppState } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import StudyChart from './StudyChart';
+import { getExerciseInsight } from './studiesLibrary';
 import MuscleMap from './MuscleMap';
 import ExerciseSlideshow from './ExerciseSlideshow';
+import CoachScreen from './CoachScreen';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { checkReadyToProgress } from './programGenerator';
 
@@ -24,6 +27,18 @@ function findExerciseByName(name) {
   }
   return null;
 }
+
+// All library exercises grouped by primary muscle — used by the mid-workout
+// "Replace exercise" picker so a lifter can swap across muscle groups on the fly.
+const EXERCISE_GROUPS = (() => {
+  const groups = {};
+  Object.entries(MOVEMENT_PATTERNS).forEach(([key, p]) => {
+    const muscle = (p.muscles && p.muscles[0]) || p.label || key;
+    if (!groups[muscle]) groups[muscle] = [];
+    p.exercises.forEach(ex => groups[muscle].push({ name: ex.name, patternKey: key }));
+  });
+  return Object.entries(groups).map(([muscle, items]) => ({ muscle, items }));
+})();
 
 // ─── Muscle extraction helper ─────────────────────────────────────────────────
 // movementLibrary exercises have a 'muscles' string (legacy) or we derive from pattern
@@ -70,10 +85,11 @@ function exerciseToSetState(ex) {
   };
 }
 
+// label/sub are resolved from i18n at render (workout.simpleRpe.{key} / {key}Sub).
 const SIMPLE_RPE_OPTIONS = [
-  { label: 'Easy', rpe: 6, sub: 'Had plenty left in the tank' },
-  { label: 'Solid', rpe: 8, sub: 'Challenging but controlled' },
-  { label: 'Max', rpe: 10, sub: 'Gave everything — full recovery needed' },
+  { key: 'easy', rpe: 6 },
+  { key: 'solid', rpe: 8 },
+  { key: 'max', rpe: 10 },
 ];
 
 const SET_TYPES = ['working', 'warmup', 'drop', 'failure'];
@@ -99,6 +115,7 @@ function calculatePlates(targetKg, barKg) {
 }
 
 export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const isSimple = workout.trainingExperience === 'beginner';
   const [currentExIdx, setCurrentExIdx] = useState(0);
@@ -111,6 +128,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
   const [restWarning, setRestWarning] = useState(null);
   const [slideshowExercise, setSlideshowExercise] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showCoach, setShowCoach] = useState(false);
 
   // ─── Restore workout draft from AsyncStorage (survives app backgrounding) ─
   useEffect(() => {
@@ -124,9 +142,37 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         draftCompletions.current = {};
         draft.completions.forEach(c => { draftCompletions.current[c.name] = c.completedSets; });
 
-        setSets(prev => prev.map(ex => {
-          const saved = draftCompletions.current[ex.name];
-          return saved ? { ...ex, completedSets: saved } : ex;
+        setSets(prev => prev.map((ex, i) => {
+          // Restore any exercise swap that happened before the app closed
+          let base = ex;
+          const savedName = draft.exerciseNames?.[i];
+          if (savedName && savedName !== ex.name) {
+            const result = findExerciseByName(savedName);
+            if (result) {
+              const { exercise: newEx, pattern } = result;
+              base = {
+                ...ex,
+                name: newEx.name,
+                primaryMuscles: pattern?.muscles ?? [],
+                secondaryMuscles: [],
+                target_sets: newEx.sets ?? ex.target_sets,
+                target_reps: newEx.reps ?? ex.target_reps,
+                rest: newEx.rest ?? ex.rest,
+                early_rpe: newEx.early_rpe ?? ex.early_rpe,
+                last_rpe: newEx.last_rpe ?? ex.last_rpe,
+                research_note: newEx.research_note ?? '',
+                cues: newEx.cues ?? [],
+                study: newEx.study ?? null,
+                completedSets: Array.from(
+                  { length: newEx.sets ?? ex.target_sets },
+                  () => ({ weight: '', reps: '', done: false })
+                ),
+              };
+            }
+          }
+          // Then restore completed sets
+          const saved = draftCompletions.current[base.name];
+          return saved ? { ...base, completedSets: saved } : base;
         }));
 
         if (typeof draft.currentExIdx === 'number') setCurrentExIdx(draft.currentExIdx);
@@ -142,21 +188,28 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
     clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
       try {
-        const draft = {
-          workoutId: workout.id,
-          workout,
-          completions: sets.map(ex => ({ name: ex.name, completedSets: ex.completedSets })),
-          currentExIdx,
-          rpe,
-          finished,
-          finishTime,
-          startTime: startTime.current,
-        };
-        await AsyncStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(draft));
+        await AsyncStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(latestDraftRef.current));
       } catch (_) {}
-    }, 500);
+    }, 300);
     return () => clearTimeout(draftTimer.current);
   }, [sets, currentExIdx, rpe, finished, finishTime]);
+
+  // ─── Flush draft immediately when app goes to background ─────────────────
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', async (nextState) => {
+      if (nextState === 'background' || nextState === 'inactive') {
+        clearTimeout(draftTimer.current);
+        // Flush finished-but-unsaved sessions too — otherwise tapping Finish,
+        // backgrounding, and getting killed loses the whole workout.
+        if (latestDraftRef.current) {
+          try {
+            await AsyncStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(latestDraftRef.current));
+          } catch (_) {}
+        }
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   // ─── Load AI coach additions for this day ────────────────────────────────
   useEffect(() => {
@@ -211,14 +264,34 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
 
   // ─── Swap alternative in for current exercise ─────────────────────────────
   const swapExercise = (exIdx, altName, subIdx) => {
+    // Warn if the chosen exercise is already in today's workout — replacing would
+    // give the user the same movement twice.
+    const dup = sets.some((e, i) =>
+      i !== exIdx && e.name?.toLowerCase().trim() === altName?.toLowerCase().trim()
+    );
+    if (dup) {
+      Alert.alert(
+        t('workout.alerts.dupTitle'),
+        t('workout.alerts.dupMsg', { name: altName }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('workout.alerts.doItAnyway'), onPress: () => confirmSwapClearingSets(exIdx, altName, subIdx) },
+        ]
+      );
+      return;
+    }
+    confirmSwapClearingSets(exIdx, altName, subIdx);
+  };
+
+  const confirmSwapClearingSets = (exIdx, altName, subIdx) => {
     const hasDoneSets = sets[exIdx]?.completedSets.some(s => s.done);
     if (hasDoneSets) {
       Alert.alert(
-        'Replace exercise?',
-        'You\'ve already logged sets for this exercise. Swapping will clear them.',
+        t('workout.alerts.replaceTitle'),
+        t('workout.alerts.replaceMsg'),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Replace', style: 'destructive', onPress: () => doSwap(exIdx, altName, subIdx) },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('workout.alerts.replace'), style: 'destructive', onPress: () => doSwap(exIdx, altName, subIdx) },
         ]
       );
       return;
@@ -237,13 +310,18 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
       if (subIdx === 0) subs.sub1 = ex.name;
       else if (subIdx === 1) subs.sub2 = ex.name;
       else if (subIdx === 2) subs.sub3 = ex.name;
+      // Sets and reps belong to the SLOT (its role/volume in your program), not
+      // to the exercise — a quad main is 4 sets whether it's a leg press or a
+      // hack squat. Preserve the slot's prescription so a swap changes only the
+      // movement, not the volume. (Matches how permanent edits regenerate too.)
+      const keepSets = ex.target_sets;
       return {
         ...ex,
         name: newEx.name,
         primaryMuscles: pattern.muscles ?? [],
         secondaryMuscles: [],
-        target_sets: newEx.sets ?? ex.target_sets,
-        target_reps: newEx.reps ?? ex.target_reps,
+        target_sets: keepSets,
+        target_reps: ex.target_reps,
         rest: newEx.rest ?? ex.rest,
         early_rpe: ex.early_rpe,
         last_rpe: ex.last_rpe,
@@ -252,24 +330,105 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         study: newEx.study ?? null,
         ...subs,
         completedSets: Array.from(
-          { length: newEx.sets ?? ex.target_sets },
+          { length: keepSets },
           () => ({ weight: '', reps: '', done: false })
         ),
       };
     }));
   };
+  // ─── Apply an AI coach edit to the in-progress workout immediately ────────
+  // Without this the override only lands in supabase, so the change would not
+  // show until the workout is closed and reopened.
+  const applyCoachEdit = (p) => {
+    if (!p || p.day_id !== workout.id) return;
+    const editType = p.edit_type || 'replace_exercise';
+
+    if (editType === 'add_exercise' || p.type === 'add_exercise') {
+      const found = findExerciseByName(p.exercise_name || '');
+      const ex = found?.exercise || {};
+      const pattern = found?.pattern;
+      const newEx = exerciseToSetState({
+        name: p.exercise_name,
+        muscles: ex.muscles || pattern?.muscles?.join(', ') || '',
+        primaryMuscles: ex.primaryMuscles || pattern?.muscles || [],
+        secondaryMuscles: ex.secondaryMuscles || [],
+        sets: p.sets || 3,
+        reps: p.reps || '10–15',
+        rest: p.rest || '90 sec',
+        early_rpe: ex.early_rpe,
+        last_rpe: ex.last_rpe,
+        research_note: ex.research_note || '',
+        cues: ex.cues || [],
+        sub1: ex.sub1 || '',
+        sub2: ex.sub2 || '',
+        sub3: ex.sub3 || '',
+        study: ex.study || null,
+      });
+      setSets(prev => prev.some(e => e.name === newEx.name) ? prev : [...prev, newEx]);
+      return;
+    }
+
+    const inRange = (i) => i >= 0 && i < sets.length;
+    let idx = p.exercise_index ?? -1;
+
+    if (editType === 'remove_exercise') {
+      if (!inRange(idx)) return; // removing the wrong slot would be destructive
+      setSets(prev => prev.filter((_, i) => i !== idx));
+      setCurrentExIdx(i => Math.max(0, Math.min(i, sets.length - 2)));
+      return;
+    }
+
+    // Replace / sets-reps changes: if the model handed back a program index that
+    // doesn't line up with the live session (common on a "now & future" edit),
+    // fall back to the exercise the user is currently on — so "replace this"
+    // always changes what's in front of them, now, for both scope options.
+    if (!inRange(idx)) idx = currentExIdx;
+    if (!inRange(idx)) return;
+
+    if (editType === 'replace_exercise' && p.exercise_name) {
+      doSwap(idx, p.exercise_name, -1);
+    }
+
+    if (p.sets || p.reps) {
+      setSets(prev => prev.map((ex, i) => {
+        if (i !== idx) return ex;
+        const n = typeof p.sets === 'number' ? p.sets : ex.target_sets;
+        const completedSets = ex.completedSets.slice(0, n);
+        while (completedSets.length < n) completedSets.push({ weight: '', reps: '', done: false, type: 'working' });
+        return { ...ex, target_sets: n, target_reps: p.reps || ex.target_reps, completedSets };
+      }));
+    }
+  };
+
   const [overloadSuggestions, setOverloadSuggestions] = useState([]);
   const [elapsed, setElapsed] = useState(0);
   const [pageWidth, setPageWidth] = useState(SCREEN_W);
   const [userBodyWeight, setUserBodyWeight] = useState(null);
   const [bwMode, setBwMode] = useState({});
   const [showPlateCalc, setShowPlateCalc] = useState(false);
+  const [replaceIdx, setReplaceIdx] = useState(null);
+  const [replaceSearch, setReplaceSearch] = useState('');
+  const [replaceMuscleFilter, setReplaceMuscleFilter] = useState(null);
   const [plateTarget, setPlateTarget] = useState('');
   const [barWeight, setBarWeight] = useState(20);
   const startTime = useRef(Date.now());
   const swipeRef = useRef(null);
   const draftCompletions = useRef(null); // { exerciseName -> completedSets[] } restored from AsyncStorage
   const draftTimer = useRef(null);
+  const latestDraftRef = useRef(null); // always-current draft — read by AppState flush
+
+  // Always-current snapshot — updated synchronously every render so AppState flush has fresh data
+  latestDraftRef.current = {
+    workoutId: workout.id,
+    workout,
+    exerciseNames: sets.map(ex => ex.name),
+    completions: sets.map(ex => ({ name: ex.name, completedSets: ex.completedSets })),
+    currentExIdx,
+    rpe,
+    finished,
+    finishTime,
+    startTime: startTime.current,
+  };
 
   useEffect(() => {
     if (finished) return;
@@ -281,7 +440,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
 
   useEffect(() => {
     if (!restTimer || restTimer <= 0) return;
-    const timeout = setTimeout(() => setRestTimer(t => t - 1), 1000);
+    const timeout = setTimeout(() => setRestTimer(sec => sec - 1), 1000);
     return () => clearTimeout(timeout);
   }, [restTimer]);
 
@@ -469,10 +628,13 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
       if (session) {
         // Save completed sets (include user_id for direct history queries)
         const now = new Date().toISOString();
+        // Keep the original set index — filtering first renumbered sets when one
+        // in the middle was skipped (set 3 was saved as set_number 2).
         const completedSets = sets.flatMap((ex) =>
           ex.completedSets
-            .filter(s => s.done)
-            .map((s, setIdx) => ({
+            .map((s, setIdx) => ({ s, setIdx }))
+            .filter(({ s }) => s.done)
+            .map(({ s, setIdx }) => ({
               session_id: session.id,
               user_id: user.id,
               exercise_name: ex.name,
@@ -536,7 +698,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
     } catch (err) {
       console.error('saveWorkout error:', err);
       setSaving(false);
-      Alert.alert('Save failed', 'Could not save your workout. Please try again.');
+      Alert.alert(t('workout.alerts.saveFailTitle'), t('workout.alerts.saveFailMsg'));
     }
   };
 
@@ -548,28 +710,28 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
     return (
       <ScrollView style={styles.container} contentContainerStyle={[styles.finishScreen, { paddingTop: insets.top + 24 }]}>
         <Pressable onPress={() => setFinished(false)} style={styles.finishBackBtn}>
-          <Text style={styles.finishBackText}>← Back</Text>
+          <Text style={styles.finishBackText}>← {t('common.back')}</Text>
         </Pressable>
-        <Text style={styles.finishTitle}>Session complete</Text>
+        <Text style={styles.finishTitle}>{t('workout.finish.title')}</Text>
         <Text style={styles.finishSub}>{workout.name}</Text>
 
         <View style={styles.finishStats}>
           <View style={styles.finishStat}>
             <Text style={styles.finishStatVal} numberOfLines={1} adjustsFontSizeToFit>{formatTime(Math.floor(((finishTime ?? Date.now()) - startTime.current) / 1000))}</Text>
-            <Text style={styles.finishStatLabel}>Duration</Text>
+            <Text style={styles.finishStatLabel}>{t('workout.finish.duration')}</Text>
           </View>
           <View style={styles.finishStat}>
             <Text style={styles.finishStatVal} numberOfLines={1} adjustsFontSizeToFit>{totalSetsCompleted}</Text>
-            <Text style={styles.finishStatLabel}>Sets done</Text>
+            <Text style={styles.finishStatLabel}>{t('workout.finish.setsDone')}</Text>
           </View>
           <View style={styles.finishStat}>
             <Text style={styles.finishStatVal} numberOfLines={1} adjustsFontSizeToFit>{sets.length}</Text>
-            <Text style={styles.finishStatLabel}>Exercises</Text>
+            <Text style={styles.finishStatLabel}>{t('workout.finish.exercises')}</Text>
           </View>
         </View>
 
         <Text style={styles.rpeLabel}>
-          {isSimple ? 'How did that feel?' : `How hard was it? (RPE ${rpe}/10)`}
+          {isSimple ? t('workout.finish.howFeel') : t('workout.finish.howHard', { rpe })}
         </Text>
         {isSimple ? (
           <View style={styles.simpleRpeRow}>
@@ -579,7 +741,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 style={[styles.simpleRpeBtn, rpe === opt.rpe && styles.simpleRpeBtnActive]}
                 onPress={() => setRpe(opt.rpe)}
               >
-                <Text style={[styles.simpleRpeBtnText, rpe === opt.rpe && styles.simpleRpeBtnTextActive]}>{opt.label}</Text>
+                <Text style={[styles.simpleRpeBtnText, rpe === opt.rpe && styles.simpleRpeBtnTextActive]}>{t(`workout.simpleRpe.${opt.key}`)}</Text>
               </Pressable>
             ))}
           </View>
@@ -598,16 +760,16 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         )}
         <Text style={styles.rpeSub}>
           {isSimple
-            ? (SIMPLE_RPE_OPTIONS.find(o => o.rpe === rpe)?.sub || 'Tap to rate your session')
-            : rpe <= 5 ? 'Easy — consider increasing weight next session'
-              : rpe <= 7 ? 'Good training zone'
-              : rpe <= 9 ? 'High effort — solid work'
-              : 'Max effort — ensure full recovery before next session'}
+            ? (() => { const o = SIMPLE_RPE_OPTIONS.find(o => o.rpe === rpe); return o ? t(`workout.simpleRpe.${o.key}Sub`) : t('workout.finish.tapToRate'); })()
+            : rpe <= 5 ? t('workout.finish.rpeEasy')
+              : rpe <= 7 ? t('workout.finish.rpeGood')
+              : rpe <= 9 ? t('workout.finish.rpeHigh')
+              : t('workout.finish.rpeMax')}
         </Text>
 
         {overloadSuggestions.length > 0 && (
           <View style={styles.overloadCard}>
-            <Text style={styles.overloadTitle}>Next session targets</Text>
+            <Text style={styles.overloadTitle}>{t('workout.finish.nextTargets')}</Text>
             {overloadSuggestions.map((s, i) => (
               <View key={i} style={styles.overloadRow}>
                 <View style={[styles.overloadDot, { backgroundColor: s.type === 'increase' ? '#1D9E75' : '#FFFFFF' }]} />
@@ -621,7 +783,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         )}
 
         <Pressable style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={saveWorkout} disabled={saving}>
-          <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Save workout'}</Text>
+          <Text style={styles.saveBtnText}>{saving ? t('workout.finish.saving') : t('workout.finish.save')}</Text>
         </Pressable>
       </ScrollView>
     );
@@ -637,11 +799,11 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         <Pressable onPress={() => {
           if (totalSetsCompleted > 0) {
             Alert.alert(
-              'Cancel workout?',
-              'Your logged sets will not be saved.',
+              t('workout.alerts.cancelTitle'),
+              t('workout.alerts.cancelMsg'),
               [
-                { text: 'Keep going', style: 'cancel' },
-                { text: 'Cancel', style: 'destructive', onPress: onCancel },
+                { text: t('workout.alerts.keepGoing'), style: 'cancel' },
+                { text: t('common.cancel'), style: 'destructive', onPress: onCancel },
               ]
             );
           } else {
@@ -668,9 +830,14 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
             </Pressable>
           ))}
         </View>
-        <Pressable style={styles.finishBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
-          <Text style={styles.finishBtnText} numberOfLines={1}>Finish</Text>
-        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Pressable style={styles.coachTopBtn} onPress={() => setShowCoach(true)}>
+            <Text style={styles.coachTopBtnText}>{t('workout.coach')}</Text>
+          </Pressable>
+          <Pressable style={styles.finishBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
+            <Text style={styles.finishBtnText} numberOfLines={1}>{t('workout.finishBtn')}</Text>
+          </Pressable>
+        </View>
       </View>
       )}
 
@@ -690,10 +857,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
       {restWarning && (
         <View style={styles.restWarningBanner}>
           <Text style={styles.restWarningText}>
-            ! You trained {restWarning.sessionName} {restWarning.hoursAgo}h ago. Training overlapping muscles this soon may limit recovery.
+            {t('workout.restWarning', { session: restWarning.sessionName, hours: restWarning.hoursAgo })}
           </Text>
           <Pressable onPress={() => setRestWarning(null)}>
-            <Text style={styles.restWarningDismiss}>Dismiss</Text>
+            <Text style={styles.restWarningDismiss}>{t('workout.dismiss')}</Text>
           </Pressable>
         </View>
       )}
@@ -701,9 +868,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
       {/* Rest timer */}
       {restTimer > 0 && (
         <View style={styles.restBanner}>
-          <Text style={styles.restText}>Rest · {formatTime(restTimer)}</Text>
+          <Text style={styles.restText}>{t('workout.restTimer', { time: formatTime(restTimer) })}</Text>
           <Pressable onPress={() => setRestTimer(0)}>
-            <Text style={styles.restSkip}>Skip</Text>
+            <Text style={styles.restSkip}>{t('workout.skip')}</Text>
           </Pressable>
         </View>
       )}
@@ -742,14 +909,28 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
               <View style={styles.exCard}>
                 <View style={styles.exCardHeader}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.exNumber}>{exIdx + 1} of {sets.length}</Text>
+                    <Text style={styles.exNumber}>{t('workout.exNumber', { n: exIdx + 1, total: sets.length })}</Text>
                     <Pressable onPress={() => setSlideshowExercise(ex)}>
-                      <Text style={styles.exName}>{ex.name} <Text style={styles.howToTag}>▶ How to</Text></Text>
+                      <Text style={styles.exName}>{ex.name} <Text style={styles.howToTag}>{t('workout.howTo')}</Text></Text>
                     </Pressable>
+                    {(primary.length > 0 || secondary.length > 0) && (
+                      <View style={styles.muscleTagRow}>
+                        {primary.map((m, i) => (
+                          <View key={`p${i}`} style={styles.muscleTagPrimary}>
+                            <Text style={styles.muscleTagPrimaryText}>{m}</Text>
+                          </View>
+                        ))}
+                        {secondary.slice(0, 2).map((m, i) => (
+                          <View key={`s${i}`} style={styles.muscleTagSecondary}>
+                            <Text style={styles.muscleTagSecondaryText}>{m}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
                   {allSetsDone(ex) && (
                     <View style={styles.doneBadge}>
-                      <Text style={styles.doneBadgeText}>Done</Text>
+                      <Text style={styles.doneBadgeText}>{t('common.done')}</Text>
                     </View>
                   )}
                 </View>
@@ -760,7 +941,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 {ex.contraindication_substitute && (
                   <View style={styles.contraBanner}>
                     <Text style={styles.contraBannerText}>
-                      Substituted for your health conditions
+                      {t('workout.contraSub')}
                     </Text>
                   </View>
                 )}
@@ -776,25 +957,25 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 <View style={styles.prescRow}>
                   <View style={styles.prescBox}>
                     <Text style={styles.prescVal}>{ex.target_sets}</Text>
-                    <Text style={styles.prescLabel}>Sets</Text>
+                    <Text style={styles.prescLabel}>{t('workout.presc.sets')}</Text>
                   </View>
                   <View style={styles.prescBox}>
                     <Text style={styles.prescVal}>{ex.target_reps}</Text>
-                    <Text style={styles.prescLabel}>Reps</Text>
+                    <Text style={styles.prescLabel}>{t('workout.presc.reps')}</Text>
                   </View>
                   <View style={styles.prescBox}>
                     <Text style={styles.prescVal}>{ex.rest}</Text>
-                    <Text style={styles.prescLabel}>Rest</Text>
+                    <Text style={styles.prescLabel}>{t('workout.presc.rest')}</Text>
                   </View>
                   {isSimple ? (
                     <View style={[styles.prescBox, { flex: 1.5 }]}>
-                      <Text style={[styles.prescVal, { fontSize: 11 }]}>Last set hard</Text>
-                      <Text style={styles.prescLabel}>Effort</Text>
+                      <Text style={[styles.prescVal, { fontSize: 11 }]}>{t('workout.presc.lastSetHard')}</Text>
+                      <Text style={styles.prescLabel}>{t('workout.presc.effort')}</Text>
                     </View>
                   ) : (
                     <View style={styles.prescBox}>
                       <Text style={styles.prescVal}>{ex.early_rpe}→{ex.last_rpe}</Text>
-                      <Text style={styles.prescLabel}>RPE</Text>
+                      <Text style={styles.prescLabel}>{t('workout.presc.rpe')}</Text>
                     </View>
                   )}
                 </View>
@@ -802,7 +983,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 {/* Subs — tap to swap in as current exercise */}
                 {(ex.sub1 || ex.sub2 || ex.sub3) && (
                   <View style={styles.subRow}>
-                    <Text style={styles.subText}>Swap: </Text>
+                    <Text style={styles.subText}>{t('workout.swap')}</Text>
                     {[ex.sub1, ex.sub2, ex.sub3].map((sub, slotIdx) => sub ? (
                       <Pressable key={slotIdx} onPress={() => swapExercise(exIdx, sub, slotIdx)}>
                         <Text style={styles.subLink}>{sub}{slotIdx < 2 && (ex.sub2 || ex.sub3) ? ' · ' : ''}</Text>
@@ -810,6 +991,30 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                     ) : null)}
                   </View>
                 )}
+
+                {/* Replace with any exercise (cross-muscle) */}
+                <Pressable
+                  style={styles.replaceBtn}
+                  onPress={() => {
+                    setReplaceSearch('');
+                    setReplaceMuscleFilter(sets[exIdx]?.primaryMuscles?.[0] || null);
+                    setReplaceIdx(exIdx);
+                  }}
+                >
+                  <Text style={styles.replaceBtnText}>{t('workout.replaceExercise')}</Text>
+                </Pressable>
+
+                {/* Key insight — concise evidence-based "why" */}
+                {(() => {
+                  const insight = getExerciseInsight(ex);
+                  return insight ? (
+                    <View style={{ backgroundColor: '#1D9E7514', borderRadius: 10, borderWidth: 1, borderColor: '#1D9E7540', borderLeftWidth: 3, borderLeftColor: '#1D9E75', padding: 12, marginTop: 8 }}>
+                      <Text style={{ color: '#F1F0F5', fontSize: 13, lineHeight: 19, fontWeight: '500' }}>{insight.insight}</Text>
+                      {insight.metric && <Text style={{ color: '#1D9E75', fontSize: 11.5, fontWeight: '700', marginTop: 6 }}>{insight.metric.this} vs {insight.metric.control} · {insight.metric.method}</Text>}
+                      <Text style={{ color: '#52525B', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
+                    </View>
+                  ) : null;
+                })()}
 
                 {/* Study chart */}
                 {ex.study && <StudyChart study={ex.study} />}
@@ -820,21 +1025,21 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
               <View style={styles.setsCard}>
                 {/* Card toolbar */}
                 <View style={styles.setsToolbar}>
-                  <Text style={styles.setsCardTitle}>Sets</Text>
+                  <Text style={styles.setsCardTitle}>{t('workout.setsTitle')}</Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     {userBodyWeight && (
                       <Pressable
                         style={[styles.setsToolbarChip, bwMode[exIdx] && styles.setsToolbarChipActive]}
                         onPress={() => toggleBwMode(exIdx)}
                       >
-                        <Text style={[styles.setsToolbarChipText, bwMode[exIdx] && styles.setsToolbarChipTextActive]}>BW</Text>
+                        <Text style={[styles.setsToolbarChipText, bwMode[exIdx] && styles.setsToolbarChipTextActive]}>{t('workout.bw')}</Text>
                       </Pressable>
                     )}
                     <Pressable
                       style={styles.setsToolbarChip}
                       onPress={() => { setPlateTarget(''); setShowPlateCalc(true); }}
                     >
-                      <Text style={styles.setsToolbarChipText}>Plates</Text>
+                      <Text style={styles.setsToolbarChipText}>{t('workout.plates')}</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -842,18 +1047,19 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                 {prevWeights[ex.name] && (
                   <View style={styles.prevHint}>
                     <Text style={styles.prevHintText}>
-                      Last time: {prevWeights[ex.name].weight}kg
-                      {prevWeights[ex.name].reps ? ` × ${prevWeights[ex.name].reps}` : ''}
+                      {prevWeights[ex.name].reps
+                        ? t('workout.lastTimeReps', { weight: prevWeights[ex.name].weight, reps: prevWeights[ex.name].reps })
+                        : t('workout.lastTime', { weight: prevWeights[ex.name].weight })}
                     </Text>
                   </View>
                 )}
 
                 <View style={styles.setHeaderRow}>
                   <View style={{ width: 28 }} />
-                  <Text style={[styles.setHeaderText, { width: 22 }]}>Set</Text>
-                  <Text style={[styles.setHeaderText, { flex: 1 }]}>kg</Text>
-                  <Text style={[styles.setHeaderText, { flex: 1 }]}>Reps</Text>
-                  <Text style={[styles.setHeaderText, { width: 50, textAlign: 'center' }]}>Done</Text>
+                  <Text style={[styles.setHeaderText, { width: 22 }]}>{t('workout.setHeader.set')}</Text>
+                  <Text style={[styles.setHeaderText, { flex: 1 }]}>{t('workout.setHeader.kg')}</Text>
+                  <Text style={[styles.setHeaderText, { flex: 1 }]}>{t('workout.setHeader.reps')}</Text>
+                  <Text style={[styles.setHeaderText, { width: 50, textAlign: 'center' }]}>{t('workout.setHeader.done')}</Text>
                 </View>
 
                 {ex.completedSets.map((set, setIdx) => {
@@ -906,7 +1112,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                   }}
                 >
                   <View style={styles.nextExLeft}>
-                    <Text style={styles.nextExLabel}>Next up</Text>
+                    <Text style={styles.nextExLabel}>{t('workout.nextUp')}</Text>
                     <Text style={styles.nextExName} numberOfLines={1}>{sets[exIdx + 1].name}</Text>
                   </View>
                   <Text style={styles.nextExArrow}>›</Text>
@@ -914,13 +1120,13 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
               )}
               {allSetsDone(ex) && exIdx === sets.length - 1 && (
                 <Pressable style={styles.finishAllBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
-                  <Text style={styles.finishAllBtnText}>Complete workout</Text>
+                  <Text style={styles.finishAllBtnText}>{t('workout.completeWorkout')}</Text>
                 </Pressable>
               )}
 
               {!allSetsDone(ex) && sets.length > 1 && exIdx < sets.length - 1 && (
                 <View style={styles.swipeHint}>
-                  <Text style={styles.swipeHintLabel}>Up next</Text>
+                  <Text style={styles.swipeHintLabel}>{t('workout.upNext')}</Text>
                   <Text style={styles.swipeHintName} numberOfLines={1}>{sets[exIdx + 1].name}</Text>
                 </View>
               )}
@@ -935,17 +1141,17 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable style={styles.plateOverlay} onPress={() => setShowPlateCalc(false)}>
           <Pressable style={styles.plateCard} onPress={e => e.stopPropagation()}>
-            <Text style={styles.plateTitle}>Plate calculator</Text>
+            <Text style={styles.plateTitle}>{t('workout.plate.title')}</Text>
 
             <View style={styles.plateBarRow}>
-              <Text style={styles.plateBarLabel}>Bar weight</Text>
+              <Text style={styles.plateBarLabel}>{t('workout.plate.barWeight')}</Text>
               {[15, 20].map(w => (
                 <Pressable
                   key={w}
                   style={[styles.plateBarBtn, barWeight === w && styles.plateBarBtnActive]}
                   onPress={() => setBarWeight(w)}
                 >
-                  <Text style={[styles.plateBarBtnText, barWeight === w && styles.plateBarBtnTextActive]}>{w} kg</Text>
+                  <Text style={[styles.plateBarBtnText, barWeight === w && styles.plateBarBtnTextActive]}>{t('workout.plate.barKg', { w })}</Text>
                 </Pressable>
               ))}
             </View>
@@ -955,7 +1161,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
               value={plateTarget}
               onChangeText={setPlateTarget}
               keyboardType="decimal-pad"
-              placeholder="Target weight (kg)"
+              placeholder={t('workout.plate.targetPlaceholder')}
               placeholderTextColor="#3D3D4A"
               autoFocus
             />
@@ -964,15 +1170,15 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
               const target = parseFloat(plateTarget);
               if (!plateTarget || isNaN(target)) return null;
               if (target <= barWeight) return (
-                <Text style={styles.plateNote}>Use the bar only — no plates needed.</Text>
+                <Text style={styles.plateNote}>{t('workout.plate.barOnlyNote')}</Text>
               );
               const plates = calculatePlates(target, barWeight);
               const achieved = barWeight + plates.reduce((a, b) => a + b, 0) * 2;
               return (
                 <View style={styles.plateResult}>
-                  <Text style={styles.plateResultLabel}>Each side</Text>
+                  <Text style={styles.plateResultLabel}>{t('workout.plate.eachSide')}</Text>
                   {plates.length === 0
-                    ? <Text style={styles.plateNote}>Bar only</Text>
+                    ? <Text style={styles.plateNote}>{t('workout.plate.barOnly')}</Text>
                     : (
                       <View style={styles.plateChipsRow}>
                         {plates.map((p, i) => (
@@ -984,18 +1190,107 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
                     )
                   }
                   <Text style={styles.plateAchieved}>
-                    Total: {achieved} kg{achieved !== target ? ` (closest to ${target} kg)` : ''}
+                    {achieved !== target
+                      ? t('workout.plate.totalClosest', { achieved, target })
+                      : t('workout.plate.total', { achieved })}
                   </Text>
                 </View>
               );
             })()}
 
             <Pressable style={styles.plateCloseBtn} onPress={() => setShowPlateCalc(false)}>
-              <Text style={styles.plateCloseBtnText}>Close</Text>
+              <Text style={styles.plateCloseBtnText}>{t('common.close')}</Text>
             </Pressable>
           </Pressable>
         </Pressable>
         </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Replace-exercise picker (cross-muscle, mid-workout) ── */}
+      <Modal visible={replaceIdx !== null} transparent animationType="slide" onRequestClose={() => setReplaceIdx(null)}>
+        <Pressable style={styles.plateOverlay} onPress={() => setReplaceIdx(null)}>
+          <Pressable style={styles.replaceCard} onPress={e => e.stopPropagation()}>
+            {replaceIdx !== null && (() => {
+              const cur = sets[replaceIdx];
+              const curMuscle = cur?.primaryMuscles?.[0] || '';
+              const nSets = cur?.completedSets?.length || cur?.target_sets || 0;
+              const q = replaceSearch.trim().toLowerCase();
+              // A search query matches across every muscle group; a tag narrows to
+              // one group. Drop groups that end up empty so the list stays tight.
+              const visibleGroups = EXERCISE_GROUPS
+                .filter(g => !replaceMuscleFilter || g.muscle === replaceMuscleFilter)
+                .map(g => ({ ...g, items: q ? g.items.filter(it => it.name.toLowerCase().includes(q)) : g.items }))
+                .filter(g => g.items.length);
+              return (
+                <>
+                  <Text style={styles.plateTitle}>{t('workout.replaceModal.title', { name: cur?.name })}</Text>
+                  <Text style={styles.replaceNote}>
+                    {t('workout.replaceModal.note', { muscle: curMuscle || t('workout.replaceModal.thisMuscle'), count: nSets })}
+                  </Text>
+                  <TextInput
+                    style={styles.replaceSearch}
+                    placeholder={t('workout.replaceModal.searchPlaceholder')}
+                    placeholderTextColor="#71717A"
+                    value={replaceSearch}
+                    onChangeText={setReplaceSearch}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                  />
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.replaceTagRow}
+                    contentContainerStyle={{ gap: 8, paddingRight: 24 }}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    <Pressable
+                      style={[styles.replaceTag, !replaceMuscleFilter && styles.replaceTagActive]}
+                      onPress={() => setReplaceMuscleFilter(null)}
+                    >
+                      <Text style={[styles.replaceTagText, !replaceMuscleFilter && styles.replaceTagTextActive]}>
+                        {t('workout.replaceModal.all')}
+                      </Text>
+                    </Pressable>
+                    {EXERCISE_GROUPS.map(g => (
+                      <Pressable
+                        key={g.muscle}
+                        style={[styles.replaceTag, replaceMuscleFilter === g.muscle && styles.replaceTagActive]}
+                        onPress={() => setReplaceMuscleFilter(g.muscle)}
+                      >
+                        <Text style={[styles.replaceTagText, replaceMuscleFilter === g.muscle && styles.replaceTagTextActive]}>
+                          {g.muscle}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                  <ScrollView style={{ maxHeight: 380 }} keyboardShouldPersistTaps="handled">
+                    {visibleGroups.length === 0 ? (
+                      <Text style={styles.replaceNote}>{t('workout.replaceModal.noResults')}</Text>
+                    ) : visibleGroups.map(g => (
+                      <View key={g.muscle} style={{ marginBottom: 12 }}>
+                        <Text style={[styles.replaceGroupHdr, g.muscle === curMuscle && styles.replaceGroupHdrActive]}>
+                          {g.muscle}{g.muscle === curMuscle ? t('workout.replaceModal.current') : ''}
+                        </Text>
+                        {g.items.map(it => (
+                          <Pressable
+                            key={it.name}
+                            style={styles.replaceRow}
+                            onPress={() => { const idx = replaceIdx; setReplaceIdx(null); swapExercise(idx, it.name, -1); }}
+                          >
+                            <Text style={styles.replaceRowText}>{it.name}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    ))}
+                  </ScrollView>
+                  <Pressable style={styles.plateCloseBtn} onPress={() => setReplaceIdx(null)}>
+                    <Text style={styles.plateCloseBtnText}>{t('common.cancel')}</Text>
+                  </Pressable>
+                </>
+              );
+            })()}
+          </Pressable>
+        </Pressable>
       </Modal>
 
       {/* ── Exercise slideshow modal ── */}
@@ -1004,6 +1299,27 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
         visible={!!slideshowExercise}
         onClose={() => setSlideshowExercise(null)}
       />
+
+      {/* ── Coach modal — full AI Coach, same as the Coach tab ── */}
+      <Modal visible={showCoach} animationType="slide" onRequestClose={() => setShowCoach(false)}>
+        <View style={{ flex: 1, backgroundColor: '#0F0F13' }}>
+          <CoachScreen
+            onClose={() => setShowCoach(false)}
+            onProposalApplied={applyCoachEdit}
+            workoutContext={(() => {
+              const ex = sets[currentExIdx];
+              return [
+                `Session: ${workout.name} (day_id: ${workout.id})`,
+                `Exercises in this live session — use THESE [index] numbers and this day_id for any change to this session:`,
+                ...sets.map((e, i) => `  [${i}] ${e.name} (${e.target_sets}×${e.target_reps})`),
+                `Current exercise: ${ex?.name} (${ex?.target_sets}×${ex?.target_reps}, rest ${ex?.rest})`,
+                `Sets done on this exercise: ${ex?.completedSets?.filter(s => s.done).length}/${ex?.completedSets?.length}`,
+                `Session progress: ${totalSetsCompleted}/${totalSets} total sets`,
+              ].join('\n');
+            })()}
+          />
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1037,6 +1353,11 @@ const styles = StyleSheet.create({
   exNumber: { fontSize: 11, color: '#71717A', marginBottom: 3 },
   exName: { fontSize: 20, fontWeight: '700', color: '#FFFFFF' },
   howToTag: { fontSize: 12, fontWeight: '500', color: '#FFFFFF' },
+  muscleTagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  muscleTagPrimary: { backgroundColor: '#1D9E7522', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 0.5, borderColor: '#1D9E7555' },
+  muscleTagPrimaryText: { fontSize: 11, color: '#1D9E75', fontWeight: '600' },
+  muscleTagSecondary: { backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  muscleTagSecondaryText: { fontSize: 11, color: '#71717A', fontWeight: '500' },
   doneBadge: { backgroundColor: '#1A201C', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#1D9E75' },
   doneBadgeText: { fontSize: 12, color: '#1D9E75', fontWeight: '600' },
 
@@ -1064,6 +1385,20 @@ const styles = StyleSheet.create({
   subText: { fontSize: 11, color: '#71717A' },
   subRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 },
   subLink: { color: '#A1A1AA', textDecorationLine: 'underline' },
+  replaceBtn: { alignSelf: 'flex-start', marginBottom: 10, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B' },
+  replaceBtnText: { color: '#1D9E75', fontSize: 13, fontWeight: '600' },
+  replaceCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: '#2C2C35' },
+  replaceNote: { color: '#A1A1AA', fontSize: 13, lineHeight: 19, marginBottom: 12 },
+  replaceSearch: { backgroundColor: '#15151B', borderWidth: 1, borderColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, color: '#FFFFFF', fontSize: 15, marginBottom: 12 },
+  replaceTagRow: { marginBottom: 14, flexGrow: 0 },
+  replaceTag: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B' },
+  replaceTagActive: { backgroundColor: '#1D9E75', borderColor: '#1D9E75' },
+  replaceTagText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
+  replaceTagTextActive: { color: '#FFFFFF' },
+  replaceGroupHdr: { color: '#71717A', fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  replaceGroupHdrActive: { color: '#1D9E75' },
+  replaceRow: { paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#15151B', marginBottom: 5 },
+  replaceRowText: { color: '#FFFFFF', fontSize: 15 },
 
 
   setsCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
@@ -1135,6 +1470,23 @@ const styles = StyleSheet.create({
   setTypeBtn: { width: 28, height: 36, alignItems: 'center', justifyContent: 'center' },
   setTypeBtnText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
   setTypeBtnDot: { fontSize: 16, color: '#2C2C35' },
+
+  // Coach top button
+  coachTopBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
+  coachTopBtnText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
+
+  // Coach modal
+  coachOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
+  coachCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 32, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 12 },
+  coachHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  coachTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  coachClose: { fontSize: 14, color: '#71717A', fontWeight: '500' },
+  coachSub: { fontSize: 12, color: '#52525B', marginTop: -6 },
+  coachAnswerWrap: { maxHeight: 160, backgroundColor: '#12121A', borderRadius: 10, padding: 12 },
+  coachAnswerText: { fontSize: 14, color: '#E4E4E8', lineHeight: 21 },
+  coachInput: { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 14, minHeight: 56, textAlignVertical: 'top' },
+  coachSendBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  coachSendBtnText: { color: '#111114', fontSize: 15, fontWeight: '600' },
 
   // Plate calculator
   plateOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },

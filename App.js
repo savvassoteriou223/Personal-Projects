@@ -1,3 +1,5 @@
+import i18n from './lib/i18n'; // initialize i18n before any screen renders
+import { syncLanguageFromProfile } from './lib/i18n';
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform, Linking, BackHandler } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -22,6 +24,8 @@ import CoachScreen from './screens/CoachScreen';
 import WorkoutExecutionScreen from './screens/WorkoutExecutionScreen';
 import ProgressScreen from './screens/ProgressScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
+import Constants from 'expo-constants';
+import { checkForUpdate, openStore } from './lib/updateCheck';
 
 const Tab = createBottomTabNavigator();
 
@@ -204,7 +208,7 @@ function TabIcon({ route, color, focused, isLocked }) {
           width: 10, height: 10, borderRadius: 5,
           backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Ionicons name="lock-closed" size={8} color="#fff" />
+          <Ionicons name="lock-closed" size={8} color="#111114" />
         </View>
       )}
     </View>
@@ -275,6 +279,8 @@ export default function App() {
   const [refreshToday, setRefreshToday] = useState(0);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [coachPrefill, setCoachPrefill] = useState(null); // question to auto-send when the Coach tab opens
   const recoveryPending = useRef(false);
   const signedOutAt = useRef(0);
 
@@ -309,7 +315,7 @@ export default function App() {
   useEffect(() => {
     fetch('https://guvvzimnucttjjzmpsvp.supabase.co/auth/v1/').catch(() => {});
 
-    // Safety net: if nothing resolves auth within 8 s, bail to welcome screen.
+    // Safety net: if nothing resolves auth within 15 s, bail to welcome screen.
     const safetyTimer = setTimeout(() => {
       setScreen(prev => prev === 'loading' ? 'welcome' : prev);
     }, 15000);
@@ -371,7 +377,7 @@ export default function App() {
       try {
         ({ data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('onboarding_complete, is_admin, is_premium')
+          .select('onboarding_complete, is_admin, is_premium, language')
           .eq('id', session.user.id)
           .single());
       } catch {
@@ -397,6 +403,8 @@ export default function App() {
           name: meta.name || null,
           age: meta.age || null,
           sex: meta.sex || null,
+          // Persist the language they chose on the welcome screen (pre-signup).
+          language: i18n.language?.split('-')[0] || 'en',
         }).select('onboarding_complete, is_admin, is_premium').single();
 
         if (newProfile) {
@@ -409,6 +417,9 @@ export default function App() {
         return;
       }
 
+
+      // Apply the user's saved language so it follows them across devices.
+      syncLanguageFromProfile(profile.language);
 
       if (profile.is_admin) { setIsAdmin(true); setIsPremium(true); }
       else {
@@ -437,7 +448,9 @@ export default function App() {
           const raw = await AsyncStorage.getItem('@helix_workout_draft');
           if (raw) {
             const draft = JSON.parse(raw);
-            if (draft.workout && !draft.finished) {
+            // Finished-but-unsaved drafts resume too — they land on the finish
+            // screen with the Save button, so the session isn't silently lost.
+            if (draft.workout) {
               Alert.alert(
                 'Resume workout?',
                 `You have an unfinished ${draft.workout.name} session.`,
@@ -451,6 +464,8 @@ export default function App() {
         } catch (_) {}
         setScreen('main');
         registerForPushNotifications(supabase, session.user.id).catch(() => {});
+        const version = Constants.expoConfig?.version ?? '0.0.0';
+        checkForUpdate(version).then(available => { if (available) setUpdateAvailable(true); }).catch(() => {});
       } else {
         setScreen('onboarding');
       }
@@ -486,7 +501,8 @@ export default function App() {
           return;
         }
         clearTimeout(safetyTimer);
-        if (event === 'SIGNED_IN') setScreen('main');
+        // routeAuthedUser sets the screen on every path (main or onboarding) —
+        // setting 'main' eagerly here flashed the main UI for un-onboarded users.
         routeAuthedUser(session);
       }
       // TOKEN_REFRESHED: background refresh — intentionally not re-routed.
@@ -602,6 +618,8 @@ export default function App() {
             const user = await getCurrentUser();
             if (!user) { setScreen('welcome'); return; }
             const { error } = await supabase.from('profiles').update({
+              // sex + age are set at signup — never re-saved here so a failed load
+              // can't overwrite them with blanks.
               height_cm: parseFloat(data.height),
               weight_kg: parseFloat(data.weight),
               target_weight_kg: parseFloat(data.targetWeight),
@@ -614,8 +632,16 @@ export default function App() {
               protein_target: data.proteinTarget,
               carb_target: data.carbTarget,
               fat_target: data.fatTarget,
+              training_caloric_target: data.trainingCaloricTarget,
+              training_carb_target: data.trainingCarbTarget,
+              rest_caloric_target: data.restCaloricTarget,
+              rest_carb_target: data.restCarbTarget,
+              tdee: data.tdee,
+              nutrition_focus: data.nutrition_focus,
               trainingExperience: data.trainingExperience,
               health_conditions: data.health_conditions ?? [],
+              health_conditions_structured: data.health_conditions_structured ?? [],
+              sports: data.sports ?? [],
               onboarding_complete: true,
             }).eq('id', user.id);
             if (error) {
@@ -682,7 +708,8 @@ export default function App() {
                 route={route}
                 color={color}
                 focused={focused}
-                isLocked={!isPremium && (route.name === 'Coach' || route.name === 'Nutrition')}
+                // Only Coach is actually paywalled — Nutrition is free with AI logging gated inside.
+                isLocked={!isPremium && route.name === 'Coach'}
               />
             ),
           })}
@@ -693,6 +720,7 @@ export default function App() {
               key={refreshToday}
               onStartWorkout={(workout) => setActiveWorkout(workout || true)}
               onPreviewWorkout={(workout) => setPreviewWorkout(workout)}
+              onAskCoach={(question) => setCoachPrefill(question)}
             />
           )}
         </Tab.Screen>
@@ -709,20 +737,19 @@ export default function App() {
         <Tab.Screen name="Coach">
           {() =>
             isPremium
-              ? <CoachScreen />
+              ? <CoachScreen prefill={coachPrefill} onPrefillConsumed={() => setCoachPrefill(null)} />
               : <PremiumPaywall feature="Coach" onUpgrade={handleUpgrade} onRestore={handleRestore} />
           }
         </Tab.Screen>
 
         <Tab.Screen name="Nutrition">
           {() =>
-            isPremium
-              ? <NutritionScreen
-                    onOpenNutrition={() => setShowNutrition(true)}
-                    onOpenNutritionMeal={(meal) => { setNutritionMeal(meal); setShowNutrition(true); }}
-                    refreshKey={nutritionRefresh}
-                  />
-              : <PremiumPaywall feature="Nutrition" onUpgrade={handleUpgrade} onRestore={handleRestore} />
+            <NutritionScreen
+                onOpenNutrition={() => setShowNutrition(true)}
+                onOpenNutritionMeal={(meal) => { setNutritionMeal(meal); setShowNutrition(true); }}
+                refreshKey={nutritionRefresh}
+                isPremium={isPremium}
+              />
           }
         </Tab.Screen>
 
@@ -742,6 +769,17 @@ export default function App() {
   return (
     <SafeAreaProvider>
       {renderContent()}
+      {screen === 'main' && updateAvailable && (
+        <View style={updateBannerStyles.container}>
+          <Text style={updateBannerStyles.text}>Update available</Text>
+          <Pressable onPress={openStore} style={updateBannerStyles.btn}>
+            <Text style={updateBannerStyles.btnText}>Update now →</Text>
+          </Pressable>
+          <Pressable onPress={() => setUpdateAvailable(false)} style={updateBannerStyles.close}>
+            <Ionicons name="close" size={16} color="#A1A1AA" />
+          </Pressable>
+        </View>
+      )}
       <Modal
         visible={showNutrition}
         animationType="slide"
@@ -749,9 +787,32 @@ export default function App() {
       >
         <NutritionLogScreen
           initialMeal={nutritionMeal}
+          isPremium={isPremium}
           onClose={() => { setShowNutrition(false); setNutritionMeal(null); setNutritionRefresh(k => k + 1); }}
         />
       </Modal>
     </SafeAreaProvider>
   );
 }
+
+const updateBannerStyles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    top: (initialWindowMetrics?.insets?.top ?? 44) + 8,
+    left: 16,
+    right: 16,
+    backgroundColor: '#1C1C28',
+    borderWidth: 0.5,
+    borderColor: '#3D3D5C',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  text: { color: '#A1A1AA', fontSize: 13, flex: 1 },
+  btn: { marginRight: 10 },
+  btnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  close: { padding: 2 },
+});

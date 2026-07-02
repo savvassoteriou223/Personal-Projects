@@ -1,0 +1,1112 @@
+{
+  "common": {
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "done": "Done",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "retry": "Retry",
+    "close": "Close",
+    "delete": "Delete",
+    "discard": "Discard"
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Choose your language",
+    "settingsLabel": "Language"
+  },
+  "welcome": {
+    "tagline": "Science-based training, smart nutrition,\nand AI coaching in one place.",
+    "getStarted": "Get started",
+    "haveAccount": "I already have an account"
+  },
+  "auth": {
+    "back": "Back",
+    "backToSignIn": "Back to sign in",
+    "show": "Show",
+    "hide": "Hide",
+    "email": "Email",
+    "emailPlaceholder": "you@email.com",
+    "password": "Password",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your Helix account",
+      "passwordPlaceholder": "Your password",
+      "forgot": "Forgot password?",
+      "signIn": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "reset": {
+      "title": "Reset password",
+      "subtitle": "We'll send a 6-digit code to your email.",
+      "sendCode": "Send reset code"
+    },
+    "code": {
+      "title": "Check your email",
+      "subtitle": "Enter the 6-digit code we sent to {{email}}.",
+      "label": "Code",
+      "placeholder": "Enter code",
+      "verify": "Verify"
+    },
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Free forever. Upgrade when you're ready.",
+      "name": "Name",
+      "namePlaceholder": "Alex",
+      "dob": "Date of birth",
+      "sex": "Sex",
+      "sexSub": "Used to calculate your calorie targets.",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "confirmPassword": "Confirm password",
+      "confirmPlaceholder": "Repeat password",
+      "minChars": "Min. 8 characters",
+      "createAccount": "Create account",
+      "legal": "By signing up you agree to our Terms of Service and Privacy Policy.",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "emailSent": {
+      "title": "Check your email",
+      "text": "We sent a confirmation link to {{email}}. Tap it to activate your account — it only takes a second.",
+      "resend": "Didn't get it? Resend email"
+    },
+    "newPassword": {
+      "title": "Set new password",
+      "subtitle": "Choose a strong password for your account.",
+      "label": "New password",
+      "confirmLabel": "Confirm password",
+      "placeholder": "Min. 8 characters",
+      "confirmPlaceholder": "Repeat password",
+      "submit": "Update password"
+    },
+    "success": {
+      "title": "Password updated",
+      "text": "You're being signed in now."
+    },
+    "errors": {
+      "fillAll": "Please fill in all fields.",
+      "fillBoth": "Please fill in both fields.",
+      "enterEmail": "Enter your email address.",
+      "enterCode": "Enter the code from your email.",
+      "invalidCode": "Invalid or expired code.",
+      "signInFailed": "Sign in failed.",
+      "validDob": "Please enter a valid date of birth.",
+      "minAge": "You must be at least 13 to sign up.",
+      "passwordShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match."
+    }
+  },
+  "weekdaysShort": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  },
+  "onboarding": {
+    "stepLabel": "Step {{step}} of {{total}}",
+    "next": "Next",
+    "optional": "(optional)",
+    "step1": {
+      "title": "Let's start with\nyour body stats",
+      "sub": "Used to calculate your calorie targets and BMI.",
+      "height": "Height (cm)",
+      "heightPlaceholder": "e.g. 178",
+      "weight": "Current weight (kg)",
+      "weightPlaceholder": "e.g. 85",
+      "bmi": "Your BMI",
+      "bmiRange": "Healthy weight range: {{low}}kg – {{high}}kg"
+    },
+    "bmiCategory": {
+      "underweight": "Underweight",
+      "healthy": "Healthy",
+      "overweight": "Overweight",
+      "obese": "Obese"
+    },
+    "step2": {
+      "title": "What are your goals?",
+      "sub": "Your healthy range is {{low}}–{{high}}kg. You're at {{weight}}kg.\nSelect all that apply.",
+      "targetWeight": "Target weight (kg)",
+      "targetPlaceholder": "e.g. 75",
+      "estimate": "At a healthy pace, you'll reach {{target}}kg in ~{{weeks}} weeks"
+    },
+    "goals": {
+      "lose": "Lose fat",
+      "gain": "Build muscle",
+      "strength": "Build strength",
+      "aesthetics": "Aesthetics",
+      "endurance": "Improve endurance",
+      "maintain": "Stay healthy"
+    },
+    "step3": {
+      "title": "How long have you\nbeen training?",
+      "sub": "This calibrates your training volume and program complexity."
+    },
+    "experience": {
+      "under_6m": {
+        "label": "Less than 6 months",
+        "sublabel": "Just starting out"
+      },
+      "6m_to_2y": {
+        "label": "6 months – 2 years",
+        "sublabel": "Building foundations"
+      },
+      "2y_to_4y": {
+        "label": "2 – 4 years",
+        "sublabel": "Consistent practitioner"
+      },
+      "over_4y": {
+        "label": "4+ years",
+        "sublabel": "Well experienced"
+      }
+    },
+    "step4": {
+      "title": "Your training schedule",
+      "sub": "We'll build your plan around your availability.",
+      "days": "Days per week",
+      "sessionLength": "Session length",
+      "equipment": "Equipment available",
+      "sports": "Sports & activities",
+      "sportsHint": "Your strength sessions will be scheduled around your sport days.",
+      "sportDays": "{{sport}} — which days?"
+    },
+    "equipment": {
+      "barbell": "Barbell",
+      "dumbbells": "Dumbbells",
+      "cables": "Cables",
+      "machines": "Machines",
+      "bodyweight": "Bodyweight only",
+      "pullupBar": "Pull-up bar",
+      "kettlebells": "Kettlebells",
+      "bands": "Resistance bands"
+    },
+    "sports": {
+      "swimming": "Swimming",
+      "running": "Running",
+      "cycling": "Cycling",
+      "football": "Football / Soccer",
+      "basketball": "Basketball",
+      "tennis": "Tennis / Racket sports",
+      "martial_arts": "Martial arts"
+    },
+    "step5": {
+      "title": "What supplements\ndo you take?",
+      "sub": "Your AI coach uses these to give you more relevant advice. Optional — tap \"None\" if you don't take any.",
+      "other": "Other supplements",
+      "otherPlaceholder": "e.g. Ashwagandha",
+      "add": "Add"
+    },
+    "supplements": {
+      "whey": "Whey protein",
+      "creatine": "Creatine",
+      "preworkout": "Pre-workout",
+      "multivitamin": "Multivitamin",
+      "omega3": "Omega-3",
+      "vitaminD": "Vitamin D",
+      "magnesium": "Magnesium",
+      "bcaas": "BCAAs",
+      "collagen": "Collagen",
+      "none": "None"
+    },
+    "step6": {
+      "title": "Any bad areas?",
+      "sub": "Search or scroll. Tap anything that gives you trouble.",
+      "noIssues": "No issues",
+      "noIssuesSelected": "No issues ✓",
+      "searchPlaceholder": "Search — e.g. knee, shoulder, back…",
+      "severitySub": "How would you describe it right now?",
+      "postSurgery": "Post-surgery",
+      "postSurgeryDesc": "Had an operation on this area",
+      "surgeryTitle": "How long ago\nwas the surgery?",
+      "note": "Exercises that load affected areas will be swapped for safer alternatives."
+    },
+    "step7": {
+      "title": "Your personal plan\nis ready",
+      "calorieTarget": "Daily calorie target",
+      "kcal": "kcal",
+      "maintenance": "Maintenance: ~{{tdee}} kcal · {{focus}}",
+      "focusCut": "-400 kcal deficit",
+      "focusBulk": "+250 kcal surplus",
+      "focusRecomp": "-200 kcal recomp",
+      "focusMaintain": "maintenance",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "trainingPlan": "Training plan",
+      "schedule": "{{days}} days/week · {{len}} min sessions",
+      "goalsLabel": "Goals: {{list}}",
+      "experienceLabel": "Experience: {{label}}",
+      "targetLabel": "Target: {{target}}kg in ~{{weeks}} weeks",
+      "supplementsNoted": "Supplements noted",
+      "conditionsFiltered": "Conditions (program filtered)",
+      "start": "Start training"
+    },
+    "feedback": {
+      "optimal": "Optimal",
+      "good": "Good",
+      "suboptimal": "Suboptimal",
+      "msgMuscle4": "Each muscle group will be trained twice per week — the research-backed minimum for maximizing hypertrophy.",
+      "msgMuscle3": "Good starting point. Full body sessions will hit each muscle 3 times per week. Slightly less volume per muscle than optimal but effective.",
+      "msgMuscle2": "2 days is below the research minimum for optimal muscle growth. Results will come but significantly slower. Consider adding a third day if possible.",
+      "msgEndurance": "For endurance goals, higher rep ranges and shorter rest periods will be prioritized. Consistency matters more than frequency.",
+      "msgFat": "For fat loss, resistance training preserves muscle while in a caloric deficit. Higher density training keeps heart rate elevated.",
+      "msgDefault": "Your schedule will be optimized for your selected goals."
+    },
+    "alerts": {
+      "invalidHeightTitle": "Invalid height",
+      "invalidHeightMsg": "Please enter a height between 100 and 250 cm.",
+      "invalidWeightTitle": "Invalid weight",
+      "invalidWeightMsg": "Please enter a weight between 20 and 300 kg.",
+      "selectGoalTitle": "Select a goal",
+      "selectGoalMsg": "Please select at least one goal to continue.",
+      "invalidTargetTitle": "Invalid target weight",
+      "invalidTargetMsg": "Please enter a target weight between 20 and 300 kg.",
+      "selectExpTitle": "Select your experience",
+      "selectExpMsg": "Please select your gym experience level.",
+      "selectEquipTitle": "Select equipment",
+      "selectEquipMsg": "Please select at least one equipment option.",
+      "selectSuppTitle": "Select supplements",
+      "selectSuppMsg": "Please select at least one option, or tap \"None\" if you take no supplements.",
+      "healthTitle": "Health conditions",
+      "healthMsg": "Please select any relevant conditions, or tap \"No issues\" if you have none."
+    }
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "upgrade": "Upgrade for AI logging",
+    "greetingMorning": "Morning",
+    "greetingAfternoon": "Afternoon",
+    "greetingEvening": "Evening",
+    "trainingDay": "Training day",
+    "restDay": "Rest day",
+    "target": "Target: {{cal}} kcal · {{protein}}g protein{{carbs}}",
+    "carbsUp": " · carbs up",
+    "carbsModerate": " · moderate carbs",
+    "train": "Train",
+    "rest": "Rest",
+    "kcalEaten": "kcal eaten",
+    "remaining": "remaining",
+    "over": "over",
+    "targetLabel": "target",
+    "macros": {
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat"
+    },
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snacks"
+    },
+    "nothingLogged": "Nothing logged",
+    "kcal": "{{value}} kcal",
+    "add": "+ Add",
+    "mealMacros": "P: {{p}}g · C: {{c}}g · F: {{f}}g",
+    "insights": {
+      "lowProtein": {
+        "breakfast": "Low on protein — Greek yogurt, eggs, or a shake would help hit your morning target.",
+        "lunch": "Low on protein — add chicken, tuna, or legumes to balance this meal.",
+        "dinner": "Low on protein — fish, lean beef, or tofu would bring this closer to your target.",
+        "snack": "Low on protein — cottage cheese or a protein bar would boost this snack.",
+        "default": "Consider adding a protein source to reach your daily target."
+      },
+      "highFat": {
+        "breakfast": "High fat breakfast ({{g}}g) — large fat intake early can slow digestion.",
+        "lunch": "High fat lunch ({{g}}g) — spreading fat more evenly helps with absorption.",
+        "dinner": "High fat dinner ({{g}}g) — may push you over your daily fat target.",
+        "snack": "High fat snack ({{g}}g) — nuts and cheese add up fast.",
+        "default": "High fat meal ({{g}}g) — check your daily fat target."
+      },
+      "highCarb": {
+        "breakfast": "High carb breakfast ({{g}}g) — great before a session, but pair with protein to avoid an energy crash.",
+        "lunch": "High carb lunch ({{g}}g) — consider adding more protein to balance this meal.",
+        "dinner": "High carb dinner ({{g}}g) — may push you over your daily target.",
+        "snack": "High carb snack ({{g}}g) — a protein and fat combo gives more sustained energy.",
+        "default": "High carb meal ({{g}}g) — check your daily carb target."
+      },
+      "fatHeavyLowProtein": "Fat-heavy and low in protein — try swapping some fat sources for lean protein.",
+      "highCalSnack": "High-calorie snack — consider splitting it or choosing something lower-density if you are in a deficit.",
+      "lightMeal": "Light meal — make sure the rest of your day makes up your daily calorie target.",
+      "goodProtein": "Good protein. Pair with complex carbs like oats or whole grain bread for sustained energy."
+    }
+  },
+  "nutritionLog": {
+    "title": "Log food",
+    "recent": "Recent",
+    "describePlaceholder": "Describe what you ate — or take a photo below.",
+    "premiumNote": "AI logging is a Helix Pro feature. Use manual entry below to track for free.",
+    "calculate": "Calculate",
+    "manualEntry": "Manual entry",
+    "confirmMeal": "Confirm meal",
+    "confirmTip": "Tap any value to edit it if something looks off.",
+    "grams": "grams",
+    "total": "Total",
+    "logMeal": "Log meal",
+    "foodName": "Food name",
+    "addTo": "Add to {{meal}}",
+    "macroAbbr": {
+      "kcal": "kcal",
+      "protein": "P",
+      "carbs": "C",
+      "fat": "F"
+    },
+    "manualMacros": {
+      "calories": "Calories",
+      "protein": "Protein g",
+      "carbs": "Carbs g",
+      "fat": "Fat g"
+    },
+    "alerts": {
+      "permissionTitle": "Permission required",
+      "micPermission": "Microphone access is needed for voice input.",
+      "photoPermission": "Photo library access is needed.",
+      "cameraPermission": "Camera access is needed.",
+      "dailyLimitTitle": "Daily limit reached",
+      "dailyLimitMsg": "You have used your 6 daily AI food logs. Resets at midnight.",
+      "premiumTitle": "Premium required",
+      "premiumMsg": "AI nutrition logging requires a Helix Pro subscription.",
+      "sessionTitle": "Session expired",
+      "sessionMsg": "Please log out and log back in.",
+      "noItemsTitle": "No items found",
+      "noItemsMsg": "Try describing your meal in more detail or take a clearer photo.",
+      "photoLargeTitle": "Photo too large",
+      "photoLargeMsg": "That photo is too big to process. Try again — Helix will use a smaller version.",
+      "invalidPhotoTitle": "Invalid photo",
+      "invalidPhotoMsg": "That image could not be read. Try taking the photo again.",
+      "calcFailTitle": "Could not calculate",
+      "calcFailMsg": "Network error. Check your connection.",
+      "logFailTitle": "Log failed",
+      "logFailMsg": "Could not save. Please try again.",
+      "logFailMsgShort": "Could not save.",
+      "nameRequiredTitle": "Name required",
+      "nameRequiredMsg": "Enter a food name."
+    }
+  },
+  "levels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "program": {
+    "start": "Start",
+    "chooseSplit": "Choose split",
+    "daysQuestion": "How many days per week?",
+    "rankedForGoals": "Ranked for your goals: {{goals}}",
+    "recommendedSplits": "Recommended splits",
+    "noSplits": "No splits available.",
+    "rankBest": "Best match",
+    "rank2": "2nd option",
+    "rank3": "3rd option",
+    "rankN": "Option {{n}}",
+    "perWeek": "{{days}}×/week",
+    "freqPerMuscle": "{{freq}}× freq/muscle",
+    "whyThisSplit": "Why this split",
+    "currentSplit": "Current split",
+    "selectSplit": "Select this split",
+    "myProgram": "My Program",
+    "completeOnboarding": "Complete onboarding to get your program.",
+    "changeSplit": "Change split",
+    "scienceBasis": "Science basis",
+    "dayNum": "Day {{n}}",
+    "restCount": "{{count}} rest",
+    "daysPerWeek": "{{days}} days/week",
+    "tabs": {
+      "research": "Research",
+      "goal": "Your goal",
+      "progression": "Progression"
+    },
+    "goalParams": {
+      "frequency": "Frequency",
+      "repRange": "Rep range",
+      "intensity": "Intensity"
+    },
+    "warnings": {
+      "optimal": "Optimal",
+      "warning": "Warning",
+      "note": "Note",
+      "info": "Info"
+    },
+    "workouts": "Workouts",
+    "exercises": "{{count}} exercises",
+    "optionalDay": "OPTIONAL DAY",
+    "sets": "Sets",
+    "reps": "Reps",
+    "restLabel": "Rest",
+    "earlyRpe": "Early sets RPE ~{{rpe}}",
+    "lastRpe": "Last set RPE ~{{rpe}}",
+    "substitutes": "Substitutes: ",
+    "hideDetails": "Hide details ▲",
+    "learnSimple": "Learn why + how to do it ▼",
+    "showTechnique": "Show technique + research ▼",
+    "whatDoesThisDo": "What does this do?",
+    "whyExercise": "Why this exercise",
+    "techniqueCues": "Technique cues",
+    "progressionPath": "Progression path",
+    "saveFailTitle": "Save failed",
+    "saveFailMsg": "Could not update your program. Please try again."
+  },
+  "workout": {
+    "alerts": {
+      "dupTitle": "Already in today's workout",
+      "dupMsg": "\"{{name}}\" is already programmed today — replacing will give you it twice. Continue?",
+      "doItAnyway": "Do it anyway",
+      "replaceTitle": "Replace exercise?",
+      "replaceMsg": "You've already logged sets for this exercise. Swapping will clear them.",
+      "replace": "Replace",
+      "saveFailTitle": "Save failed",
+      "saveFailMsg": "Could not save your workout. Please try again.",
+      "cancelTitle": "Cancel workout?",
+      "cancelMsg": "Your logged sets will not be saved.",
+      "keepGoing": "Keep going"
+    },
+    "finish": {
+      "title": "Session complete",
+      "duration": "Duration",
+      "setsDone": "Sets done",
+      "exercises": "Exercises",
+      "howFeel": "How did that feel?",
+      "howHard": "How hard was it? (RPE {{rpe}}/10)",
+      "tapToRate": "Tap to rate your session",
+      "rpeEasy": "Easy — consider increasing weight next session",
+      "rpeGood": "Good training zone",
+      "rpeHigh": "High effort — solid work",
+      "rpeMax": "Max effort — ensure full recovery before next session",
+      "nextTargets": "Next session targets",
+      "saving": "Saving...",
+      "save": "Save workout"
+    },
+    "simpleRpe": {
+      "easy": "Easy",
+      "solid": "Solid",
+      "max": "Max",
+      "easySub": "Had plenty left in the tank",
+      "solidSub": "Challenging but controlled",
+      "maxSub": "Gave everything — full recovery needed"
+    },
+    "coach": "Coach",
+    "finishBtn": "Finish",
+    "restWarning": "! You trained {{session}} {{hours}}h ago. Training overlapping muscles this soon may limit recovery.",
+    "dismiss": "Dismiss",
+    "restTimer": "Rest · {{time}}",
+    "skip": "Skip",
+    "exNumber": "{{n}} of {{total}}",
+    "howTo": "▶ How to",
+    "contraSub": "Substituted for your health conditions",
+    "presc": {
+      "sets": "Sets",
+      "reps": "Reps",
+      "rest": "Rest",
+      "effort": "Effort",
+      "rpe": "RPE",
+      "lastSetHard": "Last set hard"
+    },
+    "swap": "Swap: ",
+    "replaceExercise": "Replace exercise…",
+    "setsTitle": "Sets",
+    "bw": "BW",
+    "plates": "Plates",
+    "lastTime": "Last time: {{weight}}kg",
+    "lastTimeReps": "Last time: {{weight}}kg × {{reps}}",
+    "setHeader": {
+      "set": "Set",
+      "kg": "kg",
+      "reps": "Reps",
+      "done": "Done"
+    },
+    "nextUp": "Next up",
+    "completeWorkout": "Complete workout",
+    "upNext": "Up next",
+    "plate": {
+      "title": "Plate calculator",
+      "barWeight": "Bar weight",
+      "barKg": "{{w}} kg",
+      "targetPlaceholder": "Target weight (kg)",
+      "barOnlyNote": "Use the bar only — no plates needed.",
+      "eachSide": "Each side",
+      "barOnly": "Bar only",
+      "total": "Total: {{achieved}} kg",
+      "totalClosest": "Total: {{achieved}} kg (closest to {{target}} kg)"
+    },
+    "replaceModal": {
+      "title": "Replace {{name}}",
+      "note_one": "Training {{muscle}} right now. Pick any exercise — choosing a different muscle moves this slot's {{count}} set to that muscle for today's session.",
+      "note_other": "Training {{muscle}} right now. Pick any exercise — choosing a different muscle moves this slot's {{count}} sets to that muscle for today's session.",
+      "thisMuscle": "this muscle",
+      "current": "  • current",
+      "searchPlaceholder": "Search exercises…",
+      "all": "All",
+      "noResults": "No exercises match your search."
+    }
+  },
+  "coach": {
+    "title": "AI Coach",
+    "subtitle": "Science-based · Remembers your training",
+    "reset": "Reset",
+    "resetTitle": "Reset coach memory?",
+    "resetMsg": "The coach will forget your past conversations and start fresh. Your program and progress aren't affected.",
+    "resetConfirm": "Reset",
+    "monthlyMessages": "Monthly messages",
+    "limitReached": "Monthly limit reached. Resets on the 1st.",
+    "ask": "Ask your coach",
+    "askSub": "Asks, advises, and edits your program. Tap to try:",
+    "examples": {
+      "swapLabel": "Swap an exercise",
+      "swapPrompt": "Swap one of my exercises for a better option",
+      "shouldersLabel": "More shoulders",
+      "shouldersPrompt": "Add more side delts to my push day",
+      "glutesLabel": "Glute-focused legs",
+      "glutesPrompt": "Make my legs day more glute-focused",
+      "easeOffLabel": "Ease off this week",
+      "easeOffPrompt": "Drop a set from every exercise this week"
+    },
+    "limitPlaceholder": "Monthly limit reached",
+    "inputPlaceholder": "e.g. Add more shoulders to my next push day",
+    "noAnswer": "No answer generated.",
+    "failedConnect": "Failed to connect.",
+    "failedConnectCheck": "Failed to connect. Check your internet connection.",
+    "altPrompt": "Give me a different alternative to {{what}}{{where}}. Just pick the best one — don't ask me, propose it directly.",
+    "thatExercise": "that exercise",
+    "onDay": " on {{day}}",
+    "proposesAdding": "Coach proposes adding",
+    "proposesChanging": "Coach proposes changing",
+    "proposesN": "Coach proposes {{count}} changes",
+    "addExercise": "Add exercise",
+    "sessionOnly": "This session only",
+    "permanent": "Permanent change",
+    "setsCount": "{{n}} sets",
+    "restSuffix": " · {{rest}} rest",
+    "saving": "Saving...",
+    "apply": "Apply",
+    "alternative": "Alternative",
+    "applyAll": "Apply all",
+    "dismissAll": "Dismiss all",
+    "saved": "Added to your program. It will appear in your next workout.",
+    "thinking": "Thinking...",
+    "askBtn": "Ask",
+    "weeklyInsight": "Weekly insight",
+    "weeklyInsightSub": "Analyses your volume, PRs, and recent sessions against research targets",
+    "weeklyReview": "This week's review",
+    "weeklyReviewLoading": "Writing your weekly review…",
+    "alternativesFor": "Ranked swaps for {{name}}",
+    "thisExercise": "this exercise",
+    "useThis": "Use this",
+    "memoryTitle": "What your coach remembers",
+    "memorySub": "Facts your coach uses to tailor your advice and program. Forget anything that's no longer true.",
+    "memoryForget": "Forget",
+    "memoryForgetTitle": "Forget this?",
+    "memoryForgetMsg": "Your coach will stop using this fact to tailor your program.",
+    "noteCat": {
+      "dislike": "Dislike",
+      "injury": "Injury",
+      "preference": "Preference",
+      "goal": "Goal",
+      "note": "Note"
+    },
+    "insightEmpty": "Tap below to get a personalised weekly analysis based on your training data.",
+    "analysing": "Analysing...",
+    "refreshInsight": "Refresh insight",
+    "generateInsight": "Generate insight",
+    "quickQuestions": "Quick questions",
+    "quick": {
+      "neglecting": "What muscle group am I neglecting most?",
+      "frequency": "Is my training frequency optimal?",
+      "prioritise": "Which exercise should I prioritise next session?",
+      "recovering": "Am I recovering enough between sessions?"
+    },
+    "alerts": {
+      "cantApplyTitle": "Couldn't apply",
+      "cantApplyMsg": "That exercise couldn't be matched to the library. Try the Alternative button or rephrase the request.",
+      "replaceTitle": "Replace exercise",
+      "replaceMsg": "This changes it now. Keep it for future workouts too?",
+      "justThis": "Just this workout",
+      "nowFuture": "Now & all future",
+      "someFailedTitle": "Some changes failed",
+      "someFailedMsg": "One or more exercises couldn't be matched to the library.",
+      "applyAllTitle": "Apply all changes",
+      "applyAllMsg": "When should these take effect?",
+      "thisWorkoutOnly": "This workout only",
+      "allFuture": "All future workouts"
+    }
+  },
+  "profile": {
+    "tabs": {
+      "profile": "Profile",
+      "data": "Volume",
+      "prs": "PRs",
+      "health": "Health"
+    },
+    "admin": "Admin",
+    "signOut": "Sign out",
+    "noName": "No name",
+    "streak": "Streak",
+    "insightsTitle": "What's driving your training",
+    "myProfile": "My profile",
+    "edit": "Edit",
+    "fields": {
+      "name": "Name",
+      "weight": "Weight (kg)",
+      "height": "Height (cm)",
+      "targetWeight": "Target weight (kg)"
+    },
+    "daysPerWeek": "Days per week",
+    "sessionLength": "Session length",
+    "experienceLevel": "Experience level",
+    "goals": "Goals",
+    "equipment": "Available equipment",
+    "equipmentSub": "Your program will only include exercises you can do.",
+    "bioSex": "Biological sex",
+    "sexMale": "Male",
+    "sexFemale": "Female",
+    "sexOther": "Prefer not to say",
+    "nutritionFocus": "Nutrition focus",
+    "nutritionFocusSub": "Adjusts your daily calorie and macro targets automatically.",
+    "focus": {
+      "cut": "Cut",
+      "cutSub": "Lose fat",
+      "bulk": "Lean bulk",
+      "bulkSub": "Build muscle",
+      "maintain": "Maintain",
+      "maintainSub": "Stay lean",
+      "recomp": "Recomp",
+      "recompSub": "Both"
+    },
+    "calculatedTargets": "Calculated targets",
+    "maintenanceTdee": "Maintenance (TDEE): ~{{tdee}} kcal",
+    "targetsLine": "{{cal}} kcal · {{protein}}g protein · {{carbs}}g carbs · {{fat}}g fat",
+    "savedAuto": "Saved automatically when you tap Save",
+    "whatTrain": "What do you train?",
+    "whatTrainSub": "Select all that apply — helps the AI coach give relevant advice.",
+    "activities": {
+      "weights": "Weight training",
+      "running": "Running",
+      "walking": "Walking",
+      "swimming": "Swimming",
+      "cycling": "Cycling",
+      "hiit": "HIIT"
+    },
+    "sports": "Sports & activities",
+    "sportsSub": "Strength sessions will be scheduled around your sport days.",
+    "sportDays": "{{sport}} — which days?",
+    "injuries": "Injuries",
+    "injuriesSub": "Pick what bothers you and how often. Before each workout we'll ask how it feels that day and adjust exercises to match — no diagnosis needed.",
+    "injNone": "None",
+    "injSometimes": "Sometimes",
+    "injAlways": "Always",
+    "injuriesConditions": "Injuries & conditions",
+    "injuriesConditionsSub": "Search or scroll to add anything that affects your training.",
+    "searchPlaceholder": "Search — e.g. knee, shoulder, back…",
+    "severityQuestion": "{{condition}} — how bad is it?",
+    "postSurgery": "Post-surgery",
+    "postSurgeryDesc": "Had an operation on this area",
+    "surgeryWhen": "How long ago was the surgery?",
+    "expSub": {
+      "beginner": "< 2 years",
+      "intermediate": "2–4 years",
+      "advanced": "4+ years"
+    },
+    "fieldName": "Name",
+    "fieldWeight": "Weight",
+    "fieldHeight": "Height",
+    "fieldTarget": "Target",
+    "fieldTraining": "Training",
+    "fieldExperience": "Experience",
+    "fieldNutrition": "Nutrition",
+    "fieldSports": "Sports",
+    "fieldConditions": "Conditions",
+    "trainingVal": "{{days}}×/week · {{min}} min",
+    "nutritionNotSet": "Not set",
+    "nutritionSuffix": " · {{cal}} kcal · {{protein}}g protein",
+    "logWeight": "Log today's weight",
+    "weightPlaceholder": "kg — fasted, same time daily",
+    "weightSaved": "✓ Saved",
+    "logBtn": "Log",
+    "weightTip": "Weigh yourself every morning after waking, before eating. Same conditions each day gives the most accurate trend.",
+    "privacyPolicy": "Privacy Policy",
+    "deleteAccount": "Delete account",
+    "deleteAccountSub": "Permanently removes all your data. Cannot be undone.",
+    "weekThis": "This week",
+    "weekLast": "Last week",
+    "weekAgo": "{{n}}w ago",
+    "setsCount": "{{n}} sets",
+    "chartTitle": "{{muscle}} · {{week}}",
+    "targetNote": "Target ({{level}}): {{range}} · Schoenfeld et al. (2017)",
+    "setsPerWeek": "{{low}}–{{high}} sets/week",
+    "dayBreakdown": "Day breakdown",
+    "daySets": "{{n}}s",
+    "personalRecords": "Personal records — {{count}} exercises",
+    "noPrs": "No PRs yet — complete workouts to start tracking.",
+    "prVal": "{{weight}}kg × {{reps}}",
+    "prOrm": "~{{orm}}kg 1RM",
+    "healthData": "Health data",
+    "healthWebOnly": "Health integrations are only available on iOS and Android devices.",
+    "healthInstall": "Install the app from the App Store or Play Store to enable health integrations.",
+    "connect": "Connect {{provider}}",
+    "providerApple": "Apple Health",
+    "providerHC": "Health Connect",
+    "healthDesc": "Helix reads your sleep duration, HRV, and resting heart rate to show a daily recovery status. No data is written or shared.\n\nYour smartwatch syncs to {{provider}} through its own companion app{{companion}} — Helix reads from there, not from the watch directly.",
+    "companionAndroid": " (Samsung Health, Fitbit, Garmin Connect…)",
+    "connecting": "Connecting...",
+    "connectBtn": "Connect",
+    "todayRecovery": "Today's recovery",
+    "noHealthToday": "No health data found for today. Make sure your watch has synced.",
+    "sleep": "Sleep",
+    "hrv": "HRV",
+    "restingHr": "Resting HR",
+    "dataSources": "Data sources",
+    "sourceSleep": "Sleep duration",
+    "sourceSleepDesc": "Last 18 hours of sleep stages from your watch",
+    "sourceHrvDescIos": "Heart rate variability (SDNN) from Apple Health",
+    "sourceHrvDescAndroid": "Heart rate variability (RMSSD) from Health Connect",
+    "sourceRhr": "Resting heart rate",
+    "sourceRhrDesc": "Measured overnight by your watch",
+    "disconnect": "Disconnect health data",
+    "alerts": {
+      "connectedNoDataTitle": "Connected — no data yet",
+      "connectedNoDataIos": "Helix connected to Apple Health but found no data. If you declined access, enable it in Health → Sharing → Apps → Helix. Otherwise make sure your watch syncs sleep, HRV and heart rate to the Health app.",
+      "connectedNoDataAndroid": "Helix connected to Health Connect but found no data. Open your watch's companion app (Samsung Health, Fitbit, Garmin Connect…) and enable syncing to Health Connect — Helix will then pick it up automatically.",
+      "ok": "OK",
+      "openSettings": "Open settings",
+      "hcRequiredTitle": "Health Connect required",
+      "hcRequiredMsg": "Helix reads watch data through Google Health Connect, which is not installed on this phone.",
+      "install": "Install",
+      "updateHcTitle": "Update Health Connect",
+      "updateHcMsg": "Your Health Connect app needs an update before Helix can read data from it.",
+      "permissionNeededTitle": "Permission needed",
+      "permissionNeededIos": "Helix needs access in the Health app. Open Health → Sharing → Apps → Helix and allow sleep, heart rate and steps.",
+      "permissionNeededAndroid": "Helix needs health permissions. Try again, or grant access directly in Health Connect settings — the prompt may stop appearing after a few declines.",
+      "tryAgain": "Try again",
+      "couldNotConnectTitle": "Could not connect",
+      "couldNotConnectMsg": "Health data connection failed.",
+      "saveFailTitle": "Save failed",
+      "saveFailMsg": "Could not save your profile. Please try again.",
+      "programUpdatingTitle": "Program updating",
+      "programUpdatingMsg": "Your equipment or health conditions changed. Your program will automatically update next time you open Today.",
+      "deleteTitle": "Delete account",
+      "deleteMsg": "This will permanently delete your account, all workouts, nutrition logs, and progress data. This cannot be undone.",
+      "deletePermanently": "Delete permanently",
+      "errorTitle": "Error",
+      "deleteError": "Could not delete account. Please try again or contact support."
+    }
+  },
+  "progress": {
+    "loading": "Loading…",
+    "sections": {
+      "overview": "Overview",
+      "strengthTrend": "Strength Trend · estimated 1RM",
+      "mostImproved": "Most Improved · last 90 days",
+      "strengthLevel": "Strength Level",
+      "bodyWeight": "Body Weight · 7-day average",
+      "fatigue": "Fatigue · avg RPE per week",
+      "cardioFreq": "Cardio Frequency",
+      "sessionDuration": "Session Duration",
+      "trainingBlock": "Training Block",
+      "consistency": "Training Consistency"
+    },
+    "overview": {
+      "sessions": "Sessions",
+      "totalSets": "Total sets",
+      "avgDuration": "Avg duration",
+      "streak": "Streak",
+      "empty": "Complete your first workout to start tracking progress."
+    },
+    "empty": {
+      "trend": "Log more sessions to see this trend",
+      "benchmark": "Log Bench Press, Squat or Deadlift to see your strength level",
+      "noSessions": "No sessions logged yet",
+      "weight4days": "Log body weight for at least 4 days",
+      "blockTracking": "Start your first workout to begin block tracking"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "novice": "Novice",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "elite": "Elite"
+    },
+    "benchmark": {
+      "est1rm": "est. 1RM",
+      "toLevel": "{{gap}}kg to {{level}}"
+    },
+    "mostImprovedRow": "{{first}}kg → {{last}}kg est. 1RM",
+    "weight": {
+      "sevenDayAvg": "7-day avg",
+      "daily": "Daily",
+      "proteinAvg": "Protein · 7-day avg",
+      "proteinTargetSuffix": "/{{target}}g target",
+      "recompUp": "Strength up +{{delta}}kg while weight dropping — recomp working",
+      "recompDown": "Strength dropping {{delta}}kg — increase protein or slow the cut",
+      "proteinOk": "✓ Lean mass preservation secured",
+      "proteinLow": "{{n}}g below target — muscle loss risk"
+    },
+    "block": {
+      "num": "Block {{n}}",
+      "remaining": "{{days}} days remaining · {{pct}}% complete",
+      "complete": "Block complete — new exercises load next session"
+    },
+    "rpe": {
+      "scale": "Scale 1–10 · Rate of Perceived Exertion logged per session",
+      "high": "RPE {{rpe}} this week — high fatigue. Consider a deload or lighter session.",
+      "rising": "RPE rising to {{rpe}} — fatigue accumulating. Watch recovery.",
+      "easy": "RPE {{rpe}} — sessions feel easy. Push harder or increase load.",
+      "optimal": "RPE {{rpe}} — in the optimal training zone. Keep this intensity."
+    },
+    "duration": {
+      "up": "Duration up {{min}}min since start — aerobic capacity improving.",
+      "flat": "Duration flat. Push 5min longer per session to drive VO₂max gains."
+    },
+    "e1rm": {
+      "up": "Add weight next {{ex}} session — {{delta}}kg gained over {{weeks}} sessions.",
+      "down": "{{ex}} is down {{delta}}kg — check sleep, calories, or reduce fatigue.",
+      "stall": "{{ex}} stalled. Try adding 1 rep per set before adding weight."
+    },
+    "weightV": {
+      "losingFast": "Losing {{rate}}kg/week — too fast. Eat 200–300 more calories to protect muscle.",
+      "losingOptimal": "Losing {{rate}}kg/week — optimal range. Keep this deficit.",
+      "stable": "Weight stable. Reduce calories by 200/day or add one cardio session to restart fat loss.",
+      "gaining": "Gaining {{rate}}kg/week. Check if this is intentional bulk — if not, reduce calories."
+    },
+    "consistencyV": {
+      "excellent": "{{avg}} sessions/week — excellent. Maintain this frequency.",
+      "solid": "{{avg}} sessions/week — solid. Add one session to accelerate progress.",
+      "schedule3": "{{avg}} sessions/week — schedule a 3rd session this week.",
+      "low": "{{avg}} sessions/week — consistency is your #1 problem right now. Book 3 sessions this week."
+    },
+    "cardioV": {
+      "optimal": "{{avg}} sessions/week — in the optimal VO₂max range. Maintain.",
+      "good": "{{avg}} sessions/week — good. Add 1 more to maximise cardiorespiratory adaptation.",
+      "below": "{{avg}} sessions/week — below optimal. Schedule a 3rd cardio session this week.",
+      "tooLow": "{{avg}} sessions/week — too low for endurance gains. Target 3–5 sessions/week minimum."
+    },
+    "strengthLevelV": "{{gap}}kg from {{level}} on {{lift}} — focus here."
+  },
+  "cards": {
+    "cardio": {
+      "title": "Log activity",
+      "type": "Type",
+      "types": {
+        "run": "Run",
+        "walk": "Walk",
+        "swim": "Swim",
+        "cycle": "Cycle",
+        "other": "Other"
+      },
+      "duration": "Duration (min)",
+      "durationPlaceholder": "45",
+      "distance": "Distance ({{unit}})",
+      "stroke": "Stroke",
+      "effort": "Effort",
+      "rpe": {
+        "easy": "Easy",
+        "easySub": "Held a conversation",
+        "moderate": "Moderate",
+        "moderateSub": "Comfortably hard",
+        "hard": "Hard",
+        "hardSub": "Near your limit"
+      },
+      "saving": "Saving...",
+      "save": "Save session",
+      "missingDurationTitle": "Missing duration",
+      "missingDurationMsg": "Enter how long the session was.",
+      "errorTitle": "Error",
+      "errorMsg": "Could not save. Try again."
+    },
+    "exerciseDetail": {
+      "technique": "TECHNIQUE",
+      "whyHere": "WHY IT'S HERE",
+      "research": "RESEARCH",
+      "progressionPath": "PROGRESSION PATH"
+    },
+    "slideshow": {
+      "techniqueCues": "TECHNIQUE CUES",
+      "whyThisExercise": "WHY THIS EXERCISE"
+    },
+    "muscleMap": {
+      "front": "Front",
+      "back": "Back",
+      "primary": "Primary",
+      "secondary": "Secondary"
+    },
+    "threeD": {
+      "prev": "Prev",
+      "next": "Next",
+      "hint": "Drag to rotate · Swipe slides with arrows"
+    },
+    "bodyComp": {
+      "title": "Body composition",
+      "empty": "Log your weight daily for trend analysis. After 7 days you will see your moving average, rate of change, and projection to your target.",
+      "cutting": "Cutting",
+      "building": "Building",
+      "maintaining": "Maintaining",
+      "calculating": "Calculating…",
+      "ratePerWeek": "{{rate}} kg/week",
+      "dailyWeight": "Daily weight",
+      "sevenDayAverage": "7-day average",
+      "target": "Target",
+      "targetSvg": "target",
+      "avg7": "7-day avg",
+      "toTarget": "to target",
+      "weighIns": "weigh-ins",
+      "projection": "At your current pace you will reach {{target}} kg in approximately {{weeks}} weeks ({{date}}).",
+      "projectionDisclaimer": "Rate of change varies week to week — this is a direction, not a guarantee.",
+      "alerts": {
+        "waterTitle": "Likely water retention",
+        "waterBody": "Your weight has risen quickly in the last 2 days. Research shows menstrual cycle water retention averages ~0.5kg and peaks on day 1 of flow (Kanellakis et al. 2023). This is not fat gain.",
+        "muscleLossTitle": "Muscle loss risk",
+        "muscleLossBody": "Losing more than 1kg/week consistently. Research shows 20–40% of total weight lost at this rate comes from muscle. Slow the deficit or increase protein above 1.6g/kg bodyweight.",
+        "gainFastTitle": "Gaining too fast",
+        "gainFastBody": "At your training level, gaining faster than ~0.12kg/week primarily adds fat, not muscle. Consider reducing your surplus.",
+        "stalledTitle": "Progress stalled",
+        "stalledBody": "Weight hasn't moved meaningfully in 2+ weeks despite your goal. See the plateau section for evidence-based next steps."
+      }
+    }
+  },
+  "today": {
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "block": {
+      "newTitle": "New block started",
+      "newSub": "Your exercises have rotated to keep your body adapting. Same movements, fresh stimulus.",
+      "pill": "Block {{block}} · Week {{week}} of {{total}}"
+    },
+    "readiness": {
+      "ready": "Ready",
+      "moderate": "Moderate",
+      "low": "Low",
+      "adviceModerate": "HRV below your baseline. Consider reducing compound weights by 10% today.",
+      "adviceLow": "HRV significantly below baseline. Reduce load, skip the last isolation exercise, or take a rest day.",
+      "sleepStat": "{{hours}}h sleep",
+      "hrvStat": "HRV {{ms}}ms",
+      "baselineSuffix": " ({{sign}}{{pct}}% vs baseline)",
+      "rhrStat": "{{bpm}} bpm resting"
+    },
+    "session": {
+      "todayLabel": "TODAY'S SESSION",
+      "exercises": "{{count}} exercises",
+      "sets": "{{count}} sets",
+      "more": "+{{count}} more exercises",
+      "completed": "✓ Completed today",
+      "nextUp": "Next up · {{name}}",
+      "start": "Start Workout"
+    },
+    "rest": {
+      "title": "Rest day",
+      "sub": "Recovery is when your muscles actually grow. Prioritize sleep and protein today."
+    },
+    "cardio": {
+      "title": "Cardio & endurance",
+      "lastSessions_one": "Last {{count}} session",
+      "lastSessions_other": "Last {{count}} sessions",
+      "log": "+ Log",
+      "empty": "No sessions logged yet. Tap + Log to add a run, swim, walk, or cycle.",
+      "minutes": "{{count}} min",
+      "run": "Run",
+      "walk": "Walk",
+      "swim": "Swim",
+      "cycle": "Cycle",
+      "other": "Activity"
+    },
+    "recovery": {
+      "title": "Muscle recovery",
+      "sub": "Based on your recent training history",
+      "daysAgo": "{{count}}d ago",
+      "never": "Never"
+    },
+    "volume": {
+      "title": "This week's volume",
+      "sub": "Sets per muscle — last 7 days",
+      "belowMin": "Below minimum",
+      "belowOpt": "Below optimal",
+      "inRange": "In range",
+      "target": "Min {{min}} · Opt {{low}}–{{high}}",
+      "junkTitle": "Junk volume",
+      "junkText": "{{muscles}} — past the ceiling where extra sets stop building muscle and increase injury risk. Spread that effort to lagging muscles instead.",
+      "junkMuscle": "{{label}} ({{count}} sets)",
+      "showDetail": "Show per-head detail",
+      "hideDetail": "Hide per-head detail",
+      "indirect": "+{{n}} indirect",
+      "fromCompounds": "from compounds"
+    },
+    "deload": {
+      "fatigueDetected": "Fatigue detected",
+      "weeksTraining": "{{weeks}} weeks of consistent training",
+      "setsCut": "Sets cut",
+      "weight": "Weight",
+      "duration": "Duration",
+      "durationDays": "7 days",
+      "rirTarget": "RIR target",
+      "same": "Same",
+      "thisWeek": "This week:"
+    },
+    "proactive": {
+      "tapToAsk": "Tap to ask your coach →"
+    },
+    "plateau": {
+      "title": "Plateau detected",
+      "progress": "{{days}} days without progress · Est. 1RM: {{rm}}kg",
+      "whatToDo": "What to do:"
+    },
+    "lastSession": {
+      "title": "Last session",
+      "minutes": "{{count}} min",
+      "rpe": "RPE {{value}}"
+    },
+    "modal": {
+      "setsPerMuscle": "SETS PER MUSCLE",
+      "noData": "No set data found.",
+      "minutes": "{{count}} min",
+      "rpe": "RPE {{value}}"
+    },
+    "checkIn": {
+      "title": "Before you start",
+      "sub": "How's each area feeling today? We'll adjust the workout to match.",
+      "good": "Good",
+      "usual": "The usual",
+      "flare": "Flare-up",
+      "start": "Start Workout"
+    },
+    "muscles": {
+      "chest": "Chest",
+      "back": "Back",
+      "shoulders": "Shoulders",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "quads": "Quads",
+      "hamstrings": "Hamstrings",
+      "glutes": "Glutes",
+      "calves": "Calves",
+      "forearms": "Forearms",
+      "abs": "Abs"
+    },
+    "heads": {
+      "upper_chest": "Upper chest",
+      "chest": "Mid / lower chest",
+      "lower_chest": "Lower chest",
+      "lats": "Lats",
+      "traps": "Traps / rhomboids",
+      "lower_back": "Lower back",
+      "front_delts": "Front delts",
+      "side_delts": "Side delts",
+      "rear_delts": "Rear delts",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "quads": "Quads",
+      "hamstrings": "Hamstrings",
+      "glutes": "Glutes",
+      "calves": "Calves",
+      "abs": "Abs"
+    }
+  }
+}
