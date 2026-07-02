@@ -5,7 +5,7 @@ import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform, 
 import * as NavigationBar from 'expo-navigation-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import Purchases, { LOG_LEVEL } from './lib/purchases';
 import { registerForPushNotifications } from './lib/notificationService';
 import { NavigationContainer } from '@react-navigation/native';
@@ -60,7 +60,6 @@ function PremiumPaywall({ feature, onUpgrade, onRestore }) {
 
   const features = {
     Coach: {
-      icon: '✦',
       title: 'AI Coach',
       tagline: 'A coach with your full training file open',
       bullets: [
@@ -89,7 +88,9 @@ function PremiumPaywall({ feature, onUpgrade, onRestore }) {
     <View style={pw.container}>
       <ScrollView contentContainerStyle={pw.scroll}>
         <View style={pw.iconWrap}>
-          <Text style={pw.icon}>{f.icon}</Text>
+          {f === features.Coach
+            ? <FontAwesome5 name="brain" size={28} color="#FFFFFF" solid />
+            : <Text style={pw.icon}>{f.icon}</Text>}
         </View>
         <Text style={pw.title}>{f.title}</Text>
         <Text style={pw.tagline}>{f.tagline}</Text>
@@ -192,16 +193,18 @@ const pw = StyleSheet.create({
 const TAB_ICONS = {
   Today:    { active: 'home',                 inactive: 'home-outline' },
   Program:  { active: 'barbell',              inactive: 'barbell-outline' },
-  Coach:    { active: 'sparkles',             inactive: 'sparkles-outline' },
+  Coach:    { active: 'brain',                inactive: 'brain', lib: 'fa5' },
   Nutrition:{ active: 'nutrition',            inactive: 'nutrition-outline' },
   Profile:  { active: 'person',               inactive: 'person-outline' },
 };
 
 function TabIcon({ route, color, focused, isLocked }) {
   const icons = TAB_ICONS[route.name] || { active: 'ellipse', inactive: 'ellipse-outline' };
+  const isFa5 = icons.lib === 'fa5';
+  const IconLib = isFa5 ? FontAwesome5 : Ionicons;
   return (
     <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
-      <Ionicons name={focused ? icons.active : icons.inactive} size={22} color={color} />
+      <IconLib name={focused ? icons.active : icons.inactive} size={isFa5 ? 20 : 22} color={color} {...(isFa5 ? { solid: true } : {})} />
       {isLocked && (
         <View style={{
           position: 'absolute', top: -2, right: -4,
