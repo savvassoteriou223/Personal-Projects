@@ -73,7 +73,10 @@
     "emailSent": {
       "title": "Prüfe deine E-Mails",
       "text": "Wir haben einen Bestätigungslink an {{email}} gesendet. Tippe darauf, um dein Konto zu aktivieren — das dauert nur eine Sekunde.",
-      "resend": "Nichts erhalten? E-Mail erneut senden"
+      "resend": "Nichts erhalten? E-Mail erneut senden",
+      "resendFailTitle": "Senden fehlgeschlagen",
+      "resendOkTitle": "E-Mail gesendet",
+      "resendOkMsg": "Wir haben einen neuen Bestätigungslink an {{email}} gesendet. Es kann einige Minuten dauern — prüfe auch deinen Spam-Ordner."
     },
     "newPassword": {
       "title": "Neues Passwort festlegen",
@@ -133,7 +136,7 @@
     "step2": {
       "title": "Was sind deine Ziele?",
       "sub": "Dein gesunder Bereich ist {{low}}–{{high}}kg. Du bist bei {{weight}}kg.\nWähle alles Zutreffende aus.",
-      "targetWeight": "Zielgewicht (kg)",
+      "targetWeight": "Zielgewicht (kg) — optional",
       "targetPlaceholder": "z. B. 75",
       "estimate": "In gesundem Tempo erreichst du {{target}}kg in ~{{weeks}} Wochen"
     },
@@ -267,7 +270,7 @@
       "selectGoalTitle": "Ziel auswählen",
       "selectGoalMsg": "Bitte wähle mindestens ein Ziel, um fortzufahren.",
       "invalidTargetTitle": "Ungültiges Zielgewicht",
-      "invalidTargetMsg": "Bitte gib ein Zielgewicht zwischen 20 und 300 kg ein.",
+      "invalidTargetMsg": "Bitte gib ein gültiges Zielgewicht ein oder lass das Feld leer.",
       "selectExpTitle": "Erfahrung auswählen",
       "selectExpMsg": "Bitte wähle dein Erfahrungslevel im Gym.",
       "selectEquipTitle": "Equipment auswählen",

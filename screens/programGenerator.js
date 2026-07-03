@@ -2334,7 +2334,12 @@ export function applyPermanentEdit(program, edit, equipment = []) {
       }
     }
 
-    return { ...day, exercises };
+    // Edits are re-applied to a template that shifts under them (skip-learning,
+    // block rotation), so a replace/add can land on an exercise the generator
+    // already placed elsewhere in the day. The contraindication filter's dedup
+    // safety net only runs for users with health conditions — dedup here so
+    // healthy profiles are covered too.
+    return { ...day, exercises: deduplicateDayExercises(exercises, equipment) };
   });
 
   return { ...program, days };
@@ -2386,60 +2391,64 @@ function gatePoolByLevel(pool, level) {
   return pool || [];
 }
 
+// Exercises that are the SAME base movement — having two in one day is redundant
+// (e.g. pull-up + weighted pull-up, back squat + goblet squat). Grouped so the day
+// keeps at most one and folds the volume in. Complementary same-pattern pairs that
+// train different sub-functions (seated vs standing calf = soleus vs gastroc,
+// tricep pushdown vs overhead = different heads, straight vs hammer curl) are
+// deliberately NOT grouped — those are good programming and stay.
+const BASE_MOVEMENT_GROUP = {
+  // Bilateral squat (split squats, lunges, and leg press are intentionally excluded)
+  barbell_back_squat: 'squat', barbell_front_squat: 'squat', smith_machine_squat: 'squat',
+  hack_squat: 'squat', pendulum_squat: 'squat', goblet_squat: 'squat', bodyweight_squat: 'squat',
+  kettlebell_goblet_squat: 'squat', band_squat: 'squat',
+  // Romanian deadlift variants (conventional/sumo deadlift are a different pull, excluded)
+  romanian_deadlift: 'rdl', dumbbell_romanian_deadlift: 'rdl', single_leg_rdl_bodyweight: 'rdl',
+  kettlebell_rdl: 'rdl', band_rdl: 'rdl',
+  // Glute bridge
+  glute_bridge: 'glute_bridge', single_leg_glute_bridge: 'glute_bridge',
+  // Y-raise
+  incline_y_raise: 'y_raise', prone_y_raise: 'y_raise',
+};
+
+// Every vertical-pull-bar/pulldown movement is the same pattern — one per day.
+function baseMovementGroup(ex) {
+  if (!ex) return null;
+  if (BASE_MOVEMENT_GROUP[ex.id]) return BASE_MOVEMENT_GROUP[ex.id];
+  if (ex.pattern === 'back_vertical_pull') return 'vertical_pull';
+  return null;
+}
+
 function deduplicateDayExercises(exercises, equipment, level = 'intermediate', excludeIds = []) {
   const usedIds = new Set();
   const usedNames = new Set();
+  const usedGroups = new Set();
   const firstById = new Map(); // id -> the kept output exercise (for set-merging)
+  const firstByGroup = new Map();
   const out = [];
   for (const ex of exercises) {
     if (!ex) { out.push(ex); continue; }
-    if (!usedIds.has(ex.id) && !usedNames.has(ex.name)) {
+    const group = baseMovementGroup(ex);
+    const dupById = usedIds.has(ex.id) || usedNames.has(ex.name);
+    const dupByGroup = group && usedGroups.has(group);
+    if (!dupById && !dupByGroup) {
       usedIds.add(ex.id); usedNames.add(ex.name);
+      if (group) { usedGroups.add(group); firstByGroup.set(group, ex); }
       firstById.set(ex.id, ex);
       out.push(ex);
       continue;
     }
-    // Duplicate — find a distinct alternative from the same pattern, gated to the
-    // user's level (no advanced swaps for beginners) and avoiding disliked picks.
-    let pool = gatePoolByLevel(
-      getAllExercisesForPattern
-        ? getAllExercisesForPattern(ex.pattern, equipment)
-        : getExercisesForEquipment(ex.pattern, equipment),
-      level,
-    );
-    if (excludeIds.length) {
-      const liked = pool.filter(e => !excludeIds.includes(e.id));
-      if (liked.length > 0) pool = liked;
+    // Duplicate movement in the same day. Previously we substituted "a distinct
+    // alternative from the same pattern" — but same-pattern alternatives are often
+    // the SAME base movement (pull-up→weighted pull-up, squat→bodyweight squat,
+    // glute bridge→single-leg glute bridge), which produced redundant pairs.
+    // Instead, concentrate the volume: merge this slot's sets into the first
+    // occurrence (capped), so the day never shows two versions of one movement.
+    const first = firstById.get(ex.id) || out.find(o => o && o.name === ex.name);
+    if (first && typeof first.sets === 'number' && typeof ex.sets === 'number') {
+      first.sets = Math.min(8, first.sets + ex.sets);
     }
-    const alt = pool?.find(e => !usedIds.has(e.id) && !usedNames.has(e.name));
-    if (!alt) {
-      // No distinct option for this equipment/level — merge the slot's sets into
-      // the first occurrence (capped) rather than show the same movement twice.
-      const first = firstById.get(ex.id);
-      if (first && typeof first.sets === 'number' && typeof ex.sets === 'number') {
-        first.sets = Math.min(8, first.sets + ex.sets);
-      }
-      continue;
-    }
-    usedIds.add(alt.id); usedNames.add(alt.name);
-    const subs = (pool || []).filter(e => e.id !== alt.id).slice(0, 3);
-    const replaced = {
-      ...ex,
-      id: alt.id,
-      name: alt.name,
-      research_note: alt.research_note ?? '',
-      cues: alt.cues ?? [],
-      study: alt.study ?? null,
-      progression_path: alt.progression_path ?? null,
-      sub1: subs[0]?.name || null,
-      sub2: subs[1]?.name || null,
-      sub3: subs[2]?.name || null,
-      sub1_id: subs[0]?.id || null,
-      sub2_id: subs[1]?.id || null,
-      sub3_id: subs[2]?.id || null,
-    };
-    firstById.set(alt.id, replaced);
-    out.push(replaced);
+    // drop the duplicate (its volume has been folded into `first`)
   }
   return out;
 }

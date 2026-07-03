@@ -72,10 +72,13 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
         Alert.alert(t('onboarding.alerts.selectGoalTitle'), t('onboarding.alerts.selectGoalMsg'));
         return;
       }
-      const twVal = parseFloat(targetWeight);
-      if (!targetWeight || isNaN(twVal) || twVal < 20 || twVal > 300) {
-        Alert.alert(t('onboarding.alerts.invalidTargetTitle'), t('onboarding.alerts.invalidTargetMsg'));
-        return;
+      // Target weight is optional — blank means no specific goal weight.
+      if (targetWeight) {
+        const twVal = parseFloat(targetWeight);
+        if (isNaN(twVal) || twVal < 30 || twVal > 300) {
+          Alert.alert(t('onboarding.alerts.invalidTargetTitle'), t('onboarding.alerts.invalidTargetMsg'));
+          return;
+        }
       }
     }
     if (step === 3) {
@@ -490,21 +493,23 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
 
               <Pressable
                 style={[styles.noneBtn, noIssues && styles.noneBtnActive]}
-                onPress={() => { setNoIssues(true); setHealthEntries([]); setH6search(''); }}
+                onPress={() => { setNoIssues(v => !v); setHealthEntries([]); setH6search(''); }}
               >
                 <Text style={[styles.noneBtnText, noIssues && styles.noneBtnTextActive]}>
                   {noIssues ? t('onboarding.step6.noIssuesSelected') : t('onboarding.step6.noIssues')}
                 </Text>
               </Pressable>
 
-              <TextInput
+              {/* Search + condition list collapse once "no issues" is chosen so
+                  the Next button is reachable without scrolling past them. */}
+              {!noIssues && <TextInput
                 style={[styles.input, { marginBottom: 16, marginTop: 8 }]}
                 value={h6search}
                 onChangeText={val => { setH6search(val); if (noIssues && val) setNoIssues(false); }}
                 placeholder={t('onboarding.step6.searchPlaceholder')}
                 placeholderTextColor="#3D3D4A"
                 clearButtonMode="while-editing"
-              />
+              />}
 
               {/* Saved entries */}
               {healthEntries.length > 0 && (
@@ -524,7 +529,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
               )}
 
               {/* Condition list */}
-              {Object.entries(CONDITIONS_DB).map(([regionKey, region]) => {
+              {!noIssues && Object.entries(CONDITIONS_DB).map(([regionKey, region]) => {
                 const filtered = h6search.trim()
                   ? region.conditions.filter(c =>
                       c.label.toLowerCase().includes(h6search.toLowerCase()) ||

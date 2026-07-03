@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import * as Linking from 'expo-linking';
 import { supabase } from '../supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -91,7 +91,12 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
         </Pressable>
         <Pressable
           onPress={async () => {
-            await supabase.auth.resend({ type: 'signup', email });
+            const { error: resendError } = await supabase.auth.resend({ type: 'signup', email });
+            if (resendError) {
+              Alert.alert(t('auth.emailSent.resendFailTitle'), friendlyAuthError(resendError, t));
+            } else {
+              Alert.alert(t('auth.emailSent.resendOkTitle'), t('auth.emailSent.resendOkMsg', { email }));
+            }
           }}
           style={{ alignItems: 'center', marginTop: 16 }}
         >

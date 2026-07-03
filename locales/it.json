@@ -73,7 +73,10 @@
     "emailSent": {
       "title": "Controlla la tua e-mail",
       "text": "Abbiamo inviato un link di conferma a {{email}}. Toccalo per attivare il tuo account — bastano pochi secondi.",
-      "resend": "Non l'hai ricevuto? Invia di nuovo"
+      "resend": "Non l'hai ricevuto? Invia di nuovo",
+      "resendFailTitle": "Invio non riuscito",
+      "resendOkTitle": "E-mail inviata",
+      "resendOkMsg": "Abbiamo inviato un nuovo link di conferma a {{email}}. Può richiedere qualche minuto — controlla anche la cartella spam."
     },
     "newPassword": {
       "title": "Imposta nuova password",
@@ -133,7 +136,7 @@
     "step2": {
       "title": "Quali sono i tuoi obiettivi?",
       "sub": "Il tuo intervallo sano è {{low}}–{{high}}kg. Sei a {{weight}}kg.\nSeleziona tutto ciò che si applica.",
-      "targetWeight": "Peso obiettivo (kg)",
+      "targetWeight": "Peso obiettivo (kg) — facoltativo",
       "targetPlaceholder": "es. 75",
       "estimate": "A un ritmo sano, raggiungerai {{target}}kg in ~{{weeks}} settimane"
     },
@@ -267,7 +270,7 @@
       "selectGoalTitle": "Seleziona un obiettivo",
       "selectGoalMsg": "Seleziona almeno un obiettivo per continuare.",
       "invalidTargetTitle": "Peso obiettivo non valido",
-      "invalidTargetMsg": "Inserisci un peso obiettivo tra 20 e 300 kg.",
+      "invalidTargetMsg": "Inserisci un peso obiettivo valido o lascia il campo vuoto.",
       "selectExpTitle": "Seleziona la tua esperienza",
       "selectExpMsg": "Seleziona il tuo livello di esperienza in palestra.",
       "selectEquipTitle": "Seleziona l'attrezzatura",

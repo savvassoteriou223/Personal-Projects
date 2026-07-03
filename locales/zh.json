@@ -73,7 +73,10 @@
     "emailSent": {
       "title": "查看你的邮箱",
       "text": "我们已向 {{email}} 发送确认链接。点击它即可激活账户 — 仅需一秒。",
-      "resend": "没收到？重新发送邮件"
+      "resend": "没收到？重新发送邮件",
+      "resendFailTitle": "重发失败",
+      "resendOkTitle": "邮件已发送",
+      "resendOkMsg": "我们已向 {{email}} 发送了新的确认链接。可能需要几分钟——也请检查垃圾邮件文件夹。"
     },
     "newPassword": {
       "title": "设置新密码",
@@ -133,7 +136,7 @@
     "step2": {
       "title": "你的目标是什么？",
       "sub": "你的健康范围是 {{low}}–{{high}}kg。你目前是 {{weight}}kg。\n选择所有适用项。",
-      "targetWeight": "目标体重 (kg)",
+      "targetWeight": "目标体重 (kg) — 可选",
       "targetPlaceholder": "例如 75",
       "estimate": "以健康速度，你将在约 {{weeks}} 周内达到 {{target}}kg"
     },
@@ -267,7 +270,7 @@
       "selectGoalTitle": "选择一个目标",
       "selectGoalMsg": "请至少选择一个目标以继续。",
       "invalidTargetTitle": "目标体重无效",
-      "invalidTargetMsg": "请输入 20 到 300 kg 之间的目标体重。",
+      "invalidTargetMsg": "请输入有效的目标体重，或留空。",
       "selectExpTitle": "选择你的经验",
       "selectExpMsg": "请选择你的健身经验水平。",
       "selectEquipTitle": "选择器械",

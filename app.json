@@ -40,7 +40,7 @@
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
       "package": "com.helixfit.app",
-      "versionCode": 17
+      "versionCode": 21
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -374,6 +374,10 @@ export default function App() {
     }
 
     const routeAuthedUser = async (session) => {
+      // Start each session clean — a previous user's admin/premium flags must
+      // never leak into this one; the profile fetch below re-derives them.
+      setIsAdmin(false);
+      setIsPremium(false);
       Purchases.logIn(session.user.id);
 
       let profile = null, profileError = null;
@@ -477,6 +481,8 @@ export default function App() {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         signedOutAt.current = Date.now();
+        setIsAdmin(false);
+        setIsPremium(false);
         Purchases.logOut().catch(() => {});
         setScreen('welcome');
         return;
@@ -625,7 +631,7 @@ export default function App() {
               // can't overwrite them with blanks.
               height_cm: parseFloat(data.height),
               weight_kg: parseFloat(data.weight),
-              target_weight_kg: parseFloat(data.targetWeight),
+              target_weight_kg: data.targetWeight ? parseFloat(data.targetWeight) : null,
               goals: data.goals,
               weekly_workouts: data.weeklyWorkouts,
               session_length: data.sessionLength,
