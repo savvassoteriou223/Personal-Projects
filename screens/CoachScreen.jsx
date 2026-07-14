@@ -185,7 +185,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const user = await getCurrentUser();
     if (!user) return;
 
-    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }] = await Promise.all([
+    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }] = await Promise.all([
       supabase.from('profiles').select('*, ai_calls_used, ai_calls_reset_at').eq('id', user.id).single(),
       supabase.from('workout_sessions').select('id, name, completed_at, duration_min, perceived_exertion, session_type')
         .eq('user_id', user.id).order('completed_at', { ascending: false }).limit(20),
@@ -198,6 +198,11 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         .eq('user_id', user.id)
         .order('date', { ascending: false })
         .limit(7),
+      supabase.from('nutrition_logs')
+        .select('date, calories, protein_g, carbs_g, fat_g')
+        .eq('user_id', user.id)
+        .gte('date', format(subDays(new Date(), 7), 'yyyy-MM-dd'))
+        .order('date', { ascending: false }),
     ]);
 
     if (profile) {
@@ -302,13 +307,13 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       program = rebalanceForCompletedOptionalDays(program, completedThisWeek);
     }
 
-    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [] };
+    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [] };
     setUserData(data);
     return data;
   };
 
   const buildContext = (data) => {
-    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs } = data;
+    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [] } = data;
     const exp = profile?.trainingExperience || 'intermediate';
     // Volume judged on DIRECT sets against the (direct-isolation) targets; indirect
     // work from compounds is reported separately so the coach can see it without
@@ -399,6 +404,34 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       ? `\nWhat I remember about you:\n${notes.map(f => `  - [${f.category}] ${f.summary}`).join('\n')}\n`
       : '';
 
+    // Nutrition — targets + recent intake, so the coach judges the user's actual
+    // diet against their goals instead of giving generic textbook advice (it had
+    // no nutrition data before this).
+    const nutTargets = {
+      calories: profile?.caloric_target || 0,
+      protein: profile?.protein_target || 0,
+      carbs: profile?.carb_target || 0,
+      fat: profile?.fat_target || 0,
+    };
+    const nutByDate = {};
+    (nutritionLogs || []).forEach(l => {
+      const d = nutByDate[l.date] || (nutByDate[l.date] = { calories: 0, protein: 0, carbs: 0, fat: 0 });
+      d.calories += l.calories || 0; d.protein += l.protein_g || 0; d.carbs += l.carbs_g || 0; d.fat += l.fat_g || 0;
+    });
+    const nutDays = Object.keys(nutByDate);
+    const nutAvg = nutDays.length ? {
+      calories: Math.round(nutDays.reduce((s, d) => s + nutByDate[d].calories, 0) / nutDays.length),
+      protein: Math.round(nutDays.reduce((s, d) => s + nutByDate[d].protein, 0) / nutDays.length),
+      carbs: Math.round(nutDays.reduce((s, d) => s + nutByDate[d].carbs, 0) / nutDays.length),
+      fat: Math.round(nutDays.reduce((s, d) => s + nutByDate[d].fat, 0) / nutDays.length),
+    } : null;
+    const nutritionBlock = nutTargets.calories
+      ? `  Daily target: ${nutTargets.calories} kcal · ${nutTargets.protein}g protein · ${nutTargets.carbs}g carbs · ${nutTargets.fat}g fat\n` +
+        (nutAvg
+          ? `  Logged average over last ${nutDays.length} day(s): ${nutAvg.calories} kcal · ${nutAvg.protein}g protein · ${nutAvg.carbs}g carbs · ${nutAvg.fat}g fat`
+          : `  No food logged in the last 7 days`)
+      : '  No calorie/macro targets set yet';
+
     return `User profile:
 - Name: ${profile?.name || 'unknown'}
 - Experience: ${exp}
@@ -438,7 +471,10 @@ Recent cardio sessions:
 ${cardioLines}
 
 Recovery data (last 7 days):
-${healthLines}${workoutContext ? `\n\nCurrent live workout (user is training right now):\n${workoutContext}` : ''}`;
+${healthLines}
+
+Nutrition — targets vs recent intake:
+${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training right now):\n${workoutContext}` : ''}`;
   };
 
   const callCoach = async (messages, userContext, mode) => {
