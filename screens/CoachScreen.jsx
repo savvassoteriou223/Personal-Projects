@@ -540,6 +540,17 @@ ${healthLines}${workoutContext ? `\n\nCurrent live workout (user is training rig
       return false;
     }
     const isAdd = p.type === 'add_exercise' || p.edit_type === 'add_exercise';
+    // Guard against a wrong exercise_index. The coach has pointed exercise_index
+    // at the wrong slot (e.g. it edited "Hanging knee raise" when asked to change
+    // "Standing hammer curl"). When it tells us which exercise it means, relocate
+    // the edit to the slot whose name matches — and refuse if that name isn't on
+    // the day, rather than editing the wrong exercise via a bad index.
+    if (!isAdd && day && p.current_exercise) {
+      const wantLc = p.current_exercise.trim().toLowerCase();
+      const byName = (day.exercises || []).findIndex(ex => (ex.name || '').trim().toLowerCase() === wantLc);
+      if (byName === -1) return false;
+      p = { ...p, exercise_index: byName };
+    }
     // Bounds-check the target slot for replaces/swaps (add creates a new slot).
     // A stale or hallucinated index would otherwise edit the wrong exercise or
     // write an override that silently never matches.
@@ -691,6 +702,7 @@ ${healthLines}${workoutContext ? `\n\nCurrent live workout (user is training rig
       day_id: slot.day_id,
       day_name: slot.day_name,
       exercise_index: slot.exercise_index,
+      current_exercise: slot.current_exercise,
       exercise_name: option.exercise_name,
       rationale: option.rationale,
     };
