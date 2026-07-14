@@ -80,8 +80,8 @@ export const STUDIES = {
 
   // ── CHEST (region targeting — line of pull decides the region) ────────────
   chest_regions: {
-    insight: 'Flat press hits the whole pec, incline emphasises the upper (clavicular) head, decline/dips the lower head — you need both angles.',
-    cite: 'EMG + hypertrophy literature',
+    insight: 'Flat press hits the whole pec, a ~30° incline emphasises the upper (clavicular) head, decline/dips the lower head — you need multiple angles.',
+    cite: 'Chaves 2020; EMG + hypertrophy literature',
     tags: ['chest', 'incline', 'decline'],
   },
   chest_cable_lower: {
@@ -134,14 +134,14 @@ export const STUDIES = {
 
   // ── LEGS ──────────────────────────────────────────────────────────────────
   quads_need_both: {
-    insight: 'Squats build the vastus lateralis; leg extensions are needed for the rectus femoris — neither alone is complete.',
-    cite: 'Kassiano 2025',
-    tags: ['quads', 'squat', 'leg_extension'],
+    insight: 'Squats build the vastus lateralis and leg extensions the rectus femoris — do both, and squat to at least 90–120° knee flexion for full quad growth.',
+    cite: 'Kassiano 2025; squat-depth research',
+    tags: ['quads', 'squat', 'leg_extension', 'squat_depth'],
   },
   hamstrings_hinge_vs_curl: {
-    insight: 'Hip hinges at long length (RDL, seated curl) build the bulk of the hamstring; Nordics bias the semitendinosus — include both.',
-    cite: 'Maeo 2021',
-    tags: ['hamstrings', 'rdl', 'leg_curl', 'lengthened'],
+    insight: 'Seated leg curls (hamstring stretched) grow all three hamstring heads more than lying curls; pair with an RDL for the hip-hinge function — include both.',
+    cite: 'Maeo 2020/2021',
+    tags: ['hamstrings', 'rdl', 'leg_curl', 'seated_leg_curl', 'lengthened'],
   },
   glutes_thrust_and_rdl: {
     insight: 'Hip thrusts (peak contraction) plus RDLs (lengthened) cover both ends of the glute; thrusts grow glutes similarly to squats.',
@@ -262,6 +262,128 @@ export const STUDIES = {
     insight: 'Balance wrist-flexor work (wrist curls) with extensor/supinator work (reverse and Zottman curls) to keep the elbows healthy and forearms developed all round.',
     cite: 'Elbow-health consensus',
     tags: ['forearms', 'reverse_curl', 'zottman', 'elbow'],
+  },
+
+  // ── ADDED 2026-07 — programming / goals / conditioning / nutrition ─────────
+  // Training principles
+  muscle_memory: {
+    insight: 'Muscle you have built is not lost for good — extra myonuclei persist through months off, so you regain size far faster the second time.',
+    cite: 'Cumming et al. 2024',
+    tags: ['detraining', 'consistency', 'recovery', 'muscle_memory'],
+  },
+  maintain_minimal_dose: {
+    insight: 'Maintaining muscle takes far less than building it — 6–10 hard sets per muscle per week (even 1–2 near failure) holds gains through busy or travel weeks.',
+    cite: 'Minimal-dose review, Sports Med 2024',
+    tags: ['maintain', 'volume', 'frequency', 'programming'],
+  },
+  intensity_techniques_efficiency: {
+    insight: 'Drop sets, rest-pause and myo-reps build the same muscle as straight sets in less time — use them to save time, not to force extra growth.',
+    cite: 'Drop-set / rest-pause meta-analyses',
+    tags: ['time_efficient', 'programming', 'drop_set', 'rest_pause'],
+  },
+  tempo_range: {
+    insight: 'Rep speed barely matters for growth anywhere from ~1–8 s per rep; only grinding reps past ~10 s hurts — control the weight, do not obsess over tempo.',
+    cite: 'Schoenfeld 2015; tempo meta 2025',
+    tags: ['tempo', 'programming'],
+  },
+  older_adults_volume: {
+    insight: 'Older lifters who seem to not respond usually just need more volume — higher weekly sets restores growth well into older age.',
+    cite: 'J Appl Physiol 2023',
+    tags: ['older', 'volume', 'longevity', 'maintain'],
+  },
+  full_rom: {
+    insight: 'Training through a full range of motion generally beats partial reps for growth; the exception is partials done in the stretched position, which hold their own.',
+    cite: 'Wolf et al. 2023 meta-analysis',
+    tags: ['range_of_motion', 'lengthened', 'programming'],
+  },
+  emg_myth: {
+    insight: 'Muscle activation (EMG) and the pump do not predict growth — pick exercises by results and loaded stretch, not by which one burns most.',
+    cite: 'Plotkin et al. 2023 · MRI',
+    tags: ['programming', 'myth'],
+  },
+
+  // Per-muscle
+  glutes_thrust_vs_squat: {
+    insight: 'Hip thrusts and back squats build the glutes about equally despite thrusts showing far higher EMG — squats add more quad, so choose by goal.',
+    cite: 'Plotkin et al. 2023 · MRI',
+    tags: ['glutes', 'hip_thrust', 'squat'],
+  },
+  side_delt_cable_vs_db: {
+    insight: 'Cable and dumbbell lateral raises grow the side delt equally — pick whichever you can push hard and feel best.',
+    cite: 'Cable vs dumbbell lateral raise 2025',
+    tags: ['shoulders', 'side_delts', 'lateral_raise'],
+  },
+
+  // Goals
+  deficit_resistance_training: {
+    insight: 'Lifting while dieting prevents almost all diet-related muscle loss — resistance training spares 90%+ of the lean mass you would otherwise lose.',
+    cite: 'RT-in-deficit meta-analysis',
+    tags: ['fat_loss', 'cut', 'lean_mass', 'resistance_training'],
+  },
+  body_recomposition: {
+    insight: 'Beginners, returners and higher-body-fat lifters can gain muscle and lose fat at once at maintenance or a slight deficit with high protein (2.2 g/kg or more); lean advanced lifters do better cutting and bulking in phases.',
+    cite: 'Barakat et al. 2020',
+    tags: ['recomp', 'fat_loss', 'beginner', 'nutrition'],
+  },
+  muscle_gain_rate: {
+    insight: 'Muscle gain slows with training age — roughly 1–2 lb/month untrained, ~0.5–1 intermediate, ~0.25 advanced, about half that for women — slow progress is normal, not failure.',
+    cite: 'Rate-of-gain models (Aragon)',
+    tags: ['expectations', 'beginner', 'gain'],
+  },
+
+  // Nutrition
+  fiber_satiety: {
+    insight: 'Higher fibre curbs hunger and modestly aids fat loss — adding fibre averaged ~1.25 kg more weight lost across trials by keeping you full on fewer calories.',
+    cite: 'Fibre meta · 27 RCTs, n=1428',
+    tags: ['fiber', 'nutrition', 'fat_loss', 'satiety'],
+  },
+  protein_distribution: {
+    insight: 'Hitting your daily protein target matters far more than spacing it perfectly — 3–5 feedings, optionally one before sleep, is plenty.',
+    cite: 'Protein-distribution review 2024',
+    tags: ['protein', 'nutrition'],
+  },
+  alcohol: {
+    insight: 'Alcohol after training cuts muscle protein synthesis 24–37% for up to a day even with enough protein — keep it away from your key sessions.',
+    cite: 'Parr et al. 2014',
+    tags: ['alcohol', 'recovery', 'nutrition'],
+  },
+
+  // Supplements
+  citrulline: {
+    insight: 'Citrulline malate (6–8 g, ~45 min pre-workout) gives a small bump in reps and endurance, more for lower-body work.',
+    cite: 'Citrulline malate meta-analyses',
+    tags: ['citrulline', 'supplements', 'performance'],
+  },
+
+  // Women
+  menstrual_cycle_training: {
+    insight: 'Cycle phase does not meaningfully change strength or muscle gain, so there is no need to periodise training around it — but program around symptoms (cramps, fatigue) when they hit.',
+    cite: 'Colenso-Semple 2023; ESSR 2024',
+    tags: ['women', 'female', 'programming', 'menstrual'],
+  },
+
+  // Recovery
+  sleep_extension: {
+    insight: 'Extra sleep is ergogenic, not just avoiding a deficit — extending to 9–10 h improved sprint speed, accuracy and strength in athletes.',
+    cite: 'Mah 2011; sleep-extension review 2024',
+    tags: ['sleep', 'recovery', 'performance'],
+  },
+
+  // Cardio
+  hiit_vs_steady_fatloss: {
+    insight: 'For fat loss, HIIT and steady-state cardio deliver similar results at equal effort — choose the one you will actually keep doing.',
+    cite: 'HIIT vs MICT meta 2023',
+    tags: ['cardio', 'hiit', 'fat_loss'],
+  },
+  hiit_efficiency: {
+    insight: 'HIIT builds VO2 max and heart health slightly more, and in less time, than steady-state — the better pick when you are time-limited.',
+    cite: 'HIIT vs MICT meta-analyses 2024',
+    tags: ['cardio', 'hiit', 'vo2max'],
+  },
+  steps_weight: {
+    insight: 'The calorie deficit drives fat loss; ~7,000–8,500 steps a day mainly helps you keep it off, adding ~1% better maintenance per extra 1,000 steps.',
+    cite: 'Step-count & weight meta 2025',
+    tags: ['steps', 'fat_loss', 'neat'],
   },
 };
 
