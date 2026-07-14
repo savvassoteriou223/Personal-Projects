@@ -11,6 +11,7 @@ import { getExerciseInsight } from './studiesLibrary';
 import MuscleMap from './MuscleMap';
 import ExerciseSlideshow from './ExerciseSlideshow';
 import CoachScreen from './CoachScreen';
+import PremiumPaywall from './PremiumPaywall';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { checkReadyToProgress } from './programGenerator';
 
@@ -114,7 +115,7 @@ function calculatePlates(targetKg, barKg) {
   return plates;
 }
 
-export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) {
+export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, isPremium, onUpgrade, onRestore }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const isSimple = workout.trainingExperience === 'beginner';
@@ -129,6 +130,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
   const [slideshowExercise, setSlideshowExercise] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showCoach, setShowCoach] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false); // free users tapping Coach mid-workout
 
   // ─── Restore workout draft from AsyncStorage (survives app backgrounding) ─
   useEffect(() => {
@@ -831,7 +833,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
           ))}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Pressable style={styles.coachTopBtn} onPress={() => setShowCoach(true)}>
+          <Pressable style={styles.coachTopBtn} onPress={() => isPremium ? setShowCoach(true) : setShowPaywall(true)}>
             <Text style={styles.coachTopBtnText}>{t('workout.coach')}</Text>
           </Pressable>
           <Pressable style={styles.finishBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
@@ -1320,6 +1322,20 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel }) 
           />
         </View>
       </Modal>
+
+      {/* ── Upsell paywall — free users tapping Coach mid-workout ── */}
+      <Modal visible={showPaywall} animationType="slide" onRequestClose={() => setShowPaywall(false)}>
+        <View style={{ flex: 1, backgroundColor: '#0F0F13' }}>
+          <Pressable style={styles.paywallClose} onPress={() => setShowPaywall(false)}>
+            <Text style={styles.paywallCloseText}>{t('common.close')}</Text>
+          </Pressable>
+          <PremiumPaywall
+            feature="Coach"
+            onUpgrade={async (plan) => { await onUpgrade?.(plan); setShowPaywall(false); }}
+            onRestore={async () => { await onRestore?.(); setShowPaywall(false); }}
+          />
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1476,6 +1492,8 @@ const styles = StyleSheet.create({
   coachTopBtnText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
 
   // Coach modal
+  paywallClose: { position: 'absolute', top: 52, right: 20, zIndex: 10, paddingVertical: 6, paddingHorizontal: 10 },
+  paywallCloseText: { color: '#71717A', fontSize: 15, fontWeight: '600' },
   coachOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
   coachCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 32, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 12 },
   coachHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
