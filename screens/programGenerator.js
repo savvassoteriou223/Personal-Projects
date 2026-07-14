@@ -1614,7 +1614,7 @@ export function getProactiveCoachPrompt({
     return {
       key: 'recovery',
       title: 'Recovery is low today',
-      body: 'Your sleep/HRV suggest you’re under-recovered. Consider lighter loads or a rest day.',
+      body: 'Your sleep and recovery signals suggest you’re under-recovered. Consider lighter loads or a rest day.',
       ask: 'My recovery is low today — should I still train, and if so how should I adjust?',
     };
   }

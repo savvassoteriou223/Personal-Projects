@@ -220,7 +220,6 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
-              textContentType="newPassword"
               returnKeyType="next"
             />
             <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
@@ -240,7 +239,6 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
-              textContentType="newPassword"
               returnKeyType="done"
             />
             <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>

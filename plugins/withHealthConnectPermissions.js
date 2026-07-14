@@ -10,11 +10,12 @@
 //      the Health Connect permissions screen.
 const { withAndroidManifest } = require('@expo/config-plugins');
 
+// Play rejected v22 (2026-07-08, "Minimum Scope"): HRV + Steps deemed not
+// required for visible features. Only request what survives that review;
+// re-adding a type means updating the Play Console health declaration too.
 const READ_PERMISSIONS = [
   'android.permission.health.READ_SLEEP',
-  'android.permission.health.READ_HEART_RATE_VARIABILITY',
   'android.permission.health.READ_RESTING_HEART_RATE',
-  'android.permission.health.READ_STEPS',
 ];
 
 const HEALTH_CONNECT_PACKAGE = 'com.google.android.apps.healthdata';

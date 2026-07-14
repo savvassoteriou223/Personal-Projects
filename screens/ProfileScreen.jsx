@@ -1198,7 +1198,8 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
             </View>
           )}
 
-          {Platform.OS !== 'web' && !isHealthAvailable() && (
+          {/* iOS only — Android Health Connect removed (2026-07-14, see healthService.js). */}
+          {Platform.OS === 'ios' && !isHealthAvailable() && (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>{t('profile.healthData')}</Text>
               <Text style={styles.empty}>{t('profile.healthInstall')}</Text>

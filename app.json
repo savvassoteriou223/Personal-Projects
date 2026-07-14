@@ -37,10 +37,14 @@
       "blockedPermissions": [
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO",
-        "android.permission.READ_EXTERNAL_STORAGE"
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.health.READ_SLEEP",
+        "android.permission.health.READ_RESTING_HEART_RATE",
+        "android.permission.health.READ_HEART_RATE_VARIABILITY",
+        "android.permission.health.READ_STEPS"
       ],
       "package": "com.helixfit.app",
-      "versionCode": 21
+      "versionCode": 25
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -64,17 +68,6 @@
           "NSHealthUpdateUsageDescription": "Helix does not write health data."
         }
       ],
-      [
-        "react-native-health-connect",
-        {
-          "permissions": [
-            "android.permission.health.READ_SLEEP",
-            "android.permission.health.READ_HEART_RATE_VARIABILITY",
-            "android.permission.health.READ_RESTING_HEART_RATE",
-            "android.permission.health.READ_STEPS"
-          ]
-        }
-      ],
       "expo-font",
       [
         "expo-build-properties",
@@ -88,8 +81,6 @@
       ],
       "./plugins/withAbiFilters",
       "./plugins/withBlackSplash",
-      "./plugins/withHealthConnectDelegate",
-      "./plugins/withHealthConnectPermissions",
       "expo-localization"
     ],
     "extra": {
