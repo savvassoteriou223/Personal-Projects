@@ -8,6 +8,7 @@ import { MOVEMENT_PATTERNS, getAllExercisesForPattern } from './movementLibrary'
 import { formatEvidenceBase } from './studiesLibrary';
 import { VOLUME_TARGETS, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays } from './programGenerator';
 import { computeHeadVolume } from './volumeEngine';
+import { getRecentCheckIns } from '../lib/recoveryStore';
 import { format, subDays, startOfWeek } from 'date-fns';
 
 const MONTHLY_QUOTA = 100;
@@ -185,7 +186,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const user = await getCurrentUser();
     if (!user) return;
 
-    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }] = await Promise.all([
+    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }, recoveryCheckIns] = await Promise.all([
       supabase.from('profiles').select('*, ai_calls_used, ai_calls_reset_at').eq('id', user.id).single(),
       supabase.from('workout_sessions').select('id, name, completed_at, duration_min, perceived_exertion, session_type')
         .eq('user_id', user.id).order('completed_at', { ascending: false }).limit(20),
@@ -203,6 +204,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         .eq('user_id', user.id)
         .gte('date', format(subDays(new Date(), 7), 'yyyy-MM-dd'))
         .order('date', { ascending: false }),
+      getRecentCheckIns(7),
     ]);
 
     if (profile) {
@@ -307,13 +309,13 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       program = rebalanceForCompletedOptionalDays(program, completedThisWeek);
     }
 
-    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [] };
+    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], recoveryCheckIns: recoveryCheckIns || [] };
     setUserData(data);
     return data;
   };
 
   const buildContext = (data) => {
-    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [] } = data;
+    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], recoveryCheckIns = [] } = data;
     const exp = profile?.trainingExperience || 'intermediate';
     // Volume judged on DIRECT sets against the (direct-isolation) targets; indirect
     // work from compounds is reported separately so the coach can see it without
@@ -386,6 +388,13 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
           return baseline ? `${lines}\n  HRV baseline (recent avg): ${baseline}ms` : lines;
         })()
       : '  No health data connected';
+
+    const checkInLines = recoveryCheckIns.length
+      ? recoveryCheckIns
+          .filter(c => !c.skipped)
+          .map(c => `  ${c.date}: ${c.label} (sleep ${c.sleep}, soreness ${c.soreness}, energy ${c.energy})`)
+          .join('\n') || '  Check-ins skipped'
+      : '  No readiness check-ins yet';
 
     const cardioLines = cardioSessions?.length
       ? cardioSessions.slice(0, 5).map(s => {
@@ -472,6 +481,9 @@ ${cardioLines}
 
 Recovery data (last 7 days):
 ${healthLines}
+
+Self-reported readiness (last 7 days):
+${checkInLines}
 
 Nutrition — targets vs recent intake:
 ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training right now):\n${workoutContext}` : ''}`;

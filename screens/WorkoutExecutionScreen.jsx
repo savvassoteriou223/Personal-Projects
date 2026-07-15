@@ -12,6 +12,9 @@ import MuscleMap from './MuscleMap';
 import ExerciseSlideshow from './ExerciseSlideshow';
 import CoachScreen from './CoachScreen';
 import PremiumPaywall from './PremiumPaywall';
+import RecoveryCheckIn from './RecoveryCheckIn';
+import { adjustSessionForReadiness } from '../lib/readiness';
+import { getTodayCheckIn, saveCheckIn } from '../lib/recoveryStore';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { checkReadyToProgress } from './programGenerator';
 
@@ -131,6 +134,13 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
   const [saving, setSaving] = useState(false);
   const [showCoach, setShowCoach] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false); // free users tapping Coach mid-workout
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [readinessLabel, setReadinessLabel] = useState(null); // 'Moderate' | 'Low' once applied
+  const checkInResolved = useRef(false); // guards against a double-tap firing onDone twice
+  // Latest `sets` for the readiness check-in effect below, which runs once on
+  // mount and would otherwise capture a stale (empty) `sets` closure.
+  const setsRef = useRef(sets);
+  useEffect(() => { setsRef.current = sets; }, [sets]);
 
   // ─── Restore workout draft from AsyncStorage (survives app backgrounding) ─
   useEffect(() => {
@@ -262,6 +272,27 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
         return newExtras.length ? [...prev, ...newExtras] : prev;
       });
     })();
+  }, []);
+
+  // ─── Readiness check-in — first workout of the day only. Best-effort: if the
+  // lookup fails we simply don't ask rather than blocking the workout. ──────
+  // getTodayCheckIn() also returns null on a network/DB FAILURE, not only when
+  // no check-in exists yet — its catch swallows errors and returns null. This
+  // screen can restore an in-progress draft from AsyncStorage (see restore
+  // effect above), so on a resumed session (offline, backgrounded, etc.) that
+  // null would wrongly re-open the sheet after sets are already logged. If the
+  // user then taps "Adjust today", adjustSessionForReadiness slices
+  // completedSets down to the new target_sets and silently discards a
+  // completed set's weight/reps. So never show the sheet once any set in the
+  // session is already done, regardless of why getTodayCheckIn() came back null.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const existing = await getTodayCheckIn();
+      const alreadyLogged = setsRef.current.some(ex => ex.completedSets?.some(s => s.done));
+      if (!cancelled && !existing && !alreadyLogged) setShowCheckIn(true);
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // ─── Swap alternative in for current exercise ─────────────────────────────
@@ -915,6 +946,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                     <Pressable onPress={() => setSlideshowExercise(ex)}>
                       <Text style={styles.exName}>{ex.name} <Text style={styles.howToTag}>{t('workout.howTo')}</Text></Text>
                     </Pressable>
+                    {readinessLabel && (
+                      <Text style={styles.readinessBadge}>{t('readiness.adjusted')}</Text>
+                    )}
                     {(primary.length > 0 || secondary.length > 0) && (
                       <View style={styles.muscleTagRow}>
                         {primary.map((m, i) => (
@@ -1337,6 +1371,34 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
           />
         </View>
       </Modal>
+
+      {/* ── Readiness check-in — first workout of the day ── */}
+      <RecoveryCheckIn
+        visible={showCheckIn}
+        onSkip={() => {
+          if (checkInResolved.current) return; // guard against a rapid double-tap
+          checkInResolved.current = true;
+          setShowCheckIn(false);
+          saveCheckIn({ skipped: true });
+        }}
+        onDone={({ answers, score, label, applied }) => {
+          if (checkInResolved.current) return; // guard against a rapid double-tap re-applying the adjustment
+          checkInResolved.current = true;
+          setShowCheckIn(false);
+          saveCheckIn({ ...answers, score, label, applied });
+          if (applied) {
+            // Simple/beginner mode never renders RPE numbers (see `isSimple`
+            // below — it shows a static "last set hard" string instead), so a
+            // 'Moderate' adjustment (RPE-only) would change nothing the user
+            // can see and the feature would silently no-op for them. Treat it
+            // as 'Low' (which also drops a set) so the adjustment is visible;
+            // the underlying RPE change still applies, it's just not shown.
+            const effectiveLabel = (isSimple && label === 'Moderate') ? 'Low' : label;
+            setSets(prev => adjustSessionForReadiness(prev, effectiveLabel));
+            setReadinessLabel(label);
+          }
+        }}
+      />
     </View>
   );
 }
@@ -1377,6 +1439,11 @@ const styles = StyleSheet.create({
   muscleTagSecondaryText: { fontSize: 11, color: '#9494A0', fontWeight: '500' },
   doneBadge: { backgroundColor: '#1A201C', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#1D9E75' },
   doneBadgeText: { fontSize: 12, color: '#1D9E75', fontWeight: '600' },
+  readinessBadge: {
+    alignSelf: 'flex-start', fontSize: 9, fontWeight: '700', color: '#BA7517',
+    backgroundColor: '#BA751522', borderWidth: 1, borderColor: '#BA751540',
+    borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, marginTop: 4,
+  },
 
   // ── Muscle map ──
   muscleMapWrap: {
