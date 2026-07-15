@@ -75,6 +75,8 @@ Three, each a one-tap choice:
 
 Maps to the existing **Ready / Moderate / Low** vocabulary already used by `buildRecoveryStatus()` in `lib/healthService.js`, so the check-in, the coach and the proactive card all speak the same language.
 
+**Labels are capitalized, stable English, and never translated.** `getProactiveCoachPrompt` compares `recoveryLabel === 'Low'` (`programGenerator.js:1613`) and `buildRecoveryStatus` returns `'Ready'|'Moderate'|'Low'`. Display text is translated separately via `t()`. This is not cosmetic: `TodayScreen` currently passes the *translated* `t('today.readiness.low')` into that comparison, so the recovery nudge has **only ever fired in English** ('Niedrig'/'Bajo'/'Faible' never match). The implementation fixes that.
+
 Score each answer 2 (good) / 1 (ok) / 0 (poor), sum (0–6):
 
 - **5–6 → Ready** — no suggestion, start the workout.
@@ -118,7 +120,7 @@ create table if not exists recovery_checkins (
   soreness text,     -- 'fresh' | 'normal' | 'sore'
   energy text,       -- 'high' | 'ok' | 'low'
   score int,         -- 0-6 (null when skipped)
-  label text,        -- 'ready' | 'moderate' | 'low' (null when skipped)
+  label text,        -- 'Ready' | 'Moderate' | 'Low' — stable English, never translated
   skipped boolean not null default false,
   applied boolean not null default false, -- did the user accept the adjustment
   created_at timestamptz not null default now(),
