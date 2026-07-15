@@ -137,6 +137,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [readinessLabel, setReadinessLabel] = useState(null); // 'Moderate' | 'Low' once applied
   const checkInResolved = useRef(false); // guards against a double-tap firing onDone twice
+  // Latest `sets` for the readiness check-in effect below, which runs once on
+  // mount and would otherwise capture a stale (empty) `sets` closure.
+  const setsRef = useRef(sets);
+  useEffect(() => { setsRef.current = sets; }, [sets]);
 
   // ─── Restore workout draft from AsyncStorage (survives app backgrounding) ─
   useEffect(() => {
@@ -272,11 +276,21 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
 
   // ─── Readiness check-in — first workout of the day only. Best-effort: if the
   // lookup fails we simply don't ask rather than blocking the workout. ──────
+  // getTodayCheckIn() also returns null on a network/DB FAILURE, not only when
+  // no check-in exists yet — its catch swallows errors and returns null. This
+  // screen can restore an in-progress draft from AsyncStorage (see restore
+  // effect above), so on a resumed session (offline, backgrounded, etc.) that
+  // null would wrongly re-open the sheet after sets are already logged. If the
+  // user then taps "Adjust today", adjustSessionForReadiness slices
+  // completedSets down to the new target_sets and silently discards a
+  // completed set's weight/reps. So never show the sheet once any set in the
+  // session is already done, regardless of why getTodayCheckIn() came back null.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const existing = await getTodayCheckIn();
-      if (!cancelled && !existing) setShowCheckIn(true);
+      const alreadyLogged = setsRef.current.some(ex => ex.completedSets?.some(s => s.done));
+      if (!cancelled && !existing && !alreadyLogged) setShowCheckIn(true);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -1373,7 +1387,14 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
           setShowCheckIn(false);
           saveCheckIn({ ...answers, score, label, applied });
           if (applied) {
-            setSets(prev => adjustSessionForReadiness(prev, label));
+            // Simple/beginner mode never renders RPE numbers (see `isSimple`
+            // below — it shows a static "last set hard" string instead), so a
+            // 'Moderate' adjustment (RPE-only) would change nothing the user
+            // can see and the feature would silently no-op for them. Treat it
+            // as 'Low' (which also drops a set) so the adjustment is visible;
+            // the underlying RPE change still applies, it's just not shown.
+            const effectiveLabel = (isSimple && label === 'Moderate') ? 'Low' : label;
+            setSets(prev => adjustSessionForReadiness(prev, effectiveLabel));
             setReadinessLabel(label);
           }
         }}
