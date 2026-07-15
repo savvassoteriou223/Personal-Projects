@@ -521,7 +521,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
               setReadiness({ ...status, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline, baseline });
             } else if (status) {
-              setReadiness({ ...status, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline: null, baseline: null });
+              // status here is health.status from buildRecoveryStatus() (lib/healthService.js),
+              // which now sets stableLabel alongside label. Fall back to status.label (already
+              // stable English there) in case stableLabel is ever absent — the LOGIC label must
+              // never end up being the translated display label.
+              setReadiness({ ...status, stableLabel: status.stableLabel ?? status.label, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline: null, baseline: null });
             }
           }
         }

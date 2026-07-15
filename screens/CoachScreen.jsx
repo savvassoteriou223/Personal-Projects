@@ -186,7 +186,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const user = await getCurrentUser();
     if (!user) return;
 
-    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }] = await Promise.all([
+    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }, recoveryCheckIns] = await Promise.all([
       supabase.from('profiles').select('*, ai_calls_used, ai_calls_reset_at').eq('id', user.id).single(),
       supabase.from('workout_sessions').select('id, name, completed_at, duration_min, perceived_exertion, session_type')
         .eq('user_id', user.id).order('completed_at', { ascending: false }).limit(20),
@@ -204,9 +204,8 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         .eq('user_id', user.id)
         .gte('date', format(subDays(new Date(), 7), 'yyyy-MM-dd'))
         .order('date', { ascending: false }),
+      getRecentCheckIns(7),
     ]);
-
-    const recoveryCheckIns = await getRecentCheckIns(7);
 
     if (profile) {
       const resetAt = profile.ai_calls_reset_at ? new Date(profile.ai_calls_reset_at) : null;
