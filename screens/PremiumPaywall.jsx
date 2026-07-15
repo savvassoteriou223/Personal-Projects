@@ -36,7 +36,7 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
         'Proactive insights — coach flags issues before you ask',
         'Weekly narrative summary every Sunday',
         'Full training + nutrition + body context',
-        'Can actually modify your program and calorie target',
+        'Can actually modify your program — not just talk about it',
       ],
     },
     Nutrition: {
