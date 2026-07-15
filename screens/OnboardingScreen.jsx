@@ -118,7 +118,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
     : null;
   const bmiCategory = bmiCategoryKey ? t(`onboarding.bmiCategory.${bmiCategoryKey}`) : null;
   const bmiColor = bmi
-    ? bmi < 18.5 ? '#BA7517' : bmi < 25 ? '#1D9E75' : bmi < 30 ? '#BA7517' : '#E24B4A'
+    ? bmi < 18.5 ? '#BA7517' : bmi < 25 ? '#1D9E75' : bmi < 30 ? '#BA7517' : '#E85D5C'
     : null;
   const healthyLow = h ? (18.5 * ((h / 100) ** 2)).toFixed(1) : null;
   const healthyHigh = h ? (24.9 * ((h / 100) ** 2)).toFixed(1) : null;
@@ -250,7 +250,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
   };
 
   const feedback = goals.length > 0 ? getScheduleFeedback() : null;
-  const statusColors = { optimal: '#1D9E75', good: '#BA7517', suboptimal: '#E24B4A' };
+  const statusColors = { optimal: '#1D9E75', good: '#BA7517', suboptimal: '#E85D5C' };
   const statusLabels = { optimal: t('onboarding.feedback.optimal'), good: t('onboarding.feedback.good'), suboptimal: t('onboarding.feedback.suboptimal') };
 
   return (
@@ -265,7 +265,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
       <Text style={styles.stepLabel}>{t('onboarding.stepLabel', { step, total: totalSteps })}</Text>
       {step === 1 && (
         <Pressable onPress={onGoBack} style={{ paddingHorizontal: 24 }}>
-          <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('common.back')}</Text>
+          <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('common.back')}</Text>
         </Pressable>
       )}
 
@@ -275,9 +275,9 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.stepSub}>{t('onboarding.step1.sub')}</Text>
 
           <Text style={styles.label}>{t('onboarding.step1.height')}</Text>
-          <TextInput style={styles.input} value={height} onChangeText={setHeight} keyboardType="numeric" placeholder={t('onboarding.step1.heightPlaceholder')} placeholderTextColor="#3D3D4A" returnKeyType="next" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
+          <TextInput style={styles.input} value={height} onChangeText={setHeight} keyboardType="numeric" placeholder={t('onboarding.step1.heightPlaceholder')} placeholderTextColor="#8A8A94" returnKeyType="next" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
           <Text style={styles.label}>{t('onboarding.step1.weight')}</Text>
-          <TextInput style={styles.input} value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder={t('onboarding.step1.weightPlaceholder')} placeholderTextColor="#3D3D4A" returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
+          <TextInput style={styles.input} value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder={t('onboarding.step1.weightPlaceholder')} placeholderTextColor="#8A8A94" returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
           {bmi && (
             <View style={styles.bmiCard}>
               <View style={styles.bmiRow}>
@@ -315,7 +315,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
             );
           })()}
           <Text style={styles.label}>{t('onboarding.step2.targetWeight')}</Text>
-          <TextInput style={styles.input} value={targetWeight} onChangeText={setTargetWeight} keyboardType="numeric" placeholder={t('onboarding.step2.targetPlaceholder')} placeholderTextColor="#3D3D4A" returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
+          <TextInput style={styles.input} value={targetWeight} onChangeText={setTargetWeight} keyboardType="numeric" placeholder={t('onboarding.step2.targetPlaceholder')} placeholderTextColor="#8A8A94" returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
           {weeksToGoal > 0 && <Text style={styles.estimate}>{t('onboarding.step2.estimate', { target: targetWeight, weeks: weeksToGoal })}</Text>}
         </View>
       )}
@@ -391,8 +391,8 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
             ))}
           </View>
 
-          <Text style={styles.label}>{t('onboarding.step4.sports')} <Text style={{ color: '#52525B', fontWeight: '400' }}>{t('onboarding.optional')}</Text></Text>
-          <Text style={{ fontSize: 12, color: '#71717A', marginBottom: 12, lineHeight: 18 }}>
+          <Text style={styles.label}>{t('onboarding.step4.sports')} <Text style={{ color: '#8A8A94', fontWeight: '400' }}>{t('onboarding.optional')}</Text></Text>
+          <Text style={{ fontSize: 12, color: '#9494A0', marginBottom: 12, lineHeight: 18 }}>
             {t('onboarding.step4.sportsHint')}
           </Text>
           <View style={styles.tagsWrap}>
@@ -466,7 +466,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           </View>
           <Text style={styles.label}>{t('onboarding.step5.other')}</Text>
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-            <TextInput style={[styles.input, { flex: 1 }]} value={customSupplement} onChangeText={setCustomSupplement} placeholder={t('onboarding.step5.otherPlaceholder')} placeholderTextColor="#3D3D4A" onSubmitEditing={addCustomSupplement} />
+            <TextInput style={[styles.input, { flex: 1 }]} value={customSupplement} onChangeText={setCustomSupplement} placeholder={t('onboarding.step5.otherPlaceholder')} placeholderTextColor="#8A8A94" onSubmitEditing={addCustomSupplement} />
             <Pressable style={{ backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }} onPress={addCustomSupplement}>
               <Text style={{ color: '#111114', fontWeight: '600' }}>{t('onboarding.step5.add')}</Text>
             </Pressable>
@@ -507,7 +507,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                 value={h6search}
                 onChangeText={val => { setH6search(val); if (noIssues && val) setNoIssues(false); }}
                 placeholder={t('onboarding.step6.searchPlaceholder')}
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 clearButtonMode="while-editing"
               />}
 
@@ -568,7 +568,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           {h6phase === 'severity' && h6pending && (
             <View>
               <Pressable onPress={() => setH6phase('list')} style={{ marginBottom: 20 }}>
-                <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('common.back')}</Text>
+                <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('common.back')}</Text>
               </Pressable>
               <Text style={styles.stepTitle}>{h6pending.conditionLabel}</Text>
               <Text style={styles.stepSub}>{t('onboarding.step6.severitySub')}</Text>
@@ -609,7 +609,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           {h6phase === 'post_op' && h6pending && (
             <View>
               <Pressable onPress={() => setH6phase(h6pending.alwaysPost ? 'list' : 'severity')} style={{ marginBottom: 20 }}>
-                <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('common.back')}</Text>
+                <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('common.back')}</Text>
               </Pressable>
               <Text style={styles.stepTitle}>{t('onboarding.step6.surgeryTitle')}</Text>
               <Text style={styles.stepSub}>{h6pending.conditionLabel}</Text>
@@ -726,92 +726,92 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13' },
   progressBg: { height: 3, backgroundColor: '#2C2C35', marginTop: 12 },
   progressFill: { height: 3, backgroundColor: '#FFFFFF' },
-  stepLabel: { fontSize: 12, color: '#71717A', padding: 24, paddingBottom: 0 },
+  stepLabel: { fontSize: 12, color: '#9494A0', padding: 24, paddingBottom: 0 },
   stepWrap: { padding: 24 },
   stepTitle: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.8, marginBottom: 8, lineHeight: 36 },
-  stepSub: { fontSize: 14, color: '#71717A', marginBottom: 32, lineHeight: 22 },
+  stepSub: { fontSize: 14, color: '#9494A0', marginBottom: 32, lineHeight: 22 },
   label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
   input: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', padding: 16, color: '#FFFFFF', fontSize: 16 },
   bmiCard: { marginTop: 20, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
   bmiRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
-  bmiLabel: { fontSize: 14, color: '#71717A' },
+  bmiLabel: { fontSize: 14, color: '#9494A0' },
   bmiVal: { fontSize: 28, fontWeight: '700' },
   bmiCategory: { fontSize: 14, fontWeight: '600' },
-  bmiRange: { fontSize: 13, color: '#71717A' },
+  bmiRange: { fontSize: 13, color: '#9494A0' },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
   goalCard: { width: '48%', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   goalCardActive: { borderColor: '#FFFFFF', backgroundColor: '#1C1C22' },
-  goalLabel: { fontSize: 14, color: '#71717A', fontWeight: '500' },
+  goalLabel: { fontSize: 14, color: '#9494A0', fontWeight: '500' },
   goalLabelActive: { color: '#E4E4E8' },
   check: { color: '#FFFFFF', fontWeight: '700' },
   estimate: { fontSize: 13, color: '#1D9E75', marginTop: 12 },
   goalCitationCard: { backgroundColor: '#111114', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 16 },
   goalCitationTitle: { fontSize: 10, color: '#1D9E75', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
   goalCitationText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 6 },
-  goalCitationSource: { fontSize: 10, color: '#71717A', fontStyle: 'italic' },
+  goalCitationSource: { fontSize: 10, color: '#9494A0', fontStyle: 'italic' },
   optionRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   optionBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   optionBtnActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  optionBtnText: { color: '#71717A', fontWeight: '600' },
+  optionBtnText: { color: '#9494A0', fontWeight: '600' },
   optionBtnTextActive: { color: '#111114' },
   tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: { backgroundColor: '#1A1A20', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
   tagActive: { backgroundColor: '#1C1C22', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  tagText: { color: '#71717A', fontSize: 13 },
+  tagText: { color: '#9494A0', fontSize: 13 },
   tagTextActive: { color: '#E4E4E8', fontSize: 13 },
   expCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
   expCardActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
   expLabel: { fontSize: 15, fontWeight: '600', color: '#A1A1AA', marginBottom: 3 },
   expLabelActive: { color: '#FFFFFF' },
-  expSublabel: { fontSize: 12, color: '#71717A' },
+  expSublabel: { fontSize: 12, color: '#9494A0' },
   feedbackCard: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, marginBottom: 8 },
   feedbackHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   feedbackBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
   feedbackBadgeText: { fontSize: 12, fontWeight: '600' },
   feedbackProgram: { fontSize: 13, color: '#A1A1AA', fontWeight: '500' },
   feedbackMessage: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 10 },
-  feedbackCitation: { fontSize: 11, color: '#71717A', fontStyle: 'italic', lineHeight: 16 },
+  feedbackCitation: { fontSize: 11, color: '#9494A0', fontStyle: 'italic', lineHeight: 16 },
   resultCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
-  resultLabel: { fontSize: 11, color: '#71717A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  resultLabel: { fontSize: 11, color: '#9494A0', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   resultBig: { fontSize: 36, fontWeight: '700', color: '#FFFFFF' },
   resultDetail: { fontSize: 14, color: '#A1A1AA', marginTop: 4 },
   macrosRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   macroCard: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   macroVal: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
-  macroLabel: { fontSize: 11, color: '#71717A', marginTop: 3 },
+  macroLabel: { fontSize: 11, color: '#9494A0', marginTop: 3 },
   completeBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
   completeBtnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
   navRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginTop: 8 },
   backBtn: { paddingVertical: 12 },
-  backBtnText: { color: '#71717A', fontSize: 15 },
+  backBtnText: { color: '#9494A0', fontSize: 15 },
   nextBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
   nextBtnText: { color: '#111114', fontSize: 15, fontWeight: '600' },
   conditionsNote: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
   conditionsNoteText: { fontSize: 13, color: '#E4E4E8', lineHeight: 20 },
   noneBtn: { backgroundColor: '#1A1A20', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 20, borderWidth: 0.5, borderColor: '#2C2C35', alignSelf: 'flex-start', marginBottom: 8 },
   noneBtnActive: { borderColor: '#FFFFFF', backgroundColor: '#1C1C22' },
-  noneBtnText: { fontSize: 14, color: '#71717A', fontWeight: '500' },
+  noneBtnText: { fontSize: 14, color: '#9494A0', fontWeight: '500' },
   noneBtnTextActive: { color: '#FFFFFF' },
   // Condition list
-  condRegionHeader: { fontSize: 11, color: '#71717A', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  condRegionHeader: { fontSize: 11, color: '#9494A0', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
   condRow: { backgroundColor: '#1A1A20', paddingVertical: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' },
   condRowBorder: { borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
   condRowLabel: { fontSize: 14, color: '#E4E4E8', fontWeight: '500', marginBottom: 2 },
-  condRowDesc: { fontSize: 12, color: '#71717A' },
-  condRowArrow: { fontSize: 20, color: '#3D3D4A', marginLeft: 8 },
+  condRowDesc: { fontSize: 12, color: '#9494A0' },
+  condRowArrow: { fontSize: 20, color: '#8A8A94', marginLeft: 8 },
   // Saved entry chips
   entryCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1C1C22', borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  entryRegion: { fontSize: 10, color: '#71717A', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 2 },
+  entryRegion: { fontSize: 10, color: '#9494A0', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 2 },
   entryLabel: { fontSize: 13, color: '#FFFFFF', fontWeight: '500' },
   entryRemove: { padding: 6 },
-  entryRemoveText: { color: '#71717A', fontSize: 14 },
+  entryRemoveText: { color: '#9494A0', fontSize: 14 },
   // Layer option cards (severity / post-op timeline)
   dayBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   dayBtnActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  dayBtnText: { fontSize: 11, color: '#71717A', fontWeight: '600' },
+  dayBtnText: { fontSize: 11, color: '#9494A0', fontWeight: '600' },
   dayBtnTextActive: { color: '#111114' },
   layerOptionCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
   layerOptionPostOp: { borderColor: '#3D3D5C' },
   layerOptionLabel: { fontSize: 15, color: '#FFFFFF', fontWeight: '600', marginBottom: 3 },
-  layerOptionDesc: { fontSize: 13, color: '#71717A' },
+  layerOptionDesc: { fontSize: 13, color: '#9494A0' },
 });

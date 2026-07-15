@@ -886,7 +886,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                   ],
                 )}
               >
-                <Text style={{ color: '#71717A', fontSize: 15, fontWeight: '600' }}>{t('coach.reset')}</Text>
+                <Text style={{ color: '#9494A0', fontSize: 15, fontWeight: '600' }}>{t('coach.reset')}</Text>
               </Pressable>
             )}
             {onClose && (
@@ -962,7 +962,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           value={quotaExceeded ? '' : question}
           onChangeText={setQuestion}
           placeholder={quotaExceeded ? t('coach.limitPlaceholder') : t('coach.inputPlaceholder')}
-          placeholderTextColor="#3D3D4A"
+          placeholderTextColor="#8A8A94"
           multiline
           numberOfLines={3}
           editable={!quotaExceeded}
@@ -1184,22 +1184,22 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13' },
   header: { padding: 24, paddingTop: 24 },
   title: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
-  subtitle: { fontSize: 12, color: '#71717A', marginTop: 4 },
+  subtitle: { fontSize: 12, color: '#9494A0', marginTop: 4 },
 
   quotaCard: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 14 },
   quotaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  quotaLabel: { fontSize: 12, color: '#71717A' },
+  quotaLabel: { fontSize: 12, color: '#9494A0' },
   quotaCount: { fontSize: 12, fontWeight: '600', color: '#FFFFFF' },
-  quotaCountExceeded: { color: '#E24B4A' },
+  quotaCountExceeded: { color: '#E85D5C' },
   quotaBarBg: { height: 4, backgroundColor: '#2C2C35', borderRadius: 2 },
   quotaBarFill: { height: 4, backgroundColor: '#FFFFFF', borderRadius: 2 },
   quotaBarWarn: { backgroundColor: '#BA7517' },
-  quotaBarExceeded: { backgroundColor: '#E24B4A' },
-  quotaExceededText: { fontSize: 11, color: '#E24B4A', marginTop: 8 },
+  quotaBarExceeded: { backgroundColor: '#E85D5C' },
+  quotaExceededText: { fontSize: 11, color: '#E85D5C', marginTop: 8 },
 
   card: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 14 },
   cardTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 4 },
-  cardSub: { fontSize: 11, color: '#71717A', marginBottom: 14, lineHeight: 16 },
+  cardSub: { fontSize: 11, color: '#9494A0', marginBottom: 14, lineHeight: 16 },
   exampleChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   exampleChip: { borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B', borderRadius: 14, paddingVertical: 7, paddingHorizontal: 12 },
   exampleChipText: { color: '#A1A1AA', fontSize: 12 },
@@ -1207,7 +1207,7 @@ const styles = StyleSheet.create({
   insightBox: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: '#FFFFFF' },
   insightText: { fontSize: 13, color: '#FFFFFF', lineHeight: 21 },
   insightEmpty: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 14 },
-  insightEmptyText: { fontSize: 13, color: '#71717A', lineHeight: 20 },
+  insightEmptyText: { fontSize: 13, color: '#9494A0', lineHeight: 20 },
 
   generateBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
   generateBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
@@ -1228,14 +1228,14 @@ const styles = StyleSheet.create({
   proposalExercise: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
   proposalDetail: { fontSize: 13, color: '#A1A1AA', marginBottom: 4 },
   proposalDay: { fontSize: 12, color: '#E4E4E8', marginBottom: 8 },
-  proposalRationale: { fontSize: 12, color: '#71717A', lineHeight: 18, marginBottom: 12 },
+  proposalRationale: { fontSize: 12, color: '#9494A0', lineHeight: 18, marginBottom: 12 },
   proposalItemActions: { flexDirection: 'row', gap: 6, marginTop: 8, marginBottom: 4 },
   proposalApplyBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 8, paddingVertical: 8, alignItems: 'center' },
   proposalApplyText: { color: '#111114', fontSize: 12, fontWeight: '700' },
   proposalAltBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   proposalAltText: { color: '#A1A1AA', fontSize: 12, fontWeight: '600' },
   proposalRemoveBtn: { width: 34, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  proposalRemoveText: { color: '#71717A', fontSize: 13, fontWeight: '600' },
+  proposalRemoveText: { color: '#9494A0', fontSize: 13, fontWeight: '600' },
   btnDisabled: { opacity: 0.4 },
 
   altItem: { paddingTop: 10 },
@@ -1250,7 +1250,7 @@ const styles = StyleSheet.create({
   confirmBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
   confirmBtnText: { color: '#111114', fontSize: 13, fontWeight: '600' },
   dismissBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 16, alignItems: 'center' },
-  dismissBtnText: { color: '#71717A', fontSize: 13, fontWeight: '500' },
+  dismissBtnText: { color: '#9494A0', fontSize: 13, fontWeight: '500' },
 
   savedBanner: { backgroundColor: '#0D1F18', borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: '#1D9E75' },
   savedBannerText: { fontSize: 13, color: '#1D9E75', lineHeight: 18 },
@@ -1260,10 +1260,10 @@ const styles = StyleSheet.create({
 
   memoryRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingVertical: 10, gap: 12 },
   memoryRowBorder: { borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
-  memoryCat: { fontSize: 10, color: '#71717A', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 3 },
+  memoryCat: { fontSize: 10, color: '#9494A0', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 3 },
   memorySummary: { fontSize: 13, color: '#E4E4E8', lineHeight: 19 },
-  memoryForgetBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#2C1A1A', borderRadius: 8, borderWidth: 0.5, borderColor: '#E24B4A44' },
-  memoryForgetText: { color: '#E24B4A', fontSize: 12, fontWeight: '600' },
+  memoryForgetBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#2C1A1A', borderRadius: 8, borderWidth: 0.5, borderColor: '#E85D5C44' },
+  memoryForgetText: { color: '#E85D5C', fontSize: 12, fontWeight: '600' },
 
   quickChip: { backgroundColor: '#12121A', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
   quickChipDisabled: { opacity: 0.4 },

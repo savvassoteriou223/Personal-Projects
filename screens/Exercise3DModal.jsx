@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     fontWeight: '300',
   },
   navArrowDim: {
-    color: '#52525B',
+    color: '#8A8A94',
   },
   navLabel: {
     fontSize: 13,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   navLabelDim: {
-    color: '#52525B',
+    color: '#8A8A94',
   },
   slideCount: {
     fontSize: 13,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   hint: {
     textAlign: 'center',
     fontSize: 10,
-    color: '#3D3D4A',
+    color: '#8A8A94',
     paddingBottom: 12,
     letterSpacing: 0.3,
   },

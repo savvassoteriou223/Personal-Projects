@@ -57,10 +57,10 @@ const styles = StyleSheet.create({
   top: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   logo: { width: 200, height: 200, resizeMode: 'contain', marginBottom: 24 },
   title: { fontSize: 36, fontWeight: '300', color: '#FFFFFF', letterSpacing: 8, marginBottom: 10 },
-  sub: { fontSize: 15, color: '#52525B', textAlign: 'center', lineHeight: 24 },
+  sub: { fontSize: 15, color: '#8A8A94', textAlign: 'center', lineHeight: 24 },
   buttons: { paddingHorizontal: 24, paddingBottom: 40, gap: 10 },
   btnPrimary: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   btnPrimaryText: { color: '#111114', fontSize: 16, fontWeight: '600' },
   btnSecondary: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', borderWidth: 0.5, borderColor: '#3D3D4A' },
-  btnSecondaryText: { color: '#71717A', fontSize: 16 },
+  btnSecondaryText: { color: '#9494A0', fontSize: 16 },
 });

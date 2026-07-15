@@ -101,7 +101,9 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
           <Text style={pw.upgradeBtnText}>{upgrading ? 'Processing...' : 'Start free trial'}</Text>
         </Pressable>
 
-        <Pressable style={pw.restoreBtn} onPress={onRestore}>
+        {/* hitSlop: the row is ~33pt tall, under the 44pt minimum — and stores
+            require Restore to be reachable, so it must not be fiddly to hit. */}
+        <Pressable style={pw.restoreBtn} onPress={onRestore} hitSlop={12}>
           <Text style={pw.restoreBtnText}>Restore purchase</Text>
         </Pressable>
 
@@ -123,7 +125,7 @@ const pw = StyleSheet.create({
   },
   icon: { fontSize: 26, color: '#FFFFFF' },
   title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5, marginBottom: 8, textAlign: 'center' },
-  tagline: { fontSize: 15, color: '#71717A', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  tagline: { fontSize: 15, color: '#9494A0', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
   bulletList: { alignSelf: 'stretch', marginBottom: 32, gap: 14 },
   bulletRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   bulletDot: { fontSize: 18, color: '#FFFFFF', lineHeight: 22, marginTop: 1 },
@@ -135,25 +137,25 @@ const pw = StyleSheet.create({
   },
   priceLabel: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
   price: { fontSize: 32, fontWeight: '300', color: '#FFFFFF', marginBottom: 6 },
-  pricePer: { fontSize: 16, color: '#71717A' },
-  priceSub: { fontSize: 12, color: '#52525B' },
+  pricePer: { fontSize: 16, color: '#9494A0' },
+  priceSub: { fontSize: 12, color: '#8A8A94' },
   upgradeBtn: {
     alignSelf: 'stretch', backgroundColor: '#FFFFFF', borderRadius: 14,
     paddingVertical: 16, alignItems: 'center', marginBottom: 12,
   },
   upgradeBtnText: { fontSize: 16, fontWeight: '700', color: '#111114' },
   restoreBtn: { paddingVertical: 10 },
-  restoreBtnText: { fontSize: 13, color: '#3F3F50' },
-  legalText: { fontSize: 10, color: '#3F3F50', textAlign: 'center', lineHeight: 15, paddingTop: 16 },
+  restoreBtnText: { fontSize: 13, color: '#8A8A94' },
+  legalText: { fontSize: 10, color: '#8A8A94', textAlign: 'center', lineHeight: 15, paddingTop: 16 },
   planRow: { flexDirection: 'row', gap: 12, alignSelf: 'stretch', marginBottom: 16 },
   planCard: { flex: 1, backgroundColor: '#111114', borderRadius: 14, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#2C2C35' },
   planCardActive: { borderColor: '#FFFFFF', backgroundColor: '#1C1C22' },
-  planName: { fontSize: 13, fontWeight: '600', color: '#71717A', marginBottom: 6 },
+  planName: { fontSize: 13, fontWeight: '600', color: '#9494A0', marginBottom: 6 },
   planNameActive: { color: '#FFFFFF' },
-  planPrice: { fontSize: 22, fontWeight: '700', color: '#71717A' },
+  planPrice: { fontSize: 22, fontWeight: '700', color: '#9494A0' },
   planPriceActive: { color: '#FFFFFF' },
-  planPer: { fontSize: 11, color: '#52525B', marginTop: 2 },
+  planPer: { fontSize: 11, color: '#8A8A94', marginTop: 2 },
   saveBadge: { backgroundColor: '#1D9E7522', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginBottom: 6 },
   saveBadgeText: { fontSize: 9, fontWeight: '700', color: '#1D9E75', letterSpacing: 0.5 },
-  trialNote: { fontSize: 12, color: '#52525B', marginBottom: 16 },
+  trialNote: { fontSize: 12, color: '#8A8A94', marginBottom: 16 },
 });

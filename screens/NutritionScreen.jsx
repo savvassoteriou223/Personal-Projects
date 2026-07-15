@@ -115,7 +115,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
   const macros = [
     { key: 'protein', label: t('nutrition.macros.protein'), val: totals.protein, target: targets.protein, color: '#FFFFFF' },
     { key: 'carbs',   label: t('nutrition.macros.carbs'),   val: totals.carbs,   target: targets.carbs,   color: '#BA7517' },
-    { key: 'fat',     label: t('nutrition.macros.fat'),     val: totals.fat,      target: targets.fat,     color: '#E24B4A' },
+    { key: 'fat',     label: t('nutrition.macros.fat'),     val: totals.fat,      target: targets.fat,     color: '#E85D5C' },
   ];
 
   const hour = new Date().getHours();
@@ -167,7 +167,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
             <>
               <View style={styles.calDivider} />
               <View style={styles.calBlock}>
-                <Text style={[styles.calVal, { color: remaining >= 0 ? '#1D9E75' : '#E24B4A' }]}>{Math.abs(remaining)}</Text>
+                <Text style={[styles.calVal, { color: remaining >= 0 ? '#1D9E75' : '#E85D5C' }]}>{Math.abs(remaining)}</Text>
                 <Text style={styles.calLabel}>{remaining >= 0 ? t('nutrition.remaining') : t('nutrition.over')}</Text>
               </View>
               <View style={styles.calDivider} />
@@ -240,11 +240,11 @@ const styles = StyleSheet.create({
   morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: '#1A1A20', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35' },
   morningRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   morningTitle: { fontSize: 13, fontWeight: '600', color: '#FFFFFF', marginBottom: 3 },
-  morningTarget: { fontSize: 11, color: '#71717A', lineHeight: 16 },
+  morningTarget: { fontSize: 11, color: '#9494A0', lineHeight: 16 },
   trainingToggle: { flexDirection: 'row', backgroundColor: '#12121A', borderRadius: 8, padding: 2, gap: 2 },
   toggleBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
   toggleBtnActive: { backgroundColor: '#2C2C35' },
-  toggleBtnText: { fontSize: 11, color: '#52525B', fontWeight: '600' },
+  toggleBtnText: { fontSize: 11, color: '#8A8A94', fontWeight: '600' },
   toggleBtnTextActive: { color: '#FFFFFF' },
 
 
@@ -252,26 +252,26 @@ const styles = StyleSheet.create({
   calRow: { flexDirection: 'row', marginBottom: 16 },
   calBlock: { flex: 1, alignItems: 'center' },
   calVal: { fontSize: 24, fontWeight: '700', color: '#FFFFFF' },
-  calLabel: { fontSize: 11, color: '#71717A', marginTop: 2 },
+  calLabel: { fontSize: 11, color: '#9494A0', marginTop: 2 },
   calDivider: { width: 0.5, backgroundColor: '#2C2C35' },
   macroRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  macroLabel: { fontSize: 12, color: '#71717A', width: 52 },
+  macroLabel: { fontSize: 12, color: '#9494A0', width: 52 },
   macroBarBg: { flex: 1, height: 5, backgroundColor: '#2C2C35', borderRadius: 3, overflow: 'hidden' },
   macroBarFill: { height: 5, borderRadius: 3 },
-  macroVal: { fontSize: 11, color: '#71717A', width: 68, textAlign: 'right' },
+  macroVal: { fontSize: 11, color: '#9494A0', width: 68, textAlign: 'right' },
 
   mealsSection: { paddingHorizontal: 24 },
   mealCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 0.5, borderColor: '#2C2C35' },
   mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   mealName: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
-  mealSub: { fontSize: 13, color: '#71717A' },
+  mealSub: { fontSize: 13, color: '#9494A0' },
   addBtn: { borderWidth: 0.5, borderColor: '#3D3D4A', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
   addBtnText: { fontSize: 12, color: '#FFFFFF', fontWeight: '500' },
   entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginTop: 4, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
   entryName: { fontSize: 13, color: '#A1A1AA', flex: 1, marginRight: 8 },
-  entryCal: { fontSize: 13, color: '#71717A' },
+  entryCal: { fontSize: 13, color: '#9494A0' },
   mealMacroRow: { paddingTop: 10, marginTop: 6, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
-  mealMacroText: { fontSize: 12, color: '#52525B' },
+  mealMacroText: { fontSize: 12, color: '#8A8A94' },
   insightRow: { marginTop: 10, backgroundColor: '#111114', borderRadius: 10, padding: 10, borderWidth: 0.5, borderColor: '#2C2C35' },
   insightText: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
 });

@@ -16,10 +16,10 @@
 
 export const PACE_THRESHOLDS = {
   lose: {
-    tooSlow:    { max: 0.15, label: 'Too slow',    color: '#71717A', message: "Less than 0.15kg/week. You may not be in a meaningful deficit — check your calorie tracking." },
+    tooSlow:    { max: 0.15, label: 'Too slow',    color: '#9494A0', message: "Less than 0.15kg/week. You may not be in a meaningful deficit — check your calorie tracking." },
     optimal:    { min: 0.15, max: 0.75, label: 'Optimal', color: '#1D9E75', message: "Losing fat at a sustainable pace while preserving muscle. Keep going." },
     fast:       { min: 0.75, max: 1.0,  label: 'Fast',     color: '#BA7517', message: "Approaching the upper limit of safe fat loss. Make sure protein is high (>1.6g/kg) to protect muscle." },
-    tooFast:    { min: 1.0,  label: 'Too fast',   color: '#E24B4A', message: "Above 1kg/week consistently. Research shows 20–40% of this may be muscle loss. Consider slowing the deficit." },
+    tooFast:    { min: 1.0,  label: 'Too fast',   color: '#E85D5C', message: "Above 1kg/week consistently. Research shows 20–40% of this may be muscle loss. Consider slowing the deficit." },
     // Kanellakis 2023: menstrual cycle causes ~0.5kg fluctuation
     // A spike of 0.5–1.5kg with no calorie change is likely water
     spikeThreshold: 0.5,
@@ -27,22 +27,22 @@ export const PACE_THRESHOLDS = {
   gain: {
     // Rates are in kg/week. Benchmarks from Helms et al. and Ribeiro study.
     beginner: {
-      tooSlow:  { max: 0.05, label: 'Very slow', color: '#71717A', message: "Under 0.05kg/week. Likely not in a sufficient surplus to drive muscle growth." },
+      tooSlow:  { max: 0.05, label: 'Very slow', color: '#9494A0', message: "Under 0.05kg/week. Likely not in a sufficient surplus to drive muscle growth." },
       optimal:  { min: 0.05, max: 0.25, label: 'Optimal lean bulk', color: '#1D9E75', message: "Gaining at a lean bulk pace. Most weight gain should be muscle." },
       fast:     { min: 0.25, max: 0.4,  label: 'Fast',  color: '#BA7517', message: "Gaining quickly. Fine for beginners but monitor fat accumulation." },
-      tooFast:  { min: 0.4,  label: 'Too fast', color: '#E24B4A', message: "Above 0.4kg/week. Research shows faster rates primarily increase fat, not muscle. Consider slowing." },
+      tooFast:  { min: 0.4,  label: 'Too fast', color: '#E85D5C', message: "Above 0.4kg/week. Research shows faster rates primarily increase fat, not muscle. Consider slowing." },
     },
     intermediate: {
-      tooSlow:  { max: 0.03, label: 'Very slow', color: '#71717A', message: "Under 0.03kg/week. May not be in enough of a surplus for consistent muscle growth." },
+      tooSlow:  { max: 0.03, label: 'Very slow', color: '#9494A0', message: "Under 0.03kg/week. May not be in enough of a surplus for consistent muscle growth." },
       optimal:  { min: 0.03, max: 0.12, label: 'Optimal lean bulk', color: '#1D9E75', message: "Lean bulk pace for intermediate lifters. Good balance of muscle gain vs fat." },
       fast:     { min: 0.12, max: 0.2,  label: 'Fast',  color: '#BA7517', message: "Gaining faster than typical for your level. Watch fat accumulation." },
-      tooFast:  { min: 0.2,  label: 'Too fast', color: '#E24B4A', message: "Gaining too fast for an intermediate. More than half of this is likely fat. Slow to 0.06–0.12kg/week." },
+      tooFast:  { min: 0.2,  label: 'Too fast', color: '#E85D5C', message: "Gaining too fast for an intermediate. More than half of this is likely fat. Slow to 0.06–0.12kg/week." },
     },
     advanced: {
-      tooSlow:  { max: 0.01, label: 'Very slow', color: '#71717A', message: "Gains slow down significantly at advanced level. This may be appropriate." },
+      tooSlow:  { max: 0.01, label: 'Very slow', color: '#9494A0', message: "Gains slow down significantly at advanced level. This may be appropriate." },
       optimal:  { min: 0.01, max: 0.06, label: 'Optimal', color: '#1D9E75', message: "Appropriate gain rate for an advanced lifter. Muscle growth is slow but real." },
       fast:     { min: 0.06, max: 0.15, label: 'Fast', color: '#BA7517', message: "Gaining faster than expected for advanced level. Likely accumulating more fat than muscle." },
-      tooFast:  { min: 0.15, label: 'Too fast', color: '#E24B4A', message: "Advanced lifters gain muscle very slowly. Rates this high are primarily fat." },
+      tooFast:  { min: 0.15, label: 'Too fast', color: '#E85D5C', message: "Advanced lifters gain muscle very slowly. Rates this high are primarily fat." },
     },
   },
   maintain: {

@@ -317,7 +317,7 @@ export default function NutritionLogScreen({ onClose, initialMeal, isPremium }) 
                 value={description}
                 onChangeText={setDescription}
                 placeholder={t('nutritionLog.describePlaceholder')}
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
@@ -325,13 +325,13 @@ export default function NutritionLogScreen({ onClose, initialMeal, isPremium }) 
               />
               <View style={st.inputActions}>
                 <Pressable style={[st.iconBtn, isListening && st.iconBtnActive]} onPress={toggleSpeech} disabled={loading}>
-                  <Ionicons name={isListening ? 'mic' : 'mic-outline'} size={18} color={isListening ? '#E24B4A' : '#71717A'} />
+                  <Ionicons name={isListening ? 'mic' : 'mic-outline'} size={18} color={isListening ? '#E85D5C' : '#9494A0'} />
                 </Pressable>
                 <Pressable style={st.iconBtn} onPress={takePhoto} disabled={loading}>
-                  <Ionicons name="camera-outline" size={18} color="#71717A" />
+                  <Ionicons name="camera-outline" size={18} color="#9494A0" />
                 </Pressable>
                 <Pressable style={st.iconBtn} onPress={pickPhoto} disabled={loading}>
-                  <Ionicons name="image-outline" size={18} color="#71717A" />
+                  <Ionicons name="image-outline" size={18} color="#9494A0" />
                 </Pressable>
                 <Pressable style={[st.calcBtn, (!description.trim() || loading) && st.calcBtnDisabled]} onPress={calculate} disabled={!description.trim() || loading}>
                   {loading ? <ActivityIndicator color="#111114" size="small" /> : <Text style={st.calcBtnText}>{t('nutritionLog.calculate')}</Text>}
@@ -347,7 +347,7 @@ export default function NutritionLogScreen({ onClose, initialMeal, isPremium }) 
 
         {/* Manual entry button */}
         <Pressable style={st.manualBtn} onPress={() => setShowManual(true)}>
-          <Ionicons name="create-outline" size={14} color="#71717A" />
+          <Ionicons name="create-outline" size={14} color="#9494A0" />
           <Text style={st.manualBtnText}>{t('nutritionLog.manualEntry')}</Text>
         </Pressable>
 
@@ -422,11 +422,11 @@ export default function NutritionLogScreen({ onClose, initialMeal, isPremium }) 
           <Pressable style={st.modalOverlay} onPress={() => setShowManual(false)}>
             <Pressable style={[st.modalCard, { paddingBottom: insets.bottom + 20 }]} onPress={e => e.stopPropagation()}>
               <Text style={st.modalTitle}>{t('nutritionLog.manualEntry')}</Text>
-              <TextInput style={st.modalInput} value={manualName} onChangeText={setManualName} placeholder={t('nutritionLog.foodName')} placeholderTextColor="#3D3D4A" />
+              <TextInput style={st.modalInput} value={manualName} onChangeText={setManualName} placeholder={t('nutritionLog.foodName')} placeholderTextColor="#8A8A94" />
               <View style={st.modalMacroRow}>
                 {[['calories', manualCal, setManualCal], ['protein', manualP, setManualP], ['carbs', manualC, setManualC], ['fat', manualF, setManualF]].map(([macroKey, val, setter]) => (
                   <View key={macroKey} style={st.modalMacroField}>
-                    <TextInput style={st.modalMacroInput} value={val} onChangeText={setter} keyboardType="number-pad" placeholder="0" placeholderTextColor="#3D3D4A" />
+                    <TextInput style={st.modalMacroInput} value={val} onChangeText={setter} keyboardType="number-pad" placeholder="0" placeholderTextColor="#8A8A94" />
                     <Text style={st.modalMacroLabel}>{t(`nutritionLog.manualMacros.${macroKey}`)}</Text>
                   </View>
                 ))}
@@ -450,44 +450,44 @@ const st = StyleSheet.create({
   mealTabs: { paddingVertical: 16 },
   mealTab: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#1A1A20', borderWidth: 0.5, borderColor: '#2C2C35' },
   mealTabActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF44' },
-  mealTabText: { fontSize: 13, color: '#71717A', fontWeight: '500' },
+  mealTabText: { fontSize: 13, color: '#9494A0', fontWeight: '500' },
   mealTabTextActive: { color: '#FFFFFF' },
 
   quickAddSection: { paddingHorizontal: 20, marginBottom: 12 },
-  quickAddLabel: { fontSize: 10, color: '#52525B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  quickAddLabel: { fontSize: 10, color: '#8A8A94', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
   quickAddChip: { backgroundColor: '#1A1A20', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 0.5, borderColor: '#2C2C35', maxWidth: 130 },
   quickAddName: { fontSize: 12, color: '#FFFFFF', fontWeight: '500', marginBottom: 2 },
-  quickAddCal: { fontSize: 10, color: '#52525B' },
+  quickAddCal: { fontSize: 10, color: '#8A8A94' },
 
   inputCard: { marginHorizontal: 20, marginBottom: 8, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
   input: { color: '#FFFFFF', fontSize: 15, lineHeight: 22, minHeight: 72, marginBottom: 12 },
   inputActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   iconBtn: { padding: 12, borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', backgroundColor: '#12121A' },
-  iconBtnActive: { borderColor: '#E24B4A33', backgroundColor: '#E24B4A11' },
+  iconBtnActive: { borderColor: '#E85D5C33', backgroundColor: '#E85D5C11' },
   calcBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
   calcBtnDisabled: { opacity: 0.35 },
   calcBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
   premiumNote: { padding: 4 },
-  premiumNoteText: { fontSize: 13, color: '#52525B', lineHeight: 20 },
+  premiumNoteText: { fontSize: 13, color: '#8A8A94', lineHeight: 20 },
 
   manualBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginBottom: 16, paddingVertical: 4 },
-  manualBtnText: { fontSize: 13, color: '#71717A' },
+  manualBtnText: { fontSize: 13, color: '#9494A0' },
 
   resultCard: { marginHorizontal: 20, marginBottom: 16, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
-  resultHeading: { fontSize: 13, color: '#71717A', fontWeight: '500', marginBottom: 4 },
-  resultTip: { fontSize: 11, color: '#3D3D4A', marginBottom: 12 },
+  resultHeading: { fontSize: 13, color: '#9494A0', fontWeight: '500', marginBottom: 4 },
+  resultTip: { fontSize: 11, color: '#8A8A94', marginBottom: 12 },
   resultItem: { paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
   resultItemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   resultItemName: { fontSize: 14, color: '#FFFFFF', fontWeight: '500', flex: 1, marginRight: 8 },
-  removeBtnText: { color: '#52525B', fontSize: 12 },
+  removeBtnText: { color: '#8A8A94', fontSize: 12 },
   editFields: { flexDirection: 'row', gap: 8 },
   editField: { alignItems: 'center' },
   editInput: { backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 4, paddingVertical: 6, color: '#FFFFFF', fontSize: 13, width: 56, textAlign: 'center' },
-  editInputReadonly: { color: '#71717A' },
-  editLabel: { fontSize: 10, color: '#52525B', marginTop: 3 },
+  editInputReadonly: { color: '#9494A0' },
+  editLabel: { fontSize: 10, color: '#8A8A94', marginTop: 3 },
   resultTotals: { flexDirection: 'row', alignItems: 'center', paddingTop: 12, marginTop: 2, gap: 8 },
   totalLabel: { fontSize: 13, color: '#FFFFFF', fontWeight: '600' },
-  totalMacros: { fontSize: 11, color: '#71717A' },
+  totalMacros: { fontSize: 11, color: '#9494A0' },
   totalCal: { fontSize: 14, color: '#FFFFFF', fontWeight: '700', minWidth: 58, textAlign: 'right' },
   resultActions: { flexDirection: 'row', gap: 8, marginTop: 14 },
   logBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
@@ -498,13 +498,13 @@ const st = StyleSheet.create({
   entriesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
   entriesTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
   entriesTotalCal: { fontSize: 14, color: '#FFFFFF', fontWeight: '600' },
-  entriesTotalMacros: { fontSize: 11, color: '#52525B', marginBottom: 10 },
+  entriesTotalMacros: { fontSize: 11, color: '#8A8A94', marginBottom: 10 },
   entryRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#1A1A20', gap: 8 },
   entryName: { fontSize: 14, color: '#FFFFFF', fontWeight: '500' },
-  entryMacros: { fontSize: 11, color: '#71717A', marginTop: 2 },
+  entryMacros: { fontSize: 11, color: '#9494A0', marginTop: 2 },
   entryCal: { fontSize: 13, color: '#A1A1AA', fontWeight: '500' },
   deleteBtn: { paddingLeft: 4 },
-  deleteText: { color: '#52525B', fontSize: 12 },
+  deleteText: { color: '#8A8A94', fontSize: 12 },
 
   modalOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 12 },
@@ -513,5 +513,5 @@ const st = StyleSheet.create({
   modalMacroRow: { flexDirection: 'row', gap: 8 },
   modalMacroField: { flex: 1, alignItems: 'center' },
   modalMacroInput: { backgroundColor: '#2C2C35', borderRadius: 8, padding: 10, color: '#FFFFFF', fontSize: 15, width: '100%', textAlign: 'center', marginBottom: 4 },
-  modalMacroLabel: { fontSize: 10, color: '#52525B' },
+  modalMacroLabel: { fontSize: 10, color: '#8A8A94' },
 });

@@ -62,7 +62,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <Pressable onPress={switchToReset} style={{ paddingBottom: 24 }}>
-              <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.back')}</Text>
+              <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('auth.back')}</Text>
             </Pressable>
 
             <Text style={styles.title}>{t('auth.code.title')}</Text>
@@ -75,7 +75,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
                 value={resetCode}
                 onChangeText={setResetCode}
                 placeholder={t('auth.code.placeholder')}
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 keyboardType="number-pad"
                 autoCapitalize="none"
               />
@@ -105,7 +105,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <Pressable onPress={switchToLogin} style={{ paddingBottom: 24 }}>
-              <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.backToSignIn')}</Text>
+              <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('auth.backToSignIn')}</Text>
             </Pressable>
 
             <Text style={styles.title}>{t('auth.reset.title')}</Text>
@@ -118,7 +118,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
                 value={email}
                 onChangeText={setEmail}
                 placeholder={t('auth.emailPlaceholder')}
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -147,7 +147,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <Pressable onPress={onGoBack} style={{ paddingBottom: 24 }}>
-            <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.back')}</Text>
+            <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('auth.back')}</Text>
           </Pressable>
 
           <Text style={styles.title}>{t('auth.login.title')}</Text>
@@ -160,7 +160,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
               value={email}
               onChangeText={setEmail}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -174,7 +174,7 @@ export default function LoginScreen({ onLogin, onGoToSignup, onGoBack, onRecover
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               placeholder={t('auth.login.passwordPlaceholder')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
@@ -217,18 +217,18 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   logo: { width: 64, height: 64, borderRadius: 14, marginBottom: 24, alignSelf: 'center' },
   title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
-  sub: { fontSize: 15, color: '#71717A', marginBottom: 40 },
+  sub: { fontSize: 15, color: '#9494A0', marginBottom: 40 },
   label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
   inputWrap: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   inputInner: { padding: 16, color: '#FFFFFF', fontSize: 16, backgroundColor: 'transparent' },
   inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   eyeBtn: { paddingHorizontal: 14 },
-  eyeText: { fontSize: 13, color: '#71717A' },
-  error: { color: '#E24B4A', fontSize: 13, marginTop: 12, textAlign: 'center' },
+  eyeText: { fontSize: 13, color: '#9494A0' },
+  error: { color: '#E85D5C', fontSize: 13, marginTop: 12, textAlign: 'center' },
   btn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   btnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
   switchLink: { alignItems: 'center', marginTop: 20 },
-  switchText: { color: '#71717A', fontSize: 14 },
+  switchText: { color: '#9494A0', fontSize: 14 },
   switchHighlight: { color: '#FFFFFF', fontWeight: '600' },
   forgotLink: { alignSelf: 'flex-end', marginTop: 10 },
   forgotText: { fontSize: 13, color: '#FFFFFF' },

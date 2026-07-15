@@ -97,7 +97,7 @@ const SET_TYPES = ['working', 'warmup', 'drop', 'failure'];
 const SET_TYPE_META = {
   warmup:  { label: 'W', color: '#BA7517' },
   drop:    { label: 'D', color: '#FFFFFF' },
-  failure: { label: 'F', color: '#E24B4A' },
+  failure: { label: 'F', color: '#E85D5C' },
 };
 
 const PLATE_SIZES = [25, 20, 15, 10, 5, 2.5, 1.25];
@@ -833,7 +833,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
           ))}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Pressable style={styles.coachTopBtn} onPress={() => isPremium ? setShowCoach(true) : setShowPaywall(true)}>
+          <Pressable style={styles.coachTopBtn} onPress={() => isPremium ? setShowCoach(true) : setShowPaywall(true)} hitSlop={8}>
             <Text style={styles.coachTopBtnText}>{t('workout.coach')}</Text>
           </Pressable>
           <Pressable style={styles.finishBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
@@ -997,6 +997,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                 {/* Replace with any exercise (cross-muscle) */}
                 <Pressable
                   style={styles.replaceBtn}
+                  hitSlop={8}
                   onPress={() => {
                     setReplaceSearch('');
                     setReplaceMuscleFilter(sets[exIdx]?.primaryMuscles?.[0] || null);
@@ -1013,7 +1014,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                     <View style={{ backgroundColor: '#1D9E7514', borderRadius: 10, borderWidth: 1, borderColor: '#1D9E7540', borderLeftWidth: 3, borderLeftColor: '#1D9E75', padding: 12, marginTop: 8 }}>
                       <Text style={{ color: '#F1F0F5', fontSize: 13, lineHeight: 19, fontWeight: '500' }}>{insight.insight}</Text>
                       {insight.metric && <Text style={{ color: '#1D9E75', fontSize: 11.5, fontWeight: '700', marginTop: 6 }}>{insight.metric.this} vs {insight.metric.control} · {insight.metric.method}</Text>}
-                      <Text style={{ color: '#52525B', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
+                      <Text style={{ color: '#8A8A94', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
                     </View>
                   ) : null;
                 })()}
@@ -1081,7 +1082,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                         onChangeText={v => updateWeight(exIdx, setIdx, v)}
                         keyboardType="decimal-pad"
                         placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
-                        placeholderTextColor="#3D3D4A"
+                        placeholderTextColor="#8A8A94"
                         editable={!set.done}
                       />
                       <TextInput
@@ -1090,7 +1091,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                         onChangeText={v => updateReps(exIdx, setIdx, v)}
                         keyboardType="number-pad"
                         placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
-                        placeholderTextColor="#3D3D4A"
+                        placeholderTextColor="#8A8A94"
                         editable={!set.done}
                       />
                       <Pressable
@@ -1164,7 +1165,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
               onChangeText={setPlateTarget}
               keyboardType="decimal-pad"
               placeholder={t('workout.plate.targetPlaceholder')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               autoFocus
             />
 
@@ -1232,7 +1233,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                   <TextInput
                     style={styles.replaceSearch}
                     placeholder={t('workout.replaceModal.searchPlaceholder')}
-                    placeholderTextColor="#71717A"
+                    placeholderTextColor="#9494A0"
                     value={replaceSearch}
                     onChangeText={setReplaceSearch}
                     autoCorrect={false}
@@ -1326,7 +1327,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       {/* ── Upsell paywall — free users tapping Coach mid-workout ── */}
       <Modal visible={showPaywall} animationType="slide" onRequestClose={() => setShowPaywall(false)}>
         <View style={{ flex: 1, backgroundColor: '#0F0F13' }}>
-          <Pressable style={styles.paywallClose} onPress={() => setShowPaywall(false)}>
+          <Pressable style={styles.paywallClose} onPress={() => setShowPaywall(false)} hitSlop={12}>
             <Text style={styles.paywallCloseText}>{t('common.close')}</Text>
           </Pressable>
           <PremiumPaywall
@@ -1344,9 +1345,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F0F13' },
 
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
-  elapsedTimer: { textAlign: 'center', fontSize: 11, color: '#3D3D4A', letterSpacing: 0.5, paddingVertical: 4 },
+  elapsedTimer: { textAlign: 'center', fontSize: 11, color: '#8A8A94', letterSpacing: 0.5, paddingVertical: 4 },
   cancelBtn: { padding: 8, width: 60 },
-  cancelText: { color: '#71717A', fontSize: 18 },
+  cancelText: { color: '#9494A0', fontSize: 18 },
   dotIndicators: { flexDirection: 'row', gap: 4, marginTop: 5 },
   dotIndicator: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#2C2C35' },
   dotIndicatorActive: { backgroundColor: '#FFFFFF', width: 14 },
@@ -1354,26 +1355,26 @@ const styles = StyleSheet.create({
   finishBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8, minWidth: 68, alignItems: 'center' },
   finishBtnText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
   swipeHint: { marginTop: 10, marginBottom: 4, paddingHorizontal: 4 },
-  swipeHintLabel: { fontSize: 9, color: '#3D3D4A', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
-  swipeHintName: { fontSize: 13, color: '#3D3D4A', fontWeight: '500' },
+  swipeHintLabel: { fontSize: 9, color: '#8A8A94', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
+  swipeHintName: { fontSize: 13, color: '#8A8A94', fontWeight: '500' },
 
   progressBg: { height: 2, backgroundColor: '#2C2C35' },
   progressFill: { height: 2, backgroundColor: '#FFFFFF' },
 
   restBanner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1C1C22', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: '#3D3D4A' },
   restText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  restSkip: { color: '#71717A', fontSize: 14 },
+  restSkip: { color: '#9494A0', fontSize: 14 },
 
   exCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   exCardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
-  exNumber: { fontSize: 11, color: '#71717A', marginBottom: 3 },
+  exNumber: { fontSize: 11, color: '#9494A0', marginBottom: 3 },
   exName: { fontSize: 20, fontWeight: '700', color: '#FFFFFF' },
   howToTag: { fontSize: 12, fontWeight: '500', color: '#FFFFFF' },
   muscleTagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   muscleTagPrimary: { backgroundColor: '#1D9E7522', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 0.5, borderColor: '#1D9E7555' },
   muscleTagPrimaryText: { fontSize: 11, color: '#1D9E75', fontWeight: '600' },
   muscleTagSecondary: { backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  muscleTagSecondaryText: { fontSize: 11, color: '#71717A', fontWeight: '500' },
+  muscleTagSecondaryText: { fontSize: 11, color: '#9494A0', fontWeight: '500' },
   doneBadge: { backgroundColor: '#1A201C', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#1D9E75' },
   doneBadgeText: { fontSize: 12, color: '#1D9E75', fontWeight: '600' },
 
@@ -1391,14 +1392,14 @@ const styles = StyleSheet.create({
   prescRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
   prescBox: { flex: 1, backgroundColor: '#2C2C35', borderRadius: 8, padding: 8, alignItems: 'center' },
   prescVal: { fontSize: 13, fontWeight: '600', color: '#FFFFFF', textAlign: 'center' },
-  prescLabel: { fontSize: 9, color: '#71717A', marginTop: 2, textAlign: 'center' },
+  prescLabel: { fontSize: 9, color: '#9494A0', marginTop: 2, textAlign: 'center' },
 
   contraBanner: { backgroundColor: '#1C1A0F', borderRadius: 8, borderWidth: 0.5, borderColor: '#BA7517', paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
   contraBannerText: { fontSize: 12, color: '#BA7517', lineHeight: 16 },
   contraBannerSoft: { backgroundColor: '#1A1610', borderColor: '#7A5010' },
-  contraBannerSoftText: { color: '#8A6520' },
+  contraBannerSoftText: { color: '#C08B2E' },
 
-  subText: { fontSize: 11, color: '#71717A' },
+  subText: { fontSize: 11, color: '#9494A0' },
   subRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 },
   subLink: { color: '#A1A1AA', textDecorationLine: 'underline' },
   replaceBtn: { alignSelf: 'flex-start', marginBottom: 10, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B' },
@@ -1411,7 +1412,7 @@ const styles = StyleSheet.create({
   replaceTagActive: { backgroundColor: '#1D9E75', borderColor: '#1D9E75' },
   replaceTagText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
   replaceTagTextActive: { color: '#FFFFFF' },
-  replaceGroupHdr: { color: '#71717A', fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  replaceGroupHdr: { color: '#9494A0', fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
   replaceGroupHdrActive: { color: '#1D9E75' },
   replaceRow: { paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#15151B', marginBottom: 5 },
   replaceRowText: { color: '#FFFFFF', fontSize: 15 },
@@ -1419,67 +1420,67 @@ const styles = StyleSheet.create({
 
   setsCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   setHeaderRow: { flexDirection: 'row', marginBottom: 8 },
-  setHeaderText: { fontSize: 11, color: '#71717A' },
+  setHeaderText: { fontSize: 11, color: '#9494A0' },
   setRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   setRowDone: { opacity: 0.5 },
-  setNum: { fontSize: 14, color: '#71717A', textAlign: 'center' },
+  setNum: { fontSize: 14, color: '#9494A0', textAlign: 'center' },
   weightInput: { backgroundColor: '#2C2C35', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12, color: '#FFFFFF', fontSize: 15, textAlign: 'center' },
   tickBtn: { height: 40, borderRadius: 8, backgroundColor: '#2C2C35', alignItems: 'center', justifyContent: 'center' },
   tickBtnDone: { backgroundColor: '#1D9E75' },
-  tickText: { color: '#71717A', fontSize: 18 },
+  tickText: { color: '#9494A0', fontSize: 18 },
   tickTextDone: { color: '#FFFFFF', fontWeight: '700' },
 
   nextExBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 14, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   nextExLeft: { flex: 1 },
-  nextExLabel: { fontSize: 10, color: '#52525B', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 },
+  nextExLabel: { fontSize: 10, color: '#8A8A94', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 },
   nextExName: { fontSize: 15, color: '#E4E4E8', fontWeight: '600' },
-  nextExArrow: { fontSize: 28, color: '#3D3D4A', fontWeight: '300', lineHeight: 32 },
+  nextExArrow: { fontSize: 28, color: '#8A8A94', fontWeight: '300', lineHeight: 32 },
   finishAllBtn: { backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginBottom: 12 },
   finishAllBtnText: { color: '#111114', fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
 
   finishScreen: { flex: 1, padding: 24, paddingTop: 24, paddingBottom: 40 },
   finishBackBtn: { marginBottom: 16 },
-  finishBackText: { color: '#71717A', fontSize: 14 },
+  finishBackText: { color: '#9494A0', fontSize: 14 },
   finishTitle: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5, marginBottom: 6 },
-  finishSub: { fontSize: 15, color: '#71717A', marginBottom: 32 },
+  finishSub: { fontSize: 15, color: '#9494A0', marginBottom: 32 },
   finishStats: { flexDirection: 'row', gap: 12, marginBottom: 32 },
   finishStat: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   finishStatVal: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  finishStatLabel: { fontSize: 11, color: '#71717A' },
+  finishStatLabel: { fontSize: 11, color: '#9494A0' },
   rpeLabel: { fontSize: 14, fontWeight: '500', color: '#FFFFFF', marginBottom: 12 },
   rpeRow: { flexDirection: 'row', gap: 4, marginBottom: 10 },
   rpeBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2C2C35', alignItems: 'center' },
   rpeBtnActive: { backgroundColor: '#FFFFFF' },
-  rpeBtnText: { color: '#71717A', fontSize: 12, fontWeight: '500' },
+  rpeBtnText: { color: '#9494A0', fontSize: 12, fontWeight: '500' },
   rpeBtnTextActive: { color: '#111114' },
-  rpeSub: { fontSize: 12, color: '#71717A', lineHeight: 18, marginBottom: 24 },
+  rpeSub: { fontSize: 12, color: '#9494A0', lineHeight: 18, marginBottom: 24 },
   simpleRpeRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
   simpleRpeBtn: { flex: 1, paddingVertical: 14, borderRadius: 10, backgroundColor: '#2C2C35', alignItems: 'center' },
   simpleRpeBtnActive: { backgroundColor: '#FFFFFF' },
-  simpleRpeBtnText: { color: '#71717A', fontSize: 15, fontWeight: '600' },
+  simpleRpeBtnText: { color: '#9494A0', fontSize: 15, fontWeight: '600' },
   simpleRpeBtnTextActive: { color: '#111114' },
   overloadCard: { backgroundColor: '#0F1A16', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#1D9E75', marginBottom: 24 },
   overloadTitle: { fontSize: 13, fontWeight: '700', color: '#1D9E75', marginBottom: 12 },
   overloadRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   overloadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 4 },
   overloadEx: { fontSize: 12, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
-  overloadSug: { fontSize: 11, color: '#71717A', lineHeight: 16 },
+  overloadSug: { fontSize: 11, color: '#9494A0', lineHeight: 16 },
   saveBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   saveBtnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
 
-  restWarningBanner: { backgroundColor: '#1A0E0E', borderBottomWidth: 0.5, borderBottomColor: '#E24B4A44', paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  restWarningText: { flex: 1, fontSize: 11, color: '#E24B4A', lineHeight: 16 },
-  restWarningDismiss: { fontSize: 11, color: '#71717A', fontWeight: '600' },
+  restWarningBanner: { backgroundColor: '#1A0E0E', borderBottomWidth: 0.5, borderBottomColor: '#E85D5C44', paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  restWarningText: { flex: 1, fontSize: 11, color: '#E85D5C', lineHeight: 16 },
+  restWarningDismiss: { fontSize: 11, color: '#9494A0', fontWeight: '600' },
 
   prevHint: { backgroundColor: '#12121A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
   prevHintText: { fontSize: 11, color: '#FFFFFF', fontWeight: '500' },
 
   // Sets toolbar (BW + Plates)
   setsToolbar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  setsCardTitle: { fontSize: 11, fontWeight: '700', color: '#52525B', letterSpacing: 0.8, textTransform: 'uppercase' },
+  setsCardTitle: { fontSize: 11, fontWeight: '700', color: '#8A8A94', letterSpacing: 0.8, textTransform: 'uppercase' },
   setsToolbarChip: { backgroundColor: '#2C2C35', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: '#3D3D4A' },
   setsToolbarChipActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  setsToolbarChipText: { fontSize: 11, fontWeight: '700', color: '#71717A' },
+  setsToolbarChipText: { fontSize: 11, fontWeight: '700', color: '#9494A0' },
   setsToolbarChipTextActive: { color: '#111114' },
 
   // Set type tap button
@@ -1493,13 +1494,13 @@ const styles = StyleSheet.create({
 
   // Coach modal
   paywallClose: { position: 'absolute', top: 52, right: 20, zIndex: 10, paddingVertical: 6, paddingHorizontal: 10 },
-  paywallCloseText: { color: '#71717A', fontSize: 15, fontWeight: '600' },
+  paywallCloseText: { color: '#9494A0', fontSize: 15, fontWeight: '600' },
   coachOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
   coachCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 32, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 12 },
   coachHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   coachTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
-  coachClose: { fontSize: 14, color: '#71717A', fontWeight: '500' },
-  coachSub: { fontSize: 12, color: '#52525B', marginTop: -6 },
+  coachClose: { fontSize: 14, color: '#9494A0', fontWeight: '500' },
+  coachSub: { fontSize: 12, color: '#8A8A94', marginTop: -6 },
   coachAnswerWrap: { maxHeight: 160, backgroundColor: '#12121A', borderRadius: 10, padding: 12 },
   coachAnswerText: { fontSize: 14, color: '#E4E4E8', lineHeight: 21 },
   coachInput: { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 14, minHeight: 56, textAlignVertical: 'top' },
@@ -1511,19 +1512,19 @@ const styles = StyleSheet.create({
   plateCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: '#2C2C35' },
   plateTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF', marginBottom: 20 },
   plateBarRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
-  plateBarLabel: { fontSize: 12, color: '#71717A', flex: 1 },
+  plateBarLabel: { fontSize: 12, color: '#9494A0', flex: 1 },
   plateBarBtn: { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   plateBarBtnActive: { backgroundColor: '#FFFFFF' },
-  plateBarBtnText: { fontSize: 13, fontWeight: '600', color: '#71717A' },
+  plateBarBtnText: { fontSize: 13, fontWeight: '600', color: '#9494A0' },
   plateBarBtnTextActive: { color: '#111114' },
   plateInput: { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 18, fontWeight: '600', marginBottom: 20, textAlign: 'center' },
-  plateNote: { fontSize: 13, color: '#71717A', textAlign: 'center', marginBottom: 16 },
+  plateNote: { fontSize: 13, color: '#9494A0', textAlign: 'center', marginBottom: 16 },
   plateResult: { marginBottom: 20 },
-  plateResultLabel: { fontSize: 10, fontWeight: '700', color: '#52525B', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
+  plateResultLabel: { fontSize: 10, fontWeight: '700', color: '#8A8A94', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
   plateChipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   plateChip: { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 0.5, borderColor: '#FFFFFF33' },
   plateChipText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  plateAchieved: { fontSize: 12, color: '#71717A' },
+  plateAchieved: { fontSize: 12, color: '#9494A0' },
   plateCloseBtn: { backgroundColor: '#2C2C35', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   plateCloseBtnText: { color: '#A1A1AA', fontSize: 14, fontWeight: '600' },
 });

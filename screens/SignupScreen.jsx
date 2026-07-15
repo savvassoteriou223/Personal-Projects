@@ -100,7 +100,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           }}
           style={{ alignItems: 'center', marginTop: 16 }}
         >
-          <Text style={{ color: '#71717A', fontSize: 14 }}>{t('auth.emailSent.resend')}</Text>
+          <Text style={{ color: '#9494A0', fontSize: 14 }}>{t('auth.emailSent.resend')}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -119,7 +119,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           showsVerticalScrollIndicator={false}
         >
           <Pressable onPress={onGoBack} style={{ paddingBottom: 24 }}>
-            <Text style={{ color: '#71717A', fontSize: 15 }}>← {t('auth.back')}</Text>
+            <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('auth.back')}</Text>
           </Pressable>
 
           <Text style={styles.title}>{t('auth.signup.title')}</Text>
@@ -132,7 +132,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               value={name}
               onChangeText={setName}
               placeholder={t('auth.signup.namePlaceholder')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               autoCapitalize="words"
               returnKeyType="next"
             />
@@ -145,7 +145,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               value={email}
               onChangeText={setEmail}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               keyboardType="email-address"
               autoCapitalize="none"
               returnKeyType="next"
@@ -160,7 +160,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
                 value={dobDay}
                 onChangeText={v => { setDobDay(v.replace(/\D/g, '')); if (v.length >= 2) monthRef.current?.focus(); }}
                 placeholder="DD"
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 keyboardType="number-pad"
                 maxLength={2}
                 returnKeyType="next"
@@ -173,7 +173,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
                 value={dobMonth}
                 onChangeText={v => { setDobMonth(v.replace(/\D/g, '')); if (v.length >= 2) yearRef.current?.focus(); }}
                 placeholder="MM"
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 keyboardType="number-pad"
                 maxLength={2}
                 returnKeyType="next"
@@ -186,7 +186,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
                 value={dobYear}
                 onChangeText={v => setDobYear(v.replace(/\D/g, ''))}
                 placeholder="YYYY"
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 keyboardType="number-pad"
                 maxLength={4}
                 returnKeyType="next"
@@ -216,7 +216,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               placeholder={t('auth.signup.minChars')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
@@ -235,7 +235,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               onChangeText={setConfirm}
               secureTextEntry={!showConfirm}
               placeholder={t('auth.signup.confirmPlaceholder')}
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
@@ -277,14 +277,14 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
-  sub: { fontSize: 15, color: '#71717A', marginBottom: 40 },
+  sub: { fontSize: 15, color: '#9494A0', marginBottom: 40 },
   label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
-  inputSub: { fontSize: 12, color: '#52525B', marginTop: -4, marginBottom: 8 },
+  inputSub: { fontSize: 12, color: '#8A8A94', marginTop: -4, marginBottom: 8 },
   inputWrap: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   inputInner: { padding: 16, color: '#FFFFFF', fontSize: 16, backgroundColor: 'transparent' },
   inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   eyeBtn: { paddingHorizontal: 14 },
-  eyeText: { fontSize: 13, color: '#71717A' },
+  eyeText: { fontSize: 13, color: '#9494A0' },
   dobRow: { flexDirection: 'row', gap: 8 },
   dobDay: { width: 64 },
   dobMonth: { width: 64 },
@@ -294,14 +294,14 @@ const styles = StyleSheet.create({
   sexRow: { flexDirection: 'row', gap: 8, marginTop: 0 },
   sexBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', paddingVertical: 16, alignItems: 'center' },
   sexBtnActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  sexBtnText: { fontSize: 15, color: '#71717A', fontWeight: '500' },
+  sexBtnText: { fontSize: 15, color: '#9494A0', fontWeight: '500' },
   sexBtnTextActive: { color: '#E4E4E8', fontWeight: '600' },
-  error: { color: '#E24B4A', fontSize: 13, marginTop: 12, textAlign: 'center' },
+  error: { color: '#E85D5C', fontSize: 13, marginTop: 12, textAlign: 'center' },
   btn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   btnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
-  legal: { fontSize: 12, color: '#3D3D4A', textAlign: 'center', marginTop: 16, lineHeight: 18 },
+  legal: { fontSize: 12, color: '#8A8A94', textAlign: 'center', marginTop: 16, lineHeight: 18 },
   switchLink: { alignItems: 'center', marginTop: 16 },
-  switchText: { color: '#71717A', fontSize: 14 },
+  switchText: { color: '#9494A0', fontSize: 14 },
   switchHighlight: { color: '#FFFFFF', fontWeight: '600' },
   sentBox: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 20, borderWidth: 0.5, borderColor: '#1D9E75' },
   sentTitle: { fontSize: 16, fontWeight: '700', color: '#1D9E75', marginBottom: 8 },

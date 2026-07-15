@@ -61,7 +61,7 @@ export default function ResetPasswordScreen({ onDone }) {
             value={password}
             onChangeText={setPassword}
             placeholder={t('auth.newPassword.placeholder')}
-            placeholderTextColor="#3D3D4A"
+            placeholderTextColor="#8A8A94"
             secureTextEntry={!showPassword}
           />
           <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
@@ -76,7 +76,7 @@ export default function ResetPasswordScreen({ onDone }) {
             value={confirm}
             onChangeText={setConfirm}
             placeholder={t('auth.newPassword.confirmPlaceholder')}
-            placeholderTextColor="#3D3D4A"
+            placeholderTextColor="#8A8A94"
             secureTextEntry={!showConfirm}
           />
           <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
@@ -105,13 +105,13 @@ export default function ResetPasswordScreen({ onDone }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
-  sub: { fontSize: 15, color: '#71717A', marginBottom: 40 },
+  sub: { fontSize: 15, color: '#9494A0', marginBottom: 40 },
   label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
   inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
   inputInner: { padding: 16, color: '#FFFFFF', fontSize: 16, backgroundColor: 'transparent' },
   eyeBtn: { paddingHorizontal: 14 },
-  eyeText: { fontSize: 13, color: '#71717A' },
-  error: { color: '#E24B4A', fontSize: 13, marginTop: 12, textAlign: 'center' },
+  eyeText: { fontSize: 13, color: '#9494A0' },
+  error: { color: '#E85D5C', fontSize: 13, marginTop: 12, textAlign: 'center' },
   btn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   btnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
   successBox: { margin: 24, backgroundColor: '#1A1A20', borderRadius: 16, padding: 20, borderWidth: 0.5, borderColor: '#1D9E75' },

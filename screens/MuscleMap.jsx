@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   viewLabel: {
-    color: '#4A4A5A',
+    color: '#8A8A94',
     fontSize: 9,
     letterSpacing: 0.8,
     textAlign: 'center',

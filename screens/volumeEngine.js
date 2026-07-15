@@ -101,7 +101,7 @@ export const MUSCLE_GROUPS = [
   { key: 'abs',        targetKey: 'abs',        heads: [{ key: 'abs' }] },
 ];
 
-const GREEN = '#1D9E75', AMBER = '#BA7517', RED = '#E24B4A';
+const GREEN = '#1D9E75', AMBER = '#BA7517', RED = '#E85D5C';
 
 export function colorForVolume(done, target) {
   if (!target) return GREEN;

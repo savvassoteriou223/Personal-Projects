@@ -50,7 +50,7 @@ function matchBenchmark(name) {
 
 const LEVELS = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Elite'];
 const LEVEL_KEYS = ['beginner', 'novice', 'intermediate', 'advanced', 'elite']; // i18n keys (progress.levels.*)
-const LEVEL_COLORS = ['#52525B', '#BA7517', '#1D9E75', '#E4E4E8', '#FFFFFF'];
+const LEVEL_COLORS = ['#8A8A94', '#BA7517', '#1D9E75', '#E4E4E8', '#FFFFFF'];
 
 function getLevel(thresholds, val) {
   if (!thresholds || !val) return -1;
@@ -107,7 +107,7 @@ function LineChart({ points, color = '#FFFFFF', height = 130, unit = '', rawPoin
     <View>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: PAD, marginBottom: 10 }}>
         <Text style={st.heroNum}>{points[points.length - 1].y.toFixed(points[points.length - 1].y % 1 === 0 ? 0 : 1)}<Text style={st.heroUnit}>{unit}</Text></Text>
-        <Text style={[st.heroDelta, { color: delta >= 0 ? '#1D9E75' : '#E24B4A' }]}>
+        <Text style={[st.heroDelta, { color: delta >= 0 ? '#1D9E75' : '#E85D5C' }]}>
           {delta >= 0 ? '+' : ''}{delta.toFixed(delta % 1 === 0 ? 0 : 1)}{unit}
         </Text>
       </View>
@@ -166,7 +166,7 @@ function BenchmarkCards({ bests }) {
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
       {items.map(({ val, name, rule }) => {
         const li = getLevel(rule.t, val);
-        const lc = li >= 0 ? LEVEL_COLORS[li] : '#52525B';
+        const lc = li >= 0 ? LEVEL_COLORS[li] : '#8A8A94';
         const next = li >= 0 && li < 4 ? rule.t[li + 1] : null;
         const pct = Math.min(val / rule.t[4], 1);
         return (
@@ -204,7 +204,7 @@ function ConsistencyBars({ weeks }) {
           return (
             <View key={i} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
               <View style={{ height: h, width: '100%', backgroundColor: color, borderRadius: 4 }} />
-              <Text style={{ fontSize: 8, color: '#3F3F50', marginTop: 4 }}>{w.label}</Text>
+              <Text style={{ fontSize: 8, color: '#8A8A94', marginTop: 4 }}>{w.label}</Text>
             </View>
           );
         })}
@@ -239,7 +239,7 @@ function WeightSection({ entries, proteinAvg, proteinTarget, strengthDelta, show
 
       {/* Recomp dual signal */}
       {showRecompSignal && strengthDelta !== null && (
-        <View style={[st.signal, { marginHorizontal: PAD, marginTop: 12, borderColor: strengthDelta >= 0 ? '#1D9E7444' : '#E24B4A44' }]}>
+        <View style={[st.signal, { marginHorizontal: PAD, marginTop: 12, borderColor: strengthDelta >= 0 ? '#1D9E7444' : '#E85D5C44' }]}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 7 }}>
             <Ionicons
               name={strengthDelta >= 0 ? 'trending-up' : 'warning'}
@@ -266,7 +266,7 @@ function WeightSection({ entries, proteinAvg, proteinTarget, strengthDelta, show
           <View style={st.proBar}>
             <View style={[st.proFill, {
               width: `${Math.min((proteinAvg / (proteinTarget || 160)) * 100, 100)}%`,
-              backgroundColor: proteinAvg >= (proteinTarget || 160) ? '#1D9E75' : '#E24B4A',
+              backgroundColor: proteinAvg >= (proteinTarget || 160) ? '#1D9E75' : '#E85D5C',
             }]} />
           </View>
           <Text style={st.proNote}>
@@ -294,7 +294,7 @@ function e1rmVerdict(points, ex, t) {
 function e1rmColor(points) {
   if (!points || points.length < 2) return undefined;
   const delta = points[points.length - 1].y - points[0].y;
-  return delta >= 0 ? '#1D9E75' : '#E24B4A';
+  return delta >= 0 ? '#1D9E75' : '#E85D5C';
 }
 
 function volumeVerdict(points) {
@@ -331,7 +331,7 @@ function weightVerdictColor(entries) {
   const first7 = smoothed.slice(0, Math.min(7, n));
   const last7 = smoothed.slice(-Math.min(7, n));
   const rate = (last7.reduce((a,b)=>a+b.avg,0)/last7.length - first7.reduce((a,b)=>a+b.avg,0)/first7.length) / Math.max(entries.length/7,1);
-  if (rate < -1.0) return '#E24B4A';
+  if (rate < -1.0) return '#E85D5C';
   if (rate < -0.05) return '#1D9E75';
   return '#BA7517';
 }
@@ -348,7 +348,7 @@ function consistencyVerdict(weeks, t) {
 function consistencyColor(weeks) {
   const recent = weeks.slice(-4);
   const avg = recent.reduce((a, w) => a + w.count, 0) / Math.max(recent.length, 1);
-  return avg >= 3 ? '#1D9E75' : avg >= 2 ? '#BA7517' : '#E24B4A';
+  return avg >= 3 ? '#1D9E75' : avg >= 2 ? '#BA7517' : '#E85D5C';
 }
 
 function cardioVerdict(weeks, t) {
@@ -397,7 +397,7 @@ function BlockProgressSection({ info }) {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <View>
           <Text style={{ fontSize: 26, fontWeight: '200', color: '#FFFFFF', letterSpacing: -0.8 }}>{t('progress.block.num', { n: blockNum })}</Text>
-          <Text style={{ fontSize: 12, color: '#52525B', marginTop: 2 }}>
+          <Text style={{ fontSize: 12, color: '#8A8A94', marginTop: 2 }}>
             {format(new Date(info.block_start_date), 'MMM d')} → {format(endDate, 'MMM d')}
           </Text>
         </View>
@@ -408,7 +408,7 @@ function BlockProgressSection({ info }) {
       <View style={{ height: 6, backgroundColor: '#1A1A20', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
         <View style={{ width: `${Math.min(pct, 1) * 100}%`, height: 6, backgroundColor: daysLeft === 0 ? '#1D9E75' : '#FFFFFF', borderRadius: 4 }} />
       </View>
-      <Text style={{ fontSize: 12, color: daysLeft === 0 ? '#1D9E75' : '#52525B' }}>
+      <Text style={{ fontSize: 12, color: daysLeft === 0 ? '#1D9E75' : '#8A8A94' }}>
         {daysLeft === 0
           ? t('progress.block.complete')
           : t('progress.block.remaining', { days: daysLeft, pct: Math.round(pct * 100) })}
@@ -612,7 +612,7 @@ export default function ProgressScreen() {
   if (loading) return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0F0F13' }} edges={['top']}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: '#52525B', fontSize: 14 }}>{t('progress.loading')}</Text>
+        <Text style={{ color: '#8A8A94', fontSize: 14 }}>{t('progress.loading')}</Text>
       </View>
     </SafeAreaView>
   );
@@ -631,7 +631,7 @@ export default function ProgressScreen() {
                 { key: 'sessions', val: totalSessions, label: t('progress.overview.sessions'), color: '#FFFFFF' },
                 { key: 'totalSets', val: totalSets, label: t('progress.overview.totalSets'), color: '#E4E4E8' },
                 { key: 'avgDuration', val: avgDuration ? `${avgDuration}m` : '—', label: t('progress.overview.avgDuration'), color: '#1D9E75' },
-                { key: 'streak', val: `${streak}w`, label: t('progress.overview.streak'), color: streak >= 4 ? '#1D9E75' : streak >= 2 ? '#BA7517' : '#52525B' },
+                { key: 'streak', val: `${streak}w`, label: t('progress.overview.streak'), color: streak >= 4 ? '#1D9E75' : streak >= 2 ? '#BA7517' : '#8A8A94' },
               ].map(({ key, val, label, color }) => (
                 <View key={key} style={st.overviewStat}>
                   <Text style={[st.overviewVal, { color }]}>{val}</Text>
@@ -640,7 +640,7 @@ export default function ProgressScreen() {
               ))}
             </View>
             {totalSessions === 0 && (
-              <Text style={{ fontSize: 12, color: '#71717A', marginTop: 10 }}>
+              <Text style={{ fontSize: 12, color: '#9494A0', marginTop: 10 }}>
                 {t('progress.overview.empty')}
               </Text>
             )}
@@ -670,7 +670,7 @@ export default function ProgressScreen() {
                 <View key={ex} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 13, color: '#E4E4E8', fontWeight: '500' }} numberOfLines={1}>{ex}</Text>
-                    <Text style={{ fontSize: 11, color: '#52525B', marginTop: 2 }}>{t('progress.mostImprovedRow', { first, last })}</Text>
+                    <Text style={{ fontSize: 11, color: '#8A8A94', marginTop: 2 }}>{t('progress.mostImprovedRow', { first, last })}</Text>
                   </View>
                   <View style={{ backgroundColor: '#1D9E7522', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: '#1D9E7544' }}>
                     <Text style={{ fontSize: 13, color: '#1D9E75', fontWeight: '700' }}>+{pct}%</Text>
@@ -726,25 +726,25 @@ export default function ProgressScreen() {
               const filled = rpeWeeks.filter(w => w.avg !== null);
               if (!filled.length) return undefined;
               const last = filled[filled.length - 1].avg;
-              return last > 8.5 ? '#E24B4A' : last > 7 ? '#1D9E75' : '#BA7517';
+              return last > 8.5 ? '#E85D5C' : last > 7 ? '#1D9E75' : '#BA7517';
             })()}>
             <Card style={{ padding: 0, paddingVertical: 16 }}>
               <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 80, gap: 4, paddingHorizontal: PAD }}>
                 {rpeWeeks.map((w, i) => {
                   const h = w.avg ? Math.max(6, (w.avg / 10) * 64) : 0;
-                  const color = w.avg > 8.5 ? '#E24B4A' : w.avg >= 7 ? '#1D9E75' : w.avg >= 5 ? '#BA7517' : '#2C2C35';
+                  const color = w.avg > 8.5 ? '#E85D5C' : w.avg >= 7 ? '#1D9E75' : w.avg >= 5 ? '#BA7517' : '#2C2C35';
                   return (
                     <View key={i} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
                       <View style={{ height: h, width: '100%', backgroundColor: color, borderRadius: 4 }} />
                       {w.avg !== null && (
-                        <Text style={{ fontSize: 8, color: '#52525B', marginTop: 3 }}>{w.avg}</Text>
+                        <Text style={{ fontSize: 8, color: '#8A8A94', marginTop: 3 }}>{w.avg}</Text>
                       )}
-                      <Text style={{ fontSize: 7, color: '#3F3F50', marginTop: 1 }}>{w.label}</Text>
+                      <Text style={{ fontSize: 7, color: '#8A8A94', marginTop: 1 }}>{w.label}</Text>
                     </View>
                   );
                 })}
               </View>
-              <Text style={{ fontSize: 10, color: '#52525B', paddingHorizontal: PAD, marginTop: 8 }}>
+              <Text style={{ fontSize: 10, color: '#8A8A94', paddingHorizontal: PAD, marginTop: 8 }}>
                 {t('progress.rpe.scale')}
               </Text>
             </Card>
@@ -802,39 +802,39 @@ export default function ProgressScreen() {
 
 const st = StyleSheet.create({
   section: { marginBottom: 24 },
-  label: { fontSize: 10, fontWeight: '700', color: '#52525B', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 },
+  label: { fontSize: 10, fontWeight: '700', color: '#8A8A94', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 },
   verdict: { fontSize: 13, color: '#A1A1AA', lineHeight: 19, marginBottom: 10 },
   card: { backgroundColor: '#111114', borderRadius: 18, borderWidth: 0.5, borderColor: '#1E1E28', padding: PAD },
   overviewStat: { flex: 1, minWidth: '40%', backgroundColor: '#0F0F18', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#1E1E28' },
   overviewVal: { fontSize: 28, fontWeight: '200', letterSpacing: -0.5 },
-  overviewLabel: { fontSize: 10, color: '#52525B', marginTop: 2, fontWeight: '500' },
+  overviewLabel: { fontSize: 10, color: '#8A8A94', marginTop: 2, fontWeight: '500' },
   heroNum: { fontSize: 38, fontWeight: '200', color: '#FFFFFF', letterSpacing: -1 },
-  heroUnit: { fontSize: 16, color: '#52525B', fontWeight: '300' },
+  heroUnit: { fontSize: 16, color: '#8A8A94', fontWeight: '300' },
   heroDelta: { fontSize: 14, fontWeight: '500', marginBottom: 4 },
   pill: { borderRadius: 9, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#0F0F18', borderWidth: 0.5, borderColor: '#2C2C35' },
   pillActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  pillTxt: { fontSize: 12, color: '#52525B', fontWeight: '500' },
+  pillTxt: { fontSize: 12, color: '#8A8A94', fontWeight: '500' },
   pillTxtActive: { color: '#FFFFFF', fontWeight: '700' },
   emptyWrap: { paddingVertical: 28, alignItems: 'center', paddingHorizontal: PAD },
-  emptyTxt: { fontSize: 13, color: '#71717A', textAlign: 'center', lineHeight: 20 },
+  emptyTxt: { fontSize: 13, color: '#9494A0', textAlign: 'center', lineHeight: 20 },
   bmCard: { width: 148, backgroundColor: '#0F0F18', borderRadius: 16, padding: 14, borderWidth: 0.5, borderColor: '#1E1E28' },
   bmBadge: { alignSelf: 'flex-start', borderRadius: 6, borderWidth: 0.5, paddingHorizontal: 7, paddingVertical: 2, marginBottom: 10 },
   bmBadgeTxt: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
-  bmLift: { fontSize: 11, color: '#52525B', marginBottom: 6 },
+  bmLift: { fontSize: 11, color: '#8A8A94', marginBottom: 6 },
   bmVal: { fontSize: 30, fontWeight: '200', color: '#FFFFFF', letterSpacing: -0.8 },
-  bmUnit: { fontSize: 14, color: '#52525B', fontWeight: '300' },
-  bmSub: { fontSize: 10, color: '#52525B', marginBottom: 10 },
+  bmUnit: { fontSize: 14, color: '#8A8A94', fontWeight: '300' },
+  bmSub: { fontSize: 10, color: '#8A8A94', marginBottom: 10 },
   bmBar: { height: 5, backgroundColor: '#1A1A20', borderRadius: 3, overflow: 'hidden', position: 'relative', marginBottom: 8 },
   bmFill: { height: 5, borderRadius: 3, position: 'absolute', left: 0, top: 0 },
   bmTick: { position: 'absolute', top: 0, width: 1, height: 5, backgroundColor: '#0F0F13' },
   bmNext: { fontSize: 10, color: '#FFFFFF', fontStyle: 'italic' },
-  legendTxt: { fontSize: 10, color: '#52525B' },
+  legendTxt: { fontSize: 10, color: '#8A8A94' },
   signal: { borderRadius: 10, borderWidth: 0.5, padding: 10 },
   signalTxt: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
-  metaLabel: { fontSize: 12, color: '#71717A' },
+  metaLabel: { fontSize: 12, color: '#9494A0' },
   metaVal: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
-  metaSub: { fontWeight: '400', color: '#52525B' },
+  metaSub: { fontWeight: '400', color: '#8A8A94' },
   proBar: { height: 5, backgroundColor: '#1A1A20', borderRadius: 3, overflow: 'hidden' },
   proFill: { height: 5, borderRadius: 3 },
-  proNote: { fontSize: 10, color: '#52525B', marginTop: 5 },
+  proNote: { fontSize: 10, color: '#8A8A94', marginTop: 5 },
 });

@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     fontSize: 20, fontWeight: '700', color: '#FFFFFF',
     letterSpacing: -0.3, textTransform: 'capitalize',
   },
-  prescription: { fontSize: 12, color: '#71717A', marginTop: 3 },
+  prescription: { fontSize: 12, color: '#9494A0', marginTop: 3 },
   doneBtn: {
     paddingHorizontal: 16, paddingVertical: 7,
     backgroundColor: '#1C1C22', borderRadius: 20,
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
 
   cuesSection: { padding: 20, paddingBottom: 4 },
   sectionLabel: {
-    fontSize: 10, fontWeight: '700', color: '#4A4A5A',
+    fontSize: 10, fontWeight: '700', color: '#8A8A94',
     letterSpacing: 1.2, marginBottom: 12,
   },
   cueRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
@@ -121,5 +121,5 @@ const styles = StyleSheet.create({
     borderWidth: 0.5, borderColor: '#2C2C35',
     borderLeftWidth: 3, borderLeftColor: '#FFFFFF',
   },
-  researchText: { fontSize: 13, color: '#71717A', lineHeight: 20 },
+  researchText: { fontSize: 13, color: '#9494A0', lineHeight: 20 },
 });

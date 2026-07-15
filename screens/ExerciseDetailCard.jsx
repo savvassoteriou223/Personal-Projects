@@ -42,7 +42,7 @@ const C = {
   borderBright:'#2A2A38',
   green:       '#1D9E75',
   amber:       '#BA7517',
-  red:         '#E24B4A',
+  red:         '#E85D5C',
   textPrimary: '#F1F0F5',
   textSecond:  '#8B8A9A',
   textMuted:   '#4A4A5A',

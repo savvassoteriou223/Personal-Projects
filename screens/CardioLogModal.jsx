@@ -115,7 +115,7 @@ export default function CardioLogModal({ visible, onClose, onSaved }) {
                   onChangeText={setDuration}
                   keyboardType="number-pad"
                   placeholder={t('cards.cardio.durationPlaceholder')}
-                  placeholderTextColor="#3D3D4A"
+                  placeholderTextColor="#8A8A94"
                 />
               </View>
               {selectedType?.unit ? (
@@ -127,7 +127,7 @@ export default function CardioLogModal({ visible, onClose, onSaved }) {
                     onChangeText={setDistance}
                     keyboardType="decimal-pad"
                     placeholder={activityType === 'swim' ? '1500' : '5.0'}
-                    placeholderTextColor="#3D3D4A"
+                    placeholderTextColor="#8A8A94"
                   />
                 </View>
               ) : <View style={{ flex: 1 }} />}
@@ -181,22 +181,22 @@ const st = StyleSheet.create({
   card:          { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 14 },
   handle:        { width: 36, height: 4, backgroundColor: '#3D3D4A', borderRadius: 2, alignSelf: 'center', marginBottom: 4 },
   title:         { fontSize: 20, fontWeight: '700', color: '#FFFFFF' },
-  label:         { fontSize: 11, fontWeight: '700', color: '#52525B', textTransform: 'uppercase', letterSpacing: 0.8 },
+  label:         { fontSize: 11, fontWeight: '700', color: '#8A8A94', textTransform: 'uppercase', letterSpacing: 0.8 },
   typeRow:       { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   strokeRow:     { flexDirection: 'row', gap: 8, paddingBottom: 2 },
   inputRow:      { flexDirection: 'row', gap: 12 },
   input:         { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 18, fontWeight: '600', textAlign: 'center' },
   chip:          { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#3D3D4A' },
   chipActive:    { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  chipText:      { fontSize: 13, fontWeight: '600', color: '#71717A' },
+  chipText:      { fontSize: 13, fontWeight: '600', color: '#9494A0' },
   chipTextActive:{ color: '#111114' },
   rpeRow:        { flexDirection: 'row', gap: 8 },
   rpeBtn:        { flex: 1, backgroundColor: '#2C2C35', borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: '#3D3D4A' },
   rpeBtnActive:  { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  rpeBtnLabel:   { fontSize: 13, fontWeight: '700', color: '#71717A', marginBottom: 3 },
+  rpeBtnLabel:   { fontSize: 13, fontWeight: '700', color: '#9494A0', marginBottom: 3 },
   rpeBtnLabelActive: { color: '#111114' },
-  rpeBtnSub:     { fontSize: 9, color: '#52525B', textAlign: 'center', lineHeight: 13 },
-  rpeBtnSubActive: { color: '#52525B' },
+  rpeBtnSub:     { fontSize: 9, color: '#8A8A94', textAlign: 'center', lineHeight: 13 },
+  rpeBtnSubActive: { color: '#8A8A94' },
   saveBtn:       { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginTop: 4 },
   saveBtnText:   { color: '#111114', fontSize: 15, fontWeight: '600' },
 });

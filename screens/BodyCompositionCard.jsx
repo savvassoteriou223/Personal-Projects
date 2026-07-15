@@ -124,7 +124,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           x={PAD.left - 4}
           y={yScale(tick) + 3}
           fontSize={8}
-          fill="#52525B"
+          fill="#8A8A94"
           textAnchor="end"
         >
           {tick}
@@ -138,7 +138,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           x={xScale(i)}
           y={CHART_H - 4}
           fontSize={8}
-          fill="#52525B"
+          fill="#8A8A94"
           textAnchor="middle"
         >
           {formatDate(movingAvgs[i].date)}
@@ -171,7 +171,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
   const targetWeight = profile.target_weight_kg;
 
   const trendLabel = trend === 'cutting' ? t('cards.bodyComp.cutting') : trend === 'gaining' ? t('cards.bodyComp.building') : t('cards.bodyComp.maintaining');
-  const trendColor = trend === 'cutting' ? '#FFFFFF' : trend === 'gaining' ? '#1D9E75' : '#71717A';
+  const trendColor = trend === 'cutting' ? '#FFFFFF' : trend === 'gaining' ? '#1D9E75' : '#9494A0';
 
   const rateStr = weeklyRate !== null
     ? t('cards.bodyComp.ratePerWeek', { rate: `${weeklyRate > 0 ? '+' : ''}${weeklyRate.toFixed(2)}` })
@@ -281,7 +281,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {muscleLossRisk && (
         <View style={[styles.alertCard, styles.alertCardRed]}>
-          <Ionicons name="warning" size={18} color="#E24B4A" style={styles.alertIcon} />
+          <Ionicons name="warning" size={18} color="#E85D5C" style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleRed]}>{t('cards.bodyComp.alerts.muscleLossTitle')}</Text>
             <Text style={styles.alertBody}>
@@ -350,17 +350,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7, paddingVertical: 2,
   },
   trendLabel: { fontSize: 11, fontWeight: '700' },
-  rateText: { fontSize: 12, color: '#71717A', fontWeight: '500' },
+  rateText: { fontSize: 12, color: '#9494A0', fontWeight: '500' },
   currentWeightWrap: { alignItems: 'flex-end' },
   currentWeight: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1 },
-  currentWeightUnit: { fontSize: 10, color: '#71717A', marginTop: -2 },
+  currentWeightUnit: { fontSize: 10, color: '#9494A0', marginTop: -2 },
 
   chartWrap: { marginBottom: 8 },
 
   legend: { flexDirection: 'row', gap: 14, marginBottom: 14 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendText: { fontSize: 10, color: '#52525B' },
+  legendText: { fontSize: 10, color: '#8A8A94' },
 
   statsRow: {
     flexDirection: 'row',
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     borderColor: '#2C2C35',
   },
   statValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
-  statLabel: { fontSize: 9, color: '#52525B', textAlign: 'center' },
+  statLabel: { fontSize: 9, color: '#8A8A94', textAlign: 'center' },
 
   paceCard: {
     borderRadius: 12, borderWidth: 0.5,
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   },
   projectionText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 6 },
   projectionHighlight: { color: '#1D9E75', fontWeight: '700' },
-  projectionDisclaimer: { fontSize: 10, color: '#52525B', fontStyle: 'italic' },
+  projectionDisclaimer: { fontSize: 10, color: '#8A8A94', fontStyle: 'italic' },
 
   alertCard: {
     flexDirection: 'row', gap: 10, alignItems: 'flex-start',
@@ -407,15 +407,15 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 0.5, borderColor: '#FFFFFF1A',
     padding: 12, marginBottom: 8,
   },
-  alertCardRed: { backgroundColor: '#1A0E0E', borderColor: '#E24B4A44' },
+  alertCardRed: { backgroundColor: '#1A0E0E', borderColor: '#E85D5C44' },
   alertCardAmber: { backgroundColor: '#1A1208', borderColor: '#BA751744' },
   alertIcon: { marginTop: 1 },
   alertText: { flex: 1 },
   alertTitle: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  alertTitleRed: { color: '#E24B4A' },
+  alertTitleRed: { color: '#E85D5C' },
   alertTitleAmber: { color: '#BA7517' },
   alertBody: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
 
-  emptyText: { fontSize: 13, color: '#71717A', lineHeight: 20 },
-  scienceFooter: { fontSize: 9, color: '#3F3F50', marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
+  emptyText: { fontSize: 13, color: '#9494A0', lineHeight: 20 },
+  scienceFooter: { fontSize: 9, color: '#8A8A94', marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
 });

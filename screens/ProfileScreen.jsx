@@ -177,7 +177,7 @@ function MuscleVolumeChart({ data, width }) {
           {/* Y label — right-aligned next to y-axis */}
           <SvgText
             x={padL - 5} y={y + 4}
-            fontSize="9" fill={i === 0 ? '#71717A' : '#3D3D4A'}
+            fontSize="9" fill={i === 0 ? '#9494A0' : '#3D3D4A'}
             textAnchor="end" fontWeight={i === 0 ? 'normal' : 'normal'}
           >{val}</SvgText>
           {/* Tick mark on Y axis */}
@@ -198,7 +198,7 @@ function MuscleVolumeChart({ data, width }) {
           <Line x1={p.x} y1={padT + H} x2={p.x} y2={padT + H + 4} stroke="#3D3D4A" strokeWidth="1" />
 
           {/* Day label below x-axis */}
-          <SvgText x={p.x} y={svgH - 4} fontSize="10" fill="#71717A" textAnchor="middle">{p.label}</SvgText>
+          <SvgText x={p.x} y={svgH - 4} fontSize="10" fill="#9494A0" textAnchor="middle">{p.label}</SvgText>
 
           {/* Dot */}
           <Circle
@@ -604,7 +604,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const h = parseFloat(editing ? height : profile?.height_cm);
   const w = parseFloat(editing ? weight : profile?.weight_kg);
   const bmi = h && w ? (w / ((h/100)**2)).toFixed(1) : null;
-  const bmiColor = bmi ? (bmi < 18.5 ? '#BA7517' : bmi < 25 ? '#1D9E75' : bmi < 30 ? '#BA7517' : '#E24B4A') : null;
+  const bmiColor = bmi ? (bmi < 18.5 ? '#BA7517' : bmi < 25 ? '#1D9E75' : bmi < 30 ? '#BA7517' : '#E85D5C') : null;
   const totalSets = weeklyVolumeData.reduce((s, d) => s + d.sets, 0);
   const weekLabel = weekOffset === 0 ? t('profile.weekThis') : weekOffset === 1 ? t('profile.weekLast') : t('profile.weekAgo', { n: weekOffset });
 
@@ -692,7 +692,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 {[['name', name, setName, 'default'], ['weight', weight, setWeight, 'decimal-pad'], ['height', height, setHeight, 'decimal-pad'], ['targetWeight', targetWeight, setTargetWeight, 'decimal-pad']].map(([fieldKey, val, setter, kb]) => (
                   <View key={fieldKey}>
                     <Text style={styles.inputLabel}>{t(`profile.fields.${fieldKey}`)}</Text>
-                    <TextInput style={styles.input} value={val} onChangeText={setter} keyboardType={kb} placeholderTextColor="#3D3D4A" />
+                    <TextInput style={styles.input} value={val} onChangeText={setter} keyboardType={kb} placeholderTextColor="#8A8A94" />
                   </View>
                 ))}
                 <Text style={styles.inputLabel}>{t('profile.daysPerWeek')}</Text>
@@ -756,7 +756,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                   {[['cut', t('profile.focus.cut'), t('profile.focus.cutSub')], ['bulk', t('profile.focus.bulk'), t('profile.focus.bulkSub')], ['maintain', t('profile.focus.maintain'), t('profile.focus.maintainSub')], ['recomp', t('profile.focus.recomp'), t('profile.focus.recompSub')]].map(([val, label, sub]) => (
                     <Pressable key={val} style={[styles.goalChip, nutritionFocus === val && styles.goalChipActive, { paddingVertical: 10 }]} onPress={() => setNutritionFocus(val)}>
                       <Text style={[styles.goalChipText, nutritionFocus === val && styles.goalChipTextActive]}>{label}</Text>
-                      <Text style={[{ fontSize: 9, color: nutritionFocus === val ? '#A1A1AA' : '#52525B', marginTop: 2 }]}>{sub}</Text>
+                      <Text style={[{ fontSize: 9, color: nutritionFocus === val ? '#A1A1AA' : '#8A8A94', marginTop: 2 }]}>{sub}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -771,10 +771,10 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                   if (!previewTargets) return null;
                   return (
                     <View style={{ backgroundColor: '#12121A', borderRadius: 10, padding: 12, marginBottom: 16, borderWidth: 0.5, borderColor: '#2C2C35' }}>
-                      <Text style={{ fontSize: 10, color: '#52525B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>{t('profile.calculatedTargets')}</Text>
+                      <Text style={{ fontSize: 10, color: '#8A8A94', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>{t('profile.calculatedTargets')}</Text>
                       <Text style={{ fontSize: 13, color: '#A1A1AA', marginBottom: 2 }}>{t('profile.maintenanceTdee', { tdee: previewTdee })}</Text>
                       <Text style={{ fontSize: 13, color: '#FFFFFF', fontWeight: '600', marginBottom: 2 }}>{t('profile.targetsLine', { cal: previewTargets.caloric_target, protein: previewTargets.protein_target, carbs: previewTargets.carb_target, fat: previewTargets.fat_target })}</Text>
-                      <Text style={{ fontSize: 11, color: '#52525B', marginTop: 4 }}>{t('profile.savedAuto')}</Text>
+                      <Text style={{ fontSize: 11, color: '#8A8A94', marginTop: 4 }}>{t('profile.savedAuto')}</Text>
                     </View>
                   );
                 })()}
@@ -886,7 +886,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                           <Text style={styles.profEntryLabel}>{conditionSummaryLabel(e)}</Text>
                         </View>
                         <Pressable onPress={() => setProfileHealthEntries(prev => prev.filter((_, idx) => idx !== i))} style={{ padding: 6 }}>
-                          <Text style={{ color: '#71717A', fontSize: 14 }}>✕</Text>
+                          <Text style={{ color: '#9494A0', fontSize: 14 }}>✕</Text>
                         </Pressable>
                       </View>
                     ))}
@@ -901,7 +901,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                       value={ph6search}
                       onChangeText={setPh6search}
                       placeholder={t('profile.searchPlaceholder')}
-                      placeholderTextColor="#3D3D4A"
+                      placeholderTextColor="#8A8A94"
                       clearButtonMode="while-editing"
                     />
                     <View style={{ marginTop: 12 }}>
@@ -929,7 +929,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                                   <Text style={styles.profCondLabel}>{cond.label}</Text>
                                   <Text style={styles.profCondDesc}>{cond.desc}</Text>
                                 </View>
-                                <Text style={{ fontSize: 18, color: '#3D3D4A' }}>›</Text>
+                                <Text style={{ fontSize: 18, color: '#8A8A94' }}>›</Text>
                               </Pressable>
                             ))}
                           </View>
@@ -943,7 +943,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 {ph6phase === 'severity' && ph6pending && (
                   <View style={{ gap: 10 }}>
                     <Pressable onPress={() => setPh6phase('list')} style={{ marginBottom: 4 }}>
-                      <Text style={{ color: '#71717A', fontSize: 14 }}>← {t('common.back')}</Text>
+                      <Text style={{ color: '#9494A0', fontSize: 14 }}>← {t('common.back')}</Text>
                     </Pressable>
                     <Text style={[styles.inputLabel, { marginBottom: 8 }]}>{t('profile.severityQuestion', { condition: ph6pending.conditionLabel })}</Text>
                     {SEVERITY_OPTIONS.map(s => (
@@ -973,7 +973,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 {ph6phase === 'post_op' && ph6pending && (
                   <View style={{ gap: 10 }}>
                     <Pressable onPress={() => setPh6phase(ph6pending.alwaysPost ? 'list' : 'severity')} style={{ marginBottom: 4 }}>
-                      <Text style={{ color: '#71717A', fontSize: 14 }}>← {t('common.back')}</Text>
+                      <Text style={{ color: '#9494A0', fontSize: 14 }}>← {t('common.back')}</Text>
                     </Pressable>
                     <Text style={[styles.inputLabel, { marginBottom: 8 }]}>{t('profile.surgeryWhen')}</Text>
                     {POST_OP_TIMELINE_OPTIONS.map(opt => (
@@ -1024,8 +1024,8 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                     <Text style={[styles.profileField, { marginTop: 10 }]}>{t('profile.fieldConditions')}</Text>
                     <View style={{ gap: 6, marginTop: 4 }}>
                       {profileHealthEntries.map((e, i) => (
-                        <View key={i} style={[styles.goalChipActive, { backgroundColor: '#E24B4A22', borderColor: '#E24B4A44', paddingVertical: 6, paddingHorizontal: 10 }]}>
-                          <Text style={[styles.goalChipTextActive, { color: '#E24B4A' }]}>{conditionSummaryLabel(e)}</Text>
+                        <View key={i} style={[styles.goalChipActive, { backgroundColor: '#E85D5C22', borderColor: '#E85D5C44', paddingVertical: 6, paddingHorizontal: 10 }]}>
+                          <Text style={[styles.goalChipTextActive, { color: '#E85D5C' }]}>{conditionSummaryLabel(e)}</Text>
                         </View>
                       ))}
                     </View>
@@ -1044,7 +1044,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 value={quickWeight}
                 onChangeText={setQuickWeight}
                 placeholder={t('profile.weightPlaceholder')}
-                placeholderTextColor="#3D3D4A"
+                placeholderTextColor="#8A8A94"
                 keyboardType="decimal-pad"
               />
               <Pressable style={[styles.quickWeightBtn, quickWeightSaved && { backgroundColor: '#1D9E75' }]} onPress={logQuickWeight}>
@@ -1121,7 +1121,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
             <View style={styles.chartTitleRow}>
               <Text style={styles.chartTitle}>{t('profile.chartTitle', { muscle: t(`today.muscles.${selectedMuscle.toLowerCase()}`, { defaultValue: selectedMuscle }), week: weekLabel })}</Text>
               <View style={[styles.totalBadge, totalSets === 0 && styles.totalBadgeEmpty]}>
-                <Text style={[styles.totalBadgeText, totalSets === 0 && { color: '#71717A' }]}>
+                <Text style={[styles.totalBadgeText, totalSets === 0 && { color: '#9494A0' }]}>
                   {t('profile.setsCount', { n: totalSets })}
                 </Text>
               </View>
@@ -1152,7 +1152,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                   <View style={styles.dayBreakBar}>
                     <View style={[styles.dayBreakFill, { width: `${(d.sets/maxSets)*100}%` }]} />
                   </View>
-                  <Text style={[styles.dayBreakSets, d.sets===0&&{color:'#3D3D4A'}]}>{d.sets > 0 ? t('profile.daySets', { n: d.sets }) : '—'}</Text>
+                  <Text style={[styles.dayBreakSets, d.sets===0&&{color:'#8A8A94'}]}>{d.sets > 0 ? t('profile.daySets', { n: d.sets }) : '—'}</Text>
                 </View>
               );
             })}
@@ -1170,7 +1170,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
               ? <Text style={styles.empty}>{t('profile.noPrs')}</Text>
               : prs.map((pr, i) => (
                 <View key={i} style={styles.prRow}>
-                  <View style={[styles.prRank, i < 3 && { backgroundColor: i===0?'#BA7517':i===1?'#71717A':'#3D3D4A' }]}>
+                  <View style={[styles.prRank, i < 3 && { backgroundColor: i===0?'#BA7517':i===1?'#9494A0':'#3D3D4A' }]}>
                     <Text style={styles.prRankText}>{i+1}</Text>
                   </View>
                   <Text style={styles.prName} numberOfLines={1}>{pr.name}</Text>
@@ -1300,8 +1300,8 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontSize: 19, fontWeight: '700', color: '#111114' },
   profileName: { fontSize: 16, fontWeight: '600', color: '#FFF' },
-  profileEmail: { fontSize: 12, color: '#71717A', marginTop: 1 },
-  signOut: { fontSize: 12, color: '#71717A' },
+  profileEmail: { fontSize: 12, color: '#9494A0', marginTop: 1 },
+  signOut: { fontSize: 12, color: '#9494A0' },
   adminBtn: { backgroundColor: '#1C1C22', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: '#FFFFFF' },
   adminBtnText: { fontSize: 11, color: '#FFFFFF', fontWeight: '600' },
   insightsCard: { marginHorizontal: 20, marginBottom: 16, backgroundColor: '#0F1A16', borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: '#1D9E7544' },
@@ -1313,27 +1313,27 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   statCard: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   statVal: { fontSize: 16, fontWeight: '700', color: '#FFF' },
-  statLabel: { fontSize: 9, color: '#71717A', marginTop: 2 },
+  statLabel: { fontSize: 9, color: '#9494A0', marginTop: 2 },
   tabRow: { flexDirection: 'row', backgroundColor: '#0F0F13', borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
   tab: { flex: 1, paddingVertical: 11, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabActive: { borderBottomColor: '#FFFFFF' },
-  tabText: { fontSize: 12, color: '#71717A', fontWeight: '500' },
+  tabText: { fontSize: 12, color: '#9494A0', fontWeight: '500' },
   tabTextActive: { color: '#FFFFFF', fontWeight: '700' },
   card: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', marginTop: 14, overflow: 'hidden' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: '#FFF', marginBottom: 12 },
   editBtn: { fontSize: 13, color: '#FFFFFF', fontWeight: '500' },
-  cancelBtn: { fontSize: 13, color: '#71717A' },
+  cancelBtn: { fontSize: 13, color: '#9494A0' },
   saveBtn: { fontSize: 13, color: '#1D9E75', fontWeight: '600' },
-  inputLabel: { fontSize: 11, color: '#71717A', marginBottom: 5, marginTop: 10 },
-  inputSub: { fontSize: 11, color: '#52525B', marginBottom: 8, lineHeight: 16 },
+  inputLabel: { fontSize: 11, color: '#9494A0', marginBottom: 5, marginTop: 10 },
+  inputSub: { fontSize: 11, color: '#8A8A94', marginBottom: 8, lineHeight: 16 },
   input: { backgroundColor: '#2C2C35', borderRadius: 8, padding: 11, color: '#FFF', fontSize: 14 },
   optionRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
   optionBtn: { flex: 1, backgroundColor: '#2C2C35', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
   optionBtnActive: { backgroundColor: '#FFFFFF' },
-  optionBtnText: { color: '#71717A', fontSize: 13, fontWeight: '500' },
+  optionBtnText: { color: '#9494A0', fontSize: 13, fontWeight: '500' },
   optionBtnTextActive: { color: '#111114' },
-  profileField: { fontSize: 13, color: '#71717A', marginBottom: 5 },
+  profileField: { fontSize: 13, color: '#9494A0', marginBottom: 5 },
   profileFieldVal: { color: '#FFF', fontWeight: '500' },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   injuryRow: { marginBottom: 12 },
@@ -1341,35 +1341,35 @@ const styles = StyleSheet.create({
   injuryOpts: { flexDirection: 'row', gap: 6 },
   injuryOpt: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   injuryOptActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  injuryOptText: { fontSize: 12, color: '#71717A', fontWeight: '600' },
+  injuryOptText: { fontSize: 12, color: '#9494A0', fontWeight: '600' },
   injuryOptTextActive: { color: '#111114' },
   profEntryCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1C1C22', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  profEntryRegion: { fontSize: 10, color: '#71717A', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 2 },
+  profEntryRegion: { fontSize: 10, color: '#9494A0', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 2 },
   profEntryLabel: { fontSize: 13, color: '#FFFFFF', fontWeight: '500' },
-  profCondRegion: { fontSize: 11, color: '#71717A', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
+  profCondRegion: { fontSize: 11, color: '#9494A0', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
   profCondRow: { backgroundColor: '#1A1A20', paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center' },
   profCondLabel: { fontSize: 13, color: '#E4E4E8', fontWeight: '500', marginBottom: 2 },
-  profCondDesc: { fontSize: 11, color: '#71717A' },
+  profCondDesc: { fontSize: 11, color: '#9494A0' },
   profLayerCard: { backgroundColor: '#1A1A20', borderRadius: 10, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35' },
   profLayerLabel: { fontSize: 14, color: '#FFFFFF', fontWeight: '600', marginBottom: 2 },
-  profLayerDesc: { fontSize: 12, color: '#71717A' },
+  profLayerDesc: { fontSize: 12, color: '#9494A0' },
   profDayBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   profDayBtnActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  profDayBtnText: { fontSize: 11, color: '#71717A', fontWeight: '600' },
+  profDayBtnText: { fontSize: 11, color: '#9494A0', fontWeight: '600' },
   profDayBtnTextActive: { color: '#111114' },
   goalChip: { backgroundColor: '#12121A', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 0.5, borderColor: '#2C2C35' },
   goalChipActive: { backgroundColor: '#1C1C22', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  goalChipText: { fontSize: 12, color: '#71717A' },
+  goalChipText: { fontSize: 12, color: '#9494A0' },
   goalChipTextActive: { fontSize: 12, color: '#E4E4E8' },
   metricRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
-  metricDate: { fontSize: 12, color: '#71717A', width: 45 },
+  metricDate: { fontSize: 12, color: '#9494A0', width: 45 },
   metricVal: { fontSize: 14, fontWeight: '600', color: '#FFF' },
-  metricSub: { fontSize: 12, color: '#71717A' },
-  empty: { fontSize: 13, color: '#71717A' },
+  metricSub: { fontSize: 12, color: '#9494A0' },
+  empty: { fontSize: 13, color: '#9494A0' },
   dataControlRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   muscleDropdownBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   muscleDropdownText: { fontSize: 14, fontWeight: '600', color: '#FFF' },
-  dropdownArrow: { fontSize: 9, color: '#71717A' },
+  dropdownArrow: { fontSize: 9, color: '#9494A0' },
   dropdownList: { backgroundColor: '#2C2C35', borderRadius: 12, marginBottom: 10, overflow: 'hidden' },
   dropdownItem: { paddingVertical: 10, paddingHorizontal: 14 },
   dropdownItemActive: { backgroundColor: '#1C1C22' },
@@ -1378,16 +1378,16 @@ const styles = StyleSheet.create({
   weekNav: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   weekNavBtn: { padding: 6 },
   weekNavArrow: { fontSize: 22, color: '#FFFFFF', fontWeight: '700', lineHeight: 24 },
-  weekNavLabel: { fontSize: 11, color: '#71717A', minWidth: 75, textAlign: 'center' },
+  weekNavLabel: { fontSize: 11, color: '#9494A0', minWidth: 75, textAlign: 'center' },
   chartTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  chartTitle: { fontSize: 12, color: '#71717A' },
+  chartTitle: { fontSize: 12, color: '#9494A0' },
   totalBadge: { backgroundColor: '#1C1C22', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: '#FFFFFF' },
   totalBadgeEmpty: { borderColor: '#2C2C35', backgroundColor: '#12121A' },
   totalBadgeText: { fontSize: 12, color: '#FFFFFF', fontWeight: '700' },
   targetNote: { marginTop: 10, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
-  targetNoteText: { fontSize: 11, color: '#71717A', fontStyle: 'italic' },
+  targetNoteText: { fontSize: 11, color: '#9494A0', fontStyle: 'italic' },
   dayBreakRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 9 },
-  dayBreakLabel: { fontSize: 12, color: '#71717A', width: 30, fontWeight: '500' },
+  dayBreakLabel: { fontSize: 12, color: '#9494A0', width: 30, fontWeight: '500' },
   dayBreakBar: { flex: 1, height: 6, backgroundColor: '#2C2C35', borderRadius: 3, overflow: 'hidden' },
   dayBreakFill: { height: '100%', backgroundColor: '#FFFFFF', borderRadius: 3 },
   dayBreakSets: { fontSize: 11, color: '#FFFFFF', fontWeight: '600', width: 32, textAlign: 'right' },
@@ -1397,8 +1397,8 @@ const styles = StyleSheet.create({
   prName: { fontSize: 13, color: '#FFF', flex: 1 },
   prValGroup: { alignItems: 'flex-end' },
   prWeight: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
-  prReps: { fontSize: 12, color: '#71717A' },
-  prOrm: { fontSize: 10, color: '#71717A', marginTop: 1 },
+  prReps: { fontSize: 12, color: '#9494A0' },
+  prOrm: { fontSize: 10, color: '#9494A0', marginTop: 1 },
   langRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   langRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   langRowValue: { fontSize: 14, color: '#A1A1AA' },
@@ -1410,31 +1410,31 @@ const styles = StyleSheet.create({
   quickWeightInput: { flex: 1, backgroundColor: '#12121A', borderRadius: 10, padding: 11, color: '#FFF', fontSize: 14, borderWidth: 0.5, borderColor: '#2C2C35' },
   quickWeightBtn: { backgroundColor: '#FFFFFF', borderRadius: 10, paddingHorizontal: 18, justifyContent: 'center', alignItems: 'center' },
   quickWeightBtnText: { color: '#111114', fontWeight: '700', fontSize: 14 },
-  quickWeightTip: { fontSize: 11, color: '#52525B', lineHeight: 16 },
+  quickWeightTip: { fontSize: 11, color: '#8A8A94', lineHeight: 16 },
   accountSection: { paddingHorizontal: 20, paddingBottom: 16, alignItems: 'center', gap: 4 },
-  privacyLink: { fontSize: 13, color: '#71717A', textDecorationLine: 'underline', paddingVertical: 8 },
+  privacyLink: { fontSize: 13, color: '#9494A0', textDecorationLine: 'underline', paddingVertical: 8 },
   deleteAccountBtn: { paddingVertical: 10 },
-  deleteAccountText: { fontSize: 13, color: '#E24B4A', fontWeight: '500' },
-  deleteAccountSub: { fontSize: 11, color: '#3F3F50', textAlign: 'center', marginTop: 4 },
+  deleteAccountText: { fontSize: 13, color: '#E85D5C', fontWeight: '500' },
+  deleteAccountSub: { fontSize: 11, color: '#8A8A94', textAlign: 'center', marginTop: 4 },
   expBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   expBtnActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  expBtnLabel: { fontSize: 13, fontWeight: '600', color: '#71717A' },
+  expBtnLabel: { fontSize: 13, fontWeight: '600', color: '#9494A0' },
   expBtnLabelActive: { color: '#FFFFFF' },
-  expBtnSub: { fontSize: 10, color: '#3D3D4A', marginTop: 2 },
+  expBtnSub: { fontSize: 10, color: '#8A8A94', marginTop: 2 },
   expBtnSubActive: { color: '#FFFFFF' },
   // Health tab
-  healthDesc: { fontSize: 13, color: '#71717A', lineHeight: 20, marginBottom: 16 },
+  healthDesc: { fontSize: 13, color: '#9494A0', lineHeight: 20, marginBottom: 16 },
   healthConnectBtn: { backgroundColor: '#FFFFFF', borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
   healthConnectBtnText: { fontSize: 14, fontWeight: '700', color: '#111114' },
   healthStatusLabel: { fontSize: 32, fontWeight: '800', marginBottom: 14 },
   healthMetricsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   healthMetric: { flex: 1, backgroundColor: '#12121A', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   healthMetricVal: { fontSize: 18, fontWeight: '700', color: '#FFF', marginBottom: 2 },
-  healthMetricLabel: { fontSize: 10, color: '#71717A' },
+  healthMetricLabel: { fontSize: 10, color: '#9494A0' },
   healthAdvice: { fontSize: 13, color: '#A1A1AA', lineHeight: 19, paddingTop: 12, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
   healthSourceRow: { paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
   healthSourceName: { fontSize: 13, fontWeight: '600', color: '#FFF', marginBottom: 2 },
-  healthSourceDesc: { fontSize: 12, color: '#71717A', lineHeight: 17 },
+  healthSourceDesc: { fontSize: 12, color: '#9494A0', lineHeight: 17 },
   healthDisconnectBtn: { marginHorizontal: 20, marginTop: 14, paddingVertical: 14, alignItems: 'center' },
-  healthDisconnectText: { fontSize: 13, color: '#71717A' },
+  healthDisconnectText: { fontSize: 13, color: '#9494A0' },
 });

@@ -78,7 +78,7 @@ const RECOVERY_COLORS = {
   fresh:         { color: '#1D9E75', label: 'Primed',        bg: '#1D9E7515' },
   ready:         { color: '#1D9E75', label: 'Ready',         bg: '#1D9E7522' },
   recovering:    { color: '#BA7517', label: 'Recovering',    bg: '#BA751722' },
-  trained_today: { color: '#E24B4A', label: 'Trained today', bg: '#E24B4A18' },
+  trained_today: { color: '#E85D5C', label: 'Trained today', bg: '#E85D5C18' },
 };
 
 const MUSCLE_DISPLAY = {
@@ -506,7 +506,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
               const vsBaseline = Math.round((ratio - 1) * 100);
               if (ratio >= 0.9) status = { label: t('today.readiness.ready'), color: '#1D9E75', advice: null };
               else if (ratio >= 0.75) status = { label: t('today.readiness.moderate'), color: '#BA7517', advice: t('today.readiness.adviceModerate') };
-              else status = { label: t('today.readiness.low'), color: '#E24B4A', advice: t('today.readiness.adviceLow') };
+              else status = { label: t('today.readiness.low'), color: '#E85D5C', advice: t('today.readiness.adviceLow') };
 
               setReadiness({ ...status, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline, baseline });
             } else if (status) {
@@ -759,7 +759,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         {/* Legend */}
         <View style={styles.volumeLegend}>
           <View style={styles.volumeLegendItem}>
-            <View style={[styles.volumeLegendDot, { backgroundColor: '#E24B4A' }]} />
+            <View style={[styles.volumeLegendDot, { backgroundColor: '#E85D5C' }]} />
             <Text style={styles.volumeLegendLabel}>{t('today.volume.belowMin')}</Text>
           </View>
           <View style={styles.volumeLegendItem}>
@@ -839,7 +839,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                             <Text style={styles.volumeTargetLabel}>{subParts.join(' · ')}</Text>
                           </View>
                           {h.target ? <Bar done={h.direct} target={h.target} color={h.color} /> : <View style={styles.volumeBarTrack} />}
-                          <Text style={[styles.volumeCount, { color: h.target ? h.color : '#71717A' }]}>{fmt(h.direct)}</Text>
+                          <Text style={[styles.volumeCount, { color: h.target ? h.color : '#9494A0' }]}>{fmt(h.direct)}</Text>
                         </View>
                       );
                     })}
@@ -850,7 +850,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
               {junk.length > 0 && (
                 <View style={styles.junkWarning}>
                   <View style={styles.junkWarningHeader}>
-                    <Ionicons name="warning" size={12} color="#E24B4A" style={{ marginTop: 1 }} />
+                    <Ionicons name="warning" size={12} color="#E85D5C" style={{ marginTop: 1 }} />
                     <Text style={styles.junkWarningTitle}>{t('today.volume.junkTitle')}</Text>
                   </View>
                   <Text style={styles.junkWarningText}>
@@ -967,7 +967,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                 <Ionicons
                   name={p.type === 'confirmed' ? 'remove-circle' : 'warning'}
                   size={18}
-                  color={p.type === 'confirmed' ? '#E24B4A' : '#BA7517'}
+                  color={p.type === 'confirmed' ? '#E85D5C' : '#BA7517'}
                   style={{ marginTop: 1 }}
                 />
                 <View style={styles.plateauHeaderText}>
@@ -1103,17 +1103,17 @@ const styles = StyleSheet.create({
 
   header: { padding: 24, paddingTop: 16 },
   greeting: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
-  dateText: { fontSize: 13, color: '#71717A', marginTop: 2 },
+  dateText: { fontSize: 13, color: '#9494A0', marginTop: 2 },
   checkInOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
   checkInCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
   checkInTitle: { fontSize: 20, fontWeight: '700', color: '#FFFFFF', marginBottom: 6 },
-  checkInSub: { fontSize: 13, color: '#71717A', marginBottom: 20, lineHeight: 19 },
+  checkInSub: { fontSize: 13, color: '#9494A0', marginBottom: 20, lineHeight: 19 },
   checkInRow: { marginBottom: 16 },
   checkInBodyPart: { fontSize: 13, fontWeight: '600', color: '#E4E4E8', marginBottom: 8 },
   checkInOptions: { flexDirection: 'row', gap: 8 },
   checkInOpt: { flex: 1, backgroundColor: '#2C2C35', borderRadius: 10, paddingVertical: 11, alignItems: 'center', borderWidth: 0.5, borderColor: '#3D3D4A' },
   checkInOptActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  checkInOptText: { fontSize: 13, fontWeight: '600', color: '#71717A' },
+  checkInOptText: { fontSize: 13, fontWeight: '600', color: '#9494A0' },
   checkInOptTextActive: { color: '#111114' },
   checkInStartBtn: { backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
   checkInStartText: { color: '#111114', fontSize: 15, fontWeight: '600' },
@@ -1123,7 +1123,7 @@ const styles = StyleSheet.create({
   readinessDot: { width: 8, height: 8, borderRadius: 4 },
   readinessLabel: { fontSize: 13, fontWeight: '700' },
   readinessStats: { flexDirection: 'row', gap: 10, flexWrap: 'wrap', flex: 1 },
-  readinessStat: { fontSize: 11, color: '#71717A' },
+  readinessStat: { fontSize: 11, color: '#9494A0' },
   readinessAdvice: { fontSize: 12, marginTop: 8, lineHeight: 18 },
 
   blockBanner: { marginHorizontal: 16, marginBottom: 12, backgroundColor: '#1D9E7522', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E75' },
@@ -1141,7 +1141,7 @@ const styles = StyleSheet.create({
   sessionMetaChip: { backgroundColor: '#12121A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: '#2C2C35' },
   sessionMetaText: { fontSize: 12, color: '#A1A1AA', fontWeight: '500' },
   sessionTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
-  sessionCount: { fontSize: 12, color: '#71717A' },
+  sessionCount: { fontSize: 12, color: '#9494A0' },
   startBtn: { backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
   startBtnText: { color: '#111114', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
   completedBadge: { backgroundColor: '#1D9E7522', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16, borderWidth: 1, borderColor: '#1D9E7544' },
@@ -1150,34 +1150,34 @@ const styles = StyleSheet.create({
   exPreviewRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   exPreviewDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFFFFF' },
   exPreviewName: { fontSize: 13, color: '#FFFFFF', flex: 1 },
-  exPreviewDetail: { fontSize: 12, color: '#71717A' },
-  moreText: { fontSize: 12, color: '#71717A', paddingLeft: 13 },
+  exPreviewDetail: { fontSize: 12, color: '#9494A0' },
+  moreText: { fontSize: 12, color: '#9494A0', paddingLeft: 13 },
 
   // Rest day
   restCard: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 24 },
   restTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF', marginBottom: 6 },
-  restSub: { fontSize: 13, color: '#71717A', lineHeight: 20, marginBottom: 14 },
+  restSub: { fontSize: 13, color: '#9494A0', lineHeight: 20, marginBottom: 14 },
   tomorrowBtn: { borderWidth: 0.5, borderColor: '#FFFFFF', borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   tomorrowBtnText: { color: '#111114', fontSize: 13, fontWeight: '500' },
 
   // Sections
   section: { paddingHorizontal: 20, marginBottom: 28 },
   sectionTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 4 },
-  sectionSub: { fontSize: 11, color: '#71717A', marginBottom: 14 },
+  sectionSub: { fontSize: 11, color: '#9494A0', marginBottom: 14 },
 
   // Cardio section
   cardioHeader:       { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 },
   cardioLogBtn:       { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 0.5, borderColor: '#3D3D4A' },
   cardioLogBtnText:   { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
   cardioEmpty:        { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
-  cardioEmptyText:    { fontSize: 13, color: '#52525B', lineHeight: 19 },
+  cardioEmptyText:    { fontSize: 13, color: '#8A8A94', lineHeight: 19 },
   cardioRow:          { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
   cardioRowLeft:      { flex: 1 },
   cardioRowType:      { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
-  cardioRowSub:       { fontSize: 11, color: '#71717A' },
+  cardioRowSub:       { fontSize: 11, color: '#9494A0' },
   cardioRowRight:     { alignItems: 'flex-end' },
   cardioRowDur:       { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
-  cardioRowDate:      { fontSize: 11, color: '#52525B' },
+  cardioRowDate:      { fontSize: 11, color: '#8A8A94' },
 
   // Muscle recovery grid
   muscleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -1189,7 +1189,7 @@ const styles = StyleSheet.create({
   volumeLegend: { flexDirection: 'row', gap: 14, marginBottom: 14, flexWrap: 'wrap' },
   volumeLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   volumeLegendDot: { width: 7, height: 7, borderRadius: 4 },
-  volumeLegendLabel: { fontSize: 10, color: '#71717A' },
+  volumeLegendLabel: { fontSize: 10, color: '#9494A0' },
   volumeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
   volumeNameCol: { width: 100 },
   volumeMuscleName: { fontSize: 12, color: '#E4E4E7', fontWeight: '500' },
@@ -1202,9 +1202,9 @@ const styles = StyleSheet.create({
   volumeGroupBlock: { marginBottom: 10, paddingBottom: 6, borderBottomWidth: 0.5, borderBottomColor: '#1F1F27' },
   volumeHeadRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, marginLeft: 14, gap: 10 },
   volumeHeadName: { fontSize: 12, color: '#A1A1AA', fontWeight: '500' },
-  junkWarning: { marginTop: 10, backgroundColor: '#1A0E0E', borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: '#E24B4A44' },
+  junkWarning: { marginTop: 10, backgroundColor: '#1A0E0E', borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: '#E85D5C44' },
   junkWarningHeader: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 5 },
-  junkWarningTitle: { fontSize: 12, fontWeight: '700', color: '#E24B4A' },
+  junkWarningTitle: { fontSize: 12, fontWeight: '700', color: '#E85D5C' },
   junkWarningText: { fontSize: 11, color: '#A1A1AA', lineHeight: 17 },
 
   // Deload card
@@ -1214,31 +1214,31 @@ const styles = StyleSheet.create({
   deloadHeaderText: { flex: 1 },
   deloadTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
   deloadTrigger: { fontSize: 11, color: '#FFFFFF', fontWeight: '600' },
-  deloadReason: { fontSize: 12, color: '#71717A', lineHeight: 18, marginBottom: 10, fontStyle: 'italic' },
+  deloadReason: { fontSize: 12, color: '#9494A0', lineHeight: 18, marginBottom: 10, fontStyle: 'italic' },
   deloadMessage: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 14 },
   deloadStats: { flexDirection: 'row', gap: 6, marginBottom: 14 },
   deloadStat: { flex: 1, backgroundColor: '#0F0F18', borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   deloadStatValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
-  deloadStatLabel: { fontSize: 9, color: '#52525B', textAlign: 'center' },
+  deloadStatLabel: { fontSize: 9, color: '#8A8A94', textAlign: 'center' },
   deloadDietNote: { backgroundColor: '#0F1A12', borderRadius: 10, padding: 10, borderWidth: 0.5, borderColor: '#1D9E7533', marginBottom: 12 },
   deloadDietNoteText: { fontSize: 12, color: '#1D9E75', lineHeight: 18 },
   deloadInstructionsTitle: { fontSize: 11, fontWeight: '700', color: '#E4E4E7', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 },
   deloadInstruction: { flexDirection: 'row', gap: 10, marginBottom: 6, alignItems: 'flex-start' },
   deloadInstructionNum: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', width: 16, marginTop: 1 },
   deloadInstructionText: { fontSize: 12, color: '#A1A1AA', lineHeight: 19, flex: 1 },
-  deloadScience: { fontSize: 9, color: '#3F3F50', marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
+  deloadScience: { fontSize: 9, color: '#8A8A94', marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
 
   // Plateau cards
   plateauCard: { backgroundColor: '#1A1510', borderRadius: 16, padding: 14, borderWidth: 0.5, borderColor: '#BA751744', marginBottom: 10 },
-  plateauCardConfirmed: { backgroundColor: '#1A0E0E', borderColor: '#E24B4A44' },
+  plateauCardConfirmed: { backgroundColor: '#1A0E0E', borderColor: '#E85D5C44' },
   plateauHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   plateauHeaderText: { flex: 1 },
   plateauExercise: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
-  plateauDays: { fontSize: 11, color: '#71717A' },
+  plateauDays: { fontSize: 11, color: '#9494A0' },
   plateauMessage: { fontSize: 12, color: '#A1A1AA', lineHeight: 19, marginBottom: 12 },
   plateauFixTitle: { fontSize: 11, fontWeight: '700', color: '#E4E4E7', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   plateauIntervention: { fontSize: 12, color: '#A1A1AA', lineHeight: 19, marginBottom: 3, paddingLeft: 4 },
-  plateauScience: { fontSize: 9, color: '#3F3F50', marginTop: 10, fontStyle: 'italic', lineHeight: 14 },
+  plateauScience: { fontSize: 9, color: '#8A8A94', marginTop: 10, fontStyle: 'italic', lineHeight: 14 },
 
   // Last session
   coachNudgeCard: { backgroundColor: '#15161F', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#3A3F66' },
@@ -1249,18 +1249,18 @@ const styles = StyleSheet.create({
   lastSessionCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   lastSessionLeft: { flex: 1, paddingRight: 10 },
   lastSessionName: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', marginBottom: 3 },
-  lastSessionDate: { fontSize: 12, color: '#71717A' },
+  lastSessionDate: { fontSize: 12, color: '#9494A0' },
   lastSessionRight: { alignItems: 'flex-end', gap: 3 },
   lastSessionStat: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
-  lastSessionRpe: { fontSize: 11, color: '#71717A' },
+  lastSessionRpe: { fontSize: 11, color: '#9494A0' },
 
   // Session detail modal
   modalOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 36, borderTopWidth: 0.5, borderColor: '#2C2C35' },
   modalTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  modalSub: { fontSize: 12, color: '#71717A', marginBottom: 20 },
-  modalSectionLabel: { fontSize: 10, fontWeight: '700', color: '#52525B', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 14 },
-  modalEmpty: { fontSize: 13, color: '#71717A', marginBottom: 20 },
+  modalSub: { fontSize: 12, color: '#9494A0', marginBottom: 20 },
+  modalSectionLabel: { fontSize: 10, fontWeight: '700', color: '#8A8A94', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 14 },
+  modalEmpty: { fontSize: 13, color: '#9494A0', marginBottom: 20 },
   muscleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   muscleLabel: { fontSize: 13, color: '#A1A1AA', width: 80 },
   muscleBarBg: { flex: 1, height: 6, backgroundColor: '#2C2C35', borderRadius: 3, overflow: 'hidden' },

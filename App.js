@@ -112,7 +112,7 @@ const pt = StyleSheet.create({
     borderWidth: 0.5, borderColor: '#2C2C35',
   },
   subTabActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  subTabText: { fontSize: 13, color: '#52525B', fontWeight: '500' },
+  subTabText: { fontSize: 13, color: '#8A8A94', fontWeight: '500' },
   subTabTextActive: { color: '#FFFFFF', fontWeight: '700' },
 });
 

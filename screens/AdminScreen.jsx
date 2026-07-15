@@ -91,7 +91,7 @@ export default function AdminScreen({ visible, onClose }) {
               value={newEmail}
               onChangeText={setNewEmail}
               placeholder="email@example.com"
-              placeholderTextColor="#3D3D4A"
+              placeholderTextColor="#8A8A94"
               keyboardType="email-address"
               autoCapitalize="none"
               onSubmitEditing={addEmail}
@@ -117,17 +117,17 @@ const s = StyleSheet.create({
   closeBtn: { backgroundColor: '#1A1A20', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
   closeBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
   scroll: { flex: 1, padding: 20 },
-  sectionLabel: { fontSize: 11, color: '#71717A', fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8, marginTop: 8 },
-  sectionSub: { fontSize: 13, color: '#71717A', marginBottom: 16, lineHeight: 20 },
+  sectionLabel: { fontSize: 11, color: '#9494A0', fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8, marginTop: 8 },
+  sectionSub: { fontSize: 13, color: '#9494A0', marginBottom: 16, lineHeight: 20 },
   emailRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
   emailText: { fontSize: 14, color: '#FFFFFF', flex: 1 },
-  removeBtn: { marginLeft: 12, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#2C1A1A', borderRadius: 8, borderWidth: 0.5, borderColor: '#E24B4A44' },
-  removeBtnText: { color: '#E24B4A', fontSize: 12, fontWeight: '600' },
-  empty: { color: '#71717A', fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  removeBtn: { marginLeft: 12, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#2C1A1A', borderRadius: 8, borderWidth: 0.5, borderColor: '#E85D5C44' },
+  removeBtnText: { color: '#E85D5C', fontSize: 12, fontWeight: '600' },
+  empty: { color: '#9494A0', fontSize: 14, textAlign: 'center', paddingVertical: 20 },
   inputRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   input: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', padding: 14, color: '#FFFFFF', fontSize: 15 },
   addBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 20, justifyContent: 'center' },
   addBtnText: { color: '#111114', fontWeight: '600', fontSize: 14 },
   noteCard: { marginTop: 24, backgroundColor: '#111114', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
-  noteText: { fontSize: 12, color: '#71717A', lineHeight: 18 },
+  noteText: { fontSize: 12, color: '#9494A0', lineHeight: 18 },
 });

@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   labelText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#52525B',
+    color: '#8A8A94',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: '#52525B',
+    color: '#8A8A94',
   },
 
   // Dots

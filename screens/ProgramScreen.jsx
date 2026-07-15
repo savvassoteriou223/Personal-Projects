@@ -14,7 +14,7 @@ const DAYS_OPTIONS = [2, 3, 4, 5, 6];
 const OPTIMALITY_COLORS = {
   optimal:    '#1D9E75',
   good:       '#BA7517',
-  suboptimal: '#E24B4A',
+  suboptimal: '#E85D5C',
 };
 
 const RANK_KEYS = ['rankBest', 'rank2', 'rank3'];
@@ -141,7 +141,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   <View style={styles.splitCardTop}>
                     <View style={styles.splitCardLeft}>
                       <View style={[styles.rankBadge, { backgroundColor: i === 0 ? '#FFFFFF0D' : '#2C2C35' }]}>
-                        <Text style={[styles.rankBadgeText, { color: i === 0 ? '#E4E4E8' : '#71717A' }]}>
+                        <Text style={[styles.rankBadgeText, { color: i === 0 ? '#E4E4E8' : '#9494A0' }]}>
                           {RANK_KEYS[i] ? t(`program.${RANK_KEYS[i]}`) : t('program.rankN', { n: i + 1 })}
                         </Text>
                       </View>
@@ -339,7 +339,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   <View style={styles.infoPanel}>
                     <Text style={styles.infoPanelText}>{program.science_basis}</Text>
                     {program.honest_note ? (
-                      <Text style={[styles.infoPanelText, { color: '#71717A', fontStyle: 'italic', marginTop: 8 }]}>
+                      <Text style={[styles.infoPanelText, { color: '#9494A0', fontStyle: 'italic', marginTop: 8 }]}>
                         {program.honest_note}
                       </Text>
                     ) : null}
@@ -372,7 +372,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
         {warnings.length > 0 && (
           <View style={styles.warningsSection}>
             {warnings.map((w, i) => {
-              const color = w.level === 'high' ? '#E24B4A'
+              const color = w.level === 'high' ? '#E85D5C'
                 : w.level === 'success' ? '#1D9E75'
                 : w.level === 'medium' ? '#BA7517' : '#FFFFFF';
               const label = w.level === 'success' ? t('program.warnings.optimal')
@@ -437,13 +437,13 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
 
 // ─── EXERCISE CARD ────────────────────────────────────────────────────────────
 const MUSCLE_COLORS = {
-  'Chest': '#E24B4A', 'Upper chest': '#E24B4A', 'Lower chest': '#E24B4A',
+  'Chest': '#E85D5C', 'Upper chest': '#E85D5C', 'Lower chest': '#E85D5C',
   'Back': '#FFFFFF', 'Lats': '#FFFFFF', 'Traps': '#FFFFFF',
   'Shoulders': '#A1A1AA', 'Side deltoids': '#A1A1AA', 'Rear deltoids': '#A1A1AA',
   'Biceps': '#1D9E75', 'Brachialis': '#1D9E75',
   'Triceps': '#BA7517',
   'Quads': '#A1A1AA', 'Hamstrings': '#A1A1AA', 'Glutes': '#A1A1AA', 'Calves': '#A1A1AA',
-  'Abs': '#71717A', 'Core': '#71717A',
+  'Abs': '#9494A0', 'Core': '#9494A0',
 };
 
 function getMuscleColor(muscles) {
@@ -521,7 +521,7 @@ function ExerciseCard({ ex, isSimple = false }) {
               <View style={{ backgroundColor: '#1D9E7514', borderRadius: 10, borderWidth: 1, borderColor: '#1D9E7540', borderLeftWidth: 3, borderLeftColor: '#1D9E75', padding: 12, marginBottom: 12 }}>
                 <Text style={{ color: '#F1F0F5', fontSize: 13.5, lineHeight: 20, fontWeight: '500' }}>{insight.insight}</Text>
                 {insight.metric && <Text style={{ color: '#1D9E75', fontSize: 12, fontWeight: '700', marginTop: 6 }}>{insight.metric.this} vs {insight.metric.control} · {insight.metric.method}</Text>}
-                <Text style={{ color: '#52525B', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
+                <Text style={{ color: '#8A8A94', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
               </View>
             ) : null;
           })()}
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   header: { padding: 20, paddingTop: 16 },
   headerNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, minHeight: 36 },
   title: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
-  titleSub: { fontSize: 12, color: '#52525B', marginTop: 2 },
+  titleSub: { fontSize: 12, color: '#8A8A94', marginTop: 2 },
   backBtnWrapper: { paddingVertical: 8, paddingRight: 12 },
   backBtn: { fontSize: 15, color: '#FFFFFF' },
   startBtn: { backgroundColor: '#FFFFFF', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 },
@@ -573,16 +573,16 @@ const styles = StyleSheet.create({
   changeSplitBtn: { backgroundColor: '#1C1C22', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 0.5, borderColor: '#FFFFFF' },
   changeSplitBtnText: { color: '#E4E4E8', fontSize: 13, fontWeight: '500' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { color: '#71717A', fontSize: 15 },
+  emptyText: { color: '#9494A0', fontSize: 15 },
 
   // Split selector
-  selectorLabel: { fontSize: 13, color: '#71717A', fontWeight: '500', marginBottom: 12, marginTop: 8 },
+  selectorLabel: { fontSize: 13, color: '#9494A0', fontWeight: '500', marginBottom: 12, marginTop: 8 },
   daysRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
   dayBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   dayBtnActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  dayBtnText: { fontSize: 16, fontWeight: '700', color: '#71717A' },
+  dayBtnText: { fontSize: 16, fontWeight: '700', color: '#9494A0' },
   dayBtnTextActive: { color: '#E4E4E8' },
-  goalContext: { fontSize: 12, color: '#71717A', fontStyle: 'italic', marginBottom: 16 },
+  goalContext: { fontSize: 12, color: '#9494A0', fontStyle: 'italic', marginBottom: 16 },
   splitCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 14, borderWidth: 0.5, borderColor: '#2C2C35' },
   splitCardActive: { borderColor: '#FFFFFF55' },
   splitCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
@@ -598,13 +598,13 @@ const styles = StyleSheet.create({
   whyCard: { backgroundColor: '#111114', borderRadius: 10, padding: 12, marginBottom: 10, borderWidth: 0.5, borderColor: '#FFFFFF0D' },
   whyLabel: { fontSize: 10, color: '#FFFFFF', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 },
   whyText: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
-  honestNoteText: { fontSize: 12, color: '#71717A', lineHeight: 18, marginBottom: 12, fontStyle: 'italic' },
+  honestNoteText: { fontSize: 12, color: '#9494A0', lineHeight: 18, marginBottom: 12, fontStyle: 'italic' },
   splitDays: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
   splitDayChip: { backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
   splitDayChipText: { fontSize: 11, color: '#A1A1AA' },
   selectSplitBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   selectSplitBtnActive: { backgroundColor: '#FFFFFF' },
-  selectSplitBtnText: { fontSize: 14, fontWeight: '600', color: '#71717A' },
+  selectSplitBtnText: { fontSize: 14, fontWeight: '600', color: '#9494A0' },
   selectSplitBtnTextActive: { color: '#111114' },
 
   // Program card
@@ -618,31 +618,31 @@ const styles = StyleSheet.create({
   sessionDayName: { fontSize: 11, color: '#FFFFFF', fontWeight: '600', marginTop: 2, maxWidth: 80 },
   restArrow: { flexDirection: 'column', alignItems: 'center', paddingHorizontal: 4, gap: 2 },
   restArrowLine: { width: 1, height: 6, backgroundColor: '#3D3D4A' },
-  restArrowLabel: { fontSize: 9, color: '#3D3D4A', fontWeight: '500', textAlign: 'center' },
+  restArrowLabel: { fontSize: 9, color: '#8A8A94', fontWeight: '500', textAlign: 'center' },
   programMeta: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   infoAccordion: { marginTop: 4 },
   infoTabRow: { flexDirection: 'row', gap: 6, marginBottom: 0 },
   infoTab: { flex: 1, backgroundColor: '#12121A', borderRadius: 8, paddingVertical: 7, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   infoTabActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF44' },
-  infoTabText: { fontSize: 11, color: '#52525B', fontWeight: '600' },
+  infoTabText: { fontSize: 11, color: '#8A8A94', fontWeight: '600' },
   infoTabTextActive: { color: '#E4E4E8' },
   infoPanel: { backgroundColor: '#12121A', borderRadius: 10, padding: 14, marginTop: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
   infoPanelLabel: { fontSize: 10, color: '#FFFFFF', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
   infoPanelText: { fontSize: 12, color: '#A1A1AA', lineHeight: 19 },
-  infoPanelCitation: { fontSize: 10, color: '#52525B', fontStyle: 'italic', marginTop: 6, marginBottom: 10 },
+  infoPanelCitation: { fontSize: 10, color: '#8A8A94', fontStyle: 'italic', marginTop: 6, marginBottom: 10 },
   scienceCard: { backgroundColor: '#111114', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF', marginBottom: 20 },
   scienceCardSmall: { backgroundColor: '#111114', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 10 },
   honestNoteCard: { backgroundColor: '#111114', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#BA7517', marginBottom: 12 },
   goalResearchCard: { backgroundColor: '#111114', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 10 },
-  citationText: { fontSize: 10, color: '#71717A', fontStyle: 'italic', marginTop: 6, marginBottom: 10 },
+  citationText: { fontSize: 10, color: '#9494A0', fontStyle: 'italic', marginTop: 6, marginBottom: 10 },
   goalParamsRow: { flexDirection: 'row', gap: 6 },
   goalParam: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, padding: 8, alignItems: 'center' },
   goalParamVal: { fontSize: 11, fontWeight: '600', color: '#FFFFFF', textAlign: 'center', marginBottom: 2 },
-  goalParamLabel: { fontSize: 9, color: '#71717A', textAlign: 'center' },
+  goalParamLabel: { fontSize: 9, color: '#9494A0', textAlign: 'center' },
   scienceLabel: { fontSize: 10, color: '#FFFFFF', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
   scienceText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20 },
-  scienceTextSmall: { fontSize: 12, color: '#71717A', lineHeight: 18 },
-  progressionLabel: { fontSize: 11, color: '#71717A', fontWeight: '500', marginBottom: 4 },
+  scienceTextSmall: { fontSize: 12, color: '#9494A0', lineHeight: 18 },
+  progressionLabel: { fontSize: 11, color: '#9494A0', fontWeight: '500', marginBottom: 4 },
   progressionText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20 },
   focusCard: { backgroundColor: '#1C1C22', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#FFFFFF', marginBottom: 16 },
   focusText: { fontSize: 13, color: '#E4E4E8' },
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   warningBadgeText: { fontSize: 11, fontWeight: '600' },
   warningTitle: { fontSize: 13, fontWeight: '600', color: '#FFFFFF', flex: 1 },
   warningMessage: { fontSize: 12, color: '#A1A1AA', lineHeight: 18, marginBottom: 6 },
-  warningSource: { fontSize: 10, color: '#71717A', fontStyle: 'italic' },
+  warningSource: { fontSize: 10, color: '#9494A0', fontStyle: 'italic' },
 
   // Schedule
   scheduleSection: { paddingHorizontal: 20, marginBottom: 24 },
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   scheduleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   scheduleDay: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#1A1A20', alignItems: 'center', justifyContent: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
   scheduleDayActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  scheduleDayText: { fontSize: 11, color: '#71717A', fontWeight: '600' },
+  scheduleDayText: { fontSize: 11, color: '#9494A0', fontWeight: '600' },
   scheduleDayTextActive: { color: '#FFFFFF' },
   scheduleLabel: { fontSize: 14, color: '#A1A1AA' },
 
@@ -676,8 +676,8 @@ const styles = StyleSheet.create({
   dayCardFocus: { fontSize: 12, color: '#FFFFFF', marginBottom: 4 },
   dayCardFocusOptional: { fontSize: 12, color: '#A1A1AA', marginBottom: 4, fontStyle: 'italic' },
   dayCardTip: { fontSize: 11, color: '#BA7517', marginBottom: 4 },
-  dayCardCount: { fontSize: 13, color: '#71717A' },
-  dayCardArrow: { fontSize: 22, color: '#3D3D4A' },
+  dayCardCount: { fontSize: 13, color: '#9494A0' },
+  dayCardArrow: { fontSize: 22, color: '#8A8A94' },
   optionalSection: { paddingHorizontal: 20, marginBottom: 24 },
   optionalSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   optionalSectionTitle: { fontSize: 11, fontWeight: '700', color: '#FFFFFF', letterSpacing: 1.2 },
@@ -692,22 +692,22 @@ const styles = StyleSheet.create({
   catBadge: { backgroundColor: '#1C1C22', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, flexShrink: 1, maxWidth: '60%' },
   catBadgeIso: { backgroundColor: '#1A2215' },
   catBadgeText: { fontSize: 10, color: '#E4E4E8', fontWeight: '500' },
-  muscleText: { fontSize: 12, color: '#71717A', marginBottom: 12 },
+  muscleText: { fontSize: 12, color: '#9494A0', marginBottom: 12 },
   prescriptionRow: { flexDirection: 'row', gap: 6, marginBottom: 10 },
   prescriptionBox: { flex: 1, backgroundColor: '#2C2C35', borderRadius: 8, padding: 8, alignItems: 'center' },
   prescriptionVal: { fontSize: 13, fontWeight: '600', color: '#FFFFFF', textAlign: 'center' },
-  prescriptionLabel: { fontSize: 9, color: '#71717A', marginTop: 2, textAlign: 'center' },
+  prescriptionLabel: { fontSize: 9, color: '#9494A0', marginTop: 2, textAlign: 'center' },
   rpeRow: { flexDirection: 'row', gap: 6, marginBottom: 10 },
   rpeBox: { flex: 1 },
-  rpeBadge: { fontSize: 12, color: '#71717A', backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, textAlign: 'center' },
+  rpeBadge: { fontSize: 12, color: '#9494A0', backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, textAlign: 'center' },
   rpeLast: { color: '#FFFFFF' },
   subRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 8, gap: 4 },
-  subLabel: { fontSize: 11, color: '#71717A', fontWeight: '500', marginTop: 2 },
+  subLabel: { fontSize: 11, color: '#9494A0', fontWeight: '500', marginTop: 2 },
   subText: { fontSize: 11, color: '#FFFFFF' },
   subChip: { flexDirection: 'row', flexShrink: 1, backgroundColor: '#12121A', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 0.5, borderColor: '#2C2C35' },
   subChipText: { fontSize: 11, color: '#A1A1AA', flexShrink: 1, flexWrap: 'wrap' },
   subChipEquip: { fontSize: 11, color: '#FFFFFF', flexShrink: 0 },
-  expandHint: { fontSize: 11, color: '#3D3D4A', marginTop: 8, textAlign: 'right' },
+  expandHint: { fontSize: 11, color: '#8A8A94', marginTop: 8, textAlign: 'right' },
   expandedSection: { marginTop: 14, borderTopWidth: 0.5, borderTopColor: '#2C2C35', paddingTop: 14 },
   researchNote: { backgroundColor: '#111114', borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: '#FFFFFF', marginBottom: 12 },
   researchNoteText: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
