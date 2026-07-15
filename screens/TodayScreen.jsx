@@ -12,6 +12,7 @@ import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
 import CardioLogModal from './CardioLogModal';
 import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
+import { getTodayCheckIn } from '../lib/recoveryStore';
 import { Platform } from 'react-native';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -118,6 +119,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   const [showCardioLog, setShowCardioLog] = useState(false);
   const [recentCardio, setRecentCardio] = useState([]);
   const [readiness, setReadiness] = useState(null); // { status, label, color, advice, hrv, sleep, rhr, vsBaseline }
+  const [checkInLabel, setCheckInLabel] = useState(null); // stable 'Ready'|'Moderate'|'Low'
   const [injuryCheckIn, setInjuryCheckIn] = useState(null); // { workout, answers } when modal is open
   const [proactivePrompt, setProactivePrompt] = useState(null); // coach's proactive check-in for today
 
@@ -164,16 +166,25 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
       weeklyWorkoutsTarget: profile?.weekly_workouts || 3,
       deload: deloadSuggestion,
       plateaus,
-      recoveryLabel: readiness?.label,
+      // Stable English label for LOGIC — getProactiveCoachPrompt compares
+      // recoveryLabel === 'Low'. readiness.label is translated (t('today.readiness.low')),
+      // so passing it meant the recovery nudge only ever fired in English.
+      // Prefer today's self-reported check-in; fall back to sensor readiness (iOS).
+      recoveryLabel: checkInLabel ?? readiness?.stableLabel ?? null,
     });
     setProactivePrompt(prompt);
     if (prompt) maybeSendProactiveNudge(prompt);
-  }, [loading, lastSession, deloadSuggestion, plateaus, readiness, profile]);
+  }, [loading, lastSession, deloadSuggestion, plateaus, readiness, checkInLabel, profile]);
 
   const loadData = async () => {
     try {
       const user = await getCurrentUser();
       if (!user) { setLoading(false); return; }
+
+      // Self-reported readiness check-in (best-effort; never throws). A skipped
+      // check-in carries no signal, so it must not produce a stable label.
+      const todayCheckIn = await getTodayCheckIn();
+      setCheckInLabel(todayCheckIn?.skipped ? null : (todayCheckIn?.label ?? null));
 
       // Load profile
       const { data: prof } = await supabase
@@ -504,9 +515,9 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             if (baseline && todayHrv) {
               const ratio = todayHrv / baseline;
               const vsBaseline = Math.round((ratio - 1) * 100);
-              if (ratio >= 0.9) status = { label: t('today.readiness.ready'), color: '#1D9E75', advice: null };
-              else if (ratio >= 0.75) status = { label: t('today.readiness.moderate'), color: '#BA7517', advice: t('today.readiness.adviceModerate') };
-              else status = { label: t('today.readiness.low'), color: '#E85D5C', advice: t('today.readiness.adviceLow') };
+              if (ratio >= 0.9) status = { label: t('today.readiness.ready'), stableLabel: 'Ready', color: '#1D9E75', advice: null };
+              else if (ratio >= 0.75) status = { label: t('today.readiness.moderate'), stableLabel: 'Moderate', color: '#BA7517', advice: t('today.readiness.adviceModerate') };
+              else status = { label: t('today.readiness.low'), stableLabel: 'Low', color: '#E85D5C', advice: t('today.readiness.adviceLow') };
 
               setReadiness({ ...status, hrv: todayHrv, sleep: health.sleep, rhr: health.rhr, vsBaseline, baseline });
             } else if (status) {
