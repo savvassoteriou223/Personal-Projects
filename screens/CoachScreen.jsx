@@ -65,7 +65,14 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const [insight, setInsight] = useState(null);
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
+  // `answer` is now ERROR-ONLY. Successful replies live in conversationHistory and
+  // are rendered as the thread — previously only the newest answer was ever drawn,
+  // so asking a follow-up silently erased the conversation the coach still
+  // remembered and referred back to.
   const [answer, setAnswer] = useState(null);
+  // The question in flight. conversationHistory isn't updated until the reply
+  // lands, so without this the user's own message vanishes while they wait.
+  const [pendingQuestion, setPendingQuestion] = useState(null);
   const [proposals, setProposals] = useState([]);
   const [confirmingIndex, setConfirmingIndex] = useState(null);
   const [proposalSaved, setProposalSaved] = useState(false);
@@ -77,6 +84,15 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const [weeklySummary, setWeeklySummary] = useState(null);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
   const weeklyReviewChecked = useRef(false);
+  const scrollRef = useRef(null);
+
+  // Follow the newest turn. Timeout lets the new turn lay out before we measure —
+  // scrolling on the same tick lands short of the actual end.
+  useEffect(() => {
+    if (!conversationHistory.length && !pendingQuestion) return;
+    const id = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+    return () => clearTimeout(id);
+  }, [conversationHistory.length, pendingQuestion, asking]);
 
   // useEffect (not useFocusEffect) so this also works when embedded in the
   // workout modal, which renders outside the navigation container.
@@ -112,9 +128,10 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       .order('created_at', { ascending: true })
       .limit(40); // last ~20 exchanges
     if (data?.length) {
-      // Load the thread into the coach's MEMORY (sent to the model for context),
-      // but don't splash the last answer onto the screen — the UI starts clean
-      // each open and only shows answers to questions asked in this session.
+      // The thread is BOTH the model's context and what the user sees. It used to
+      // be context-only — the screen started blank every open and showed just the
+      // newest answer, so the coach would reference an exchange the user could no
+      // longer see. Reloading it here is what makes "remembers you" visible.
       setConversationHistory(data.map(m => ({ role: m.role, content: m.content })));
     }
   };
@@ -155,6 +172,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     await supabase.from('coach_memory').delete().eq('user_id', user.id);
     setConversationHistory([]);
     setAnswer(null);
+    setPendingQuestion(null); // else a cleared thread leaves an orphaned bubble
     setProposals([]);
     setAlternatives(null);
   };
@@ -792,6 +810,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
     setProposals([]);
     setAlternatives(null);
     setProposalSaved(false);
+    setPendingQuestion(currentQuestion); // show the user's turn immediately
     const data = userData || await loadUserData();
 
     const newHistory = [
@@ -804,7 +823,6 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       // long over weeks. The full thread still lives in state/DB.
       const result = await callCoach(newHistory.slice(-20), data ? buildContext(data) : '');
       const answerText = result?.text || t('coach.noAnswer');
-      setAnswer(answerText);
       if (result?.proposals?.length) {
         setProposals(result.proposals);
       }
@@ -815,6 +833,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         ...newHistory,
         { role: 'assistant', content: answerText },
       ]);
+      setPendingQuestion(null); // it's in the thread now
       // Persist both turns so the coach remembers them next session (fire-and-forget).
       persistTurns([
         { role: 'user', content: currentQuestion },
@@ -824,6 +843,9 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       if (result?.facts?.length) persistCoachFacts(result.facts).catch(() => {});
       setQuestion('');
     } catch {
+      // Drop the pending turn and surface the error transiently — the user's text
+      // stays in the input so Ask retries it without retyping.
+      setPendingQuestion(null);
       setAnswer(t('coach.failedConnect'));
     }
     setAsking(false);
@@ -877,7 +899,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
+    <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
       <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <View style={{ flex: 1 }}>
@@ -954,7 +976,43 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         <Text style={styles.cardTitle}>{t('coach.ask')}</Text>
         <Text style={styles.cardSub}>{t('coach.askSub')}</Text>
 
-        {!quotaExceeded && (
+        {/* ── Conversation thread ────────────────────────────────────────────
+            conversationHistory was already being kept and sent to the model, but
+            never drawn: only the newest answer rendered, so a follow-up erased the
+            exchange the coach was still reasoning about. Render the whole thread. */}
+        {(conversationHistory.length > 0 || pendingQuestion || asking || answer) && (
+          <View style={styles.thread}>
+            {conversationHistory.map((turn, i) => (
+              <View
+                key={i}
+                style={[styles.turn, turn.role === 'user' ? styles.turnUser : styles.turnCoach]}
+              >
+                <Text style={turn.role === 'user' ? styles.turnUserText : styles.turnCoachText}>
+                  {turn.content}
+                </Text>
+              </View>
+            ))}
+            {pendingQuestion && (
+              <View style={[styles.turn, styles.turnUser]}>
+                <Text style={styles.turnUserText}>{pendingQuestion}</Text>
+              </View>
+            )}
+            {asking && (
+              <View style={[styles.turn, styles.turnCoach]}>
+                <Text style={styles.turnThinking}>{t('coach.thinking')}</Text>
+              </View>
+            )}
+            {answer && !asking && (
+              <View style={[styles.turn, styles.turnError]}>
+                <Text style={styles.turnErrorText}>{answer}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Example chips are the empty state: an invitation on a blank thread,
+            noise once a conversation exists. */}
+        {!quotaExceeded && conversationHistory.length === 0 && !pendingQuestion && (
           <View style={styles.exampleChips}>
             {[
               { label: t('coach.examples.swapLabel'), prompt: t('coach.examples.swapPrompt') },
@@ -979,12 +1037,6 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           numberOfLines={3}
           editable={!quotaExceeded}
         />
-
-        {answer && (
-          <View style={styles.answerBox}>
-            <Text style={styles.answerText}>{answer}</Text>
-          </View>
-        )}
 
         {/* Proposal confirmation card */}
         {proposals.length > 0 && (
@@ -1225,8 +1277,18 @@ const styles = StyleSheet.create({
   generateBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
 
   questionInput: { backgroundColor: '#12121A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: '#2C2C35' },
-  answerBox: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: '#1D9E75' },
-  answerText: { fontSize: 13, color: '#FFFFFF', lineHeight: 21 },
+  // ── Conversation thread ─────────────────────────────────────────────────────
+  // Reuses the app's existing vocabulary: accent green = you, surface = coach.
+  // Deliberately not bubbles-with-tails — this is product UI, not a messenger.
+  thread: { gap: 8, marginBottom: 14 },
+  turn: { maxWidth: '88%', borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10 },
+  turnUser: { alignSelf: 'flex-end', backgroundColor: '#1D9E75', borderBottomRightRadius: 4 },
+  turnUserText: { fontSize: 13, color: '#FFFFFF', lineHeight: 20 },
+  turnCoach: { alignSelf: 'flex-start', backgroundColor: '#12121A', borderWidth: 0.5, borderColor: '#2C2C35', borderBottomLeftRadius: 4 },
+  turnCoachText: { fontSize: 13, color: '#FFFFFF', lineHeight: 21 },
+  turnThinking: { fontSize: 13, color: '#9494A0', lineHeight: 21, fontStyle: 'italic' },
+  turnError: { alignSelf: 'flex-start', backgroundColor: '#2C1A1A', borderWidth: 0.5, borderColor: '#E85D5C55', borderBottomLeftRadius: 4 },
+  turnErrorText: { fontSize: 13, color: '#E85D5C', lineHeight: 21 },
 
   proposalCard: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: '#FFFFFF' },
   proposalItem: { paddingTop: 8 },
