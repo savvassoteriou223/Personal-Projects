@@ -641,7 +641,9 @@
       "applyAllMsg": "When should these take effect?",
       "thisWorkoutOnly": "This workout only",
       "allFuture": "All future workouts"
-    }
+    },
+    "weeklyReviewOffer": "Your week is done. Get a narrative review of what you trained, where you hit your volume targets, and what to focus on next.",
+    "weeklyReviewCta": "Write my weekly review · uses 1 message"
   },
   "profile": {
     "tabs": {
@@ -1116,13 +1118,26 @@
     "title": "How are you today?",
     "skip": "Skip",
     "continue": "Continue",
-    "q": { "sleep": "Sleep", "soreness": "Soreness", "energy": "Energy" },
-    "opt": {
-      "good": "Good", "ok": "OK", "poor": "Poor",
-      "fresh": "Fresh", "normal": "Normal", "sore": "Sore",
-      "high": "High", "low": "Low"
+    "q": {
+      "sleep": "Sleep",
+      "soreness": "Soreness",
+      "energy": "Energy"
     },
-    "label": { "Ready": "Ready", "Moderate": "Moderate", "Low": "Low" },
+    "opt": {
+      "good": "Good",
+      "ok": "OK",
+      "poor": "Poor",
+      "fresh": "Fresh",
+      "normal": "Normal",
+      "sore": "Sore",
+      "high": "High",
+      "low": "Low"
+    },
+    "label": {
+      "Ready": "Ready",
+      "Moderate": "Moderate",
+      "Low": "Low"
+    },
     "adviceModerate": "Take today's working sets a bit easier — stop about 3 reps short instead of 1.",
     "adviceLow": "Rough day. Stop about 3 reps short and drop the last set of each exercise.",
     "apply": "Adjust today",

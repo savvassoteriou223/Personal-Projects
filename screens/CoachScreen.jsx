@@ -88,6 +88,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const [conversationHistory, setConversationHistory] = useState([]);
   const [weeklySummary, setWeeklySummary] = useState(null);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
+  const [weeklyOffered, setWeeklyOffered] = useState(false); // review is due, not yet generated
   const weeklyReviewChecked = useRef(false);
   const scrollRef = useRef(null);
 
@@ -538,10 +539,12 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
   // each Sunday — matching the paywall's "weekly narrative summary every Sunday".
   const currentWeekKey = () => format(startOfWeek(new Date(), { weekStartsOn: 0 }), 'yyyy-MM-dd');
 
-  // The advertised weekly narrative summary. On the first Coach open of a new
-  // week, generate a review of the past week once, store it, and show it as a
-  // card. Stored per (user, week) so it only ever generates once a week; the
-  // whole Coach screen is already behind the Pro paywall, so no extra gating.
+  // The advertised weekly narrative summary.
+  //
+  // This used to auto-generate on the first Coach open of a new week, which spent
+  // one of the user's 100 monthly messages WITHOUT asking. Now it only SHOWS an
+  // already-generated review; producing a new one is an explicit tap (see
+  // generateWeeklyReview). An already-paid-for summary costs nothing to re-show.
   const maybeWeeklyReview = async (data) => {
     if (workoutContext) return;                 // not during a live workout
     if (weeklyReviewChecked.current) return;
@@ -549,8 +552,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
     const user = await getCurrentUser();
     if (!user) return;
     const weekKey = currentWeekKey();
-    // Checked BEFORE the fetch/generate: a dismissed review must not reappear on
-    // every Coach open, and must never spend a monthly message to be re-shown.
+    // Checked BEFORE the fetch: a dismissed review must not reappear on every open.
     const dismissed = await AsyncStorage.getItem(WEEKLY_DISMISSED_KEY).catch(() => null);
     if (dismissed === weekKey) return;
     const { data: existing } = await supabase
@@ -560,12 +562,22 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       .eq('week_key', weekKey)
       .maybeSingle();
     if (existing?.content) { setWeeklySummary(existing.content); return; }
-    // Only generate when there's a week worth summarising — a review of an empty
-    // week is filler and would needlessly spend a monthly message.
+    // Nothing stored yet — offer the button instead of spending a message. Only
+    // when there's a week worth summarising; a review of an empty week is filler.
     const trainedThisWeek = (data.recentSessions || []).some(
       s => new Date(s.completed_at) >= subDays(new Date(), 7)
     );
-    if (!trainedThisWeek) return;
+    if (trainedThisWeek) setWeeklyOffered(true);
+  };
+
+  // Explicit, user-initiated. Costs one monthly message, and the button says so.
+  const generateWeeklyReview = async () => {
+    if (weeklyLoading || quotaExceeded) return;
+    const user = await getCurrentUser();
+    if (!user) return;
+    const data = userData || await loadUserData();
+    if (!data) return;
+    setWeeklyOffered(false);
     setWeeklyLoading(true);
     try {
       const result = await callCoach(
@@ -577,11 +589,15 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         setWeeklySummary(result.text);
         // Unique (user_id, week_key) makes concurrent opens idempotent.
         await supabase.from('weekly_summaries').upsert(
-          { user_id: user.id, week_key: weekKey, content: result.text },
+          { user_id: user.id, week_key: currentWeekKey(), content: result.text },
           { onConflict: 'user_id,week_key' },
         );
+      } else {
+        setWeeklyOffered(true); // nothing came back — let them try again
       }
-    } catch { /* silent — the card just won't appear */ }
+    } catch {
+      setWeeklyOffered(true);
+    }
     setWeeklyLoading(false);
   };
 
@@ -976,13 +992,12 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       </View>
 
       {/* Weekly narrative review — auto-generated once per week, hidden mid-workout */}
-      {!isMidWorkout && (weeklyLoading || weeklySummary) && (
+      {!isMidWorkout && (weeklyOffered || weeklyLoading || weeklySummary) && (
         <View style={styles.card}>
           <View style={styles.weeklyHeader}>
             <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
-            {/* Dismissable: it is auto-generated and otherwise re-renders on every
-                Coach open for the rest of the week with no way to close it. */}
-            {weeklySummary && (
+            {/* Dismissable — it otherwise re-renders on every Coach open all week. */}
+            {(weeklySummary || weeklyOffered) && !weeklyLoading && (
               <Pressable onPress={dismissWeeklyReview} hitSlop={12} accessibilityLabel={t('common.close')}>
                 <Text style={styles.weeklyDismiss}>✕</Text>
               </Pressable>
@@ -992,8 +1007,20 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
             <View style={[styles.insightBox, { marginTop: 12, marginBottom: 0 }]}>
               <Text style={styles.insightText}>{weeklySummary}</Text>
             </View>
-          ) : (
+          ) : weeklyLoading ? (
             <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 0 }]}>{t('coach.weeklyReviewLoading')}</Text>
+          ) : (
+            <>
+              {/* The cost is stated on the button. It used to be spent silently. */}
+              <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 12 }]}>{t('coach.weeklyReviewOffer')}</Text>
+              <Pressable
+                style={[styles.weeklyBtn, quotaExceeded && styles.btnDisabled]}
+                onPress={generateWeeklyReview}
+                disabled={quotaExceeded}
+              >
+                <Text style={styles.weeklyBtnText}>{t('coach.weeklyReviewCta')}</Text>
+              </Pressable>
+            </>
           )}
         </View>
       )}
@@ -1306,6 +1333,8 @@ const styles = StyleSheet.create({
   questionInput: { backgroundColor: '#12121A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: '#2C2C35' },
   weeklyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   weeklyDismiss: { fontSize: 15, color: '#9494A0', fontWeight: '600' },
+  weeklyBtn: { backgroundColor: '#2C2C35', borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#3D3D4A' },
+  weeklyBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
 
   // ── Conversation thread ─────────────────────────────────────────────────────
   // Reuses the app's existing vocabulary: accent green = you, surface = coach.

@@ -224,6 +224,12 @@ function MuscleVolumeChart({ data, width }) {
 
 export default function ProfileScreen({ onSignOut, isAdmin }) {
   const { t, i18n } = useTranslation();
+  // Health is iOS-only now: isHealthAvailable() is false on Android (Health
+  // Connect removed) and on web, and every panel under that tab is gated on it.
+  // Offering a tab that opens to nothing is worse than not offering it.
+  const TABS = isHealthAvailable()
+    ? ['profile', 'data', 'prs', 'health']
+    : ['profile', 'data', 'prs'];
   const [activeTab, setActiveTab] = useState('profile');
   const [showAdmin, setShowAdmin] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -610,9 +616,12 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Tab bar — fixed above scroll, no stickyHeaderIndices needed */}
+      {/* Tab bar — fixed above scroll, no stickyHeaderIndices needed.
+          Health is only offered where health data actually exists. Android's
+          Health Connect was removed (2026-07-14), so on Android every panel under
+          this tab is gated off and it opened to an empty screen. */}
       <View style={styles.tabRow}>
-        {['profile', 'data', 'prs', 'health'].map((key) => (
+        {TABS.map((key) => (
           <Pressable key={key} style={[styles.tab, activeTab === key && styles.tabActive]} onPress={() => setActiveTab(key)}>
             <Text style={[styles.tabText, activeTab === key && styles.tabTextActive]}>{t(`profile.tabs.${key}`)}</Text>
           </Pressable>
@@ -1190,23 +1199,11 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           {activeTab === 'health' && (
             <View style={{ paddingTop: 4 }}>
 
-          {/* Not available on web */}
-          {Platform.OS === 'web' && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t('profile.healthData')}</Text>
-              <Text style={styles.empty}>{t('profile.healthWebOnly')}</Text>
-            </View>
-          )}
-
-          {/* iOS only — Android Health Connect removed (2026-07-14, see healthService.js). */}
-          {Platform.OS === 'ios' && !isHealthAvailable() && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t('profile.healthData')}</Text>
-              <Text style={styles.empty}>{t('profile.healthInstall')}</Text>
-            </View>
-          )}
-
-          {Platform.OS !== 'web' && isHealthAvailable() && !healthAuthorized && (
+          {/* The "unavailable" / "install Health Connect" placeholders that used to
+              live here are gone: TABS only offers this tab when isHealthAvailable()
+              is true, so they were unreachable. A tab whose only content is "this
+              tab does nothing" should not exist. */}
+          {isHealthAvailable() && !healthAuthorized && (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>{t('profile.connect', { provider: Platform.OS === 'ios' ? t('profile.providerApple') : t('profile.providerHC') })}</Text>
               <Text style={styles.healthDesc}>
@@ -1220,7 +1217,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
             </View>
           )}
 
-          {Platform.OS !== 'web' && isHealthAvailable() && healthAuthorized && (
+          {isHealthAvailable() && healthAuthorized && (
             <>
               {/* Recovery status */}
               <View style={[styles.card, recoveryData?.status && { borderColor: recoveryData.status.color + '44', borderWidth: 1 }]}>
