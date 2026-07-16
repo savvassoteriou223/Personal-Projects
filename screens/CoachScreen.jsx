@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,10 @@ import { getRecentCheckIns } from '../lib/recoveryStore';
 import { format, subDays, startOfWeek } from 'date-fns';
 
 const MONTHLY_QUOTA = 100;
+
+// Which week's review the user has dismissed. Local, not a DB column: it's a UI
+// preference, and the summary itself already persists in weekly_summaries.
+const WEEKLY_DISMISSED_KEY = '@helix_weekly_review_dismissed';
 
 const _MUSCLE_MAP = (() => {
   const map = {};
@@ -544,6 +549,10 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
     const user = await getCurrentUser();
     if (!user) return;
     const weekKey = currentWeekKey();
+    // Checked BEFORE the fetch/generate: a dismissed review must not reappear on
+    // every Coach open, and must never spend a monthly message to be re-shown.
+    const dismissed = await AsyncStorage.getItem(WEEKLY_DISMISSED_KEY).catch(() => null);
+    if (dismissed === weekKey) return;
     const { data: existing } = await supabase
       .from('weekly_summaries')
       .select('content')
@@ -574,6 +583,15 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       }
     } catch { /* silent — the card just won't appear */ }
     setWeeklyLoading(false);
+  };
+
+  // Dismiss this week's review. The summary stays in weekly_summaries (it's part
+  // of the paid feature and the coach's record); this only hides the card until
+  // next week's review is due.
+  const dismissWeeklyReview = async () => {
+    setWeeklySummary(null);
+    setWeeklyLoading(false);
+    AsyncStorage.setItem(WEEKLY_DISMISSED_KEY, currentWeekKey()).catch(() => {});
   };
 
   const generateInsight = async () => {
@@ -960,13 +978,22 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       {/* Weekly narrative review — auto-generated once per week, hidden mid-workout */}
       {!isMidWorkout && (weeklyLoading || weeklySummary) && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('coach.weeklyReview')}</Text>
+          <View style={styles.weeklyHeader}>
+            <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
+            {/* Dismissable: it is auto-generated and otherwise re-renders on every
+                Coach open for the rest of the week with no way to close it. */}
+            {weeklySummary && (
+              <Pressable onPress={dismissWeeklyReview} hitSlop={12} accessibilityLabel={t('common.close')}>
+                <Text style={styles.weeklyDismiss}>✕</Text>
+              </Pressable>
+            )}
+          </View>
           {weeklySummary ? (
-            <View style={styles.insightBox}>
+            <View style={[styles.insightBox, { marginTop: 12, marginBottom: 0 }]}>
               <Text style={styles.insightText}>{weeklySummary}</Text>
             </View>
           ) : (
-            <Text style={styles.cardSub}>{t('coach.weeklyReviewLoading')}</Text>
+            <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 0 }]}>{t('coach.weeklyReviewLoading')}</Text>
           )}
         </View>
       )}
@@ -1277,6 +1304,9 @@ const styles = StyleSheet.create({
   generateBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
 
   questionInput: { backgroundColor: '#12121A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: '#2C2C35' },
+  weeklyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  weeklyDismiss: { fontSize: 15, color: '#9494A0', fontWeight: '600' },
+
   // ── Conversation thread ─────────────────────────────────────────────────────
   // Reuses the app's existing vocabulary: accent green = you, surface = coach.
   // Deliberately not bubbles-with-tails — this is product UI, not a messenger.
