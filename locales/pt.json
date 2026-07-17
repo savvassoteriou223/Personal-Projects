@@ -18,7 +18,7 @@
     "settingsLabel": "Idioma"
   },
   "welcome": {
-    "tagline": "Treino baseado na ciência, nutrição inteligente\ne coaching com IA em um só lugar.",
+    "tagline": "Treino baseado na ciência, nutrição inteligente\ne coaching em um só lugar.",
     "getStarted": "Começar",
     "haveAccount": "Já tenho uma conta"
   },
@@ -201,7 +201,7 @@
     },
     "step5": {
       "title": "Quais suplementos\nvocê toma?",
-      "sub": "Seu coach de IA usa isso para dar conselhos mais relevantes. Opcional — toque em \"Nenhum\" se não tomar nenhum.",
+      "sub": "Seu coach usa isso para dar conselhos mais relevantes. Opcional — toque em \"Nenhum\" se não tomar nenhum.",
       "other": "Outros suplementos",
       "otherPlaceholder": "ex. Ashwagandha",
       "add": "Adicionar"
@@ -554,7 +554,7 @@
     }
   },
   "coach": {
-    "title": "Coach de IA",
+    "title": "Coach",
     "subtitle": "Baseado na ciência · Lembra dos seus treinos",
     "reset": "Redefinir",
     "resetTitle": "Redefinir a memória do coach?",
@@ -644,12 +644,6 @@
     }
   },
   "profile": {
-    "tabs": {
-      "profile": "Perfil",
-      "data": "Volume",
-      "prs": "Recordes",
-      "health": "Saúde"
-    },
     "admin": "Admin",
     "signOut": "Sair",
     "noName": "Sem nome",
@@ -690,7 +684,7 @@
     "targetsLine": "{{cal}} kcal · {{protein}}g proteína · {{carbs}}g carboidratos · {{fat}}g gordura",
     "savedAuto": "Salvo automaticamente quando você toca em Salvar",
     "whatTrain": "O que você treina?",
-    "whatTrainSub": "Selecione tudo o que se aplica — ajuda o coach de IA a dar conselhos relevantes.",
+    "whatTrainSub": "Selecione tudo o que se aplica — ajuda o coach a dar conselhos relevantes.",
     "activities": {
       "weights": "Musculação",
       "running": "Corrida",
@@ -803,8 +797,21 @@
       "deleteError": "Não foi possível excluir a conta. Tente de novo ou contate o suporte."
     }
   },
+  "settings": {
+    "title": "Definições"
+  },
+  "nav": {
+    "profile": "Perfil",
+    "progress": "Progresso"
+  },
   "progress": {
     "loading": "Carregando…",
+    "tabs": {
+      "charts": "Gráficos",
+      "volume": "Volume",
+      "prs": "Recordes",
+      "health": "Saúde"
+    },
     "sections": {
       "overview": "Visão geral",
       "strengthTrend": "Tendência de força · 1RM estimado",

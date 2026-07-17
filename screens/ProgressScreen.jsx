@@ -1,15 +1,21 @@
 import {
-  useState, useEffect } from 'react';
+  useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import { format, subDays, startOfWeek, differenceInDays } from 'date-fns';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
+import VolumePanel from './VolumePanel';
+import PRsPanel from './PRsPanel';
+import HealthPanel from './HealthPanel';
+import { isHealthAvailable } from '../lib/healthService';
+import { epley1RM } from '../lib/epley';
 
 const { width: W } = Dimensions.get('window');
 const PAD = 20;
@@ -19,7 +25,8 @@ const CW = W - PAD * 2;
 
 function epley(w, r) {
   if (!w || !r || r <= 0) return 0;
-  return r === 1 ? w : Math.round(w * (1 + r / 30) * 10) / 10;
+  const raw = epley1RM(w, r);
+  return r === 1 ? raw : Math.round(raw * 10) / 10;
 }
 
 function sevenDayMA(entries) {
@@ -423,7 +430,7 @@ function BlockProgressSection({ info }) {
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 
-export default function ProgressScreen() {
+function ChartsPanel() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [goals, setGoals] = useState([]);
@@ -449,7 +456,7 @@ export default function ProgressScreen() {
   // Most improved
   const [mostImproved, setMostImproved] = useState([]);
 
-  useEffect(() => { load(); }, []);
+  useFocusEffect(useCallback(() => { load(); }, []));
 
   const load = async () => {
     setLoading(true);
@@ -614,15 +621,12 @@ export default function ProgressScreen() {
   const strengthDelta = e1rmData.length >= 2 ? e1rmData[e1rmData.length - 1].y - e1rmData[0].y : null;
 
   if (loading) return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: colors.textFaint, fontSize: 14 }}>{t('progress.loading')}</Text>
-      </View>
-    </SafeAreaView>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 }}>
+      <Text style={{ color: colors.textFaint, fontSize: 14 }}>{t('progress.loading')}</Text>
+    </View>
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: PAD, paddingTop: 12, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}>
@@ -798,9 +802,55 @@ export default function ProgressScreen() {
         </Section>
 
       </ScrollView>
+  );
+}
+
+// ─── PROGRESS CONTAINER ──────────────────────────────────────────────────────
+
+const PROGRESS_TABS_ALL = ['charts', 'volume', 'prs', 'health'];
+
+export default function ProgressScreen() {
+  const { t } = useTranslation();
+  const PROGRESS_TABS = isHealthAvailable() ? PROGRESS_TABS_ALL : ['charts', 'volume', 'prs'];
+  const [progressTab, setProgressTab] = useState('charts');
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
+      <View style={pst.tabRow}>
+        {PROGRESS_TABS.map((key) => (
+          <Tappable key={key} style={[pst.tab, progressTab === key && pst.tabActive]} onPress={() => setProgressTab(key)}>
+            <Text style={[pst.tabText, progressTab === key && pst.tabTextActive]}>{t(`progress.tabs.${key}`)}</Text>
+          </Tappable>
+        ))}
+      </View>
+
+      {progressTab === 'charts' && <ChartsPanel />}
+      {progressTab === 'volume' && (
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          <VolumePanel />
+        </ScrollView>
+      )}
+      {progressTab === 'prs' && (
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          <PRsPanel />
+        </ScrollView>
+      )}
+      {progressTab === 'health' && (
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+          <HealthPanel />
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
+
+const pst = StyleSheet.create({
+  tabRow: { flexDirection: 'row', backgroundColor: colors.bg, borderBottomWidth: 0.5, borderBottomColor: colors.border },
+  tab: { flex: 1, paddingVertical: 11, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabActive: { borderBottomColor: colors.textPrimary },
+  tabText: { fontSize: 12, color: colors.textSubtle, fontWeight: '500' },
+  tabTextActive: { color: colors.textPrimary, fontWeight: '700' },
+});
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────
 

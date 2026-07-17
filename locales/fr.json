@@ -18,7 +18,7 @@
     "settingsLabel": "Langue"
   },
   "welcome": {
-    "tagline": "Entraînement scientifique, nutrition intelligente\net coaching IA en un seul endroit.",
+    "tagline": "Entraînement scientifique, nutrition intelligente\net coaching en un seul endroit.",
     "getStarted": "Commencer",
     "haveAccount": "J'ai déjà un compte"
   },
@@ -201,7 +201,7 @@
     },
     "step5": {
       "title": "Quels compléments\nprenez-vous ?",
-      "sub": "Votre coach IA les utilise pour des conseils plus pertinents. Facultatif — touchez \"Aucun\" si vous n'en prenez pas.",
+      "sub": "Votre coach les utilise pour des conseils plus pertinents. Facultatif — touchez \"Aucun\" si vous n'en prenez pas.",
       "other": "Autres compléments",
       "otherPlaceholder": "ex. Ashwagandha",
       "add": "Ajouter"
@@ -554,7 +554,7 @@
     }
   },
   "coach": {
-    "title": "Coach IA",
+    "title": "Coach",
     "subtitle": "Basé sur la science · Se souvient de votre entraînement",
     "reset": "Réinitialiser",
     "resetTitle": "Réinitialiser la mémoire du coach ?",
@@ -644,12 +644,6 @@
     }
   },
   "profile": {
-    "tabs": {
-      "profile": "Profil",
-      "data": "Volume",
-      "prs": "Records",
-      "health": "Santé"
-    },
     "admin": "Admin",
     "signOut": "Se déconnecter",
     "noName": "Sans nom",
@@ -690,7 +684,7 @@
     "targetsLine": "{{cal}} kcal · {{protein}}g protéines · {{carbs}}g glucides · {{fat}}g lipides",
     "savedAuto": "Enregistré automatiquement quand vous touchez Enregistrer",
     "whatTrain": "Que pratiquez-vous ?",
-    "whatTrainSub": "Sélectionnez tout ce qui s'applique — aide le coach IA à donner des conseils pertinents.",
+    "whatTrainSub": "Sélectionnez tout ce qui s'applique — aide le coach à donner des conseils pertinents.",
     "activities": {
       "weights": "Musculation",
       "running": "Course à pied",
@@ -803,8 +797,21 @@
       "deleteError": "Impossible de supprimer le compte. Veuillez réessayer ou contacter le support."
     }
   },
+  "settings": {
+    "title": "Réglages"
+  },
+  "nav": {
+    "profile": "Profil",
+    "progress": "Progrès"
+  },
   "progress": {
     "loading": "Chargement…",
+    "tabs": {
+      "charts": "Courbes",
+      "volume": "Volume",
+      "prs": "Records",
+      "health": "Santé"
+    },
     "sections": {
       "overview": "Vue d'ensemble",
       "strengthTrend": "Tendance de force · 1RM estimé",

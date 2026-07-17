@@ -1,29 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, Dimensions, Alert, Linking, ActivityIndicator, KeyboardAvoidingView, Platform,
+  View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { supabase, getCurrentUser } from '../supabase';
 import AdminScreen from './AdminScreen';
-import { format, startOfWeek, eachDayOfInterval, endOfWeek, subWeeks } from 'date-fns';
-import { MOVEMENT_PATTERNS } from './movementLibrary';
+import { format, startOfWeek } from 'date-fns';
 import { calculateTDEE, calculateNutritionTargets, INJURY_BODY_PARTS } from './programGenerator';
 import { computeInsights } from './insightsEngine';
 import BodyCompositionCard from './BodyCompositionCard';
-import { VOLUME_TARGETS } from './programGenerator';
-import { isHealthAvailable, isHealthAuthorized, requestHealthPermissions, disconnectHealth, getRecoveryData, openHealthSettings } from '../lib/healthService';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
 import { useTranslation } from 'react-i18next';
-import LanguagePicker from '../components/LanguagePicker';
-import { LANGUAGES } from '../lib/i18n';
+import { Ionicons } from '@expo/vector-icons';
+import SettingsScreen from './SettingsScreen';
 import { colors } from '../lib/theme';
-import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
-
-const SCREEN_W = Dimensions.get('window').width;
-const CHART_H = 140;
 
 const GOALS = [
   { key: 'lose', label: 'Lose fat' },
@@ -79,169 +71,18 @@ const HEALTH_CONDITIONS = [
   { key: 'carpal_tunnel_syndrome', label: 'Carpal tunnel' },
 ];
 
-const MUSCLE_GROUPS = [
-  'Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps',
-  'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Abs',
-];
-
 const EXPERIENCE_LEVELS = [
   { key: 'beginner',     label: 'Beginner',     sub: '< 2 years' },
   { key: 'intermediate', label: 'Intermediate', sub: '2–4 years' },
   { key: 'advanced',     label: 'Advanced',     sub: '4+ years' },
 ];
 
-function getMuscleTarget(muscle, level, t) {
-  const target = VOLUME_TARGETS[muscle.toLowerCase()]?.[level];
-  if (!target) return '—';
-  return t('profile.setsPerWeek', { low: target.optimal_low, high: target.optimal_high });
-}
-
-// Build exercise → muscles map from movementLibrary (same as TodayScreen)
-const _EXERCISE_MUSCLE_MAP = (() => {
-  const map = {};
-  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
-    pattern.exercises.forEach(ex => {
-      map[ex.name.toLowerCase()] = pattern.muscles.map(m => m.toLowerCase());
-    });
-  });
-  return map;
-})();
-
-function _normaliseMuscle(raw) {
-  const r = raw.toLowerCase();
-  if (r === 'chest' || r === 'upper chest' || r === 'lower chest') return 'chest';
-  if (r === 'lats' || r === 'traps' || r === 'upper traps' ||
-      r === 'upper trapezius' || r === 'levator scapulae') return 'back';
-  if (r === 'shoulders' || r === 'anterior delts' || r === 'side deltoids' ||
-      r === 'rear delts' || r === 'rear deltoids' || r === 'external rotators') return 'shoulders';
-  if (r === 'biceps' || r === 'brachialis') return 'biceps';
-  if (r === 'triceps') return 'triceps';
-  if (r === 'quads') return 'quads';
-  if (r === 'hamstrings') return 'hamstrings';
-  if (r === 'glutes' || r === 'glute medius' || r === 'glute minimus') return 'glutes';
-  if (r === 'gastrocnemius' || r === 'soleus') return 'calves';
-  if (r === 'rectus abdominis' || r === 'obliques') return 'abs';
-  return null;
-}
-
-function matchesMuscle(exName, muscle) {
-  const raw = _EXERCISE_MUSCLE_MAP[exName?.toLowerCase()] || [];
-  const normalised = [...new Set(raw.map(_normaliseMuscle).filter(Boolean))];
-  return normalised.includes(muscle.toLowerCase());
-}
-
-function MuscleVolumeChart({ data, width }) {
-  if (!data || data.length === 0 || !width || width <= 0) return null;
-
-  const max = Math.max(...data.map(d => d.sets), 1);
-  // Round max up to nearest nice number for clean grid
-  const niceMax = max <= 3 ? 4 : max <= 6 ? 8 : max <= 10 ? 12 : max <= 15 ? 16 : Math.ceil(max / 5) * 5;
-
-  const padL = 28;  // y-axis labels
-  const padR = 4;
-  const padT = 28;  // room for value labels above dots
-  const padB = 22;  // day labels
-  const svgW = width;
-  const svgH = 160;
-  const W = svgW - padL - padR;
-  const H = svgH - padT - padB;
-
-  const pts = data.map((d, i) => ({
-    x: padL + (data.length === 1 ? W / 2 : (i / (data.length - 1)) * W),
-    y: padT + H - (d.sets / niceMax) * H,
-    sets: d.sets,
-    label: d.label,
-  }));
-
-  const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
-  const areaPath = `${linePath} L ${pts[pts.length-1].x.toFixed(1)} ${padT + H} L ${pts[0].x.toFixed(1)} ${padT + H} Z`;
-
-  // Nice grid values: 0, 25%, 50%, 75%, 100% of niceMax
-  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(pct => ({
-    val: Math.round(niceMax * pct),
-    y: padT + H - pct * H,
-  }));
-
-  return (
-    <Svg width={svgW} height={svgH}>
-      {/* Y axis line */}
-      <Line x1={padL} y1={padT} x2={padL} y2={padT + H} stroke={colors.borderStrong} strokeWidth="1" />
-      {/* X axis line */}
-      <Line x1={padL} y1={padT + H} x2={svgW - padR} y2={padT + H} stroke={colors.borderStrong} strokeWidth="1" />
-
-      {/* Grid lines + Y labels */}
-      {gridLines.map(({ val, y }, i) => (
-        <React.Fragment key={`grid-${i}`}>
-          {/* Horizontal grid */}
-          <Line
-            x1={padL} y1={y} x2={svgW - padR} y2={y}
-            stroke={i === 0 ? colors.borderStrong : colors.border}
-            strokeWidth={i === 0 ? 1 : 0.5}
-            strokeDasharray={i === 0 ? undefined : '3,4'}
-          />
-          {/* Y label — right-aligned next to y-axis */}
-          <SvgText
-            x={padL - 5} y={y + 4}
-            fontSize="9" fill={i === 0 ? colors.textSubtle : colors.borderStrong}
-            textAnchor="end" fontWeight={i === 0 ? 'normal' : 'normal'}
-          >{val}</SvgText>
-          {/* Tick mark on Y axis */}
-          <Line x1={padL - 2} y1={y} x2={padL} y2={y} stroke={colors.borderStrong} strokeWidth="1" />
-        </React.Fragment>
-      ))}
-
-      {/* Area fill */}
-      <Path d={areaPath} fill={colors.textPrimary} fillOpacity="0.08" />
-
-      {/* Line */}
-      <Path d={linePath} fill="none" stroke={colors.textPrimary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-      {/* Dots + value labels + day labels */}
-      {pts.map((p, i) => (
-        <React.Fragment key={`pt-${i}`}>
-          {/* Tick on X axis */}
-          <Line x1={p.x} y1={padT + H} x2={p.x} y2={padT + H + 4} stroke={colors.borderStrong} strokeWidth="1" />
-
-          {/* Day label below x-axis */}
-          <SvgText x={p.x} y={svgH - 4} fontSize="10" fill={colors.textSubtle} textAnchor="middle">{p.label}</SvgText>
-
-          {/* Dot */}
-          <Circle
-            cx={p.x} cy={p.y} r="5"
-            fill={p.sets > 0 ? colors.textPrimary : colors.surface}
-            stroke={p.sets > 0 ? colors.textPrimary : colors.border}
-            strokeWidth="2"
-          />
-
-          {/* Value label — always above dot, clamped inside SVG */}
-          {p.sets > 0 && (
-            <SvgText
-              x={p.x}
-              y={Math.max(14, p.y - 8)}
-              fontSize="11" fill={colors.textPrimary} fontWeight="bold" textAnchor="middle"
-            >{p.sets}</SvgText>
-          )}
-        </React.Fragment>
-      ))}
-    </Svg>
-  );
-}
-
 export default function ProfileScreen({ onSignOut, isAdmin }) {
-  const { t, i18n } = useTranslation();
-  // Health is iOS-only now: isHealthAvailable() is false on Android (Health
-  // Connect removed) and on web, and every panel under that tab is gated on it.
-  // Offering a tab that opens to nothing is worse than not offering it.
-  const TABS = isHealthAvailable()
-    ? ['profile', 'data', 'prs', 'health']
-    : ['profile', 'data', 'prs'];
-  const [activeTab, setActiveTab] = useState('profile');
+  const { t } = useTranslation();
   const [showAdmin, setShowAdmin] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [prs, setPrs] = useState([]);
   const [metrics, setMetrics] = useState([]);
-  const [sessions, setSessions] = useState([]);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
   const [weight, setWeight] = useState('');
@@ -264,42 +105,16 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const [injuryProfile, setInjuryProfile] = useState([]); // [{ body_part, severity: 'sometimes'|'always' }]
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMuscle, setSelectedMuscle] = useState('Chest');
-  const [showMuscleDropdown, setShowMuscleDropdown] = useState(false);
-  const [weeklyVolumeData, setWeeklyVolumeData] = useState([]);
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [allSets, setAllSets] = useState([]);
-  const [chartWidth, setChartWidth] = useState(SCREEN_W - 72);
   const [streak, setStreak] = useState(0);
   // Quick body weight log
   const [quickWeight, setQuickWeight] = useState('');
   const [quickWeightSaved, setQuickWeightSaved] = useState(false);
-  // Health
-  const [healthAuthorized, setHealthAuthorized] = useState(false);
-  const [recoveryData, setRecoveryData] = useState(null);
-  const [healthLoading, setHealthLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, [])
   );
-
-  useEffect(() => {
-    const baseDate = subWeeks(new Date(), weekOffset);
-    const weekStart = startOfWeek(baseDate, { weekStartsOn: 1 });
-    const days = eachDayOfInterval({ start: weekStart, end: endOfWeek(weekStart, { weekStartsOn: 1 }) });
-    const data = days.map(day => {
-      const dayStr = format(day, 'yyyy-MM-dd');
-      const count = allSets.filter(s => {
-        if (!s.completed_at) return false;
-        return format(new Date(s.completed_at), 'yyyy-MM-dd') === dayStr &&
-          matchesMuscle(s.exercise_name, selectedMuscle);
-      }).length;
-      return { label: format(day, 'EEE'), sets: count };
-    });
-    setWeeklyVolumeData(data);
-  }, [selectedMuscle, weekOffset, allSets]);
 
   const loadData = async () => {
     const user = await getCurrentUser();
@@ -335,8 +150,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
       .order('completed_at', { ascending: false });
 
     if (sessionData?.length > 0) {
-      setSessions(sessionData);
-
       // ── Performance correlation insights (nutrition + recovery vs session RPE) ──
       (async () => {
         const sixtyAgo = new Date();
@@ -379,104 +192,11 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
         else break;
       }
       setStreak(streakCount);
-
-      const ids = sessionData.map(s => s.id);
-      const { data: sets } = await supabase.from('completed_sets')
-        .select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
-
-      if (sets?.length > 0) {
-        const prMap = {};
-        sets.filter(s => s.weight_kg).forEach(s => {
-          if (!prMap[s.exercise_name] || s.weight_kg > prMap[s.exercise_name].weight_kg) prMap[s.exercise_name] = s;
-        });
-        setPrs(Object.entries(prMap).map(([n, s]) => ({
-          name: n, weight_kg: s.weight_kg, reps: s.reps,
-          // Epley 1RM estimate
-          orm: s.reps && s.reps > 1 ? Math.round(s.weight_kg * (1 + s.reps / 30)) : s.weight_kg,
-        })).sort((a,b) => b.weight_kg - a.weight_kg));
-
-        const dateMap = {};
-        sessionData.forEach(s => { dateMap[s.id] = s.completed_at; });
-        setAllSets(sets.map(s => ({ ...s, completed_at: dateMap[s.session_id] })));
-      }
     }
 
     const { data: bm } = await supabase.from('body_metrics').select('*').eq('user_id', user.id).order('date', { ascending: false }).limit(90);
     if (bm) setMetrics(bm);
     setLoading(false);
-
-    // Load health data independently — non-blocking
-    const authorized = await isHealthAuthorized();
-    setHealthAuthorized(authorized);
-    if (authorized) {
-      const data = await getRecoveryData();
-      setRecoveryData(data);
-    }
-  };
-
-  const handleConnectHealth = async () => {
-    setHealthLoading(true);
-    const result = await requestHealthPermissions();
-    if (result.ok) {
-      setHealthAuthorized(true);
-      const data = await getRecoveryData();
-      setRecoveryData(data);
-      if (!data?.sleep && !data?.hrv && !data?.rhr && !data?.steps) {
-        Alert.alert(
-          t('profile.alerts.connectedNoDataTitle'),
-          Platform.OS === 'ios'
-            ? t('profile.alerts.connectedNoDataIos')
-            : t('profile.alerts.connectedNoDataAndroid'),
-          [
-            { text: t('profile.alerts.ok'), style: 'cancel' },
-            { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
-          ],
-        );
-      }
-    } else if (result.reason === 'not_installed') {
-      Alert.alert(
-        t('profile.alerts.hcRequiredTitle'),
-        t('profile.alerts.hcRequiredMsg'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.alerts.install'), onPress: () => Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() => Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')) },
-        ],
-      );
-    } else if (result.reason === 'update_required') {
-      Alert.alert(t('profile.alerts.updateHcTitle'), t('profile.alerts.updateHcMsg'));
-    } else if (result.reason === 'denied') {
-      // Always offer BOTH a retry and a settings deep-link: after repeated
-      // denials the OS stops re-showing the in-app prompt, so "Try again" alone
-      // would soft-lock the user. "Open settings" is the guaranteed path.
-      Alert.alert(
-        t('profile.alerts.permissionNeededTitle'),
-        Platform.OS === 'ios'
-          ? t('profile.alerts.permissionNeededIos')
-          : t('profile.alerts.permissionNeededAndroid'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
-          { text: t('profile.alerts.tryAgain'), onPress: () => handleConnectHealth() },
-        ],
-      );
-    } else {
-      Alert.alert(
-        t('profile.alerts.couldNotConnectTitle'),
-        t('profile.alerts.couldNotConnectMsg'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
-          { text: t('profile.alerts.tryAgain'), onPress: () => handleConnectHealth() },
-        ],
-      );
-    }
-    setHealthLoading(false);
-  };
-
-  const handleDisconnectHealth = async () => {
-    await disconnectHealth();
-    setHealthAuthorized(false);
-    setRecoveryData(null);
   };
 
   const logQuickWeight = async () => {
@@ -577,32 +297,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   };
 
   const toggleGoal = k => setSelectedGoals(p => p.includes(k) ? p.filter(g => g !== k) : [...p, k]);
-  const signOut = async () => { await supabase.auth.signOut(); onSignOut?.(); };
-
-  const deleteAccount = () => {
-    Alert.alert(
-      t('profile.alerts.deleteTitle'),
-      t('profile.alerts.deleteMsg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('profile.alerts.deletePermanently'),
-          style: 'destructive',
-          onPress: async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-            const { error } = await supabase.functions.invoke('delete-account', {});
-            if (error) {
-              Alert.alert(t('profile.alerts.errorTitle'), t('profile.alerts.deleteError'));
-              return;
-            }
-            await supabase.auth.signOut();
-            onSignOut?.();
-          },
-        },
-      ]
-    );
-  };
 
   if (loading) return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -616,23 +310,9 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const w = parseFloat(editing ? weight : profile?.weight_kg);
   const bmi = h && w ? (w / ((h/100)**2)).toFixed(1) : null;
   const bmiColor = bmi ? (bmi < 18.5 ? colors.warning : bmi < 25 ? colors.accent : bmi < 30 ? colors.warning : colors.danger) : null;
-  const totalSets = weeklyVolumeData.reduce((s, d) => s + d.sets, 0);
-  const weekLabel = weekOffset === 0 ? t('profile.weekThis') : weekOffset === 1 ? t('profile.weekLast') : t('profile.weekAgo', { n: weekOffset });
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Tab bar — fixed above scroll, no stickyHeaderIndices needed.
-          Health is only offered where health data actually exists. Android's
-          Health Connect was removed (2026-07-14), so on Android every panel under
-          this tab is gated off and it opened to an empty screen. */}
-      <View style={styles.tabRow}>
-        {TABS.map((key) => (
-          <Tappable key={key} style={[styles.tab, activeTab === key && styles.tabActive]} onPress={() => setActiveTab(key)}>
-            <Text style={[styles.tabText, activeTab === key && styles.tabTextActive]}>{t(`profile.tabs.${key}`)}</Text>
-          </Tappable>
-        ))}
-      </View>
-
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
 
@@ -652,10 +332,13 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                   <Text style={styles.adminBtnText}>{t('profile.admin')}</Text>
                 </Tappable>
               )}
-              <Tappable onPress={signOut}><Text style={styles.signOut}>{t('profile.signOut')}</Text></Tappable>
+              <Tappable onPress={() => setShowSettings(true)} style={styles.gearBtn} hitSlop={8}>
+                <Ionicons name="settings-outline" size={22} color={colors.textMuted} />
+              </Tappable>
             </View>
           </View>
           <AdminScreen visible={showAdmin} onClose={() => setShowAdmin(false)} />
+          <SettingsScreen visible={showSettings} onClose={() => setShowSettings(false)} onSignOut={onSignOut} />
           <View style={styles.statsRow}>
             {[
               { val: profile?.weight_kg || '—', label: 'kg' },
@@ -684,12 +367,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           </View>
         )}
 
-        {/* Tab content */}
-        <View>
-
-          {/* ─── PROFILE TAB ─── */}
-          {activeTab === 'profile' && (
-            <View style={{ paddingTop: 4 }}>
+        <View style={{ paddingTop: 4 }}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>{t('profile.myProfile')}</Text>
@@ -1073,224 +751,9 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           {/* Body composition trend card */}
           <BodyCompositionCard metrics={metrics} profile={profile} />
 
-          {/* Language */}
-          <View style={styles.card}>
-            <Tappable style={styles.langRow} onPress={() => setLangOpen(true)}>
-              <Text style={styles.cardTitle}>{t('language.settingsLabel')}</Text>
-              <View style={styles.langRowRight}>
-                <Text style={styles.langRowValue}>
-                  {(LANGUAGES.find(l => l.code === i18n.language?.split('-')[0]) || LANGUAGES[0]).label}
-                </Text>
-                <Text style={styles.dropdownArrow}>▸</Text>
-              </View>
-            </Tappable>
-          </View>
-
-          {/* Account actions */}
-          <View style={styles.accountSection}>
-            <Tappable onPress={() => Linking.openURL('https://venerable-nasturtium-4e9b15.netlify.app/')}>
-              <Text style={styles.privacyLink}>{t('profile.privacyPolicy')}</Text>
-            </Tappable>
-            <Tappable style={styles.deleteAccountBtn} onPress={deleteAccount}>
-              <Text style={styles.deleteAccountText}>{t('profile.deleteAccount')}</Text>
-            </Tappable>
-            <Text style={styles.deleteAccountSub}>
-              {t('profile.deleteAccountSub')}
-            </Text>
-          </View>
-            </View>
-          )}
-
-          {/* ─── DATA TAB ─── */}
-          {activeTab === 'data' && (
-            <View style={{ paddingTop: 4 }}>
-          <View style={styles.card}>
-            {/* Controls row */}
-            <View style={styles.dataControlRow}>
-              <Tappable style={styles.muscleDropdownBtn} onPress={() => { animateLayout(); setShowMuscleDropdown(v => !v); }}>
-                <Text style={styles.muscleDropdownText}>{t(`today.muscles.${selectedMuscle.toLowerCase()}`, { defaultValue: selectedMuscle })}</Text>
-                <Text style={styles.dropdownArrow}>{showMuscleDropdown ? '▲' : '▼'}</Text>
-              </Tappable>
-              <View style={styles.weekNav}>
-                <Tappable onPress={() => setWeekOffset(v => v+1)} style={styles.weekNavBtn}>
-                  <Text style={styles.weekNavArrow}>‹</Text>
-                </Tappable>
-                <Text style={styles.weekNavLabel}>{weekLabel}</Text>
-                <Tappable onPress={() => setWeekOffset(v => Math.max(0,v-1))} style={[styles.weekNavBtn, weekOffset===0&&{opacity:0.3}]} disabled={weekOffset===0}>
-                  <Text style={styles.weekNavArrow}>›</Text>
-                </Tappable>
-              </View>
-            </View>
-
-            {showMuscleDropdown && (
-              <View style={styles.dropdownList}>
-                {MUSCLE_GROUPS.map(m => (
-                  <Tappable key={m} style={[styles.dropdownItem, selectedMuscle===m&&styles.dropdownItemActive]} onPress={() => { setSelectedMuscle(m); setShowMuscleDropdown(false); }}>
-                    <Text style={[styles.dropdownItemText, selectedMuscle===m&&styles.dropdownItemTextActive]}>{t(`today.muscles.${m.toLowerCase()}`, { defaultValue: m })}</Text>
-                  </Tappable>
-                ))}
-              </View>
-            )}
-
-            <View style={styles.chartTitleRow}>
-              <Text style={styles.chartTitle}>{t('profile.chartTitle', { muscle: t(`today.muscles.${selectedMuscle.toLowerCase()}`, { defaultValue: selectedMuscle }), week: weekLabel })}</Text>
-              <View style={[styles.totalBadge, totalSets === 0 && styles.totalBadgeEmpty]}>
-                <Text style={[styles.totalBadgeText, totalSets === 0 && { color: colors.textSubtle }]}>
-                  {t('profile.setsCount', { n: totalSets })}
-                </Text>
-              </View>
-            </View>
-
-            <View
-              style={{ width: '100%' }}
-              onLayout={e => setChartWidth(e.nativeEvent.layout.width)}
-            >
-              <MuscleVolumeChart data={weeklyVolumeData} width={chartWidth} />
-            </View>
-
-            <View style={styles.targetNote}>
-              <Text style={styles.targetNoteText}>
-                {t('profile.targetNote', { level: t(`levels.${trainingExperience}`, { defaultValue: trainingExperience }), range: getMuscleTarget(selectedMuscle, trainingExperience, t) })}
-              </Text>
-            </View>
-          </View>
-
-          {/* Day breakdown bars */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('profile.dayBreakdown')}</Text>
-            {weeklyVolumeData.map((d, i) => {
-              const maxSets = Math.max(...weeklyVolumeData.map(x => x.sets), 1);
-              return (
-                <View key={i} style={styles.dayBreakRow}>
-                  <Text style={styles.dayBreakLabel}>{d.label}</Text>
-                  <View style={styles.dayBreakBar}>
-                    <View style={[styles.dayBreakFill, { width: `${(d.sets/maxSets)*100}%` }]} />
-                  </View>
-                  <Text style={[styles.dayBreakSets, d.sets===0&&{color:colors.textFaint}]}>{d.sets > 0 ? t('profile.daySets', { n: d.sets }) : '—'}</Text>
-                </View>
-              );
-            })}
-          </View>
-            </View>
-          )}
-
-          {/* ─── HISTORY TAB ─── */}
-          {/* ─── PRs TAB ─── */}
-          {activeTab === 'prs' && (
-            <View style={{ paddingTop: 4 }}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('profile.personalRecords', { count: prs.length })}</Text>
-            {prs.length === 0
-              ? <Text style={styles.empty}>{t('profile.noPrs')}</Text>
-              : prs.map((pr, i) => (
-                <View key={i} style={styles.prRow}>
-                  <View style={[styles.prRank, i < 3 && { backgroundColor: i===0?colors.warning:i===1?colors.textSubtle:colors.borderStrong }]}>
-                    <Text style={styles.prRankText}>{i+1}</Text>
-                  </View>
-                  <Text style={styles.prName} numberOfLines={1}>{pr.name}</Text>
-                  <View style={styles.prValGroup}>
-                    <Text style={styles.prWeight}>{t('profile.prVal', { weight: pr.weight_kg, reps: pr.reps || '—' })}</Text>
-                    {pr.orm && pr.reps > 1 && (
-                      <Text style={styles.prOrm}>{t('profile.prOrm', { orm: pr.orm })}</Text>
-                    )}
-                  </View>
-                </View>
-              ))
-            }
-          </View>
-            </View>
-          )}
-          {/* ─── HEALTH TAB ─── */}
-          {activeTab === 'health' && (
-            <View style={{ paddingTop: 4 }}>
-
-          {/* The "unavailable" / "install Health Connect" placeholders that used to
-              live here are gone: TABS only offers this tab when isHealthAvailable()
-              is true, so they were unreachable. A tab whose only content is "this
-              tab does nothing" should not exist. */}
-          {isHealthAvailable() && !healthAuthorized && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t('profile.connect', { provider: Platform.OS === 'ios' ? t('profile.providerApple') : t('profile.providerHC') })}</Text>
-              <Text style={styles.healthDesc}>
-                {t('profile.healthDesc', { provider: Platform.OS === 'ios' ? t('profile.providerApple') : t('profile.providerHC'), companion: Platform.OS === 'ios' ? '' : t('profile.companionAndroid') })}
-              </Text>
-              <Tappable style={styles.healthConnectBtn} onPress={handleConnectHealth} disabled={healthLoading}>
-                <Text style={styles.healthConnectBtnText}>
-                  {healthLoading ? t('profile.connecting') : t('profile.connectBtn')}
-                </Text>
-              </Tappable>
-            </View>
-          )}
-
-          {isHealthAvailable() && healthAuthorized && (
-            <>
-              {/* Recovery status */}
-              <View style={[styles.card, recoveryData?.status && { borderColor: recoveryData.status.color + '44', borderWidth: 1 }]}>
-                <Text style={styles.cardTitle}>{t('profile.todayRecovery')}</Text>
-                {!recoveryData?.status && (
-                  <Text style={styles.empty}>{t('profile.noHealthToday')}</Text>
-                )}
-                {recoveryData?.status && (
-                  <>
-                    <Text style={[styles.healthStatusLabel, { color: recoveryData.status.color }]}>
-                      {recoveryData.status.label}
-                    </Text>
-                    <View style={styles.healthMetricsRow}>
-                      {recoveryData.sleep !== null && (
-                        <View style={styles.healthMetric}>
-                          <Text style={styles.healthMetricVal}>{recoveryData.sleep}h</Text>
-                          <Text style={styles.healthMetricLabel}>{t('profile.sleep')}</Text>
-                        </View>
-                      )}
-                      {recoveryData.hrv !== null && (
-                        <View style={styles.healthMetric}>
-                          <Text style={styles.healthMetricVal}>{recoveryData.hrv} ms</Text>
-                          <Text style={styles.healthMetricLabel}>{t('profile.hrv')}</Text>
-                        </View>
-                      )}
-                      {recoveryData.rhr !== null && (
-                        <View style={styles.healthMetric}>
-                          <Text style={styles.healthMetricVal}>{recoveryData.rhr} bpm</Text>
-                          <Text style={styles.healthMetricLabel}>{t('profile.restingHr')}</Text>
-                        </View>
-                      )}
-                    </View>
-                    {recoveryData.status.advice && (
-                      <Text style={styles.healthAdvice}>{recoveryData.status.advice}</Text>
-                    )}
-                  </>
-                )}
-              </View>
-
-              {/* What we read */}
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>{t('profile.dataSources')}</Text>
-                {[
-                  [t('profile.sourceSleep'), t('profile.sourceSleepDesc')],
-                  [t('profile.hrv'), Platform.OS === 'ios' ? t('profile.sourceHrvDescIos') : t('profile.sourceHrvDescAndroid')],
-                  [t('profile.sourceRhr'), t('profile.sourceRhrDesc')],
-                ].map(([name, desc]) => (
-                  <View key={name} style={styles.healthSourceRow}>
-                    <Text style={styles.healthSourceName}>{name}</Text>
-                    <Text style={styles.healthSourceDesc}>{desc}</Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Disconnect */}
-              <Tappable style={styles.healthDisconnectBtn} onPress={handleDisconnectHealth}>
-                <Text style={styles.healthDisconnectText}>{t('profile.disconnect')}</Text>
-              </Tappable>
-            </>
-          )}
-
-            </View>
-          )}
-
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
-      <LanguagePicker visible={langOpen} onClose={() => setLangOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -1303,9 +766,9 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 19, fontWeight: '700', color: colors.surfaceRaised },
   profileName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary },
   profileEmail: { fontSize: 12, color: colors.textSubtle, marginTop: 1 },
-  signOut: { fontSize: 12, color: colors.textSubtle },
   adminBtn: { backgroundColor: colors.surfaceElevated, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: colors.border },
   adminBtnText: { fontSize: 11, color: colors.textPrimary, fontWeight: '600' },
+  gearBtn: { padding: 4 },
   insightsCard: { marginHorizontal: 20, marginBottom: 16, backgroundColor: colors.successBg, borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: colors.accentHair },
   insightsTitle: { fontSize: 13, fontWeight: '700', color: colors.accent, marginBottom: 12 },
   insightItem: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },
@@ -1316,11 +779,6 @@ const styles = StyleSheet.create({
   statCard: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
   statVal: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   statLabel: { fontSize: 9, color: colors.textSubtle, marginTop: 2 },
-  tabRow: { flexDirection: 'row', backgroundColor: colors.bg, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  tab: { flex: 1, paddingVertical: 11, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: colors.textPrimary },
-  tabText: { fontSize: 12, color: colors.textSubtle, fontWeight: '500' },
-  tabTextActive: { color: colors.textPrimary, fontWeight: '700' },
   card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginTop: 14, overflow: 'hidden' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginBottom: 12 },
@@ -1367,43 +825,7 @@ const styles = StyleSheet.create({
   metricDate: { fontSize: 12, color: colors.textSubtle, width: 45 },
   metricVal: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   metricSub: { fontSize: 12, color: colors.textSubtle },
-  empty: { fontSize: 13, color: colors.textSubtle },
-  dataControlRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  muscleDropdownBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.control, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
-  muscleDropdownText: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
-  dropdownArrow: { fontSize: 9, color: colors.textSubtle },
-  dropdownList: { backgroundColor: colors.control, borderRadius: 12, marginBottom: 10, overflow: 'hidden' },
-  dropdownItem: { paddingVertical: 10, paddingHorizontal: 14 },
-  dropdownItemActive: { backgroundColor: colors.surfaceElevated },
-  dropdownItemText: { fontSize: 13, color: colors.textMuted },
-  dropdownItemTextActive: { color: colors.textPrimary, fontWeight: '600' },
-  weekNav: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  weekNavBtn: { padding: 6 },
-  weekNavArrow: { fontSize: 22, color: colors.textPrimary, fontWeight: '700', lineHeight: 24 },
-  weekNavLabel: { fontSize: 11, color: colors.textSubtle, minWidth: 75, textAlign: 'center' },
-  chartTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  chartTitle: { fontSize: 12, color: colors.textSubtle },
-  totalBadge: { backgroundColor: colors.surfaceElevated, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: colors.border },
-  totalBadgeEmpty: { borderColor: colors.border, backgroundColor: colors.surfaceInset },
-  totalBadgeText: { fontSize: 12, color: colors.textPrimary, fontWeight: '700' },
-  targetNote: { marginTop: 10, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: colors.border },
-  targetNoteText: { fontSize: 11, color: colors.textSubtle, fontStyle: 'italic' },
-  dayBreakRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 9 },
-  dayBreakLabel: { fontSize: 12, color: colors.textSubtle, width: 30, fontWeight: '500' },
-  dayBreakBar: { flex: 1, height: 6, backgroundColor: colors.control, borderRadius: 3, overflow: 'hidden' },
-  dayBreakFill: { height: '100%', backgroundColor: colors.surfaceInverse, borderRadius: 3 },
-  dayBreakSets: { fontSize: 11, color: colors.textPrimary, fontWeight: '600', width: 32, textAlign: 'right' },
-  prRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  prRank: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surfaceElevated, alignItems: 'center', justifyContent: 'center' },
-  prRankText: { fontSize: 10, fontWeight: '700', color: colors.textPrimary },
-  prName: { fontSize: 13, color: colors.textPrimary, flex: 1 },
-  prValGroup: { alignItems: 'flex-end' },
-  prWeight: { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
   prReps: { fontSize: 12, color: colors.textSubtle },
-  prOrm: { fontSize: 10, color: colors.textSubtle, marginTop: 1 },
-  langRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  langRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  langRowValue: { fontSize: 14, color: colors.textMuted },
   // History tab
   rpeTag: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
   rpeTagText: { fontSize: 10, fontWeight: '600' },
@@ -1413,30 +835,10 @@ const styles = StyleSheet.create({
   quickWeightBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 10, paddingHorizontal: 18, justifyContent: 'center', alignItems: 'center' },
   quickWeightBtnText: { color: colors.surfaceRaised, fontWeight: '700', fontSize: 14 },
   quickWeightTip: { fontSize: 11, color: colors.textFaint, lineHeight: 16 },
-  accountSection: { paddingHorizontal: 20, paddingBottom: 16, alignItems: 'center', gap: 4 },
-  privacyLink: { fontSize: 13, color: colors.textSubtle, textDecorationLine: 'underline', paddingVertical: 8 },
-  deleteAccountBtn: { paddingVertical: 10 },
-  deleteAccountText: { fontSize: 13, color: colors.danger, fontWeight: '500' },
-  deleteAccountSub: { fontSize: 11, color: colors.textFaint, textAlign: 'center', marginTop: 4 },
   expBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
   expBtnActive: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderActive },
   expBtnLabel: { fontSize: 13, fontWeight: '600', color: colors.textSubtle },
   expBtnLabelActive: { color: colors.textPrimary },
   expBtnSub: { fontSize: 10, color: colors.textFaint, marginTop: 2 },
   expBtnSubActive: { color: colors.textPrimary },
-  // Health tab
-  healthDesc: { fontSize: 13, color: colors.textSubtle, lineHeight: 20, marginBottom: 16 },
-  healthConnectBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
-  healthConnectBtnText: { fontSize: 14, fontWeight: '700', color: colors.surfaceRaised },
-  healthStatusLabel: { fontSize: 32, fontWeight: '800', marginBottom: 14 },
-  healthMetricsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  healthMetric: { flex: 1, backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
-  healthMetricVal: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 2 },
-  healthMetricLabel: { fontSize: 10, color: colors.textSubtle },
-  healthAdvice: { fontSize: 13, color: colors.textMuted, lineHeight: 19, paddingTop: 12, borderTopWidth: 0.5, borderTopColor: colors.border },
-  healthSourceRow: { paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  healthSourceName: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
-  healthSourceDesc: { fontSize: 12, color: colors.textSubtle, lineHeight: 17 },
-  healthDisconnectBtn: { marginHorizontal: 20, marginTop: 14, paddingVertical: 14, alignItems: 'center' },
-  healthDisconnectText: { fontSize: 13, color: colors.textSubtle },
 });
