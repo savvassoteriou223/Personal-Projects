@@ -13,6 +13,7 @@ import { computeInsights } from './insightsEngine';
 import BodyCompositionCard from './BodyCompositionCard';
 import PRsPanel from './PRsPanel';
 import VolumePanel from './VolumePanel';
+import HealthPanel from './HealthPanel';
 import { isHealthAvailable, isHealthAuthorized, requestHealthPermissions, disconnectHealth, getRecoveryData, openHealthSettings } from '../lib/healthService';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
 import { useTranslation } from 'react-i18next';
@@ -1012,89 +1013,13 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           {activeTab === 'prs' && <PRsPanel prs={prs} />}
           {/* ─── HEALTH TAB ─── */}
           {activeTab === 'health' && (
-            <View style={{ paddingTop: 4 }}>
-
-          {/* The "unavailable" / "install Health Connect" placeholders that used to
-              live here are gone: TABS only offers this tab when isHealthAvailable()
-              is true, so they were unreachable. A tab whose only content is "this
-              tab does nothing" should not exist. */}
-          {isHealthAvailable() && !healthAuthorized && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t('profile.connect', { provider: Platform.OS === 'ios' ? t('profile.providerApple') : t('profile.providerHC') })}</Text>
-              <Text style={styles.healthDesc}>
-                {t('profile.healthDesc', { provider: Platform.OS === 'ios' ? t('profile.providerApple') : t('profile.providerHC'), companion: Platform.OS === 'ios' ? '' : t('profile.companionAndroid') })}
-              </Text>
-              <Tappable style={styles.healthConnectBtn} onPress={handleConnectHealth} disabled={healthLoading}>
-                <Text style={styles.healthConnectBtnText}>
-                  {healthLoading ? t('profile.connecting') : t('profile.connectBtn')}
-                </Text>
-              </Tappable>
-            </View>
-          )}
-
-          {isHealthAvailable() && healthAuthorized && (
-            <>
-              {/* Recovery status */}
-              <View style={[styles.card, recoveryData?.status && { borderColor: recoveryData.status.color + '44', borderWidth: 1 }]}>
-                <Text style={styles.cardTitle}>{t('profile.todayRecovery')}</Text>
-                {!recoveryData?.status && (
-                  <Text style={styles.empty}>{t('profile.noHealthToday')}</Text>
-                )}
-                {recoveryData?.status && (
-                  <>
-                    <Text style={[styles.healthStatusLabel, { color: recoveryData.status.color }]}>
-                      {recoveryData.status.label}
-                    </Text>
-                    <View style={styles.healthMetricsRow}>
-                      {recoveryData.sleep !== null && (
-                        <View style={styles.healthMetric}>
-                          <Text style={styles.healthMetricVal}>{recoveryData.sleep}h</Text>
-                          <Text style={styles.healthMetricLabel}>{t('profile.sleep')}</Text>
-                        </View>
-                      )}
-                      {recoveryData.hrv !== null && (
-                        <View style={styles.healthMetric}>
-                          <Text style={styles.healthMetricVal}>{recoveryData.hrv} ms</Text>
-                          <Text style={styles.healthMetricLabel}>{t('profile.hrv')}</Text>
-                        </View>
-                      )}
-                      {recoveryData.rhr !== null && (
-                        <View style={styles.healthMetric}>
-                          <Text style={styles.healthMetricVal}>{recoveryData.rhr} bpm</Text>
-                          <Text style={styles.healthMetricLabel}>{t('profile.restingHr')}</Text>
-                        </View>
-                      )}
-                    </View>
-                    {recoveryData.status.advice && (
-                      <Text style={styles.healthAdvice}>{recoveryData.status.advice}</Text>
-                    )}
-                  </>
-                )}
-              </View>
-
-              {/* What we read */}
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>{t('profile.dataSources')}</Text>
-                {[
-                  [t('profile.sourceSleep'), t('profile.sourceSleepDesc')],
-                  [t('profile.hrv'), Platform.OS === 'ios' ? t('profile.sourceHrvDescIos') : t('profile.sourceHrvDescAndroid')],
-                  [t('profile.sourceRhr'), t('profile.sourceRhrDesc')],
-                ].map(([name, desc]) => (
-                  <View key={name} style={styles.healthSourceRow}>
-                    <Text style={styles.healthSourceName}>{name}</Text>
-                    <Text style={styles.healthSourceDesc}>{desc}</Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Disconnect */}
-              <Tappable style={styles.healthDisconnectBtn} onPress={handleDisconnectHealth}>
-                <Text style={styles.healthDisconnectText}>{t('profile.disconnect')}</Text>
-              </Tappable>
-            </>
-          )}
-
-            </View>
+            <HealthPanel
+              healthAuthorized={healthAuthorized}
+              healthLoading={healthLoading}
+              recoveryData={recoveryData}
+              onConnect={handleConnectHealth}
+              onDisconnect={handleDisconnectHealth}
+            />
           )}
 
         </View>
@@ -1177,7 +1102,6 @@ const styles = StyleSheet.create({
   metricDate: { fontSize: 12, color: colors.textSubtle, width: 45 },
   metricVal: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   metricSub: { fontSize: 12, color: colors.textSubtle },
-  empty: { fontSize: 13, color: colors.textSubtle },
   dropdownArrow: { fontSize: 9, color: colors.textSubtle },
   prReps: { fontSize: 12, color: colors.textSubtle },
   langRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -1203,19 +1127,4 @@ const styles = StyleSheet.create({
   expBtnLabelActive: { color: colors.textPrimary },
   expBtnSub: { fontSize: 10, color: colors.textFaint, marginTop: 2 },
   expBtnSubActive: { color: colors.textPrimary },
-  // Health tab
-  healthDesc: { fontSize: 13, color: colors.textSubtle, lineHeight: 20, marginBottom: 16 },
-  healthConnectBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 10, paddingVertical: 13, alignItems: 'center' },
-  healthConnectBtnText: { fontSize: 14, fontWeight: '700', color: colors.surfaceRaised },
-  healthStatusLabel: { fontSize: 32, fontWeight: '800', marginBottom: 14 },
-  healthMetricsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  healthMetric: { flex: 1, backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
-  healthMetricVal: { fontSize: 18, fontWeight: '700', color: colors.textPrimary, marginBottom: 2 },
-  healthMetricLabel: { fontSize: 10, color: colors.textSubtle },
-  healthAdvice: { fontSize: 13, color: colors.textMuted, lineHeight: 19, paddingTop: 12, borderTopWidth: 0.5, borderTopColor: colors.border },
-  healthSourceRow: { paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  healthSourceName: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
-  healthSourceDesc: { fontSize: 12, color: colors.textSubtle, lineHeight: 17 },
-  healthDisconnectBtn: { marginHorizontal: 20, marginTop: 14, paddingVertical: 14, alignItems: 'center' },
-  healthDisconnectText: { fontSize: 13, color: colors.textSubtle },
 });
