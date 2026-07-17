@@ -1,10 +1,11 @@
 import React from 'react';
 import {
-  View, Text, Modal, ScrollView, Pressable,
-  StyleSheet, StatusBar,
+  View, Text, Modal, ScrollView, StyleSheet, StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 export default function ExerciseSlideshow({ exercise, visible, onClose }) {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#0F0F13" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <View style={styles.container}>
 
         {/* Header */}
@@ -36,9 +37,9 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
                 </Text>
               )}
             </View>
-            <Pressable onPress={onClose} style={styles.doneBtn}>
+            <Tappable onPress={onClose} style={styles.doneBtn}>
               <Text style={styles.doneBtnText}>{t('common.done')}</Text>
-            </Pressable>
+            </Tappable>
           </View>
         </View>
 
@@ -76,50 +77,49 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F13' },
+  container: { flex: 1, backgroundColor: colors.bg },
 
   header: {
     paddingTop: 12,
     paddingHorizontal: 20,
     paddingBottom: 14,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#2C2C35',
+    borderBottomColor: colors.border,
     alignItems: 'center',
   },
-  handle: { width: 36, height: 4, backgroundColor: '#2C2C35', borderRadius: 2, marginBottom: 14 },
+  handle: { width: 36, height: 4, backgroundColor: colors.control, borderRadius: 2, marginBottom: 14 },
   headerContent: { flexDirection: 'row', alignItems: 'flex-start', width: '100%' },
   exerciseName: {
-    fontSize: 20, fontWeight: '700', color: '#FFFFFF',
+    fontSize: 20, fontWeight: '700', color: colors.textPrimary,
     letterSpacing: -0.3, textTransform: 'capitalize',
   },
-  prescription: { fontSize: 12, color: '#9494A0', marginTop: 3 },
+  prescription: { fontSize: 12, color: colors.textSubtle, marginTop: 3 },
   doneBtn: {
     paddingHorizontal: 16, paddingVertical: 7,
-    backgroundColor: '#1C1C22', borderRadius: 20,
-    borderWidth: 0.5, borderColor: '#FFFFFF',
+    backgroundColor: colors.surfaceElevated, borderRadius: 20,
+    borderWidth: 0.5, borderColor: colors.border,
   },
-  doneBtnText: { color: '#E4E4E8', fontSize: 14, fontWeight: '600' },
+  doneBtnText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
 
   cuesSection: { padding: 20, paddingBottom: 4 },
   sectionLabel: {
-    fontSize: 10, fontWeight: '700', color: '#8A8A94',
+    fontSize: 10, fontWeight: '700', color: colors.textFaint,
     letterSpacing: 1.2, marginBottom: 12,
   },
   cueRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   cueNum: {
     width: 20, height: 20, borderRadius: 10,
-    backgroundColor: '#1D9E7522',
+    backgroundColor: colors.accentSoft,
     alignItems: 'center', justifyContent: 'center',
     marginTop: 1, flexShrink: 0,
   },
-  cueNumText: { color: '#1D9E75', fontSize: 10, fontWeight: '700' },
-  cueText: { flex: 1, fontSize: 14, color: '#A1A1AA', lineHeight: 21 },
+  cueNumText: { color: colors.accent, fontSize: 10, fontWeight: '700' },
+  cueText: { flex: 1, fontSize: 14, color: colors.textMuted, lineHeight: 21 },
 
   researchSection: { paddingHorizontal: 20, paddingTop: 8 },
   researchCard: {
-    backgroundColor: '#1A1A20', borderRadius: 12, padding: 14,
-    borderWidth: 0.5, borderColor: '#2C2C35',
-    borderLeftWidth: 3, borderLeftColor: '#FFFFFF',
+    backgroundColor: colors.surface, borderRadius: 12, padding: 14,
+    borderWidth: 0.5, borderColor: colors.border,
   },
-  researchText: { fontSize: 13, color: '#9494A0', lineHeight: 20 },
+  researchText: { fontSize: 13, color: colors.textSubtle, lineHeight: 20 },
 });

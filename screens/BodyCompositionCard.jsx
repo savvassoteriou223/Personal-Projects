@@ -1,9 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import {
+  View, Text, StyleSheet, Dimensions,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { analyseBodyComposition } from './BodyCompositionEngine';
+import { colors } from '../lib/theme';
 
 const SCREEN_W = Dimensions.get('window').width;
 const CHART_W = SCREEN_W - 48; // card padding
@@ -61,8 +64,8 @@ function WeightChart({ movingAvgs, targetWeight }) {
     <Svg width={CHART_W} height={CHART_H}>
       <Defs>
         <LinearGradient id="avgGrad" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0.25" />
-          <Stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
+          <Stop offset="0" stopColor={colors.textPrimary} stopOpacity="0.25" />
+          <Stop offset="1" stopColor={colors.textPrimary} stopOpacity="0" />
         </LinearGradient>
       </Defs>
 
@@ -76,7 +79,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           cx={xScale(i)}
           cy={yScale(m.raw)}
           r={2}
-          fill="#3D3D4A"
+          fill={colors.borderStrong}
         />
       ))}
 
@@ -87,7 +90,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           y1={targetY}
           x2={CHART_W - PAD.right}
           y2={targetY}
-          stroke="#1D9E75"
+          stroke={colors.accent}
           strokeWidth={1}
           strokeDasharray="4,3"
           opacity={0.6}
@@ -98,7 +101,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           x={CHART_W - PAD.right - 2}
           y={targetY - 4}
           fontSize={8}
-          fill="#1D9E75"
+          fill={colors.accent}
           textAnchor="end"
           opacity={0.8}
         >
@@ -107,14 +110,14 @@ function WeightChart({ movingAvgs, targetWeight }) {
       )}
 
       {/* Moving average line */}
-      <Path d={avgPath} stroke="#FFFFFF" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d={avgPath} stroke={colors.textPrimary} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
 
       {/* Latest point */}
       <Circle
         cx={xScale(movingAvgs.length - 1)}
         cy={yScale(movingAvgs[movingAvgs.length - 1].avg7)}
         r={4}
-        fill="#FFFFFF"
+        fill={colors.textPrimary}
       />
 
       {/* Y-axis labels */}
@@ -124,7 +127,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           x={PAD.left - 4}
           y={yScale(tick) + 3}
           fontSize={8}
-          fill="#8A8A94"
+          fill={colors.textFaint}
           textAnchor="end"
         >
           {tick}
@@ -138,7 +141,7 @@ function WeightChart({ movingAvgs, targetWeight }) {
           x={xScale(i)}
           y={CHART_H - 4}
           fontSize={8}
-          fill="#8A8A94"
+          fill={colors.textFaint}
           textAnchor="middle"
         >
           {formatDate(movingAvgs[i].date)}
@@ -171,7 +174,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
   const targetWeight = profile.target_weight_kg;
 
   const trendLabel = trend === 'cutting' ? t('cards.bodyComp.cutting') : trend === 'gaining' ? t('cards.bodyComp.building') : t('cards.bodyComp.maintaining');
-  const trendColor = trend === 'cutting' ? '#FFFFFF' : trend === 'gaining' ? '#1D9E75' : '#9494A0';
+  const trendColor = trend === 'cutting' ? colors.textPrimary : trend === 'gaining' ? colors.accent : colors.textSubtle;
 
   const rateStr = weeklyRate !== null
     ? t('cards.bodyComp.ratePerWeek', { rate: `${weeklyRate > 0 ? '+' : ''}${weeklyRate.toFixed(2)}` })
@@ -204,16 +207,16 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#3D3D4A' }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.borderStrong }]} />
           <Text style={styles.legendText}>{t('cards.bodyComp.dailyWeight')}</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#FFFFFF' }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.surfaceInverse }]} />
           <Text style={styles.legendText}>{t('cards.bodyComp.sevenDayAverage')}</Text>
         </View>
         {targetWeight && (
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#1D9E75' }]} />
+            <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
             <Text style={styles.legendText}>{t('cards.bodyComp.target')}</Text>
           </View>
         )}
@@ -269,7 +272,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
       {/* Alerts */}
       {waterSpike && (
         <View style={styles.alertCard}>
-          <Ionicons name="water" size={18} color="#1D9E75" style={styles.alertIcon} />
+          <Ionicons name="water" size={18} color={colors.accent} style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={styles.alertTitle}>{t('cards.bodyComp.alerts.waterTitle')}</Text>
             <Text style={styles.alertBody}>
@@ -281,7 +284,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {muscleLossRisk && (
         <View style={[styles.alertCard, styles.alertCardRed]}>
-          <Ionicons name="warning" size={18} color="#E85D5C" style={styles.alertIcon} />
+          <Ionicons name="warning" size={18} color={colors.danger} style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleRed]}>{t('cards.bodyComp.alerts.muscleLossTitle')}</Text>
             <Text style={styles.alertBody}>
@@ -293,7 +296,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {excessFatRisk && (
         <View style={[styles.alertCard, styles.alertCardAmber]}>
-          <Ionicons name="trending-up" size={18} color="#BA7517" style={styles.alertIcon} />
+          <Ionicons name="trending-up" size={18} color={colors.warning} style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleAmber]}>{t('cards.bodyComp.alerts.gainFastTitle')}</Text>
             <Text style={styles.alertBody}>
@@ -305,7 +308,7 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
       {stalled && (
         <View style={[styles.alertCard, styles.alertCardAmber]}>
-          <Ionicons name="pause-circle" size={18} color="#BA7517" style={styles.alertIcon} />
+          <Ionicons name="pause-circle" size={18} color={colors.warning} style={styles.alertIcon} />
           <View style={styles.alertText}>
             <Text style={[styles.alertTitle, styles.alertTitleAmber]}>{t('cards.bodyComp.alerts.stalledTitle')}</Text>
             <Text style={styles.alertBody}>
@@ -325,17 +328,17 @@ export default function BodyCompositionCard({ metrics = [], profile = {} }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#111114',
+    backgroundColor: colors.surfaceRaised,
     borderRadius: 18,
     padding: 16,
     borderWidth: 0.5,
-    borderColor: '#2C2C35',
+    borderColor: colors.border,
     marginBottom: 16,
   },
   cardTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     marginBottom: 6,
   },
   header: {
@@ -350,17 +353,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7, paddingVertical: 2,
   },
   trendLabel: { fontSize: 11, fontWeight: '700' },
-  rateText: { fontSize: 12, color: '#9494A0', fontWeight: '500' },
+  rateText: { fontSize: 12, color: colors.textSubtle, fontWeight: '500' },
   currentWeightWrap: { alignItems: 'flex-end' },
-  currentWeight: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1 },
-  currentWeightUnit: { fontSize: 10, color: '#9494A0', marginTop: -2 },
+  currentWeight: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -1 },
+  currentWeightUnit: { fontSize: 10, color: colors.textSubtle, marginTop: -2 },
 
   chartWrap: { marginBottom: 8 },
 
   legend: { flexDirection: 'row', gap: 14, marginBottom: 14 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendText: { fontSize: 10, color: '#8A8A94' },
+  legendText: { fontSize: 10, color: colors.textFaint },
 
   statsRow: {
     flexDirection: 'row',
@@ -369,37 +372,37 @@ const styles = StyleSheet.create({
   },
   stat: {
     flex: 1,
-    backgroundColor: '#0F0F18',
+    backgroundColor: colors.bg,
     borderRadius: 10,
     padding: 10,
     alignItems: 'center',
     borderWidth: 0.5,
-    borderColor: '#2C2C35',
+    borderColor: colors.border,
   },
-  statValue: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
-  statLabel: { fontSize: 9, color: '#8A8A94', textAlign: 'center' },
+  statValue: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: 2 },
+  statLabel: { fontSize: 9, color: colors.textFaint, textAlign: 'center' },
 
   paceCard: {
     borderRadius: 12, borderWidth: 0.5,
     padding: 12, marginBottom: 10,
-    backgroundColor: '#0F0F18',
+    backgroundColor: colors.bg,
   },
   paceHeader: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 5 },
   paceDot: { width: 8, height: 8, borderRadius: 4 },
   paceLabel: { fontSize: 12, fontWeight: '700' },
-  paceMessage: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
+  paceMessage: { fontSize: 12, color: colors.textMuted, lineHeight: 18 },
 
   projectionCard: {
-    backgroundColor: '#0F1A12',
+    backgroundColor: colors.successBg,
     borderRadius: 12,
     borderWidth: 0.5,
     borderColor: '#1D9E7533',
     padding: 12,
     marginBottom: 10,
   },
-  projectionText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 6 },
-  projectionHighlight: { color: '#1D9E75', fontWeight: '700' },
-  projectionDisclaimer: { fontSize: 10, color: '#8A8A94', fontStyle: 'italic' },
+  projectionText: { fontSize: 13, color: colors.textMuted, lineHeight: 20, marginBottom: 6 },
+  projectionHighlight: { color: colors.accent, fontWeight: '700' },
+  projectionDisclaimer: { fontSize: 10, color: colors.textFaint, fontStyle: 'italic' },
 
   alertCard: {
     flexDirection: 'row', gap: 10, alignItems: 'flex-start',
@@ -407,15 +410,15 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 0.5, borderColor: '#FFFFFF1A',
     padding: 12, marginBottom: 8,
   },
-  alertCardRed: { backgroundColor: '#1A0E0E', borderColor: '#E85D5C44' },
-  alertCardAmber: { backgroundColor: '#1A1208', borderColor: '#BA751744' },
+  alertCardRed: { backgroundColor: colors.dangerBg, borderColor: colors.dangerHair },
+  alertCardAmber: { backgroundColor: colors.warningBg, borderColor: '#BA751744' },
   alertIcon: { marginTop: 1 },
   alertText: { flex: 1 },
-  alertTitle: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  alertTitleRed: { color: '#E85D5C' },
-  alertTitleAmber: { color: '#BA7517' },
-  alertBody: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
+  alertTitle: { fontSize: 13, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 },
+  alertTitleRed: { color: colors.danger },
+  alertTitleAmber: { color: colors.warning },
+  alertBody: { fontSize: 12, color: colors.textMuted, lineHeight: 18 },
 
-  emptyText: { fontSize: 13, color: '#9494A0', lineHeight: 20 },
-  scienceFooter: { fontSize: 9, color: '#8A8A94', marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
+  emptyText: { fontSize: 13, color: colors.textSubtle, lineHeight: 20 },
+  scienceFooter: { fontSize: 9, color: colors.textFaint, marginTop: 12, fontStyle: 'italic', lineHeight: 14 },
 });

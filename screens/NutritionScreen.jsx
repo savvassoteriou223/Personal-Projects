@@ -1,11 +1,15 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import {
+  useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { supabase, getCurrentUser } from '../supabase';
 import { generateProgram } from './programGenerator';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 const MEAL_KEYS = ['breakfast', 'lunch', 'dinner', 'snack'];
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -113,9 +117,9 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
 
   const remaining = targets.calories - Math.round(totals.calories);
   const macros = [
-    { key: 'protein', label: t('nutrition.macros.protein'), val: totals.protein, target: targets.protein, color: '#FFFFFF' },
-    { key: 'carbs',   label: t('nutrition.macros.carbs'),   val: totals.carbs,   target: targets.carbs,   color: '#BA7517' },
-    { key: 'fat',     label: t('nutrition.macros.fat'),     val: totals.fat,      target: targets.fat,     color: '#E85D5C' },
+    { key: 'protein', label: t('nutrition.macros.protein'), val: totals.protein, target: targets.protein, color: colors.textPrimary },
+    { key: 'carbs',   label: t('nutrition.macros.carbs'),   val: totals.carbs,   target: targets.carbs,   color: colors.warning },
+    { key: 'fat',     label: t('nutrition.macros.fat'),     val: totals.fat,      target: targets.fat,     color: colors.danger },
   ];
 
   const hour = new Date().getHours();
@@ -126,9 +130,9 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
       <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         <Text style={styles.title}>{t('nutrition.title')}</Text>
         {!isPremium && (
-          <Pressable style={styles.upgradeChip} onPress={onOpenNutrition}>
+          <Tappable style={styles.upgradeChip} onPress={onOpenNutrition}>
             <Text style={styles.upgradeChipText}>{t('nutrition.upgrade')}</Text>
-          </Pressable>
+          </Tappable>
         )}
       </View>
 
@@ -145,12 +149,12 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
               </Text>
             </View>
             <View style={styles.trainingToggle}>
-              <Pressable style={[styles.toggleBtn, isTrainingDay && styles.toggleBtnActive]} onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(true); }}>
+              <Tappable style={[styles.toggleBtn, isTrainingDay && styles.toggleBtnActive]} onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(true); }}>
                 <Text style={[styles.toggleBtnText, isTrainingDay && styles.toggleBtnTextActive]}>{t('nutrition.train')}</Text>
-              </Pressable>
-              <Pressable style={[styles.toggleBtn, !isTrainingDay && styles.toggleBtnActive]} onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(false); }}>
+              </Tappable>
+              <Tappable style={[styles.toggleBtn, !isTrainingDay && styles.toggleBtnActive]} onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(false); }}>
                 <Text style={[styles.toggleBtnText, !isTrainingDay && styles.toggleBtnTextActive]}>{t('nutrition.rest')}</Text>
-              </Pressable>
+              </Tappable>
             </View>
           </View>
         </View>
@@ -167,7 +171,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
             <>
               <View style={styles.calDivider} />
               <View style={styles.calBlock}>
-                <Text style={[styles.calVal, { color: remaining >= 0 ? '#1D9E75' : '#E85D5C' }]}>{Math.abs(remaining)}</Text>
+                <Text style={[styles.calVal, { color: remaining >= 0 ? colors.accent : colors.danger }]}>{Math.abs(remaining)}</Text>
                 <Text style={styles.calLabel}>{remaining >= 0 ? t('nutrition.remaining') : t('nutrition.over')}</Text>
               </View>
               <View style={styles.calDivider} />
@@ -202,9 +206,9 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
                   <Text style={styles.mealName}>{t(`nutrition.meals.${mealKey}`)}</Text>
                   <Text style={styles.mealSub}>{mealEntries.length === 0 ? t('nutrition.nothingLogged') : t('nutrition.kcal', { value: Math.round(mealMacros.calories) })}</Text>
                 </View>
-                <Pressable style={styles.addBtn} onPress={() => onOpenNutritionMeal(mealKey)}>
+                <Tappable style={styles.addBtn} onPress={() => onOpenNutritionMeal(mealKey)}>
                   <Text style={styles.addBtnText}>{t('nutrition.add')}</Text>
-                </Pressable>
+                </Tappable>
               </View>
               {mealEntries.map(entry => (
                 <View key={entry.id} style={styles.entryRow}>
@@ -231,47 +235,47 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F13' },
+  container: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 24 },
-  title: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
-  upgradeChip: { backgroundColor: '#2C2C35', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 0.5, borderColor: '#3D3D4A' },
-  upgradeChipText: { fontSize: 11, color: '#A1A1AA', fontWeight: '500' },
+  title: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5 },
+  upgradeChip: { backgroundColor: colors.control, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 0.5, borderColor: colors.borderStrong },
+  upgradeChipText: { fontSize: 11, color: colors.textMuted, fontWeight: '500' },
 
-  morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: '#1A1A20', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35' },
+  morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border },
   morningRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  morningTitle: { fontSize: 13, fontWeight: '600', color: '#FFFFFF', marginBottom: 3 },
-  morningTarget: { fontSize: 11, color: '#9494A0', lineHeight: 16 },
-  trainingToggle: { flexDirection: 'row', backgroundColor: '#12121A', borderRadius: 8, padding: 2, gap: 2 },
+  morningTitle: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 3 },
+  morningTarget: { fontSize: 11, color: colors.textSubtle, lineHeight: 16 },
+  trainingToggle: { flexDirection: 'row', backgroundColor: colors.surfaceInset, borderRadius: 8, padding: 2, gap: 2 },
   toggleBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
-  toggleBtnActive: { backgroundColor: '#2C2C35' },
-  toggleBtnText: { fontSize: 11, color: '#8A8A94', fontWeight: '600' },
-  toggleBtnTextActive: { color: '#FFFFFF' },
+  toggleBtnActive: { backgroundColor: colors.control },
+  toggleBtnText: { fontSize: 11, color: colors.textFaint, fontWeight: '600' },
+  toggleBtnTextActive: { color: colors.textPrimary },
 
 
-  summaryCard: { marginHorizontal: 24, marginBottom: 24, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  summaryCard: { marginHorizontal: 24, marginBottom: 24, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border },
   calRow: { flexDirection: 'row', marginBottom: 16 },
   calBlock: { flex: 1, alignItems: 'center' },
-  calVal: { fontSize: 24, fontWeight: '700', color: '#FFFFFF' },
-  calLabel: { fontSize: 11, color: '#9494A0', marginTop: 2 },
-  calDivider: { width: 0.5, backgroundColor: '#2C2C35' },
+  calVal: { fontSize: 24, fontWeight: '700', color: colors.textPrimary },
+  calLabel: { fontSize: 11, color: colors.textSubtle, marginTop: 2 },
+  calDivider: { width: 0.5, backgroundColor: colors.control },
   macroRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  macroLabel: { fontSize: 12, color: '#9494A0', width: 52 },
-  macroBarBg: { flex: 1, height: 5, backgroundColor: '#2C2C35', borderRadius: 3, overflow: 'hidden' },
+  macroLabel: { fontSize: 12, color: colors.textSubtle, width: 52 },
+  macroBarBg: { flex: 1, height: 5, backgroundColor: colors.control, borderRadius: 3, overflow: 'hidden' },
   macroBarFill: { height: 5, borderRadius: 3 },
-  macroVal: { fontSize: 11, color: '#9494A0', width: 68, textAlign: 'right' },
+  macroVal: { fontSize: 11, color: colors.textSubtle, width: 68, textAlign: 'right' },
 
   mealsSection: { paddingHorizontal: 24 },
-  mealCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 0.5, borderColor: '#2C2C35' },
+  mealCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 0.5, borderColor: colors.border },
   mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  mealName: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
-  mealSub: { fontSize: 13, color: '#9494A0' },
-  addBtn: { borderWidth: 0.5, borderColor: '#3D3D4A', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-  addBtnText: { fontSize: 12, color: '#FFFFFF', fontWeight: '500' },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginTop: 4, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
-  entryName: { fontSize: 13, color: '#A1A1AA', flex: 1, marginRight: 8 },
-  entryCal: { fontSize: 13, color: '#9494A0' },
-  mealMacroRow: { paddingTop: 10, marginTop: 6, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
-  mealMacroText: { fontSize: 12, color: '#8A8A94' },
-  insightRow: { marginTop: 10, backgroundColor: '#111114', borderRadius: 10, padding: 10, borderWidth: 0.5, borderColor: '#2C2C35' },
-  insightText: { fontSize: 12, color: '#A1A1AA', lineHeight: 18 },
+  mealName: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
+  mealSub: { fontSize: 13, color: colors.textSubtle },
+  addBtn: { borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
+  addBtnText: { fontSize: 12, color: colors.textPrimary, fontWeight: '500' },
+  entryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginTop: 4, borderTopWidth: 0.5, borderTopColor: colors.border },
+  entryName: { fontSize: 13, color: colors.textMuted, flex: 1, marginRight: 8 },
+  entryCal: { fontSize: 13, color: colors.textSubtle },
+  mealMacroRow: { paddingTop: 10, marginTop: 6, borderTopWidth: 0.5, borderTopColor: colors.border },
+  mealMacroText: { fontSize: 12, color: colors.textFaint },
+  insightRow: { marginTop: 10, backgroundColor: colors.surfaceRaised, borderRadius: 10, padding: 10, borderWidth: 0.5, borderColor: colors.border },
+  insightText: { fontSize: 12, color: colors.textMuted, lineHeight: 18 },
 });

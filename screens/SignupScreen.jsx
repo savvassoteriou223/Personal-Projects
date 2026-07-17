@@ -1,10 +1,14 @@
-import { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import {
+  useState, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform, Alert,
+} from 'react-native';
 import * as Linking from 'expo-linking';
 import { supabase } from '../supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { friendlyAuthError } from '../lib/errorMessage';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
   const { t } = useTranslation();
@@ -86,10 +90,10 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
             {t('auth.emailSent.text', { email })}
           </Text>
         </View>
-        <Pressable onPress={onGoToLogin} style={[styles.btn, { marginTop: 24 }]}>
+        <Tappable onPress={onGoToLogin} style={[styles.btn, { marginTop: 24 }]}>
           <Text style={styles.btnText}>{t('auth.backToSignIn')}</Text>
-        </Pressable>
-        <Pressable
+        </Tappable>
+        <Tappable
           onPress={async () => {
             const { error: resendError } = await supabase.auth.resend({ type: 'signup', email });
             if (resendError) {
@@ -100,8 +104,8 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           }}
           style={{ alignItems: 'center', marginTop: 16 }}
         >
-          <Text style={{ color: '#9494A0', fontSize: 14 }}>{t('auth.emailSent.resend')}</Text>
-        </Pressable>
+          <Text style={{ color: colors.textSubtle, fontSize: 14 }}>{t('auth.emailSent.resend')}</Text>
+        </Tappable>
       </SafeAreaView>
     );
   }
@@ -118,9 +122,9 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Pressable onPress={onGoBack} style={{ paddingBottom: 24 }}>
-            <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('auth.back')}</Text>
-          </Pressable>
+          <Tappable onPress={onGoBack} style={{ paddingBottom: 24 }}>
+            <Text style={{ color: colors.textSubtle, fontSize: 15 }}>← {t('auth.back')}</Text>
+          </Tappable>
 
           <Text style={styles.title}>{t('auth.signup.title')}</Text>
           <Text style={styles.sub}>{t('auth.signup.subtitle')}</Text>
@@ -132,7 +136,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               value={name}
               onChangeText={setName}
               placeholder={t('auth.signup.namePlaceholder')}
-              placeholderTextColor="#8A8A94"
+              placeholderTextColor={colors.textFaint}
               autoCapitalize="words"
               returnKeyType="next"
             />
@@ -145,7 +149,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               value={email}
               onChangeText={setEmail}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#8A8A94"
+              placeholderTextColor={colors.textFaint}
               keyboardType="email-address"
               autoCapitalize="none"
               returnKeyType="next"
@@ -160,7 +164,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
                 value={dobDay}
                 onChangeText={v => { setDobDay(v.replace(/\D/g, '')); if (v.length >= 2) monthRef.current?.focus(); }}
                 placeholder="DD"
-                placeholderTextColor="#8A8A94"
+                placeholderTextColor={colors.textFaint}
                 keyboardType="number-pad"
                 maxLength={2}
                 returnKeyType="next"
@@ -173,7 +177,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
                 value={dobMonth}
                 onChangeText={v => { setDobMonth(v.replace(/\D/g, '')); if (v.length >= 2) yearRef.current?.focus(); }}
                 placeholder="MM"
-                placeholderTextColor="#8A8A94"
+                placeholderTextColor={colors.textFaint}
                 keyboardType="number-pad"
                 maxLength={2}
                 returnKeyType="next"
@@ -186,7 +190,7 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
                 value={dobYear}
                 onChangeText={v => setDobYear(v.replace(/\D/g, ''))}
                 placeholder="YYYY"
-                placeholderTextColor="#8A8A94"
+                placeholderTextColor={colors.textFaint}
                 keyboardType="number-pad"
                 maxLength={4}
                 returnKeyType="next"
@@ -198,13 +202,13 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
           <Text style={styles.inputSub}>{t('auth.signup.sexSub')}</Text>
           <View style={styles.sexRow}>
             {[['male', t('auth.signup.male')], ['female', t('auth.signup.female')], ['other', t('auth.signup.other')]].map(([val, label]) => (
-              <Pressable
+              <Tappable
                 key={val}
                 style={[styles.sexBtn, sex === val && styles.sexBtnActive]}
                 onPress={() => setSex(val)}
               >
                 <Text style={[styles.sexBtnText, sex === val && styles.sexBtnTextActive]}>{label}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
 
@@ -216,15 +220,15 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               placeholder={t('auth.signup.minChars')}
-              placeholderTextColor="#8A8A94"
+              placeholderTextColor={colors.textFaint}
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
               returnKeyType="next"
             />
-            <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+            <Tappable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
               <Text style={styles.eyeText}>{showPassword ? t('auth.hide') : t('auth.show')}</Text>
-            </Pressable>
+            </Tappable>
           </View>
 
           <Text style={styles.label}>{t('auth.signup.confirmPassword')}</Text>
@@ -235,39 +239,39 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
               onChangeText={setConfirm}
               secureTextEntry={!showConfirm}
               placeholder={t('auth.signup.confirmPlaceholder')}
-              placeholderTextColor="#8A8A94"
+              placeholderTextColor={colors.textFaint}
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="off"
               returnKeyType="done"
             />
-            <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
+            <Tappable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
               <Text style={styles.eyeText}>{showConfirm ? t('auth.hide') : t('auth.show')}</Text>
-            </Pressable>
+            </Tappable>
           </View>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Pressable
-            style={({ pressed }) => [styles.btn, pressed && { opacity: 0.8 }]}
+          <Tappable
+            style={styles.btn}
             onPress={handleSignup}
             disabled={loading}
           >
             {loading
-              ? <ActivityIndicator color="#111114" />
+              ? <ActivityIndicator color={colors.surfaceRaised} />
               : <Text style={styles.btnText}>{t('auth.signup.createAccount')}</Text>
             }
-          </Pressable>
+          </Tappable>
 
           <Text style={styles.legal}>
             {t('auth.signup.legal')}
           </Text>
 
-          <Pressable onPress={onGoToLogin} style={styles.switchLink}>
+          <Tappable onPress={onGoToLogin} style={styles.switchLink}>
             <Text style={styles.switchText}>
               {t('auth.signup.haveAccount')} <Text style={styles.switchHighlight}>{t('auth.signup.signIn')}</Text>
             </Text>
-          </Pressable>
+          </Tappable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -276,15 +280,15 @@ export default function SignupScreen({ onSignup, onGoToLogin, onGoBack }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
-  title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
-  sub: { fontSize: 15, color: '#9494A0', marginBottom: 40 },
-  label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
-  inputSub: { fontSize: 12, color: '#8A8A94', marginTop: -4, marginBottom: 8 },
-  inputWrap: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
-  inputInner: { padding: 16, color: '#FFFFFF', fontSize: 16, backgroundColor: 'transparent' },
-  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
+  title: { fontSize: 32, fontWeight: '700', color: colors.textPrimary, letterSpacing: -1, marginBottom: 8 },
+  sub: { fontSize: 15, color: colors.textSubtle, marginBottom: 40 },
+  label: { fontSize: 13, color: colors.textMuted, fontWeight: '500', marginBottom: 8, marginTop: 16 },
+  inputSub: { fontSize: 12, color: colors.textFaint, marginTop: -4, marginBottom: 8 },
+  inputWrap: { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border },
+  inputInner: { padding: 16, color: colors.textPrimary, fontSize: 16, backgroundColor: 'transparent' },
+  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border },
   eyeBtn: { paddingHorizontal: 14 },
-  eyeText: { fontSize: 13, color: '#9494A0' },
+  eyeText: { fontSize: 13, color: colors.textSubtle },
   dobRow: { flexDirection: 'row', gap: 8 },
   dobDay: { width: 64 },
   dobMonth: { width: 64 },
@@ -292,18 +296,18 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 12 },
   rowHalf: { flex: 1 },
   sexRow: { flexDirection: 'row', gap: 8, marginTop: 0 },
-  sexBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', paddingVertical: 16, alignItems: 'center' },
-  sexBtnActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  sexBtnText: { fontSize: 15, color: '#9494A0', fontWeight: '500' },
-  sexBtnTextActive: { color: '#E4E4E8', fontWeight: '600' },
-  error: { color: '#E85D5C', fontSize: 13, marginTop: 12, textAlign: 'center' },
-  btn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
-  btnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
-  legal: { fontSize: 12, color: '#8A8A94', textAlign: 'center', marginTop: 16, lineHeight: 18 },
+  sexBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, paddingVertical: 16, alignItems: 'center' },
+  sexBtnActive: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderActive },
+  sexBtnText: { fontSize: 15, color: colors.textSubtle, fontWeight: '500' },
+  sexBtnTextActive: { color: colors.textSecondary, fontWeight: '600' },
+  error: { color: colors.danger, fontSize: 13, marginTop: 12, textAlign: 'center' },
+  btn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+  btnText: { color: colors.surfaceRaised, fontSize: 16, fontWeight: '600' },
+  legal: { fontSize: 12, color: colors.textFaint, textAlign: 'center', marginTop: 16, lineHeight: 18 },
   switchLink: { alignItems: 'center', marginTop: 16 },
-  switchText: { color: '#9494A0', fontSize: 14 },
-  switchHighlight: { color: '#FFFFFF', fontWeight: '600' },
-  sentBox: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 20, borderWidth: 0.5, borderColor: '#1D9E75' },
-  sentTitle: { fontSize: 16, fontWeight: '700', color: '#1D9E75', marginBottom: 8 },
-  sentText: { fontSize: 14, color: '#A1A1AA', lineHeight: 22 },
+  switchText: { color: colors.textSubtle, fontSize: 14 },
+  switchHighlight: { color: colors.textPrimary, fontWeight: '600' },
+  sentBox: { backgroundColor: colors.surface, borderRadius: 16, padding: 20, borderWidth: 0.5, borderColor: colors.accent },
+  sentTitle: { fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 8 },
+  sentText: { fontSize: 14, color: colors.textMuted, lineHeight: 22 },
 });

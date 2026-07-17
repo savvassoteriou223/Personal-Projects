@@ -27,6 +27,7 @@ import ProgressScreen from './screens/ProgressScreen';
 import ResetPasswordScreen from './screens/ResetPasswordScreen';
 import Constants from 'expo-constants';
 import { checkForUpdate, openStore } from './lib/updateCheck';
+import { colors } from './lib/theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -55,9 +56,9 @@ function TabIcon({ route, color, focused, isLocked }) {
         <View style={{
           position: 'absolute', top: -2, right: -4,
           width: 10, height: 10, borderRadius: 5,
-          backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center',
+          backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center',
         }}>
-          <Ionicons name="lock-closed" size={8} color="#111114" />
+          <Ionicons name="lock-closed" size={8} color={colors.textOnLight} />
         </View>
       )}
     </View>
@@ -70,7 +71,7 @@ function ProfileTabScreen({ onSignOut, isAdmin }) {
   const [view, setView] = useState('profile'); // 'profile' | 'progress'
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0F0F13' }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Sub-tab switcher */}
       <View style={pt.subTabBar}>
         <Pressable
@@ -102,18 +103,18 @@ const pt = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 10,
     gap: 8,
-    backgroundColor: '#0F0F13',
+    backgroundColor: colors.bg,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#1E1E28',
+    borderBottomColor: colors.borderSoft,
   },
   subTab: {
-    flex: 1, paddingVertical: 8, borderRadius: 10,
-    alignItems: 'center', backgroundColor: '#18181F',
-    borderWidth: 0.5, borderColor: '#2C2C35',
+    flex: 1, paddingVertical: 11, borderRadius: 10,
+    alignItems: 'center', backgroundColor: colors.surfaceElevated,
+    borderWidth: 0.5, borderColor: colors.border,
   },
-  subTabActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  subTabText: { fontSize: 13, color: '#8A8A94', fontWeight: '500' },
-  subTabTextActive: { color: '#FFFFFF', fontWeight: '700' },
+  subTabActive: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderActive },
+  subTabText: { fontSize: 13, color: colors.textFaint, fontWeight: '500' },
+  subTabTextActive: { color: colors.textPrimary, fontWeight: '700' },
 });
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
@@ -439,11 +440,11 @@ export default function App() {
   const renderContent = () => {
     if (screen === 'loading') {
       return (
-        <View style={{ flex: 1, backgroundColor: '#0F0F13', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 62, fontWeight: '800', letterSpacing: 14, includeFontPadding: false }}>
+        <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <Text style={{ color: colors.textPrimary, fontSize: 62, fontWeight: '800', letterSpacing: 14, includeFontPadding: false }}>
             HELIX
           </Text>
-          <Text style={{ color: '#A1A1AA', fontSize: 13, fontWeight: '500', letterSpacing: 3, textTransform: 'uppercase' }}>
+          <Text style={{ color: colors.textMuted, fontSize: 13, fontWeight: '500', letterSpacing: 3, textTransform: 'uppercase' }}>
             Built on evidence
           </Text>
         </View>
@@ -547,9 +548,10 @@ export default function App() {
           safeAreaInsets={{ bottom: 0 }}
           screenOptions={({ route }) => ({
             headerShown: false,
+            animation: 'shift',
             tabBarStyle: {
-              backgroundColor: '#111114',
-              borderTopColor: '#1E1E28',
+              backgroundColor: colors.surfaceRaised,
+              borderTopColor: colors.borderSoft,
               borderTopWidth: 0.5,
               paddingTop: 10,
               paddingBottom: (initialWindowMetrics?.insets?.bottom ?? 0) + 8,
@@ -558,8 +560,8 @@ export default function App() {
             tabBarItemStyle: {
               paddingBottom: 0,
             },
-            tabBarActiveTintColor: '#FFFFFF',
-            tabBarInactiveTintColor: '#3D3D4A',
+            tabBarActiveTintColor: colors.textPrimary,
+            tabBarInactiveTintColor: colors.textFaint,
             tabBarLabelStyle: { fontSize: 10, fontWeight: '500', marginTop: 2 },
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
@@ -634,7 +636,7 @@ export default function App() {
             <Text style={updateBannerStyles.btnText}>Update now →</Text>
           </Pressable>
           <Pressable onPress={() => setUpdateAvailable(false)} style={updateBannerStyles.close}>
-            <Ionicons name="close" size={16} color="#A1A1AA" />
+            <Ionicons name="close" size={16} color={colors.textMuted} />
           </Pressable>
         </View>
       )}
@@ -659,9 +661,9 @@ const updateBannerStyles = StyleSheet.create({
     top: (initialWindowMetrics?.insets?.top ?? 44) + 8,
     left: 16,
     right: 16,
-    backgroundColor: '#1C1C28',
+    backgroundColor: colors.surfaceElevated,
     borderWidth: 0.5,
-    borderColor: '#3D3D5C',
+    borderColor: colors.borderStrong,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -669,8 +671,8 @@ const updateBannerStyles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 999,
   },
-  text: { color: '#A1A1AA', fontSize: 13, flex: 1 },
+  text: { color: colors.textMuted, fontSize: 13, flex: 1 },
   btn: { marginRight: 10 },
-  btnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  btnText: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
   close: { padding: 2 },
 });

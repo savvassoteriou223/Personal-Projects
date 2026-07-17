@@ -1,11 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import {
+  useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { GOAL_PARAMETERS } from './scienceEngine';
 import { resolveGoalCombo, GOAL_COMBO_CALORIES, calculateTDEE, calculateNutritionTargets } from './programGenerator';
 import { supabase, getCurrentUser } from '../supabase';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 export default function OnboardingScreen({ onComplete, onGoBack }) {
   const { t } = useTranslation();
@@ -118,7 +122,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
     : null;
   const bmiCategory = bmiCategoryKey ? t(`onboarding.bmiCategory.${bmiCategoryKey}`) : null;
   const bmiColor = bmi
-    ? bmi < 18.5 ? '#BA7517' : bmi < 25 ? '#1D9E75' : bmi < 30 ? '#BA7517' : '#E85D5C'
+    ? bmi < 18.5 ? colors.warning : bmi < 25 ? colors.accent : bmi < 30 ? colors.warning : colors.danger
     : null;
   const healthyLow = h ? (18.5 * ((h / 100) ** 2)).toFixed(1) : null;
   const healthyHigh = h ? (24.9 * ((h / 100) ** 2)).toFixed(1) : null;
@@ -250,7 +254,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
   };
 
   const feedback = goals.length > 0 ? getScheduleFeedback() : null;
-  const statusColors = { optimal: '#1D9E75', good: '#BA7517', suboptimal: '#E85D5C' };
+  const statusColors = { optimal: colors.accent, good: colors.warning, suboptimal: colors.danger };
   const statusLabels = { optimal: t('onboarding.feedback.optimal'), good: t('onboarding.feedback.good'), suboptimal: t('onboarding.feedback.suboptimal') };
 
   return (
@@ -264,9 +268,9 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
       </View>
       <Text style={styles.stepLabel}>{t('onboarding.stepLabel', { step, total: totalSteps })}</Text>
       {step === 1 && (
-        <Pressable onPress={onGoBack} style={{ paddingHorizontal: 24 }}>
-          <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('common.back')}</Text>
-        </Pressable>
+        <Tappable onPress={onGoBack} style={{ paddingHorizontal: 24 }}>
+          <Text style={{ color: colors.textSubtle, fontSize: 15 }}>← {t('common.back')}</Text>
+        </Tappable>
       )}
 
       {step === 1 && (
@@ -275,9 +279,9 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.stepSub}>{t('onboarding.step1.sub')}</Text>
 
           <Text style={styles.label}>{t('onboarding.step1.height')}</Text>
-          <TextInput style={styles.input} value={height} onChangeText={setHeight} keyboardType="numeric" placeholder={t('onboarding.step1.heightPlaceholder')} placeholderTextColor="#8A8A94" returnKeyType="next" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
+          <TextInput style={styles.input} value={height} onChangeText={setHeight} keyboardType="numeric" placeholder={t('onboarding.step1.heightPlaceholder')} placeholderTextColor={colors.textFaint} returnKeyType="next" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
           <Text style={styles.label}>{t('onboarding.step1.weight')}</Text>
-          <TextInput style={styles.input} value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder={t('onboarding.step1.weightPlaceholder')} placeholderTextColor="#8A8A94" returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
+          <TextInput style={styles.input} value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder={t('onboarding.step1.weightPlaceholder')} placeholderTextColor={colors.textFaint} returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
           {bmi && (
             <View style={styles.bmiCard}>
               <View style={styles.bmiRow}>
@@ -297,10 +301,10 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.stepSub}>{t('onboarding.step2.sub', { low: healthyLow, high: healthyHigh, weight })}</Text>
           <View style={styles.goalsWrap}>
             {GOALS.map((g) => (
-              <Pressable key={g.key} style={[styles.goalCard, goals.includes(g.key) && styles.goalCardActive]} onPress={() => toggleItem(goals, setGoals, g.key)}>
+              <Tappable key={g.key} style={[styles.goalCard, goals.includes(g.key) && styles.goalCardActive]} onPress={() => toggleItem(goals, setGoals, g.key)}>
                 <Text style={[styles.goalLabel, goals.includes(g.key) && styles.goalLabelActive]}>{g.label}</Text>
                 {goals.includes(g.key) && <Text style={styles.check}>✓</Text>}
-              </Pressable>
+              </Tappable>
             ))}
           </View>
           {goals.length > 0 && (() => {
@@ -315,7 +319,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
             );
           })()}
           <Text style={styles.label}>{t('onboarding.step2.targetWeight')}</Text>
-          <TextInput style={styles.input} value={targetWeight} onChangeText={setTargetWeight} keyboardType="numeric" placeholder={t('onboarding.step2.targetPlaceholder')} placeholderTextColor="#8A8A94" returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
+          <TextInput style={styles.input} value={targetWeight} onChangeText={setTargetWeight} keyboardType="numeric" placeholder={t('onboarding.step2.targetPlaceholder')} placeholderTextColor={colors.textFaint} returnKeyType="done" onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100)} />
           {weeksToGoal > 0 && <Text style={styles.estimate}>{t('onboarding.step2.estimate', { target: targetWeight, weeks: weeksToGoal })}</Text>}
         </View>
       )}
@@ -326,7 +330,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.stepSub}>{t('onboarding.step3.sub')}</Text>
           <View style={{ gap: 10, marginTop: 8 }}>
             {EXPERIENCE_OPTIONS.map((opt) => (
-              <Pressable
+              <Tappable
                 key={opt.key}
                 style={[styles.expCard, trainingExperience === opt.key && styles.expCardActive]}
                 onPress={() => setTrainingExperience(opt.key)}
@@ -336,9 +340,9 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                   <Text style={styles.expSublabel}>{t(`onboarding.experience.${opt.key}.sublabel`)}</Text>
                 </View>
                 {trainingExperience === opt.key && (
-                  <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>✓</Text>
+                  <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 16 }}>✓</Text>
                 )}
-              </Pressable>
+              </Tappable>
             ))}
           </View>
         </View>
@@ -352,18 +356,18 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.label}>{t('onboarding.step4.days')}</Text>
           <View style={styles.optionRow}>
             {[2, 3, 4, 5, 6].map((d) => (
-              <Pressable key={d} style={[styles.optionBtn, weeklyWorkouts === d && styles.optionBtnActive]} onPress={() => setWeeklyWorkouts(d)}>
+              <Tappable key={d} style={[styles.optionBtn, weeklyWorkouts === d && styles.optionBtnActive]} onPress={() => setWeeklyWorkouts(d)}>
                 <Text style={[styles.optionBtnText, weeklyWorkouts === d && styles.optionBtnTextActive]}>{d}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
 
           <Text style={styles.label}>{t('onboarding.step4.sessionLength')}</Text>
           <View style={styles.optionRow}>
             {[30, 45, 60, 90, 120].map((m) => (
-              <Pressable key={m} style={[styles.optionBtn, sessionLength === m && styles.optionBtnActive]} onPress={() => setSessionLength(m)}>
+              <Tappable key={m} style={[styles.optionBtn, sessionLength === m && styles.optionBtnActive]} onPress={() => setSessionLength(m)}>
                 <Text style={[styles.optionBtnText, sessionLength === m && styles.optionBtnTextActive]}>{m}m</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
 
@@ -385,21 +389,21 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.label}>{t('onboarding.step4.equipment')}</Text>
           <View style={styles.tagsWrap}>
             {EQUIPMENT.map((e) => (
-              <Pressable key={e.value} style={[styles.tag, equipment.includes(e.value) && styles.tagActive]} onPress={() => toggleItem(equipment, setEquipment, e.value)}>
+              <Tappable key={e.value} style={[styles.tag, equipment.includes(e.value) && styles.tagActive]} onPress={() => toggleItem(equipment, setEquipment, e.value)}>
                 <Text style={[styles.tagText, equipment.includes(e.value) && styles.tagTextActive]}>{e.label}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
 
-          <Text style={styles.label}>{t('onboarding.step4.sports')} <Text style={{ color: '#8A8A94', fontWeight: '400' }}>{t('onboarding.optional')}</Text></Text>
-          <Text style={{ fontSize: 12, color: '#9494A0', marginBottom: 12, lineHeight: 18 }}>
+          <Text style={styles.label}>{t('onboarding.step4.sports')} <Text style={{ color: colors.textFaint, fontWeight: '400' }}>{t('onboarding.optional')}</Text></Text>
+          <Text style={{ fontSize: 12, color: colors.textSubtle, marginBottom: 12, lineHeight: 18 }}>
             {t('onboarding.step4.sportsHint')}
           </Text>
           <View style={styles.tagsWrap}>
             {SPORTS.map((s) => {
               const selected = sports.find(x => x.key === s.key);
               return (
-                <Pressable
+                <Tappable
                   key={s.key}
                   style={[styles.tag, selected && styles.tagActive]}
                   onPress={() => {
@@ -411,7 +415,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                   }}
                 >
                   <Text style={[styles.tagText, selected && styles.tagTextActive]}>{sportLabel(s.key)}</Text>
-                </Pressable>
+                </Tappable>
               );
             })}
           </View>
@@ -419,7 +423,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
             <View style={{ marginTop: 16, gap: 14 }}>
               {sports.map((s) => (
                 <View key={s.key}>
-                  <Text style={{ fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8 }}>
+                  <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '500', marginBottom: 8 }}>
                     {t('onboarding.step4.sportDays', { sport: sportLabel(s.key) })}
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -428,7 +432,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                       const full = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][i];
                       const active = s.days.includes(full);
                       return (
-                        <Pressable
+                        <Tappable
                           key={full}
                           style={[styles.dayBtn, active && styles.dayBtnActive]}
                           onPress={() => setSports(prev => prev.map(x =>
@@ -439,7 +443,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                           ))}
                         >
                           <Text style={[styles.dayBtnText, active && styles.dayBtnTextActive]}>{short}</Text>
-                        </Pressable>
+                        </Tappable>
                       );
                     })}
                   </View>
@@ -456,27 +460,27 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           <Text style={styles.stepSub}>{t('onboarding.step5.sub')}</Text>
           <View style={styles.tagsWrap}>
             {SUPPLEMENTS.map((s) => (
-              <Pressable key={s.value} style={[styles.tag, supplements.includes(s.value) && styles.tagActive]} onPress={() => {
+              <Tappable key={s.value} style={[styles.tag, supplements.includes(s.value) && styles.tagActive]} onPress={() => {
                 if (s.value === 'None') { setSupplements(['None']); }
                 else { setSupplements(supplements.includes(s.value) ? supplements.filter((x) => x !== s.value) : [...supplements.filter((x) => x !== 'None'), s.value]); }
               }}>
                 <Text style={[styles.tagText, supplements.includes(s.value) && styles.tagTextActive]}>{s.label}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
           <Text style={styles.label}>{t('onboarding.step5.other')}</Text>
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-            <TextInput style={[styles.input, { flex: 1 }]} value={customSupplement} onChangeText={setCustomSupplement} placeholder={t('onboarding.step5.otherPlaceholder')} placeholderTextColor="#8A8A94" onSubmitEditing={addCustomSupplement} />
-            <Pressable style={{ backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }} onPress={addCustomSupplement}>
-              <Text style={{ color: '#111114', fontWeight: '600' }}>{t('onboarding.step5.add')}</Text>
-            </Pressable>
+            <TextInput style={[styles.input, { flex: 1 }]} value={customSupplement} onChangeText={setCustomSupplement} placeholder={t('onboarding.step5.otherPlaceholder')} placeholderTextColor={colors.textFaint} onSubmitEditing={addCustomSupplement} />
+            <Tappable style={{ backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }} onPress={addCustomSupplement}>
+              <Text style={{ color: colors.surfaceRaised, fontWeight: '600' }}>{t('onboarding.step5.add')}</Text>
+            </Tappable>
           </View>
           {customSupplements.length > 0 && (
             <View style={[styles.tagsWrap, { marginTop: 12 }]}>
               {customSupplements.map((s) => (
-                <Pressable key={s} style={styles.tagActive} onPress={() => setCustomSupplements(customSupplements.filter((x) => x !== s))}>
+                <Tappable key={s} style={styles.tagActive} onPress={() => setCustomSupplements(customSupplements.filter((x) => x !== s))}>
                   <Text style={styles.tagTextActive}>{s} ×</Text>
-                </Pressable>
+                </Tappable>
               ))}
             </View>
           )}
@@ -491,14 +495,14 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
               <Text style={styles.stepTitle}>{t('onboarding.step6.title')}</Text>
               <Text style={styles.stepSub}>{t('onboarding.step6.sub')}</Text>
 
-              <Pressable
+              <Tappable
                 style={[styles.noneBtn, noIssues && styles.noneBtnActive]}
                 onPress={() => { setNoIssues(v => !v); setHealthEntries([]); setH6search(''); }}
               >
                 <Text style={[styles.noneBtnText, noIssues && styles.noneBtnTextActive]}>
                   {noIssues ? t('onboarding.step6.noIssuesSelected') : t('onboarding.step6.noIssues')}
                 </Text>
-              </Pressable>
+              </Tappable>
 
               {/* Search + condition list collapse once "no issues" is chosen so
                   the Next button is reachable without scrolling past them. */}
@@ -507,7 +511,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                 value={h6search}
                 onChangeText={val => { setH6search(val); if (noIssues && val) setNoIssues(false); }}
                 placeholder={t('onboarding.step6.searchPlaceholder')}
-                placeholderTextColor="#8A8A94"
+                placeholderTextColor={colors.textFaint}
                 clearButtonMode="while-editing"
               />}
 
@@ -520,9 +524,9 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                         <Text style={styles.entryRegion}>{CONDITIONS_DB[e.region]?.label}</Text>
                         <Text style={styles.entryLabel}>{conditionSummaryLabel(e)}</Text>
                       </View>
-                      <Pressable onPress={() => setHealthEntries(prev => prev.filter((_, idx) => idx !== i))} style={styles.entryRemove}>
+                      <Tappable onPress={() => setHealthEntries(prev => prev.filter((_, idx) => idx !== i))} style={styles.entryRemove}>
                         <Text style={styles.entryRemoveText}>✕</Text>
-                      </Pressable>
+                      </Tappable>
                     </View>
                   ))}
                 </View>
@@ -542,7 +546,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                   <View key={regionKey} style={{ marginBottom: 20 }}>
                     <Text style={styles.condRegionHeader}>{region.label}</Text>
                     {filtered.map((cond, ci) => (
-                      <Pressable
+                      <Tappable
                         key={cond.key}
                         style={[styles.condRow, ci < filtered.length - 1 && styles.condRowBorder]}
                         onPress={() => {
@@ -556,7 +560,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                           <Text style={styles.condRowDesc}>{cond.desc}</Text>
                         </View>
                         <Text style={styles.condRowArrow}>›</Text>
-                      </Pressable>
+                      </Tappable>
                     ))}
                   </View>
                 );
@@ -567,14 +571,14 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           {/* ── Phase: severity ─────────────────────────────────── */}
           {h6phase === 'severity' && h6pending && (
             <View>
-              <Pressable onPress={() => setH6phase('list')} style={{ marginBottom: 20 }}>
-                <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('common.back')}</Text>
-              </Pressable>
+              <Tappable onPress={() => setH6phase('list')} style={{ marginBottom: 20 }}>
+                <Text style={{ color: colors.textSubtle, fontSize: 15 }}>← {t('common.back')}</Text>
+              </Tappable>
               <Text style={styles.stepTitle}>{h6pending.conditionLabel}</Text>
               <Text style={styles.stepSub}>{t('onboarding.step6.severitySub')}</Text>
               <View style={{ gap: 10 }}>
                 {SEVERITY_OPTIONS.map(s => (
-                  <Pressable
+                  <Tappable
                     key={s.key}
                     style={styles.layerOptionCard}
                     onPress={() => {
@@ -590,16 +594,16 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                   >
                     <Text style={styles.layerOptionLabel}>{s.label}</Text>
                     <Text style={styles.layerOptionDesc}>{s.desc}</Text>
-                  </Pressable>
+                  </Tappable>
                 ))}
                 {h6pending.canBePost && (
-                  <Pressable
+                  <Tappable
                     style={[styles.layerOptionCard, styles.layerOptionPostOp]}
                     onPress={() => setH6phase('post_op')}
                   >
                     <Text style={styles.layerOptionLabel}>{t('onboarding.step6.postSurgery')}</Text>
                     <Text style={styles.layerOptionDesc}>{t('onboarding.step6.postSurgeryDesc')}</Text>
-                  </Pressable>
+                  </Tappable>
                 )}
               </View>
             </View>
@@ -608,14 +612,14 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
           {/* ── Phase: post_op confirm ───────────────────────────── */}
           {h6phase === 'post_op' && h6pending && (
             <View>
-              <Pressable onPress={() => setH6phase(h6pending.alwaysPost ? 'list' : 'severity')} style={{ marginBottom: 20 }}>
-                <Text style={{ color: '#9494A0', fontSize: 15 }}>← {t('common.back')}</Text>
-              </Pressable>
+              <Tappable onPress={() => setH6phase(h6pending.alwaysPost ? 'list' : 'severity')} style={{ marginBottom: 20 }}>
+                <Text style={{ color: colors.textSubtle, fontSize: 15 }}>← {t('common.back')}</Text>
+              </Tappable>
               <Text style={styles.stepTitle}>{t('onboarding.step6.surgeryTitle')}</Text>
               <Text style={styles.stepSub}>{h6pending.conditionLabel}</Text>
               <View style={{ gap: 10 }}>
                 {POST_OP_TIMELINE_OPTIONS.map(opt => (
-                  <Pressable
+                  <Tappable
                     key={opt.key}
                     style={styles.layerOptionCard}
                     onPress={() => {
@@ -627,7 +631,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
                   >
                     <Text style={styles.layerOptionLabel}>{opt.label}</Text>
                     <Text style={styles.layerOptionDesc}>{opt.desc}</Text>
-                  </Pressable>
+                  </Tappable>
                 ))}
               </View>
             </View>
@@ -687,7 +691,7 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
               ))}
             </View>
           )}
-          <Pressable style={styles.completeBtn} onPress={() => {
+          <Tappable style={styles.completeBtn} onPress={() => {
             const expOption = EXPERIENCE_OPTIONS.find(o => o.key === trainingExperience);
             const legacyKeys = [...new Set(healthEntries.flatMap(e => deriveConditionKeys(e)))];
             const structuredJson = healthEntries.map(e => JSON.stringify(e));
@@ -709,13 +713,13 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
             });
           }}>
             <Text style={styles.completeBtnText}>{t('onboarding.step7.start')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
       )}
 
       <View style={styles.navRow}>
-        {step > 1 && <Pressable style={styles.backBtn} onPress={back}><Text style={styles.backBtnText}>← {t('common.back')}</Text></Pressable>}
-        {step < totalSteps && <Pressable style={styles.nextBtn} onPress={handleNext}><Text style={styles.nextBtnText}>{t('onboarding.next')} →</Text></Pressable>}
+        {step > 1 && <Tappable style={styles.backBtn} onPress={back}><Text style={styles.backBtnText}>← {t('common.back')}</Text></Tappable>}
+        {step < totalSteps && <Tappable style={styles.nextBtn} onPress={handleNext}><Text style={styles.nextBtnText}>{t('onboarding.next')} →</Text></Tappable>}
       </View>
     </ScrollView>
     </KeyboardAvoidingView>
@@ -723,95 +727,95 @@ export default function OnboardingScreen({ onComplete, onGoBack }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F13' },
-  progressBg: { height: 3, backgroundColor: '#2C2C35', marginTop: 12 },
-  progressFill: { height: 3, backgroundColor: '#FFFFFF' },
-  stepLabel: { fontSize: 12, color: '#9494A0', padding: 24, paddingBottom: 0 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  progressBg: { height: 3, backgroundColor: colors.control, marginTop: 12 },
+  progressFill: { height: 3, backgroundColor: colors.surfaceInverse },
+  stepLabel: { fontSize: 12, color: colors.textSubtle, padding: 24, paddingBottom: 0 },
   stepWrap: { padding: 24 },
-  stepTitle: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.8, marginBottom: 8, lineHeight: 36 },
-  stepSub: { fontSize: 14, color: '#9494A0', marginBottom: 32, lineHeight: 22 },
-  label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
-  input: { backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', padding: 16, color: '#FFFFFF', fontSize: 16 },
-  bmiCard: { marginTop: 20, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  stepTitle: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.8, marginBottom: 8, lineHeight: 36 },
+  stepSub: { fontSize: 14, color: colors.textSubtle, marginBottom: 32, lineHeight: 22 },
+  label: { fontSize: 13, color: colors.textMuted, fontWeight: '500', marginBottom: 8, marginTop: 16 },
+  input: { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, padding: 16, color: colors.textPrimary, fontSize: 16 },
+  bmiCard: { marginTop: 20, backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: colors.border },
   bmiRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
-  bmiLabel: { fontSize: 14, color: '#9494A0' },
+  bmiLabel: { fontSize: 14, color: colors.textSubtle },
   bmiVal: { fontSize: 28, fontWeight: '700' },
   bmiCategory: { fontSize: 14, fontWeight: '600' },
-  bmiRange: { fontSize: 13, color: '#9494A0' },
+  bmiRange: { fontSize: 13, color: colors.textSubtle },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
-  goalCard: { width: '48%', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  goalCardActive: { borderColor: '#FFFFFF', backgroundColor: '#1C1C22' },
-  goalLabel: { fontSize: 14, color: '#9494A0', fontWeight: '500' },
-  goalLabelActive: { color: '#E4E4E8' },
-  check: { color: '#FFFFFF', fontWeight: '700' },
-  estimate: { fontSize: 13, color: '#1D9E75', marginTop: 12 },
-  goalCitationCard: { backgroundColor: '#111114', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#1D9E7544', marginBottom: 16 },
-  goalCitationTitle: { fontSize: 10, color: '#1D9E75', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
-  goalCitationText: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 6 },
-  goalCitationSource: { fontSize: 10, color: '#9494A0', fontStyle: 'italic' },
+  goalCard: { width: '48%', backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: colors.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  goalCardActive: { borderColor: colors.borderActive, backgroundColor: colors.surfaceElevated },
+  goalLabel: { fontSize: 14, color: colors.textSubtle, fontWeight: '500' },
+  goalLabelActive: { color: colors.textSecondary },
+  check: { color: colors.textPrimary, fontWeight: '700' },
+  estimate: { fontSize: 13, color: colors.accent, marginTop: 12 },
+  goalCitationCard: { backgroundColor: colors.surfaceRaised, borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: colors.accentHair, marginBottom: 16 },
+  goalCitationTitle: { fontSize: 10, color: colors.accent, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 },
+  goalCitationText: { fontSize: 13, color: colors.textMuted, lineHeight: 20, marginBottom: 6 },
+  goalCitationSource: { fontSize: 10, color: colors.textSubtle, fontStyle: 'italic' },
   optionRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  optionBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  optionBtnActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  optionBtnText: { color: '#9494A0', fontWeight: '600' },
-  optionBtnTextActive: { color: '#111114' },
+  optionBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
+  optionBtnActive: { backgroundColor: colors.surfaceInverse, borderColor: colors.borderActive },
+  optionBtnText: { color: colors.textSubtle, fontWeight: '600' },
+  optionBtnTextActive: { color: colors.surfaceRaised },
   tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tag: { backgroundColor: '#1A1A20', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
-  tagActive: { backgroundColor: '#1C1C22', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  tagText: { color: '#9494A0', fontSize: 13 },
-  tagTextActive: { color: '#E4E4E8', fontSize: 13 },
-  expCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
-  expCardActive: { backgroundColor: '#1C1C22', borderColor: '#FFFFFF' },
-  expLabel: { fontSize: 15, fontWeight: '600', color: '#A1A1AA', marginBottom: 3 },
-  expLabelActive: { color: '#FFFFFF' },
-  expSublabel: { fontSize: 12, color: '#9494A0' },
-  feedbackCard: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, marginBottom: 8 },
+  tag: { backgroundColor: colors.surface, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: colors.border },
+  tagActive: { backgroundColor: colors.surfaceElevated, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 0.5, borderColor: colors.borderActive },
+  tagText: { color: colors.textSubtle, fontSize: 13 },
+  tagTextActive: { color: colors.textSecondary, fontSize: 13 },
+  expCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: colors.border },
+  expCardActive: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderActive },
+  expLabel: { fontSize: 15, fontWeight: '600', color: colors.textMuted, marginBottom: 3 },
+  expLabelActive: { color: colors.textPrimary },
+  expSublabel: { fontSize: 12, color: colors.textSubtle },
+  feedbackCard: { marginTop: 16, backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 0.5, marginBottom: 8 },
   feedbackHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   feedbackBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
   feedbackBadgeText: { fontSize: 12, fontWeight: '600' },
-  feedbackProgram: { fontSize: 13, color: '#A1A1AA', fontWeight: '500' },
-  feedbackMessage: { fontSize: 13, color: '#A1A1AA', lineHeight: 20, marginBottom: 10 },
-  feedbackCitation: { fontSize: 11, color: '#9494A0', fontStyle: 'italic', lineHeight: 16 },
-  resultCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
-  resultLabel: { fontSize: 11, color: '#9494A0', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
-  resultBig: { fontSize: 36, fontWeight: '700', color: '#FFFFFF' },
-  resultDetail: { fontSize: 14, color: '#A1A1AA', marginTop: 4 },
+  feedbackProgram: { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
+  feedbackMessage: { fontSize: 13, color: colors.textMuted, lineHeight: 20, marginBottom: 10 },
+  feedbackCitation: { fontSize: 11, color: colors.textSubtle, fontStyle: 'italic', lineHeight: 16 },
+  resultCard: { backgroundColor: colors.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
+  resultLabel: { fontSize: 11, color: colors.textSubtle, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  resultBig: { fontSize: 36, fontWeight: '700', color: colors.textPrimary },
+  resultDetail: { fontSize: 14, color: colors.textMuted, marginTop: 4 },
   macrosRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  macroCard: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  macroVal: { fontSize: 22, fontWeight: '700', color: '#FFFFFF' },
-  macroLabel: { fontSize: 11, color: '#9494A0', marginTop: 3 },
-  completeBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  completeBtnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
+  macroCard: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
+  macroVal: { fontSize: 22, fontWeight: '700', color: colors.textPrimary },
+  macroLabel: { fontSize: 11, color: colors.textSubtle, marginTop: 3 },
+  completeBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
+  completeBtnText: { color: colors.surfaceRaised, fontSize: 16, fontWeight: '600' },
   navRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginTop: 8 },
   backBtn: { paddingVertical: 12 },
-  backBtnText: { color: '#9494A0', fontSize: 15 },
-  nextBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
-  nextBtnText: { color: '#111114', fontSize: 15, fontWeight: '600' },
-  conditionsNote: { marginTop: 16, backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
-  conditionsNoteText: { fontSize: 13, color: '#E4E4E8', lineHeight: 20 },
-  noneBtn: { backgroundColor: '#1A1A20', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 20, borderWidth: 0.5, borderColor: '#2C2C35', alignSelf: 'flex-start', marginBottom: 8 },
-  noneBtnActive: { borderColor: '#FFFFFF', backgroundColor: '#1C1C22' },
-  noneBtnText: { fontSize: 14, color: '#9494A0', fontWeight: '500' },
-  noneBtnTextActive: { color: '#FFFFFF' },
+  backBtnText: { color: colors.textSubtle, fontSize: 15 },
+  nextBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginLeft: 'auto' },
+  nextBtnText: { color: colors.surfaceRaised, fontSize: 15, fontWeight: '600' },
+  conditionsNote: { marginTop: 16, backgroundColor: colors.surface, borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
+  conditionsNoteText: { fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  noneBtn: { backgroundColor: colors.surface, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 20, borderWidth: 0.5, borderColor: colors.border, alignSelf: 'flex-start', marginBottom: 8 },
+  noneBtnActive: { borderColor: colors.borderActive, backgroundColor: colors.surfaceElevated },
+  noneBtnText: { fontSize: 14, color: colors.textSubtle, fontWeight: '500' },
+  noneBtnTextActive: { color: colors.textPrimary },
   // Condition list
-  condRegionHeader: { fontSize: 11, color: '#9494A0', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
-  condRow: { backgroundColor: '#1A1A20', paddingVertical: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' },
-  condRowBorder: { borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
-  condRowLabel: { fontSize: 14, color: '#E4E4E8', fontWeight: '500', marginBottom: 2 },
-  condRowDesc: { fontSize: 12, color: '#9494A0' },
-  condRowArrow: { fontSize: 20, color: '#8A8A94', marginLeft: 8 },
+  condRegionHeader: { fontSize: 11, color: colors.textSubtle, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  condRow: { backgroundColor: colors.surface, paddingVertical: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' },
+  condRowBorder: { borderBottomWidth: 0.5, borderBottomColor: colors.border },
+  condRowLabel: { fontSize: 14, color: colors.textSecondary, fontWeight: '500', marginBottom: 2 },
+  condRowDesc: { fontSize: 12, color: colors.textSubtle },
+  condRowArrow: { fontSize: 20, color: colors.textFaint, marginLeft: 8 },
   // Saved entry chips
-  entryCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1C1C22', borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  entryRegion: { fontSize: 10, color: '#9494A0', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 2 },
-  entryLabel: { fontSize: 13, color: '#FFFFFF', fontWeight: '500' },
+  entryCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceElevated, borderRadius: 12, padding: 12, borderWidth: 0.5, borderColor: colors.border },
+  entryRegion: { fontSize: 10, color: colors.textSubtle, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 2 },
+  entryLabel: { fontSize: 13, color: colors.textPrimary, fontWeight: '500' },
   entryRemove: { padding: 6 },
-  entryRemoveText: { color: '#9494A0', fontSize: 14 },
+  entryRemoveText: { color: colors.textSubtle, fontSize: 14 },
   // Layer option cards (severity / post-op timeline)
-  dayBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  dayBtnActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  dayBtnText: { fontSize: 11, color: '#9494A0', fontWeight: '600' },
-  dayBtnTextActive: { color: '#111114' },
-  layerOptionCard: { backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35' },
+  dayBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
+  dayBtnActive: { backgroundColor: colors.surfaceInverse, borderColor: colors.borderActive },
+  dayBtnText: { fontSize: 11, color: colors.textSubtle, fontWeight: '600' },
+  dayBtnTextActive: { color: colors.surfaceRaised },
+  layerOptionCard: { backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 0.5, borderColor: colors.border },
   layerOptionPostOp: { borderColor: '#3D3D5C' },
-  layerOptionLabel: { fontSize: 15, color: '#FFFFFF', fontWeight: '600', marginBottom: 3 },
-  layerOptionDesc: { fontSize: 13, color: '#9494A0' },
+  layerOptionLabel: { fontSize: 15, color: colors.textPrimary, fontWeight: '600', marginBottom: 3 },
+  layerOptionDesc: { fontSize: 13, color: colors.textSubtle },
 });

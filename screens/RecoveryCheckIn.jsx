@@ -1,10 +1,13 @@
 // Pre-workout readiness sheet. Presentational only: it reports the result
 // upward and never writes to the DB or mutates session state.
-import { useState } from 'react';
-import { View, Text, Pressable, Modal, StyleSheet } from 'react-native';
+import {
+  useState } from 'react';
+import { View, Text, Modal, StyleSheet,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { READINESS_QUESTIONS, scoreCheckIn } from '../lib/readiness';
 import { colors, spacing, radius } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 const LABEL_COLOR = { Ready: colors.accent, Moderate: colors.warning, Low: colors.danger };
 
@@ -37,31 +40,31 @@ export default function RecoveryCheckIn({ visible, onSkip, onDone }) {
                     {q.options.map(opt => {
                       const on = answers[q.id] === opt;
                       return (
-                        <Pressable
+                        <Tappable
                           key={opt}
                           style={[s.opt, on && s.optOn]}
                           hitSlop={6}
                           onPress={() => setAnswers(a => ({ ...a, [q.id]: opt }))}
                         >
                           <Text style={[s.optText, on && s.optTextOn]}>{t(`readiness.opt.${opt}`)}</Text>
-                        </Pressable>
+                        </Tappable>
                       );
                     })}
                   </View>
                 </View>
               ))}
               <View style={s.row}>
-                <Pressable style={[s.btn, s.btnGhost]} onPress={onSkip} hitSlop={8}>
+                <Tappable style={[s.btn, s.btnGhost]} onPress={onSkip} hitSlop={8}>
                   <Text style={s.btnGhostText}>{t('readiness.skip')}</Text>
-                </Pressable>
-                <Pressable
+                </Tappable>
+                <Tappable
                   style={[s.btn, s.btnPrimary, !allAnswered && s.btnDisabled]}
                   disabled={!allAnswered}
                   onPress={submit}
                   hitSlop={8}
                 >
                   <Text style={s.btnPrimaryText}>{t('readiness.continue')}</Text>
-                </Pressable>
+                </Tappable>
               </View>
             </>
           ) : (
@@ -73,14 +76,14 @@ export default function RecoveryCheckIn({ visible, onSkip, onDone }) {
                 {result.label === 'Low' ? t('readiness.adviceLow') : t('readiness.adviceModerate')}
               </Text>
               <View style={s.row}>
-                <Pressable style={[s.btn, s.btnGhost]} hitSlop={8}
+                <Tappable style={[s.btn, s.btnGhost]} hitSlop={8}
                   onPress={() => onDone({ answers, ...result, applied: false })}>
                   <Text style={s.btnGhostText}>{t('readiness.asPlanned')}</Text>
-                </Pressable>
-                <Pressable style={[s.btn, s.btnAccent]} hitSlop={8}
+                </Tappable>
+                <Tappable style={[s.btn, s.btnAccent]} hitSlop={8}
                   onPress={() => onDone({ answers, ...result, applied: true })}>
                   <Text style={s.btnPrimaryText}>{t('readiness.apply')}</Text>
-                </Pressable>
+                </Tappable>
               </View>
             </>
           )}
@@ -91,7 +94,7 @@ export default function RecoveryCheckIn({ visible, onSkip, onDone }) {
 }
 
 const s = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: '#000000AA', justifyContent: 'flex-end' },
+  overlay: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
     borderTopWidth: 1, borderTopColor: colors.border,

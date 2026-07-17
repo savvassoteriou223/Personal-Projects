@@ -32,20 +32,24 @@ import {
 import MuscleMap from './MuscleMap';
 import { useTranslation } from 'react-i18next';
 import { getExerciseInsight } from './studiesLibrary';
+import { colors } from '../lib/theme';
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Local aliases onto the shared design tokens (lib/theme.js is the source of
+//     truth). Names stay domain-readable for the SVG/detail layout; values are
+//     tokens, so this file no longer drifts. textMuted was #4A4A5A — 2.17:1 on
+//     the card, a WCAG failure — now the AA-passing token.
 const C = {
-  bg:          '#0A0A0C',
-  surface:     '#111116',
-  surfaceHigh: '#18181F',
-  border:      '#1E1E28',
-  borderBright:'#2A2A38',
-  green:       '#1D9E75',
-  amber:       '#BA7517',
-  red:         '#E85D5C',
-  textPrimary: '#F1F0F5',
-  textSecond:  '#8B8A9A',
-  textMuted:   '#4A4A5A',
+  bg:          colors.bgDeep,
+  surface:     colors.surfaceInset,
+  surfaceHigh: colors.surfaceElevated,
+  border:      colors.borderSoft,
+  borderBright:colors.border,
+  green:       colors.accent,
+  amber:       colors.warning,
+  red:         colors.danger,
+  textPrimary: colors.textPrimary,
+  textSecond:  colors.textSubtle,
+  textMuted:   colors.textMuted,
 };
 
 const DIFFICULTY_COLOR = {
@@ -393,8 +397,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: C.green + '40',
-    borderLeftWidth: 3,
-    borderLeftColor: C.green,
     padding: 12,
   },
   insightText: {

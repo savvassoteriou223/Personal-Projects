@@ -17,6 +17,8 @@ import { adjustSessionForReadiness } from '../lib/readiness';
 import { getTodayCheckIn, saveCheckIn } from '../lib/recoveryStore';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { checkReadyToProgress } from './programGenerator';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 const WORKOUT_DRAFT_KEY = '@helix_workout_draft';
 
@@ -98,9 +100,9 @@ const SIMPLE_RPE_OPTIONS = [
 
 const SET_TYPES = ['working', 'warmup', 'drop', 'failure'];
 const SET_TYPE_META = {
-  warmup:  { label: 'W', color: '#BA7517' },
-  drop:    { label: 'D', color: '#FFFFFF' },
-  failure: { label: 'F', color: '#E85D5C' },
+  warmup:  { label: 'W', color: colors.warning },
+  drop:    { label: 'D', color: colors.textPrimary },
+  failure: { label: 'F', color: colors.danger },
 };
 
 const PLATE_SIZES = [25, 20, 15, 10, 5, 2.5, 1.25];
@@ -297,8 +299,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
 
   // ─── Swap alternative in for current exercise ─────────────────────────────
   const swapExercise = (exIdx, altName, subIdx) => {
-    // Warn if the chosen exercise is already in today's workout — replacing would
-    // give the user the same movement twice.
+    // Replacing with an exercise already in today's workout would create a
+    // duplicate — the same movement twice. That duplicate is what lets the live
+    // session and the saved program drift apart and silently drop a slot, so
+    // block it outright rather than offering a "do it anyway" escape.
     const dup = sets.some((e, i) =>
       i !== exIdx && e.name?.toLowerCase().trim() === altName?.toLowerCase().trim()
     );
@@ -306,10 +310,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       Alert.alert(
         t('workout.alerts.dupTitle'),
         t('workout.alerts.dupMsg', { name: altName }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('workout.alerts.doItAnyway'), onPress: () => confirmSwapClearingSets(exIdx, altName, subIdx) },
-        ]
+        [{ text: t('common.close') }]
       );
       return;
     }
@@ -742,9 +743,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
   if (finished) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={[styles.finishScreen, { paddingTop: insets.top + 24 }]}>
-        <Pressable onPress={() => setFinished(false)} style={styles.finishBackBtn}>
+        <Tappable onPress={() => setFinished(false)} style={styles.finishBackBtn}>
           <Text style={styles.finishBackText}>← {t('common.back')}</Text>
-        </Pressable>
+        </Tappable>
         <Text style={styles.finishTitle}>{t('workout.finish.title')}</Text>
         <Text style={styles.finishSub}>{workout.name}</Text>
 
@@ -769,25 +770,25 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
         {isSimple ? (
           <View style={styles.simpleRpeRow}>
             {SIMPLE_RPE_OPTIONS.map(opt => (
-              <Pressable
+              <Tappable
                 key={opt.rpe}
                 style={[styles.simpleRpeBtn, rpe === opt.rpe && styles.simpleRpeBtnActive]}
                 onPress={() => setRpe(opt.rpe)}
               >
                 <Text style={[styles.simpleRpeBtnText, rpe === opt.rpe && styles.simpleRpeBtnTextActive]}>{t(`workout.simpleRpe.${opt.key}`)}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
         ) : (
           <View style={styles.rpeRow}>
             {[1,2,3,4,5,6,7,8,9,10].map(n => (
-              <Pressable
+              <Tappable
                 key={n}
                 style={[styles.rpeBtn, rpe === n && styles.rpeBtnActive]}
                 onPress={() => setRpe(n)}
               >
                 <Text style={[styles.rpeBtnText, rpe === n && styles.rpeBtnTextActive]}>{n}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
         )}
@@ -805,7 +806,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
             <Text style={styles.overloadTitle}>{t('workout.finish.nextTargets')}</Text>
             {overloadSuggestions.map((s, i) => (
               <View key={i} style={styles.overloadRow}>
-                <View style={[styles.overloadDot, { backgroundColor: s.type === 'increase' ? '#1D9E75' : '#FFFFFF' }]} />
+                <View style={[styles.overloadDot, { backgroundColor: s.type === 'increase' ? colors.accent : colors.textPrimary }]} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.overloadEx}>{s.name}</Text>
                   <Text style={styles.overloadSug}>{s.suggestion}</Text>
@@ -815,9 +816,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
           </View>
         )}
 
-        <Pressable style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={saveWorkout} disabled={saving}>
+        <Tappable style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={saveWorkout} disabled={saving}>
           <Text style={styles.saveBtnText}>{saving ? t('workout.finish.saving') : t('workout.finish.save')}</Text>
-        </Pressable>
+        </Tappable>
       </ScrollView>
     );
   }
@@ -829,7 +830,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       {/* Top bar — hidden when slideshow is open to prevent bleed-through */}
       {!slideshowExercise && (
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => {
+        <Tappable onPress={() => {
           if (totalSetsCompleted > 0) {
             Alert.alert(
               t('workout.alerts.cancelTitle'),
@@ -844,10 +845,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
           }
         }} style={styles.cancelBtn}>
           <Text style={styles.cancelText}>✕</Text>
-        </Pressable>
+        </Tappable>
         <View style={styles.dotIndicators}>
           {sets.map((ex, i) => (
-            <Pressable
+            <Tappable
               key={i}
               onPress={() => {
                 swipeRef.current?.scrollTo({ x: i * pageWidth, animated: true });
@@ -860,16 +861,16 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                 i === currentExIdx && styles.dotIndicatorActive,
                 allSetsDone(ex) && styles.dotIndicatorDone,
               ]} />
-            </Pressable>
+            </Tappable>
           ))}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Pressable style={styles.coachTopBtn} onPress={() => isPremium ? setShowCoach(true) : setShowPaywall(true)} hitSlop={8}>
+          <Tappable style={styles.coachTopBtn} onPress={() => isPremium ? setShowCoach(true) : setShowPaywall(true)} hitSlop={8}>
             <Text style={styles.coachTopBtnText}>{t('workout.coach')}</Text>
-          </Pressable>
-          <Pressable style={styles.finishBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
+          </Tappable>
+          <Tappable style={styles.finishBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
             <Text style={styles.finishBtnText} numberOfLines={1}>{t('workout.finishBtn')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
       </View>
       )}
@@ -892,9 +893,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
           <Text style={styles.restWarningText}>
             {t('workout.restWarning', { session: restWarning.sessionName, hours: restWarning.hoursAgo })}
           </Text>
-          <Pressable onPress={() => setRestWarning(null)}>
+          <Tappable onPress={() => setRestWarning(null)}>
             <Text style={styles.restWarningDismiss}>{t('workout.dismiss')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
       )}
 
@@ -902,9 +903,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       {restTimer > 0 && (
         <View style={styles.restBanner}>
           <Text style={styles.restText}>{t('workout.restTimer', { time: formatTime(restTimer) })}</Text>
-          <Pressable onPress={() => setRestTimer(0)}>
+          <Tappable onPress={() => setRestTimer(0)}>
             <Text style={styles.restSkip}>{t('workout.skip')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
       )}
 
@@ -943,9 +944,14 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                 <View style={styles.exCardHeader}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.exNumber}>{t('workout.exNumber', { n: exIdx + 1, total: sets.length })}</Text>
-                    <Pressable onPress={() => setSlideshowExercise(ex)}>
-                      <Text style={styles.exName}>{ex.name} <Text style={styles.howToTag}>{t('workout.howTo')}</Text></Text>
-                    </Pressable>
+                    <Tappable onPress={() => setSlideshowExercise(ex)}>
+                      <View style={styles.exNameRow}>
+                        <Text style={styles.exName}>{ex.name}</Text>
+                        <View style={styles.howToChip}>
+                          <Text style={styles.howToTag} numberOfLines={1}>{t('workout.howTo')}</Text>
+                        </View>
+                      </View>
+                    </Tappable>
                     {readinessLabel && (
                       <Text style={styles.readinessBadge}>{t('readiness.adjusted')}</Text>
                     )}
@@ -1021,15 +1027,15 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                   <View style={styles.subRow}>
                     <Text style={styles.subText}>{t('workout.swap')}</Text>
                     {[ex.sub1, ex.sub2, ex.sub3].map((sub, slotIdx) => sub ? (
-                      <Pressable key={slotIdx} onPress={() => swapExercise(exIdx, sub, slotIdx)}>
+                      <Tappable key={slotIdx} onPress={() => swapExercise(exIdx, sub, slotIdx)}>
                         <Text style={styles.subLink}>{sub}{slotIdx < 2 && (ex.sub2 || ex.sub3) ? ' · ' : ''}</Text>
-                      </Pressable>
+                      </Tappable>
                     ) : null)}
                   </View>
                 )}
 
                 {/* Replace with any exercise (cross-muscle) */}
-                <Pressable
+                <Tappable
                   style={styles.replaceBtn}
                   hitSlop={8}
                   onPress={() => {
@@ -1039,16 +1045,16 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                   }}
                 >
                   <Text style={styles.replaceBtnText}>{t('workout.replaceExercise')}</Text>
-                </Pressable>
+                </Tappable>
 
                 {/* Key insight — concise evidence-based "why" */}
                 {(() => {
                   const insight = getExerciseInsight(ex);
                   return insight ? (
-                    <View style={{ backgroundColor: '#1D9E7514', borderRadius: 10, borderWidth: 1, borderColor: '#1D9E7540', borderLeftWidth: 3, borderLeftColor: '#1D9E75', padding: 12, marginTop: 8 }}>
-                      <Text style={{ color: '#F1F0F5', fontSize: 13, lineHeight: 19, fontWeight: '500' }}>{insight.insight}</Text>
-                      {insight.metric && <Text style={{ color: '#1D9E75', fontSize: 11.5, fontWeight: '700', marginTop: 6 }}>{insight.metric.this} vs {insight.metric.control} · {insight.metric.method}</Text>}
-                      <Text style={{ color: '#8A8A94', fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
+                    <View style={{ backgroundColor: colors.accentSoft, borderRadius: 10, borderWidth: 1, borderColor: colors.accentHair, padding: 12, marginTop: 8 }}>
+                      <Text style={{ color: colors.textPrimary, fontSize: 13, lineHeight: 19, fontWeight: '500' }}>{insight.insight}</Text>
+                      {insight.metric && <Text style={{ color: colors.accent, fontSize: 11.5, fontWeight: '700', marginTop: 6 }}>{insight.metric.this} vs {insight.metric.control} · {insight.metric.method}</Text>}
+                      <Text style={{ color: colors.textFaint, fontSize: 11, marginTop: 6 }}>{insight.cite}</Text>
                     </View>
                   ) : null;
                 })()}
@@ -1065,19 +1071,19 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                   <Text style={styles.setsCardTitle}>{t('workout.setsTitle')}</Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     {userBodyWeight && (
-                      <Pressable
+                      <Tappable
                         style={[styles.setsToolbarChip, bwMode[exIdx] && styles.setsToolbarChipActive]}
                         onPress={() => toggleBwMode(exIdx)}
                       >
                         <Text style={[styles.setsToolbarChipText, bwMode[exIdx] && styles.setsToolbarChipTextActive]}>{t('workout.bw')}</Text>
-                      </Pressable>
+                      </Tappable>
                     )}
-                    <Pressable
+                    <Tappable
                       style={styles.setsToolbarChip}
                       onPress={() => { setPlateTarget(''); setShowPlateCalc(true); }}
                     >
                       <Text style={styles.setsToolbarChipText}>{t('workout.plates')}</Text>
-                    </Pressable>
+                    </Tappable>
                   </View>
                 </View>
 
@@ -1103,12 +1109,12 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                   const typeMeta = SET_TYPE_META[set.type];
                   return (
                     <View key={setIdx} style={[styles.setRow, set.done && styles.setRowDone]}>
-                      <Pressable style={styles.setTypeBtn} onPress={() => cycleSetType(exIdx, setIdx)}>
+                      <Tappable style={styles.setTypeBtn} onPress={() => cycleSetType(exIdx, setIdx)}>
                         {typeMeta
                           ? <Text style={[styles.setTypeBtnText, { color: typeMeta.color }]}>{typeMeta.label}</Text>
                           : <Text style={styles.setTypeBtnDot}>·</Text>
                         }
-                      </Pressable>
+                      </Tappable>
                       <Text style={[styles.setNum, { width: 22 }]}>{setIdx + 1}</Text>
                       <TextInput
                         style={[styles.weightInput, { flex: 1 }]}
@@ -1116,7 +1122,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                         onChangeText={v => updateWeight(exIdx, setIdx, v)}
                         keyboardType="decimal-pad"
                         placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
-                        placeholderTextColor="#8A8A94"
+                        placeholderTextColor={colors.textFaint}
                         editable={!set.done}
                       />
                       <TextInput
@@ -1125,15 +1131,15 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                         onChangeText={v => updateReps(exIdx, setIdx, v)}
                         keyboardType="number-pad"
                         placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
-                        placeholderTextColor="#8A8A94"
+                        placeholderTextColor={colors.textFaint}
                         editable={!set.done}
                       />
-                      <Pressable
+                      <Tappable
                         style={[styles.tickBtn, set.done && styles.tickBtnDone, { width: 50 }]}
                         onPress={() => tickSet(exIdx, setIdx)}
                       >
                         <Text style={[styles.tickText, set.done && styles.tickTextDone]}>✓</Text>
-                      </Pressable>
+                      </Tappable>
                     </View>
                   );
                 })}
@@ -1141,7 +1147,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
 
               {/* Next / Finish */}
               {allSetsDone(ex) && exIdx < sets.length - 1 && (
-                <Pressable
+                <Tappable
                   style={styles.nextExBtn}
                   onPress={() => {
                     swipeRef.current?.scrollTo({ x: (exIdx + 1) * pageWidth, animated: true });
@@ -1153,12 +1159,12 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                     <Text style={styles.nextExName} numberOfLines={1}>{sets[exIdx + 1].name}</Text>
                   </View>
                   <Text style={styles.nextExArrow}>›</Text>
-                </Pressable>
+                </Tappable>
               )}
               {allSetsDone(ex) && exIdx === sets.length - 1 && (
-                <Pressable style={styles.finishAllBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
+                <Tappable style={styles.finishAllBtn} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setFinished(true); setFinishTime(Date.now()); }}>
                   <Text style={styles.finishAllBtnText}>{t('workout.completeWorkout')}</Text>
-                </Pressable>
+                </Tappable>
               )}
 
               {!allSetsDone(ex) && sets.length > 1 && exIdx < sets.length - 1 && (
@@ -1183,13 +1189,13 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
             <View style={styles.plateBarRow}>
               <Text style={styles.plateBarLabel}>{t('workout.plate.barWeight')}</Text>
               {[15, 20].map(w => (
-                <Pressable
+                <Tappable
                   key={w}
                   style={[styles.plateBarBtn, barWeight === w && styles.plateBarBtnActive]}
                   onPress={() => setBarWeight(w)}
                 >
                   <Text style={[styles.plateBarBtnText, barWeight === w && styles.plateBarBtnTextActive]}>{t('workout.plate.barKg', { w })}</Text>
-                </Pressable>
+                </Tappable>
               ))}
             </View>
 
@@ -1199,7 +1205,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
               onChangeText={setPlateTarget}
               keyboardType="decimal-pad"
               placeholder={t('workout.plate.targetPlaceholder')}
-              placeholderTextColor="#8A8A94"
+              placeholderTextColor={colors.textFaint}
               autoFocus
             />
 
@@ -1235,9 +1241,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
               );
             })()}
 
-            <Pressable style={styles.plateCloseBtn} onPress={() => setShowPlateCalc(false)}>
+            <Tappable style={styles.plateCloseBtn} onPress={() => setShowPlateCalc(false)}>
               <Text style={styles.plateCloseBtnText}>{t('common.close')}</Text>
-            </Pressable>
+            </Tappable>
           </Pressable>
         </Pressable>
         </KeyboardAvoidingView>
@@ -1267,7 +1273,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                   <TextInput
                     style={styles.replaceSearch}
                     placeholder={t('workout.replaceModal.searchPlaceholder')}
-                    placeholderTextColor="#9494A0"
+                    placeholderTextColor={colors.textSubtle}
                     value={replaceSearch}
                     onChangeText={setReplaceSearch}
                     autoCorrect={false}
@@ -1280,16 +1286,16 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                     contentContainerStyle={{ gap: 8, paddingRight: 24 }}
                     keyboardShouldPersistTaps="handled"
                   >
-                    <Pressable
+                    <Tappable
                       style={[styles.replaceTag, !replaceMuscleFilter && styles.replaceTagActive]}
                       onPress={() => setReplaceMuscleFilter(null)}
                     >
                       <Text style={[styles.replaceTagText, !replaceMuscleFilter && styles.replaceTagTextActive]}>
                         {t('workout.replaceModal.all')}
                       </Text>
-                    </Pressable>
+                    </Tappable>
                     {EXERCISE_GROUPS.map(g => (
-                      <Pressable
+                      <Tappable
                         key={g.muscle}
                         style={[styles.replaceTag, replaceMuscleFilter === g.muscle && styles.replaceTagActive]}
                         onPress={() => setReplaceMuscleFilter(g.muscle)}
@@ -1297,7 +1303,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                         <Text style={[styles.replaceTagText, replaceMuscleFilter === g.muscle && styles.replaceTagTextActive]}>
                           {g.muscle}
                         </Text>
-                      </Pressable>
+                      </Tappable>
                     ))}
                   </ScrollView>
                   <ScrollView style={{ maxHeight: 380 }} keyboardShouldPersistTaps="handled">
@@ -1309,20 +1315,20 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
                           {g.muscle}{g.muscle === curMuscle ? t('workout.replaceModal.current') : ''}
                         </Text>
                         {g.items.map(it => (
-                          <Pressable
+                          <Tappable
                             key={it.name}
                             style={styles.replaceRow}
                             onPress={() => { const idx = replaceIdx; setReplaceIdx(null); swapExercise(idx, it.name, -1); }}
                           >
                             <Text style={styles.replaceRowText}>{it.name}</Text>
-                          </Pressable>
+                          </Tappable>
                         ))}
                       </View>
                     ))}
                   </ScrollView>
-                  <Pressable style={styles.plateCloseBtn} onPress={() => setReplaceIdx(null)}>
+                  <Tappable style={styles.plateCloseBtn} onPress={() => setReplaceIdx(null)}>
                     <Text style={styles.plateCloseBtnText}>{t('common.cancel')}</Text>
-                  </Pressable>
+                  </Tappable>
                 </>
               );
             })()}
@@ -1339,7 +1345,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
 
       {/* ── Coach modal — full AI Coach, same as the Coach tab ── */}
       <Modal visible={showCoach} animationType="slide" onRequestClose={() => setShowCoach(false)}>
-        <View style={{ flex: 1, backgroundColor: '#0F0F13' }}>
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
           <CoachScreen
             onClose={() => setShowCoach(false)}
             onProposalApplied={applyCoachEdit}
@@ -1360,10 +1366,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
 
       {/* ── Upsell paywall — free users tapping Coach mid-workout ── */}
       <Modal visible={showPaywall} animationType="slide" onRequestClose={() => setShowPaywall(false)}>
-        <View style={{ flex: 1, backgroundColor: '#0F0F13' }}>
-          <Pressable style={styles.paywallClose} onPress={() => setShowPaywall(false)} hitSlop={12}>
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
+          <Tappable style={styles.paywallClose} onPress={() => setShowPaywall(false)} hitSlop={12}>
             <Text style={styles.paywallCloseText}>{t('common.close')}</Text>
-          </Pressable>
+          </Tappable>
           <PremiumPaywall
             feature="Coach"
             onUpgrade={async (plan) => { await onUpgrade?.(plan); setShowPaywall(false); }}
@@ -1404,44 +1410,46 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F13' },
+  container: { flex: 1, backgroundColor: colors.bg },
 
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
-  elapsedTimer: { textAlign: 'center', fontSize: 11, color: '#8A8A94', letterSpacing: 0.5, paddingVertical: 4 },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: colors.border },
+  elapsedTimer: { textAlign: 'center', fontSize: 11, color: colors.textFaint, letterSpacing: 0.5, paddingVertical: 4 },
   cancelBtn: { padding: 8, width: 60 },
-  cancelText: { color: '#9494A0', fontSize: 18 },
+  cancelText: { color: colors.textSubtle, fontSize: 18 },
   dotIndicators: { flexDirection: 'row', gap: 4, marginTop: 5 },
-  dotIndicator: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#2C2C35' },
-  dotIndicatorActive: { backgroundColor: '#FFFFFF', width: 14 },
-  dotIndicatorDone: { backgroundColor: '#1D9E75' },
-  finishBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8, minWidth: 68, alignItems: 'center' },
-  finishBtnText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
+  dotIndicator: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.control },
+  dotIndicatorActive: { backgroundColor: colors.surfaceInverse, width: 14 },
+  dotIndicatorDone: { backgroundColor: colors.accent },
+  finishBtn: { backgroundColor: colors.control, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8, minWidth: 68, alignItems: 'center' },
+  finishBtnText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
   swipeHint: { marginTop: 10, marginBottom: 4, paddingHorizontal: 4 },
-  swipeHintLabel: { fontSize: 9, color: '#8A8A94', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
-  swipeHintName: { fontSize: 13, color: '#8A8A94', fontWeight: '500' },
+  swipeHintLabel: { fontSize: 9, color: colors.textFaint, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
+  swipeHintName: { fontSize: 13, color: colors.textFaint, fontWeight: '500' },
 
-  progressBg: { height: 2, backgroundColor: '#2C2C35' },
-  progressFill: { height: 2, backgroundColor: '#FFFFFF' },
+  progressBg: { height: 2, backgroundColor: colors.control },
+  progressFill: { height: 2, backgroundColor: colors.surfaceInverse },
 
-  restBanner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1C1C22', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: '#3D3D4A' },
-  restText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  restSkip: { color: '#9494A0', fontSize: 14 },
+  restBanner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.surfaceElevated, paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: colors.borderStrong },
+  restText: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
+  restSkip: { color: colors.textSubtle, fontSize: 14 },
 
-  exCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
+  exCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   exCardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
-  exNumber: { fontSize: 11, color: '#9494A0', marginBottom: 3 },
-  exName: { fontSize: 20, fontWeight: '700', color: '#FFFFFF' },
-  howToTag: { fontSize: 12, fontWeight: '500', color: '#FFFFFF' },
+  exNumber: { fontSize: 11, color: colors.textSubtle, marginBottom: 3 },
+  exNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  exName: { fontSize: 20, fontWeight: '700', color: colors.textPrimary, flexShrink: 1 },
+  howToChip: { backgroundColor: colors.surfaceElevated, borderWidth: 0.5, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  howToTag: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
   muscleTagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  muscleTagPrimary: { backgroundColor: '#1D9E7522', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 0.5, borderColor: '#1D9E7555' },
-  muscleTagPrimaryText: { fontSize: 11, color: '#1D9E75', fontWeight: '600' },
-  muscleTagSecondary: { backgroundColor: '#2C2C35', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  muscleTagSecondaryText: { fontSize: 11, color: '#9494A0', fontWeight: '500' },
-  doneBadge: { backgroundColor: '#1A201C', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: '#1D9E75' },
-  doneBadgeText: { fontSize: 12, color: '#1D9E75', fontWeight: '600' },
+  muscleTagPrimary: { backgroundColor: colors.accentSoft, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 0.5, borderColor: '#1D9E7555' },
+  muscleTagPrimaryText: { fontSize: 11, color: colors.accent, fontWeight: '600' },
+  muscleTagSecondary: { backgroundColor: colors.control, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  muscleTagSecondaryText: { fontSize: 11, color: colors.textSubtle, fontWeight: '500' },
+  doneBadge: { backgroundColor: colors.successBg, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 0.5, borderColor: colors.accent },
+  doneBadgeText: { fontSize: 12, color: colors.accent, fontWeight: '600' },
   readinessBadge: {
-    alignSelf: 'flex-start', fontSize: 9, fontWeight: '700', color: '#BA7517',
-    backgroundColor: '#BA751522', borderWidth: 1, borderColor: '#BA751540',
+    alignSelf: 'flex-start', fontSize: 9, fontWeight: '700', color: colors.warning,
+    backgroundColor: '#BA751522', borderWidth: 1, borderColor: colors.warningHair,
     borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, marginTop: 4,
   },
 
@@ -1450,148 +1458,148 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     marginBottom: 12,
-    backgroundColor: '#12121A',
+    backgroundColor: colors.surfaceInset,
     borderRadius: 12,
     borderWidth: 0.5,
-    borderColor: '#2C2C35',
+    borderColor: colors.border,
   },
 
   prescRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
-  prescBox: { flex: 1, backgroundColor: '#2C2C35', borderRadius: 8, padding: 8, alignItems: 'center' },
-  prescVal: { fontSize: 13, fontWeight: '600', color: '#FFFFFF', textAlign: 'center' },
-  prescLabel: { fontSize: 9, color: '#9494A0', marginTop: 2, textAlign: 'center' },
+  prescBox: { flex: 1, backgroundColor: colors.control, borderRadius: 8, padding: 8, alignItems: 'center' },
+  prescVal: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, textAlign: 'center' },
+  prescLabel: { fontSize: 9, color: colors.textSubtle, marginTop: 2, textAlign: 'center' },
 
-  contraBanner: { backgroundColor: '#1C1A0F', borderRadius: 8, borderWidth: 0.5, borderColor: '#BA7517', paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
-  contraBannerText: { fontSize: 12, color: '#BA7517', lineHeight: 16 },
-  contraBannerSoft: { backgroundColor: '#1A1610', borderColor: '#7A5010' },
-  contraBannerSoftText: { color: '#C08B2E' },
+  contraBanner: { backgroundColor: colors.warningBg, borderRadius: 8, borderWidth: 0.5, borderColor: colors.warning, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
+  contraBannerText: { fontSize: 12, color: colors.warning, lineHeight: 16 },
+  contraBannerSoft: { backgroundColor: colors.warningBg, borderColor: '#7A5010' },
+  contraBannerSoftText: { color: colors.warningOnTint },
 
-  subText: { fontSize: 11, color: '#9494A0' },
+  subText: { fontSize: 11, color: colors.textSubtle },
   subRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 },
-  subLink: { color: '#A1A1AA', textDecorationLine: 'underline' },
-  replaceBtn: { alignSelf: 'flex-start', marginBottom: 10, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B' },
-  replaceBtnText: { color: '#1D9E75', fontSize: 13, fontWeight: '600' },
-  replaceCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: '#2C2C35' },
-  replaceNote: { color: '#A1A1AA', fontSize: 13, lineHeight: 19, marginBottom: 12 },
-  replaceSearch: { backgroundColor: '#15151B', borderWidth: 1, borderColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, color: '#FFFFFF', fontSize: 15, marginBottom: 12 },
+  subLink: { color: colors.textMuted, textDecorationLine: 'underline' },
+  replaceBtn: { alignSelf: 'flex-start', marginBottom: 10, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceAlt },
+  replaceBtnText: { color: colors.accent, fontSize: 13, fontWeight: '600' },
+  replaceCard: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: colors.border },
+  replaceNote: { color: colors.textMuted, fontSize: 13, lineHeight: 19, marginBottom: 12 },
+  replaceSearch: { backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, color: colors.textPrimary, fontSize: 15, marginBottom: 12 },
   replaceTagRow: { marginBottom: 14, flexGrow: 0 },
-  replaceTag: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B' },
-  replaceTagActive: { backgroundColor: '#1D9E75', borderColor: '#1D9E75' },
-  replaceTagText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
-  replaceTagTextActive: { color: '#FFFFFF' },
-  replaceGroupHdr: { color: '#9494A0', fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
-  replaceGroupHdrActive: { color: '#1D9E75' },
-  replaceRow: { paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#15151B', marginBottom: 5 },
-  replaceRowText: { color: '#FFFFFF', fontSize: 15 },
+  replaceTag: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceAlt },
+  replaceTagActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  replaceTagText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
+  replaceTagTextActive: { color: colors.textPrimary },
+  replaceGroupHdr: { color: colors.textSubtle, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  replaceGroupHdrActive: { color: colors.accent },
+  replaceRow: { paddingVertical: 11, paddingHorizontal: 12, borderRadius: 10, backgroundColor: colors.surfaceAlt, marginBottom: 5 },
+  replaceRowText: { color: colors.textPrimary, fontSize: 15 },
 
 
-  setsCard: { backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
+  setsCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   setHeaderRow: { flexDirection: 'row', marginBottom: 8 },
-  setHeaderText: { fontSize: 11, color: '#9494A0' },
+  setHeaderText: { fontSize: 11, color: colors.textSubtle },
   setRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   setRowDone: { opacity: 0.5 },
-  setNum: { fontSize: 14, color: '#9494A0', textAlign: 'center' },
-  weightInput: { backgroundColor: '#2C2C35', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12, color: '#FFFFFF', fontSize: 15, textAlign: 'center' },
-  tickBtn: { height: 40, borderRadius: 8, backgroundColor: '#2C2C35', alignItems: 'center', justifyContent: 'center' },
-  tickBtnDone: { backgroundColor: '#1D9E75' },
-  tickText: { color: '#9494A0', fontSize: 18 },
-  tickTextDone: { color: '#FFFFFF', fontWeight: '700' },
+  setNum: { fontSize: 14, color: colors.textSubtle, textAlign: 'center' },
+  weightInput: { backgroundColor: colors.control, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12, color: colors.textPrimary, fontSize: 15, textAlign: 'center', minWidth: 0 },
+  tickBtn: { height: 40, borderRadius: 8, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
+  tickBtnDone: { backgroundColor: colors.accent },
+  tickText: { color: colors.textSubtle, fontSize: 18 },
+  tickTextDone: { color: colors.textPrimary, fontWeight: '700' },
 
-  nextExBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 14, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
+  nextExBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   nextExLeft: { flex: 1 },
-  nextExLabel: { fontSize: 10, color: '#8A8A94', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 },
-  nextExName: { fontSize: 15, color: '#E4E4E8', fontWeight: '600' },
-  nextExArrow: { fontSize: 28, color: '#8A8A94', fontWeight: '300', lineHeight: 32 },
-  finishAllBtn: { backgroundColor: '#FFFFFF', borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginBottom: 12 },
-  finishAllBtnText: { color: '#111114', fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
+  nextExLabel: { fontSize: 10, color: colors.textFaint, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 },
+  nextExName: { fontSize: 15, color: colors.textSecondary, fontWeight: '600' },
+  nextExArrow: { fontSize: 28, color: colors.textFaint, fontWeight: '300', lineHeight: 32 },
+  finishAllBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 14, paddingVertical: 15, alignItems: 'center', marginBottom: 12 },
+  finishAllBtnText: { color: colors.surfaceRaised, fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
 
   finishScreen: { flex: 1, padding: 24, paddingTop: 24, paddingBottom: 40 },
   finishBackBtn: { marginBottom: 16 },
-  finishBackText: { color: '#9494A0', fontSize: 14 },
-  finishTitle: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5, marginBottom: 6 },
-  finishSub: { fontSize: 15, color: '#9494A0', marginBottom: 32 },
+  finishBackText: { color: colors.textSubtle, fontSize: 14 },
+  finishTitle: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5, marginBottom: 6 },
+  finishSub: { fontSize: 15, color: colors.textSubtle, marginBottom: 32 },
   finishStats: { flexDirection: 'row', gap: 12, marginBottom: 32 },
-  finishStat: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  finishStatVal: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  finishStatLabel: { fontSize: 11, color: '#9494A0' },
-  rpeLabel: { fontSize: 14, fontWeight: '500', color: '#FFFFFF', marginBottom: 12 },
+  finishStat: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
+  finishStatVal: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 },
+  finishStatLabel: { fontSize: 11, color: colors.textSubtle },
+  rpeLabel: { fontSize: 14, fontWeight: '500', color: colors.textPrimary, marginBottom: 12 },
   rpeRow: { flexDirection: 'row', gap: 4, marginBottom: 10 },
-  rpeBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#2C2C35', alignItems: 'center' },
-  rpeBtnActive: { backgroundColor: '#FFFFFF' },
-  rpeBtnText: { color: '#9494A0', fontSize: 12, fontWeight: '500' },
-  rpeBtnTextActive: { color: '#111114' },
-  rpeSub: { fontSize: 12, color: '#9494A0', lineHeight: 18, marginBottom: 24 },
+  rpeBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: colors.control, alignItems: 'center' },
+  rpeBtnActive: { backgroundColor: colors.surfaceInverse },
+  rpeBtnText: { color: colors.textSubtle, fontSize: 12, fontWeight: '500' },
+  rpeBtnTextActive: { color: colors.surfaceRaised },
+  rpeSub: { fontSize: 12, color: colors.textSubtle, lineHeight: 18, marginBottom: 24 },
   simpleRpeRow: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  simpleRpeBtn: { flex: 1, paddingVertical: 14, borderRadius: 10, backgroundColor: '#2C2C35', alignItems: 'center' },
-  simpleRpeBtnActive: { backgroundColor: '#FFFFFF' },
-  simpleRpeBtnText: { color: '#9494A0', fontSize: 15, fontWeight: '600' },
-  simpleRpeBtnTextActive: { color: '#111114' },
-  overloadCard: { backgroundColor: '#0F1A16', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#1D9E75', marginBottom: 24 },
-  overloadTitle: { fontSize: 13, fontWeight: '700', color: '#1D9E75', marginBottom: 12 },
+  simpleRpeBtn: { flex: 1, paddingVertical: 14, borderRadius: 10, backgroundColor: colors.control, alignItems: 'center' },
+  simpleRpeBtnActive: { backgroundColor: colors.surfaceInverse },
+  simpleRpeBtnText: { color: colors.textSubtle, fontSize: 15, fontWeight: '600' },
+  simpleRpeBtnTextActive: { color: colors.surfaceRaised },
+  overloadCard: { backgroundColor: colors.successBg, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.accent, marginBottom: 24 },
+  overloadTitle: { fontSize: 13, fontWeight: '700', color: colors.accent, marginBottom: 12 },
   overloadRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   overloadDot: { width: 8, height: 8, borderRadius: 4, marginTop: 4 },
-  overloadEx: { fontSize: 12, fontWeight: '600', color: '#FFFFFF', marginBottom: 2 },
-  overloadSug: { fontSize: 11, color: '#9494A0', lineHeight: 16 },
-  saveBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
-  saveBtnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
+  overloadEx: { fontSize: 12, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
+  overloadSug: { fontSize: 11, color: colors.textSubtle, lineHeight: 16 },
+  saveBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
+  saveBtnText: { color: colors.surfaceRaised, fontSize: 16, fontWeight: '600' },
 
-  restWarningBanner: { backgroundColor: '#1A0E0E', borderBottomWidth: 0.5, borderBottomColor: '#E85D5C44', paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  restWarningText: { flex: 1, fontSize: 11, color: '#E85D5C', lineHeight: 16 },
-  restWarningDismiss: { fontSize: 11, color: '#9494A0', fontWeight: '600' },
+  restWarningBanner: { backgroundColor: colors.dangerBg, borderBottomWidth: 0.5, borderBottomColor: colors.dangerHair, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  restWarningText: { flex: 1, fontSize: 11, color: colors.danger, lineHeight: 16 },
+  restWarningDismiss: { fontSize: 11, color: colors.textSubtle, fontWeight: '600' },
 
-  prevHint: { backgroundColor: '#12121A', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
-  prevHintText: { fontSize: 11, color: '#FFFFFF', fontWeight: '500' },
+  prevHint: { backgroundColor: colors.surfaceInset, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
+  prevHintText: { fontSize: 11, color: colors.textPrimary, fontWeight: '500' },
 
   // Sets toolbar (BW + Plates)
   setsToolbar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  setsCardTitle: { fontSize: 11, fontWeight: '700', color: '#8A8A94', letterSpacing: 0.8, textTransform: 'uppercase' },
-  setsToolbarChip: { backgroundColor: '#2C2C35', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: '#3D3D4A' },
-  setsToolbarChipActive: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
-  setsToolbarChipText: { fontSize: 11, fontWeight: '700', color: '#9494A0' },
-  setsToolbarChipTextActive: { color: '#111114' },
+  setsCardTitle: { fontSize: 11, fontWeight: '700', color: colors.textFaint, letterSpacing: 0.8, textTransform: 'uppercase' },
+  setsToolbarChip: { backgroundColor: colors.control, borderRadius: 7, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: colors.borderStrong },
+  setsToolbarChipActive: { backgroundColor: colors.surfaceInverse, borderColor: colors.borderActive },
+  setsToolbarChipText: { fontSize: 11, fontWeight: '700', color: colors.textSubtle },
+  setsToolbarChipTextActive: { color: colors.surfaceRaised },
 
   // Set type tap button
   setTypeBtn: { width: 28, height: 36, alignItems: 'center', justifyContent: 'center' },
   setTypeBtnText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
-  setTypeBtnDot: { fontSize: 16, color: '#2C2C35' },
+  setTypeBtnDot: { fontSize: 16, color: colors.border },
 
   // Coach top button
-  coachTopBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
-  coachTopBtnText: { color: '#A1A1AA', fontSize: 13, fontWeight: '600' },
+  coachTopBtn: { backgroundColor: colors.control, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
+  coachTopBtnText: { color: colors.textMuted, fontSize: 13, fontWeight: '600' },
 
   // Coach modal
   paywallClose: { position: 'absolute', top: 52, right: 20, zIndex: 10, paddingVertical: 6, paddingHorizontal: 10 },
-  paywallCloseText: { color: '#9494A0', fontSize: 15, fontWeight: '600' },
-  coachOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
-  coachCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 32, borderTopWidth: 0.5, borderTopColor: '#2C2C35', gap: 12 },
+  paywallCloseText: { color: colors.textSubtle, fontSize: 15, fontWeight: '600' },
+  coachOverlay: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' },
+  coachCard: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 32, borderTopWidth: 0.5, borderTopColor: colors.border, gap: 12 },
   coachHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  coachTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
-  coachClose: { fontSize: 14, color: '#9494A0', fontWeight: '500' },
-  coachSub: { fontSize: 12, color: '#8A8A94', marginTop: -6 },
-  coachAnswerWrap: { maxHeight: 160, backgroundColor: '#12121A', borderRadius: 10, padding: 12 },
-  coachAnswerText: { fontSize: 14, color: '#E4E4E8', lineHeight: 21 },
-  coachInput: { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 14, minHeight: 56, textAlignVertical: 'top' },
-  coachSendBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  coachSendBtnText: { color: '#111114', fontSize: 15, fontWeight: '600' },
+  coachTitle: { fontSize: 17, fontWeight: '700', color: colors.textPrimary },
+  coachClose: { fontSize: 14, color: colors.textSubtle, fontWeight: '500' },
+  coachSub: { fontSize: 12, color: colors.textFaint, marginTop: -6 },
+  coachAnswerWrap: { maxHeight: 160, backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12 },
+  coachAnswerText: { fontSize: 14, color: colors.textSecondary, lineHeight: 21 },
+  coachInput: { backgroundColor: colors.control, borderRadius: 10, padding: 14, color: colors.textPrimary, fontSize: 14, minHeight: 56, textAlignVertical: 'top' },
+  coachSendBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  coachSendBtnText: { color: colors.surfaceRaised, fontSize: 15, fontWeight: '600' },
 
   // Plate calculator
-  plateOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
-  plateCard: { backgroundColor: '#1A1A20', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: '#2C2C35' },
-  plateTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF', marginBottom: 20 },
+  plateOverlay: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' },
+  plateCard: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: colors.border },
+  plateTitle: { fontSize: 17, fontWeight: '700', color: colors.textPrimary, marginBottom: 20 },
   plateBarRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
-  plateBarLabel: { fontSize: 12, color: '#9494A0', flex: 1 },
-  plateBarBtn: { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  plateBarBtnActive: { backgroundColor: '#FFFFFF' },
-  plateBarBtnText: { fontSize: 13, fontWeight: '600', color: '#9494A0' },
-  plateBarBtnTextActive: { color: '#111114' },
-  plateInput: { backgroundColor: '#2C2C35', borderRadius: 10, padding: 14, color: '#FFFFFF', fontSize: 18, fontWeight: '600', marginBottom: 20, textAlign: 'center' },
-  plateNote: { fontSize: 13, color: '#9494A0', textAlign: 'center', marginBottom: 16 },
+  plateBarLabel: { fontSize: 12, color: colors.textSubtle, flex: 1 },
+  plateBarBtn: { backgroundColor: colors.control, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  plateBarBtnActive: { backgroundColor: colors.surfaceInverse },
+  plateBarBtnText: { fontSize: 13, fontWeight: '600', color: colors.textSubtle },
+  plateBarBtnTextActive: { color: colors.surfaceRaised },
+  plateInput: { backgroundColor: colors.control, borderRadius: 10, padding: 14, color: colors.textPrimary, fontSize: 18, fontWeight: '600', marginBottom: 20, textAlign: 'center' },
+  plateNote: { fontSize: 13, color: colors.textSubtle, textAlign: 'center', marginBottom: 16 },
   plateResult: { marginBottom: 20 },
-  plateResultLabel: { fontSize: 10, fontWeight: '700', color: '#8A8A94', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
+  plateResultLabel: { fontSize: 10, fontWeight: '700', color: colors.textFaint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
   plateChipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  plateChip: { backgroundColor: '#2C2C35', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 0.5, borderColor: '#FFFFFF33' },
-  plateChipText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  plateAchieved: { fontSize: 12, color: '#9494A0' },
-  plateCloseBtn: { backgroundColor: '#2C2C35', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  plateCloseBtnText: { color: '#A1A1AA', fontSize: 14, fontWeight: '600' },
+  plateChip: { backgroundColor: colors.control, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 0.5, borderColor: '#FFFFFF33' },
+  plateChipText: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  plateAchieved: { fontSize: 12, color: colors.textSubtle },
+  plateCloseBtn: { backgroundColor: colors.control, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  plateCloseBtnText: { color: colors.textMuted, fontSize: 14, fontWeight: '600' },
 });

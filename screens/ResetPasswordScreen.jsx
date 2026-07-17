@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import {
+  useState } from 'react';
+import { View, Text, StyleSheet, TextInput, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
 import { friendlyAuthError } from '../lib/errorMessage';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 export default function ResetPasswordScreen({ onDone }) {
   const { t } = useTranslation();
@@ -61,12 +65,12 @@ export default function ResetPasswordScreen({ onDone }) {
             value={password}
             onChangeText={setPassword}
             placeholder={t('auth.newPassword.placeholder')}
-            placeholderTextColor="#8A8A94"
+            placeholderTextColor={colors.textFaint}
             secureTextEntry={!showPassword}
           />
-          <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+          <Tappable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
             <Text style={styles.eyeText}>{showPassword ? t('auth.hide') : t('auth.show')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
 
         <Text style={styles.label}>{t('auth.newPassword.confirmLabel')}</Text>
@@ -76,26 +80,26 @@ export default function ResetPasswordScreen({ onDone }) {
             value={confirm}
             onChangeText={setConfirm}
             placeholder={t('auth.newPassword.confirmPlaceholder')}
-            placeholderTextColor="#8A8A94"
+            placeholderTextColor={colors.textFaint}
             secureTextEntry={!showConfirm}
           />
-          <Pressable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
+          <Tappable onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeBtn}>
             <Text style={styles.eyeText}>{showConfirm ? t('auth.hide') : t('auth.show')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <Pressable
-          style={({ pressed }) => [styles.btn, pressed && { opacity: 0.8 }]}
+        <Tappable
+          style={styles.btn}
           onPress={handleSubmit}
           disabled={loading}
         >
           {loading
-            ? <ActivityIndicator color="#111114" />
+            ? <ActivityIndicator color={colors.surfaceRaised} />
             : <Text style={styles.btnText}>{t('auth.newPassword.submit')}</Text>
           }
-        </Pressable>
+        </Tappable>
       </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -104,17 +108,17 @@ export default function ResetPasswordScreen({ onDone }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
-  title: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -1, marginBottom: 8 },
-  sub: { fontSize: 15, color: '#9494A0', marginBottom: 40 },
-  label: { fontSize: 13, color: '#A1A1AA', fontWeight: '500', marginBottom: 8, marginTop: 16 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35' },
-  inputInner: { padding: 16, color: '#FFFFFF', fontSize: 16, backgroundColor: 'transparent' },
+  title: { fontSize: 32, fontWeight: '700', color: colors.textPrimary, letterSpacing: -1, marginBottom: 8 },
+  sub: { fontSize: 15, color: colors.textSubtle, marginBottom: 40 },
+  label: { fontSize: 13, color: colors.textMuted, fontWeight: '500', marginBottom: 8, marginTop: 16 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border },
+  inputInner: { padding: 16, color: colors.textPrimary, fontSize: 16, backgroundColor: 'transparent' },
   eyeBtn: { paddingHorizontal: 14 },
-  eyeText: { fontSize: 13, color: '#9494A0' },
-  error: { color: '#E85D5C', fontSize: 13, marginTop: 12, textAlign: 'center' },
-  btn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
-  btnText: { color: '#111114', fontSize: 16, fontWeight: '600' },
-  successBox: { margin: 24, backgroundColor: '#1A1A20', borderRadius: 16, padding: 20, borderWidth: 0.5, borderColor: '#1D9E75' },
-  successTitle: { fontSize: 16, fontWeight: '700', color: '#1D9E75', marginBottom: 8 },
-  successText: { fontSize: 14, color: '#A1A1AA', lineHeight: 22 },
+  eyeText: { fontSize: 13, color: colors.textSubtle },
+  error: { color: colors.danger, fontSize: 13, marginTop: 12, textAlign: 'center' },
+  btn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+  btnText: { color: colors.surfaceRaised, fontSize: 16, fontWeight: '600' },
+  successBox: { margin: 24, backgroundColor: colors.surface, borderRadius: 16, padding: 20, borderWidth: 0.5, borderColor: colors.accent },
+  successTitle: { fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 8 },
+  successText: { fontSize: 14, color: colors.textMuted, lineHeight: 22 },
 });

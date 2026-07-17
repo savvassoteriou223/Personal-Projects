@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import {
+  View, Text, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +13,8 @@ import { VOLUME_TARGETS, generateProgram, resolveExerciseByName, normalizeEquipm
 import { computeHeadVolume } from './volumeEngine';
 import { getRecentCheckIns } from '../lib/recoveryStore';
 import { format, subDays, startOfWeek } from 'date-fns';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 const MONTHLY_QUOTA = 100;
 
@@ -942,7 +946,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
             {conversationHistory.length > 0 && (
-              <Pressable
+              <Tappable
                 hitSlop={10}
                 style={{ paddingTop: 4 }}
                 onPress={() => Alert.alert(
@@ -954,13 +958,13 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                   ],
                 )}
               >
-                <Text style={{ color: '#9494A0', fontSize: 15, fontWeight: '600' }}>{t('coach.reset')}</Text>
-              </Pressable>
+                <Text style={{ color: colors.textSubtle, fontSize: 15, fontWeight: '600' }}>{t('coach.reset')}</Text>
+              </Tappable>
             )}
             {onClose && (
-              <Pressable onPress={onClose} hitSlop={10} style={{ paddingTop: 4 }}>
-                <Text style={{ color: '#A1A1AA', fontSize: 15, fontWeight: '600' }}>{t('common.done')}</Text>
-              </Pressable>
+              <Tappable onPress={onClose} hitSlop={10} style={{ paddingTop: 4 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 15, fontWeight: '600' }}>{t('common.done')}</Text>
+              </Tappable>
             )}
           </View>
         </View>
@@ -998,9 +1002,9 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
             <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
             {/* Dismissable — it otherwise re-renders on every Coach open all week. */}
             {(weeklySummary || weeklyOffered) && !weeklyLoading && (
-              <Pressable onPress={dismissWeeklyReview} hitSlop={12} accessibilityLabel={t('common.close')}>
+              <Tappable onPress={dismissWeeklyReview} hitSlop={12} accessibilityLabel={t('common.close')}>
                 <Text style={styles.weeklyDismiss}>✕</Text>
-              </Pressable>
+              </Tappable>
             )}
           </View>
           {weeklySummary ? (
@@ -1013,13 +1017,13 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
             <>
               {/* The cost is stated on the button. It used to be spent silently. */}
               <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 12 }]}>{t('coach.weeklyReviewOffer')}</Text>
-              <Pressable
+              <Tappable
                 style={[styles.weeklyBtn, quotaExceeded && styles.btnDisabled]}
                 onPress={generateWeeklyReview}
                 disabled={quotaExceeded}
               >
                 <Text style={styles.weeklyBtnText}>{t('coach.weeklyReviewCta')}</Text>
-              </Pressable>
+              </Tappable>
             </>
           )}
         </View>
@@ -1074,9 +1078,9 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
               { label: t('coach.examples.glutesLabel'), prompt: t('coach.examples.glutesPrompt') },
               { label: t('coach.examples.easeOffLabel'), prompt: t('coach.examples.easeOffPrompt') },
             ].map((c) => (
-              <Pressable key={c.label} style={styles.exampleChip} onPress={() => setQuestion(c.prompt)}>
+              <Tappable key={c.label} style={styles.exampleChip} onPress={() => setQuestion(c.prompt)}>
                 <Text style={styles.exampleChipText}>{c.label}</Text>
-              </Pressable>
+              </Tappable>
             ))}
           </View>
         )}
@@ -1086,7 +1090,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           value={quotaExceeded ? '' : question}
           onChangeText={setQuestion}
           placeholder={quotaExceeded ? t('coach.limitPlaceholder') : t('coach.inputPlaceholder')}
-          placeholderTextColor="#8A8A94"
+          placeholderTextColor={colors.textFaint}
           multiline
           numberOfLines={3}
           editable={!quotaExceeded}
@@ -1133,7 +1137,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                   <Text style={styles.proposalRationale}>{p.rationale}</Text>
                 )}
                 <View style={styles.proposalItemActions}>
-                  <Pressable
+                  <Tappable
                     style={[styles.proposalApplyBtn, confirmingIndex !== null && styles.btnDisabled]}
                     onPress={() => applyProposal(i)}
                     disabled={confirmingIndex !== null}
@@ -1141,27 +1145,27 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                     <Text style={styles.proposalApplyText}>
                       {confirmingIndex === i ? t('coach.saving') : t('coach.apply')}
                     </Text>
-                  </Pressable>
-                  <Pressable
+                  </Tappable>
+                  <Tappable
                     style={styles.proposalAltBtn}
                     onPress={() => requestAlternative(p)}
                     disabled={confirmingIndex !== null}
                   >
                     <Text style={styles.proposalAltText}>{t('coach.alternative')}</Text>
-                  </Pressable>
-                  <Pressable
+                  </Tappable>
+                  <Tappable
                     style={styles.proposalRemoveBtn}
                     onPress={() => dismissProposal(i)}
                     disabled={confirmingIndex !== null}
                   >
                     <Text style={styles.proposalRemoveText}>✕</Text>
-                  </Pressable>
+                  </Tappable>
                 </View>
               </View>
             ))}
             {proposals.length > 1 && (
               <View style={styles.proposalActions}>
-                <Pressable
+                <Tappable
                   style={[styles.confirmBtn, confirmingIndex !== null && styles.btnDisabled]}
                   onPress={applyAllProposals}
                   disabled={confirmingIndex !== null}
@@ -1169,13 +1173,13 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                   <Text style={styles.confirmBtnText}>
                     {confirmingIndex === -1 ? t('coach.saving') : t('coach.applyAll')}
                   </Text>
-                </Pressable>
-                <Pressable
+                </Tappable>
+                <Tappable
                   style={styles.dismissBtn}
                   onPress={() => setProposals([])}
                 >
                   <Text style={styles.dismissBtnText}>{t('coach.dismissAll')}</Text>
-                </Pressable>
+                </Tappable>
               </View>
             )}
           </View>
@@ -1194,18 +1198,18 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                   <Text style={styles.altName}>{opt.exercise_name}</Text>
                 </View>
                 {opt.rationale ? <Text style={styles.proposalRationale}>{opt.rationale}</Text> : null}
-                <Pressable
+                <Tappable
                   style={[styles.altUseBtn, confirmingIndex !== null && styles.btnDisabled]}
                   onPress={() => chooseAlternative(alternatives, opt)}
                   disabled={confirmingIndex !== null}
                 >
                   <Text style={styles.altUseText}>{t('coach.useThis')}</Text>
-                </Pressable>
+                </Tappable>
               </View>
             ))}
-            <Pressable style={[styles.dismissBtn, { marginTop: 4 }]} onPress={() => setAlternatives(null)}>
+            <Tappable style={[styles.dismissBtn, { marginTop: 4 }]} onPress={() => setAlternatives(null)}>
               <Text style={styles.dismissBtnText}>{t('coach.dismissAll')}</Text>
-            </Pressable>
+            </Tappable>
           </View>
         )}
 
@@ -1215,13 +1219,13 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           </View>
         )}
 
-        <Pressable
+        <Tappable
           style={[styles.askBtn, (asking || quotaExceeded) && styles.btnDisabled]}
           onPress={askQuestion}
           disabled={asking || quotaExceeded}
         >
           <Text style={styles.askBtnText}>{asking ? t('coach.thinking') : t('coach.askBtn')}</Text>
-        </Pressable>
+        </Tappable>
       </View>
 
       {/* Weekly insight — hidden mid-workout to keep that view focused */}
@@ -1242,7 +1246,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           </View>
         )}
 
-        <Pressable
+        <Tappable
           style={[styles.generateBtn, (loading || quotaExceeded) && styles.btnDisabled]}
           onPress={generateInsight}
           disabled={loading || quotaExceeded}
@@ -1250,7 +1254,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           <Text style={styles.generateBtnText}>
             {loading ? t('coach.analysing') : insight ? t('coach.refreshInsight') : t('coach.generateInsight')}
           </Text>
-        </Pressable>
+        </Tappable>
       </View>
       )}
 
@@ -1265,9 +1269,9 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
               <Text style={styles.memoryCat}>{t(`coach.noteCat.${f.category || 'note'}`)}</Text>
               <Text style={styles.memorySummary}>{f.summary}</Text>
             </View>
-            <Pressable style={styles.memoryForgetBtn} onPress={() => forgetNote(i)} hitSlop={8}>
+            <Tappable style={styles.memoryForgetBtn} onPress={() => forgetNote(i)} hitSlop={8}>
               <Text style={styles.memoryForgetText}>{t('coach.memoryForget')}</Text>
-            </Pressable>
+            </Tappable>
           </View>
         ))}
       </View>
@@ -1283,13 +1287,13 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           t('coach.quick.prioritise'),
           t('coach.quick.recovering'),
         ].map((q, i) => (
-          <Pressable
+          <Tappable
             key={i}
             style={[styles.quickChip, quotaExceeded && styles.quickChipDisabled]}
             onPress={() => { if (!quotaExceeded) setQuestion(q); }}
           >
             <Text style={styles.quickChipText}>{q}</Text>
-          </Pressable>
+          </Tappable>
         ))}
       </View>
       )}
@@ -1299,106 +1303,106 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F13' },
+  container: { flex: 1, backgroundColor: colors.bg },
   header: { padding: 24, paddingTop: 24 },
-  title: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
-  subtitle: { fontSize: 12, color: '#9494A0', marginTop: 4 },
+  title: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5 },
+  subtitle: { fontSize: 12, color: colors.textSubtle, marginTop: 4 },
 
-  quotaCard: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 14 },
+  quotaCard: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
   quotaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  quotaLabel: { fontSize: 12, color: '#9494A0' },
-  quotaCount: { fontSize: 12, fontWeight: '600', color: '#FFFFFF' },
-  quotaCountExceeded: { color: '#E85D5C' },
-  quotaBarBg: { height: 4, backgroundColor: '#2C2C35', borderRadius: 2 },
-  quotaBarFill: { height: 4, backgroundColor: '#FFFFFF', borderRadius: 2 },
-  quotaBarWarn: { backgroundColor: '#BA7517' },
-  quotaBarExceeded: { backgroundColor: '#E85D5C' },
-  quotaExceededText: { fontSize: 11, color: '#E85D5C', marginTop: 8 },
+  quotaLabel: { fontSize: 12, color: colors.textSubtle },
+  quotaCount: { fontSize: 12, fontWeight: '600', color: colors.textPrimary },
+  quotaCountExceeded: { color: colors.danger },
+  quotaBarBg: { height: 4, backgroundColor: colors.control, borderRadius: 2 },
+  quotaBarFill: { height: 4, backgroundColor: colors.surfaceInverse, borderRadius: 2 },
+  quotaBarWarn: { backgroundColor: colors.warning },
+  quotaBarExceeded: { backgroundColor: colors.danger },
+  quotaExceededText: { fontSize: 11, color: colors.danger, marginTop: 8 },
 
-  card: { marginHorizontal: 20, backgroundColor: '#1A1A20', borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: '#2C2C35', marginBottom: 14 },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', marginBottom: 4 },
-  cardSub: { fontSize: 11, color: '#9494A0', marginBottom: 14, lineHeight: 16 },
+  card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
+  cardSub: { fontSize: 11, color: colors.textSubtle, marginBottom: 14, lineHeight: 16 },
   exampleChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  exampleChip: { borderWidth: 1, borderColor: '#2C2C35', backgroundColor: '#15151B', borderRadius: 14, paddingVertical: 7, paddingHorizontal: 12 },
-  exampleChipText: { color: '#A1A1AA', fontSize: 12 },
+  exampleChip: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceAlt, borderRadius: 14, paddingVertical: 7, paddingHorizontal: 12 },
+  exampleChipText: { color: colors.textMuted, fontSize: 12 },
 
-  insightBox: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  insightText: { fontSize: 13, color: '#FFFFFF', lineHeight: 21 },
-  insightEmpty: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 14 },
-  insightEmptyText: { fontSize: 13, color: '#9494A0', lineHeight: 20 },
+  insightBox: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: colors.border },
+  insightText: { fontSize: 13, color: colors.textPrimary, lineHeight: 21 },
+  insightEmpty: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14 },
+  insightEmptyText: { fontSize: 13, color: colors.textSubtle, lineHeight: 20 },
 
-  generateBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  generateBtnText: { color: '#111114', fontSize: 14, fontWeight: '600' },
+  generateBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  generateBtnText: { color: colors.surfaceRaised, fontSize: 14, fontWeight: '600' },
 
-  questionInput: { backgroundColor: '#12121A', borderRadius: 12, padding: 12, color: '#FFFFFF', fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: '#2C2C35' },
+  questionInput: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 12, color: colors.textPrimary, fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: colors.border },
   weeklyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  weeklyDismiss: { fontSize: 15, color: '#9494A0', fontWeight: '600' },
-  weeklyBtn: { backgroundColor: '#2C2C35', borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: '#3D3D4A' },
-  weeklyBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  weeklyDismiss: { fontSize: 15, color: colors.textSubtle, fontWeight: '600' },
+  weeklyBtn: { backgroundColor: colors.control, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: colors.borderStrong },
+  weeklyBtnText: { color: colors.textPrimary, fontSize: 14, fontWeight: '600' },
 
   // ── Conversation thread ─────────────────────────────────────────────────────
   // Reuses the app's existing vocabulary: accent green = you, surface = coach.
   // Deliberately not bubbles-with-tails — this is product UI, not a messenger.
   thread: { gap: 8, marginBottom: 14 },
   turn: { maxWidth: '88%', borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10 },
-  turnUser: { alignSelf: 'flex-end', backgroundColor: '#1D9E75', borderBottomRightRadius: 4 },
-  turnUserText: { fontSize: 13, color: '#FFFFFF', lineHeight: 20 },
-  turnCoach: { alignSelf: 'flex-start', backgroundColor: '#12121A', borderWidth: 0.5, borderColor: '#2C2C35', borderBottomLeftRadius: 4 },
-  turnCoachText: { fontSize: 13, color: '#FFFFFF', lineHeight: 21 },
-  turnThinking: { fontSize: 13, color: '#9494A0', lineHeight: 21, fontStyle: 'italic' },
-  turnError: { alignSelf: 'flex-start', backgroundColor: '#2C1A1A', borderWidth: 0.5, borderColor: '#E85D5C55', borderBottomLeftRadius: 4 },
-  turnErrorText: { fontSize: 13, color: '#E85D5C', lineHeight: 21 },
+  turnUser: { alignSelf: 'flex-end', backgroundColor: colors.accent, borderBottomRightRadius: 4 },
+  turnUserText: { fontSize: 13, color: colors.textPrimary, lineHeight: 20 },
+  turnCoach: { alignSelf: 'flex-start', backgroundColor: colors.surfaceInset, borderWidth: 0.5, borderColor: colors.border, borderBottomLeftRadius: 4 },
+  turnCoachText: { fontSize: 13, color: colors.textPrimary, lineHeight: 21 },
+  turnThinking: { fontSize: 13, color: colors.textSubtle, lineHeight: 21, fontStyle: 'italic' },
+  turnError: { alignSelf: 'flex-start', backgroundColor: colors.dangerBg, borderWidth: 0.5, borderColor: '#E85D5C55', borderBottomLeftRadius: 4 },
+  turnErrorText: { fontSize: 13, color: colors.danger, lineHeight: 21 },
 
-  proposalCard: { backgroundColor: '#12121A', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: '#FFFFFF' },
+  proposalCard: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   proposalItem: { paddingTop: 8 },
-  proposalItemBorder: { marginTop: 10, borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
+  proposalItemBorder: { marginTop: 10, borderTopWidth: 0.5, borderTopColor: colors.border },
   proposalScopeRow: { flexDirection: 'row', marginBottom: 8 },
-  proposalScopePill: { backgroundColor: '#FFFFFF0D', borderRadius: 20, paddingVertical: 3, paddingHorizontal: 10, borderWidth: 0.5, borderColor: '#FFFFFF' },
-  proposalScopePillSession: { backgroundColor: '#BA751722', borderColor: '#BA7517' },
-  proposalScopeText: { fontSize: 10, color: '#E4E4E8', fontWeight: '600' },
-  proposalScopeTextSession: { color: '#BA7517' },
-  proposalLabel: { fontSize: 10, color: '#FFFFFF', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
-  proposalExercise: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  proposalDetail: { fontSize: 13, color: '#A1A1AA', marginBottom: 4 },
-  proposalDay: { fontSize: 12, color: '#E4E4E8', marginBottom: 8 },
-  proposalRationale: { fontSize: 12, color: '#9494A0', lineHeight: 18, marginBottom: 12 },
+  proposalScopePill: { backgroundColor: '#FFFFFF0D', borderRadius: 20, paddingVertical: 3, paddingHorizontal: 10, borderWidth: 0.5, borderColor: colors.border },
+  proposalScopePillSession: { backgroundColor: colors.warningSoft, borderColor: colors.warning },
+  proposalScopeText: { fontSize: 10, color: colors.textSecondary, fontWeight: '600' },
+  proposalScopeTextSession: { color: colors.warning },
+  proposalLabel: { fontSize: 10, color: colors.textPrimary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  proposalExercise: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 },
+  proposalDetail: { fontSize: 13, color: colors.textMuted, marginBottom: 4 },
+  proposalDay: { fontSize: 12, color: colors.textSecondary, marginBottom: 8 },
+  proposalRationale: { fontSize: 12, color: colors.textSubtle, lineHeight: 18, marginBottom: 12 },
   proposalItemActions: { flexDirection: 'row', gap: 6, marginTop: 8, marginBottom: 4 },
-  proposalApplyBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 8, paddingVertical: 8, alignItems: 'center' },
-  proposalApplyText: { color: '#111114', fontSize: 12, fontWeight: '700' },
-  proposalAltBtn: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  proposalAltText: { color: '#A1A1AA', fontSize: 12, fontWeight: '600' },
-  proposalRemoveBtn: { width: 34, backgroundColor: '#1A1A20', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 0.5, borderColor: '#2C2C35' },
-  proposalRemoveText: { color: '#9494A0', fontSize: 13, fontWeight: '600' },
+  proposalApplyBtn: { flex: 1, backgroundColor: colors.surfaceInverse, borderRadius: 8, paddingVertical: 8, alignItems: 'center' },
+  proposalApplyText: { color: colors.surfaceRaised, fontSize: 12, fontWeight: '700' },
+  proposalAltBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
+  proposalAltText: { color: colors.textMuted, fontSize: 12, fontWeight: '600' },
+  proposalRemoveBtn: { width: 34, backgroundColor: colors.surface, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
+  proposalRemoveText: { color: colors.textSubtle, fontSize: 13, fontWeight: '600' },
   btnDisabled: { opacity: 0.4 },
 
   altItem: { paddingTop: 10 },
   altHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   altRank: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF14', alignItems: 'center', justifyContent: 'center', borderWidth: 0.5, borderColor: '#FFFFFF33' },
-  altRankText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF' },
-  altName: { flex: 1, fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  altUseBtn: { backgroundColor: '#FFFFFF', borderRadius: 8, paddingVertical: 8, alignItems: 'center', marginTop: 8 },
-  altUseText: { color: '#111114', fontSize: 12, fontWeight: '700' },
+  altRankText: { fontSize: 11, fontWeight: '700', color: colors.textPrimary },
+  altName: { flex: 1, fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  altUseBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 8, paddingVertical: 8, alignItems: 'center', marginTop: 8 },
+  altUseText: { color: colors.surfaceRaised, fontSize: 12, fontWeight: '700' },
 
   proposalActions: { flexDirection: 'row', gap: 8 },
-  confirmBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
-  confirmBtnText: { color: '#111114', fontSize: 13, fontWeight: '600' },
-  dismissBtn: { backgroundColor: '#2C2C35', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 16, alignItems: 'center' },
-  dismissBtnText: { color: '#9494A0', fontSize: 13, fontWeight: '500' },
+  confirmBtn: { flex: 1, backgroundColor: colors.surfaceInverse, borderRadius: 10, paddingVertical: 11, alignItems: 'center' },
+  confirmBtnText: { color: colors.surfaceRaised, fontSize: 13, fontWeight: '600' },
+  dismissBtn: { backgroundColor: colors.control, borderRadius: 10, paddingVertical: 11, paddingHorizontal: 16, alignItems: 'center' },
+  dismissBtnText: { color: colors.textSubtle, fontSize: 13, fontWeight: '500' },
 
-  savedBanner: { backgroundColor: '#0D1F18', borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: '#1D9E75' },
-  savedBannerText: { fontSize: 13, color: '#1D9E75', lineHeight: 18 },
+  savedBanner: { backgroundColor: colors.successBg, borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: colors.accent },
+  savedBannerText: { fontSize: 13, color: colors.accent, lineHeight: 18 },
 
-  askBtn: { backgroundColor: '#1D9E75', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  askBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  askBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  askBtnText: { color: colors.textOnLight, fontSize: 15, fontWeight: '600' },
 
   memoryRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingVertical: 10, gap: 12 },
-  memoryRowBorder: { borderTopWidth: 0.5, borderTopColor: '#2C2C35' },
-  memoryCat: { fontSize: 10, color: '#9494A0', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 3 },
-  memorySummary: { fontSize: 13, color: '#E4E4E8', lineHeight: 19 },
-  memoryForgetBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#2C1A1A', borderRadius: 8, borderWidth: 0.5, borderColor: '#E85D5C44' },
-  memoryForgetText: { color: '#E85D5C', fontSize: 12, fontWeight: '600' },
+  memoryRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
+  memoryCat: { fontSize: 10, color: colors.textSubtle, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 3 },
+  memorySummary: { fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
+  memoryForgetBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.dangerBg, borderRadius: 8, borderWidth: 0.5, borderColor: colors.dangerHair },
+  memoryForgetText: { color: colors.danger, fontSize: 12, fontWeight: '600' },
 
-  quickChip: { backgroundColor: '#12121A', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
+  quickChip: { backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 0.5, borderColor: colors.border },
   quickChipDisabled: { opacity: 0.4 },
-  quickChipText: { fontSize: 13, color: '#A1A1AA' },
+  quickChipText: { fontSize: 13, color: colors.textMuted },
 });

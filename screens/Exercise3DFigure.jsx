@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, PanResponder } from 'react-native';
 import Svg, { Line, Circle, Defs, RadialGradient, Stop, Rect, Ellipse } from 'react-native-svg';
+import { colors } from '../lib/theme';
 
 const KEYS = ['head','neck','torsoT','torsoB','shL','shR','elbL','elbR','wriL','wriR','hipL','hipR','kneL','kneR','ankL','ankR'];
 
@@ -125,7 +126,7 @@ export default function Exercise3DFigure({ joints, width = 300, height = 260, au
         <Defs>
           <RadialGradient id="bgGrad" cx="50%" cy="42%" r="65%">
             <Stop offset="0%"   stopColor="#1C1040" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#06060C" stopOpacity="1" />
+            <Stop offset="100%" stopColor={colors.bgDeep} stopOpacity="1" />
           </RadialGradient>
         </Defs>
 

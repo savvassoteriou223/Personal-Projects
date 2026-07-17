@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Alert, Modal } from 'react-native';
+import {
+  useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Alert, Modal,
+} from 'react-native';
 import { supabase } from '../supabase';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 export default function AdminScreen({ visible, onClose }) {
   const [emails, setEmails] = useState([]);
@@ -62,9 +66,9 @@ export default function AdminScreen({ visible, onClose }) {
       <View style={s.container}>
         <View style={s.header}>
           <Text style={s.title}>Beta Access</Text>
-          <Pressable onPress={onClose} style={s.closeBtn}>
+          <Tappable onPress={onClose} style={s.closeBtn}>
             <Text style={s.closeBtnText}>Done</Text>
-          </Pressable>
+          </Tappable>
         </View>
 
         <ScrollView style={s.scroll} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -74,9 +78,9 @@ export default function AdminScreen({ visible, onClose }) {
           {emails.map((item) => (
             <View key={item.id} style={s.emailRow}>
               <Text style={s.emailText}>{item.email}</Text>
-              <Pressable onPress={() => removeEmail(item.id, item.email)} style={s.removeBtn}>
+              <Tappable onPress={() => removeEmail(item.id, item.email)} style={s.removeBtn}>
                 <Text style={s.removeBtnText}>Remove</Text>
-              </Pressable>
+              </Tappable>
             </View>
           ))}
 
@@ -91,14 +95,14 @@ export default function AdminScreen({ visible, onClose }) {
               value={newEmail}
               onChangeText={setNewEmail}
               placeholder="email@example.com"
-              placeholderTextColor="#8A8A94"
+              placeholderTextColor={colors.textFaint}
               keyboardType="email-address"
               autoCapitalize="none"
               onSubmitEditing={addEmail}
             />
-            <Pressable style={[s.addBtn, loading && { opacity: 0.5 }]} onPress={addEmail} disabled={loading}>
+            <Tappable style={[s.addBtn, loading && { opacity: 0.5 }]} onPress={addEmail} disabled={loading}>
               <Text style={s.addBtnText}>Add</Text>
-            </Pressable>
+            </Tappable>
           </View>
 
           <View style={s.noteCard}>
@@ -111,23 +115,23 @@ export default function AdminScreen({ visible, onClose }) {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F0F13' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 24, borderBottomWidth: 0.5, borderBottomColor: '#2C2C35' },
-  title: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
-  closeBtn: { backgroundColor: '#1A1A20', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
-  closeBtnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingTop: 24, borderBottomWidth: 0.5, borderBottomColor: colors.border },
+  title: { fontSize: 18, fontWeight: '700', color: colors.textPrimary },
+  closeBtn: { backgroundColor: colors.surface, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+  closeBtnText: { color: colors.textPrimary, fontWeight: '600', fontSize: 14 },
   scroll: { flex: 1, padding: 20 },
-  sectionLabel: { fontSize: 11, color: '#9494A0', fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8, marginTop: 8 },
-  sectionSub: { fontSize: 13, color: '#9494A0', marginBottom: 16, lineHeight: 20 },
-  emailRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#1A1A20', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 0.5, borderColor: '#2C2C35' },
-  emailText: { fontSize: 14, color: '#FFFFFF', flex: 1 },
-  removeBtn: { marginLeft: 12, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#2C1A1A', borderRadius: 8, borderWidth: 0.5, borderColor: '#E85D5C44' },
-  removeBtnText: { color: '#E85D5C', fontSize: 12, fontWeight: '600' },
-  empty: { color: '#9494A0', fontSize: 14, textAlign: 'center', paddingVertical: 20 },
+  sectionLabel: { fontSize: 11, color: colors.textSubtle, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8, marginTop: 8 },
+  sectionSub: { fontSize: 13, color: colors.textSubtle, marginBottom: 16, lineHeight: 20 },
+  emailRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 0.5, borderColor: colors.border },
+  emailText: { fontSize: 14, color: colors.textPrimary, flex: 1 },
+  removeBtn: { marginLeft: 12, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.dangerBg, borderRadius: 8, borderWidth: 0.5, borderColor: colors.dangerHair },
+  removeBtnText: { color: colors.danger, fontSize: 12, fontWeight: '600' },
+  empty: { color: colors.textSubtle, fontSize: 14, textAlign: 'center', paddingVertical: 20 },
   inputRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  input: { flex: 1, backgroundColor: '#1A1A20', borderRadius: 12, borderWidth: 0.5, borderColor: '#2C2C35', padding: 14, color: '#FFFFFF', fontSize: 15 },
-  addBtn: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 20, justifyContent: 'center' },
-  addBtnText: { color: '#111114', fontWeight: '600', fontSize: 14 },
-  noteCard: { marginTop: 24, backgroundColor: '#111114', borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
-  noteText: { fontSize: 12, color: '#9494A0', lineHeight: 18 },
+  input: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, padding: 14, color: colors.textPrimary, fontSize: 15 },
+  addBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingHorizontal: 20, justifyContent: 'center' },
+  addBtnText: { color: colors.surfaceRaised, fontWeight: '600', fontSize: 14 },
+  noteCard: { marginTop: 24, backgroundColor: colors.surfaceRaised, borderRadius: 12, padding: 14, borderWidth: 0.5, borderColor: '#FFFFFF1A' },
+  noteText: { fontSize: 12, color: colors.textSubtle, lineHeight: 18 },
 });

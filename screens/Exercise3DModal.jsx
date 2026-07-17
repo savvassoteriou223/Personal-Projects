@@ -2,14 +2,16 @@
 // Renders a perspective-projected 3D figure using canvas 2D (no CDN / offline-safe).
 // Figures are defined as 16-joint skeletons animated between poses per slide.
 
-import { useState, useRef, useCallback } from 'react';
 import {
-  Modal, View, Text, Pressable, StyleSheet,
-  SafeAreaView, StatusBar,
+  useState, useRef, useCallback } from 'react';
+import {
+  Modal, View, Text, StyleSheet, SafeAreaView, StatusBar,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useTranslation } from 'react-i18next';
 import { getExercise3DData } from './exercise3DData';
+import { colors } from '../lib/theme';
+import Tappable from '../components/Tappable';
 
 // ─── VIEWER HTML ─────────────────────────────────────────────────────────────
 // Self-contained: perspective projection + Y-axis auto-rotation + touch drag.
@@ -202,15 +204,15 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
 
   return (
     <Modal visible animationType="slide" statusBarTranslucent onRequestClose={onClose}>
-      <StatusBar barStyle="light-content" backgroundColor="#0A0A10" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bgDeep} />
       <SafeAreaView style={styles.container}>
 
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>{exerciseName}</Text>
-          <Pressable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
+          <Tappable onPress={onClose} style={styles.closeBtn} hitSlop={12}>
             <Text style={styles.closeBtnText}>{t('common.done')}</Text>
-          </Pressable>
+          </Tappable>
         </View>
 
         {/* 3D canvas */}
@@ -223,31 +225,31 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
             bounces={false}
             overScrollMode="never"
             androidLayerType="hardware"
-            backgroundColor="#0A0A10"
+            backgroundColor={colors.bgDeep}
           />
         </View>
 
         {/* Navigation */}
         <View style={styles.navRow}>
-          <Pressable
+          <Tappable
             style={[styles.navBtn, slideIdx === 0 && styles.navBtnDisabled]}
             onPress={prevSlide}
             disabled={slideIdx === 0}
           >
             <Text style={[styles.navArrow, slideIdx === 0 && styles.navArrowDim]}>‹</Text>
             <Text style={[styles.navLabel, slideIdx === 0 && styles.navLabelDim]}>{t('cards.threeD.prev')}</Text>
-          </Pressable>
+          </Tappable>
 
           <Text style={styles.slideCount}>{slideIdx + 1} / {totalSlides}</Text>
 
-          <Pressable
+          <Tappable
             style={[styles.navBtn, slideIdx === totalSlides - 1 && styles.navBtnDisabled]}
             onPress={nextSlide}
             disabled={slideIdx === totalSlides - 1}
           >
             <Text style={[styles.navLabel, slideIdx === totalSlides - 1 && styles.navLabelDim]}>{t('cards.threeD.next')}</Text>
             <Text style={[styles.navArrow, slideIdx === totalSlides - 1 && styles.navArrowDim]}>›</Text>
-          </Pressable>
+          </Tappable>
         </View>
 
         <Text style={styles.hint}>{t('cards.threeD.hint')}</Text>
@@ -262,7 +264,7 @@ export default function Exercise3DModal({ exerciseName, onClose }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A10',
+    backgroundColor: colors.bgDeep,
   },
   header: {
     flexDirection: 'row',
@@ -271,35 +273,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#1E1E28',
+    borderBottomColor: colors.borderSoft,
   },
   title: {
     flex: 1,
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     marginRight: 12,
   },
   closeBtn: {
-    backgroundColor: '#1A1A24',
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderWidth: 0.5,
-    borderColor: '#2C2C35',
+    borderColor: colors.border,
   },
   closeBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
   },
   viewer: {
     flex: 1,
-    backgroundColor: '#0A0A10',
+    backgroundColor: colors.bgDeep,
   },
   webview: {
     flex: 1,
-    backgroundColor: '#0A0A10',
+    backgroundColor: colors.bgDeep,
   },
   navRow: {
     flexDirection: 'row',
@@ -308,7 +310,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderTopWidth: 0.5,
-    borderTopColor: '#1E1E28',
+    borderTopColor: colors.borderSoft,
   },
   navBtn: {
     flexDirection: 'row',
@@ -316,10 +318,10 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#111114',
+    backgroundColor: colors.surfaceRaised,
     borderRadius: 12,
     borderWidth: 0.5,
-    borderColor: '#2C2C35',
+    borderColor: colors.border,
     minWidth: 80,
     justifyContent: 'center',
   },
@@ -328,30 +330,30 @@ const styles = StyleSheet.create({
   },
   navArrow: {
     fontSize: 22,
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     lineHeight: 24,
     fontWeight: '300',
   },
   navArrowDim: {
-    color: '#8A8A94',
+    color: colors.textFaint,
   },
   navLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
   },
   navLabelDim: {
-    color: '#8A8A94',
+    color: colors.textFaint,
   },
   slideCount: {
     fontSize: 13,
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     fontWeight: '700',
   },
   hint: {
     textAlign: 'center',
     fontSize: 10,
-    color: '#8A8A94',
+    color: colors.textFaint,
     paddingBottom: 12,
     letterSpacing: 0.3,
   },

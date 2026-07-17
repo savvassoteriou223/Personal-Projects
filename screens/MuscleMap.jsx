@@ -33,20 +33,23 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Ellipse, Circle, G, Defs, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { colors } from '../lib/theme';
 
-// ─── Colour tokens ────────────────────────────────────────────────────────────
+// ─── Local aliases onto the shared design tokens (lib/theme.js is the source of
+//     truth). Names stay muscle-diagram-readable; values are tokens so this
+//     SVG no longer carries its own competing palette.
 const C = {
-  bg:           '#0A0A0C',
-  bodyFill:     '#1C1C24',
-  bodyStroke:   '#2A2A38',
-  inactive:     '#1C1C24',
-  inactiveEdge: '#2A2A38',
-  primary:      '#1D9E75',   // green — primary muscle
-  primaryEdge:  '#1D9E75',
-  secondary:    '#BA7517',   // amber — secondary muscle
-  secondaryEdge:'#BA7517',
-  label:        '#8B8A9A',
-  textPrimary:  '#F1F0F5',
+  bg:           colors.bgDeep,
+  bodyFill:     colors.surfaceElevated,
+  bodyStroke:   colors.border,
+  inactive:     colors.surfaceElevated,
+  inactiveEdge: colors.border,
+  primary:      colors.accent,     // green — primary muscle
+  primaryEdge:  colors.accent,
+  secondary:    colors.warning,    // amber — secondary muscle
+  secondaryEdge:colors.warning,
+  label:        colors.textSubtle,
+  textPrimary:  colors.textPrimary,
 };
 
 // ─── Muscle → view mapping ────────────────────────────────────────────────────
@@ -525,7 +528,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   viewLabel: {
-    color: '#8A8A94',
+    color: colors.textFaint,
     fontSize: 9,
     letterSpacing: 0.8,
     textAlign: 'center',
@@ -548,7 +551,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   legendText: {
-    color: '#8B8A9A',
+    color: colors.textSubtle,
     fontSize: 11,
   },
 });
