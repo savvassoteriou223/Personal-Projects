@@ -312,9 +312,21 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       if (overrides?.length) {
         const equipment = normalizeEquipment(profile.equipment || []);
         overrides.forEach(o => {
+          // Mirror TodayScreen exactly: resolve by slot_id so the program the coach
+          // reasons about is the SAME one the user sees. Applying by raw
+          // exercise_index here would mis-target once a slot has shifted position
+          // between generations (injury/equipment/level change, a whole pattern
+          // going disliked) — and then the index the model is given diverges from
+          // reality and proposals miss. Heal legacy rows to slot identity too.
+          let healSlotId = null;
+          if (!o.slot_id) {
+            const day = program.days?.find(d => d.id === o.day_id);
+            healSlotId = day?.exercises?.[o.exercise_index]?.slotId ?? null;
+          }
           program = applyPermanentEdit(program, {
             type: o.edit_type,
             dayId: o.day_id,
+            slotId: o.slot_id ?? healSlotId ?? undefined,
             exerciseIndex: o.exercise_index,
             patternKey: o.pattern_key,
             preferExerciseId: o.exercise_id,
@@ -322,6 +334,12 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
             reps: o.reps,
             rpe: o.rpe,
           }, equipment);
+          if (!o.slot_id && healSlotId) {
+            supabase.from('program_template_overrides')
+              .update({ slot_id: healSlotId })
+              .eq('id', o.id)
+              .then(() => {}, () => {});
+          }
         });
       }
       const baselineInjuryConditions = getConditionsFromInjuryProfile(profile.injury_profile || []);
