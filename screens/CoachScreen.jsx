@@ -644,16 +644,20 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       return false;
     }
     const isAdd = p.type === 'add_exercise' || p.edit_type === 'add_exercise';
-    // Guard against a wrong exercise_index. The coach has pointed exercise_index
-    // at the wrong slot (e.g. it edited "Hanging knee raise" when asked to change
-    // "Standing hammer curl"). When it tells us which exercise it means, relocate
-    // the edit to the slot whose name matches — and refuse if that name isn't on
-    // the day, rather than editing the wrong exercise via a bad index.
-    if (!isAdd && day && p.current_exercise) {
-      const wantLc = p.current_exercise.trim().toLowerCase();
-      const byName = (day.exercises || []).findIndex(ex => (ex.name || '').trim().toLowerCase() === wantLc);
-      if (byName === -1) return false;
-      p = { ...p, exercise_index: byName };
+    // Resolve the model's exercise_index — an index into the list buildContext
+    // just sent it — to the durable slot id, here, while that array is still the
+    // one it refers to. `current_exercise` stays a sanity check ONLY: relocating
+    // by name used findIndex, which returns the FIRST match, so with two
+    // same-named exercises an edit meant for the second hit the first. Reject a
+    // mismatch instead of retargeting it.
+    if (!isAdd && day) {
+      const target = (day.exercises || [])[p.exercise_index];
+      if (!target) return false;
+      if (p.current_exercise) {
+        const wantLc = p.current_exercise.trim().toLowerCase();
+        if ((target.name || '').trim().toLowerCase() !== wantLc) return false;
+      }
+      p = { ...p, slot_id: target.slotId ?? null };
     }
     // Bounds-check the target slot for replaces/swaps (add creates a new slot).
     // A stale or hallucinated index would otherwise edit the wrong exercise or
@@ -709,6 +713,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         user_id: user.id,
         day_id: p.day_id || '',
         exercise_index: p.exercise_index ?? 0,
+        slot_id: p.slot_id ?? null,
         edit_type: p.edit_type || 'replace_exercise',
         pattern_key: patternKey,
         exercise_id: exerciseId,
