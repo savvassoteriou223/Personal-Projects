@@ -723,22 +723,27 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         is_session_swap: sessionOnly,
       }));
     }
-    return !err;
+    // Return the ENRICHED proposal on success (it carries the resolved slot_id),
+    // false on failure. Callers need the slot_id so the mid-workout live apply
+    // (onProposalApplied -> applyCoachEdit) targets the right slot, not just the
+    // stored override. Truthiness is preserved: an object is truthy, false falsy.
+    return err ? false : p;
   };
 
   const doApply = async (index, sessionOnly) => {
     if (confirmingIndex !== null) return;
     setConfirmingIndex(index);
-    const ok = await saveProposal(proposals[index], sessionOnly);
+    const saved = await saveProposal(proposals[index], sessionOnly);
     setConfirmingIndex(null);
-    if (ok) {
+    if (saved) {
       const remaining = proposals.filter((_, i) => i !== index);
       setProposals(remaining);
       if (remaining.length === 0) setProposalSaved(true);
       loadUserData(); // refresh so the coach's program context reflects the change
       if (onProposalApplied) {
         // Pass the canonical library name so the host can match it exactly.
-        const p = proposals[index];
+        // `saved` (not proposals[index]) carries the resolved slot_id.
+        const p = saved;
         let exerciseName = p.exercise_name;
         const resolved = p.exercise_name ? resolveExerciseByName(p.exercise_name) : null;
         if (resolved) {
@@ -815,8 +820,8 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       exercise_name: option.exercise_name,
       rationale: option.rationale,
     };
-    const ok = await saveProposal(p, sessionOnly);
-    if (!ok) { Alert.alert(t('coach.alerts.cantApplyTitle'), t('coach.alerts.cantApplyMsg')); return; }
+    const saved = await saveProposal(p, sessionOnly);
+    if (!saved) { Alert.alert(t('coach.alerts.cantApplyTitle'), t('coach.alerts.cantApplyMsg')); return; }
     setAlternatives(null);
     setProposalSaved(true);
     loadUserData();
@@ -827,7 +832,8 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         const ex = MOVEMENT_PATTERNS[resolved.patternKey]?.exercises.find(e => e.id === resolved.exerciseId);
         if (ex) exerciseName = ex.name;
       }
-      onProposalApplied({ ...p, exercise_name: exerciseName });
+      // `saved` carries the resolved slot_id so the mid-workout apply hits the right slot.
+      onProposalApplied({ ...saved, exercise_name: exerciseName });
     }
   };
 
