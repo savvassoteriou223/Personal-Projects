@@ -2290,7 +2290,14 @@ export function applyPermanentEdit(program, edit, equipment = []) {
   const days = program.days.map(day => {
     if (day.id !== edit.dayId) return day;
     let exercises = [...day.exercises];
-    const idx = edit.exerciseIndex ?? -1;
+    // Resolve the target SLOT. slotId is the durable identity (survives block
+    // rotation, skip-learning and dedup); exerciseIndex is the legacy path for
+    // override rows written before slot ids existed. An unresolvable slotId is a
+    // no-op: the slot is gone, and editing "whatever is at some index" instead is
+    // exactly the wrong-target bug this replaces.
+    const idx = edit.slotId != null
+      ? exercises.findIndex(e => e?.slotId === edit.slotId)
+      : (edit.exerciseIndex ?? -1);
     // A replace is an in-place, index-based edit: it never grows or shifts the
     // array, so it can't "land on" a slot the generator placed elsewhere the way
     // an add can. Running the whole-day dedup after it is therefore both
@@ -2311,7 +2318,10 @@ export function applyPermanentEdit(program, edit, equipment = []) {
             sets: current.sets,
             reps: current.reps,
           });
-          if (newEx) exercises[idx] = newEx;
+          // The slot keeps its identity — a replace changes what FILLS the slot,
+          // not which slot it is. Without this the id would follow the new
+          // exercise's pattern and the next edit would miss.
+          if (newEx) exercises[idx] = { ...newEx, slotId: current.slotId };
         }
         skipDedup = true;
         break;
