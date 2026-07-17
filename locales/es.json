@@ -806,8 +806,18 @@
   "settings": {
     "title": "Ajustes"
   },
+  "nav": {
+    "profile": "Perfil",
+    "progress": "Progreso"
+  },
   "progress": {
     "loading": "Cargando…",
+    "tabs": {
+      "charts": "Gráficas",
+      "volume": "Volumen",
+      "prs": "Récords",
+      "health": "Salud"
+    },
     "sections": {
       "overview": "Resumen",
       "strengthTrend": "Tendencia de fuerza · 1RM estimado",

@@ -808,8 +808,18 @@
   "settings": {
     "title": "Settings"
   },
+  "nav": {
+    "profile": "Profile",
+    "progress": "Progress"
+  },
   "progress": {
     "loading": "Loading…",
+    "tabs": {
+      "charts": "Charts",
+      "volume": "Volume",
+      "prs": "PRs",
+      "health": "Health"
+    },
     "sections": {
       "overview": "Overview",
       "strengthTrend": "Strength Trend · estimated 1RM",

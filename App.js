@@ -1,5 +1,6 @@
 import i18n from './lib/i18n'; // initialize i18n before any screen renders
 import { syncLanguageFromProfile } from './lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Alert, Platform, Linking, BackHandler } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -68,6 +69,7 @@ function TabIcon({ route, color, focused, isLocked }) {
 // ─── PROFILE + PROGRESS COMBINED TAB ─────────────────────────────────────────
 
 function ProfileTabScreen({ onSignOut, isAdmin }) {
+  const { t } = useTranslation();
   const [view, setView] = useState('profile'); // 'profile' | 'progress'
 
   return (
@@ -78,13 +80,13 @@ function ProfileTabScreen({ onSignOut, isAdmin }) {
           style={[pt.subTab, view === 'profile' && pt.subTabActive]}
           onPress={() => setView('profile')}
         >
-          <Text style={[pt.subTabText, view === 'profile' && pt.subTabTextActive]}>Profile</Text>
+          <Text style={[pt.subTabText, view === 'profile' && pt.subTabTextActive]}>{t('nav.profile')}</Text>
         </Pressable>
         <Pressable
           style={[pt.subTab, view === 'progress' && pt.subTabActive]}
           onPress={() => setView('progress')}
         >
-          <Text style={[pt.subTabText, view === 'progress' && pt.subTabTextActive]}>Progress</Text>
+          <Text style={[pt.subTabText, view === 'progress' && pt.subTabTextActive]}>{t('nav.progress')}</Text>
         </Pressable>
       </View>
 

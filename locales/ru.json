@@ -806,8 +806,18 @@
   "settings": {
     "title": "Настройки"
   },
+  "nav": {
+    "profile": "Профиль",
+    "progress": "Прогресс"
+  },
   "progress": {
     "loading": "Загрузка…",
+    "tabs": {
+      "charts": "Графики",
+      "volume": "Объём",
+      "prs": "Рекорды",
+      "health": "Здоровье"
+    },
     "sections": {
       "overview": "Обзор",
       "strengthTrend": "Динамика силы · расчётный 1ПМ",

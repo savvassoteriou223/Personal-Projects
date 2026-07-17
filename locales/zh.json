@@ -806,8 +806,18 @@
   "settings": {
     "title": "设置"
   },
+  "nav": {
+    "profile": "个人",
+    "progress": "进度"
+  },
   "progress": {
     "loading": "加载中…",
+    "tabs": {
+      "charts": "图表",
+      "volume": "训练量",
+      "prs": "PR",
+      "health": "健康"
+    },
     "sections": {
       "overview": "概览",
       "strengthTrend": "力量趋势 · 估算 1RM",

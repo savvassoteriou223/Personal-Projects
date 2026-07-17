@@ -10,10 +10,6 @@ import { format, startOfWeek } from 'date-fns';
 import { calculateTDEE, calculateNutritionTargets, INJURY_BODY_PARTS } from './programGenerator';
 import { computeInsights } from './insightsEngine';
 import BodyCompositionCard from './BodyCompositionCard';
-import PRsPanel from './PRsPanel';
-import VolumePanel from './VolumePanel';
-import HealthPanel from './HealthPanel';
-import { isHealthAvailable } from '../lib/healthService';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,13 +79,6 @@ const EXPERIENCE_LEVELS = [
 
 export default function ProfileScreen({ onSignOut, isAdmin }) {
   const { t } = useTranslation();
-  // Health is iOS-only now: isHealthAvailable() is false on Android (Health
-  // Connect removed) and on web, and every panel under that tab is gated on it.
-  // Offering a tab that opens to nothing is worse than not offering it.
-  const TABS = isHealthAvailable()
-    ? ['profile', 'data', 'prs', 'health']
-    : ['profile', 'data', 'prs'];
-  const [activeTab, setActiveTab] = useState('profile');
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -324,18 +313,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Tab bar — fixed above scroll, no stickyHeaderIndices needed.
-          Health is only offered where health data actually exists. Android's
-          Health Connect was removed (2026-07-14), so on Android every panel under
-          this tab is gated off and it opened to an empty screen. */}
-      <View style={styles.tabRow}>
-        {TABS.map((key) => (
-          <Tappable key={key} style={[styles.tab, activeTab === key && styles.tabActive]} onPress={() => setActiveTab(key)}>
-            <Text style={[styles.tabText, activeTab === key && styles.tabTextActive]}>{t(`profile.tabs.${key}`)}</Text>
-          </Tappable>
-        ))}
-      </View>
-
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
 
@@ -390,12 +367,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           </View>
         )}
 
-        {/* Tab content */}
-        <View>
-
-          {/* ─── PROFILE TAB ─── */}
-          {activeTab === 'profile' && (
-            <View style={{ paddingTop: 4 }}>
+        <View style={{ paddingTop: 4 }}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>{t('profile.myProfile')}</Text>
@@ -779,18 +751,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           {/* Body composition trend card */}
           <BodyCompositionCard metrics={metrics} profile={profile} />
 
-            </View>
-          )}
-
-          {/* ─── DATA TAB ─── */}
-          {activeTab === 'data' && <VolumePanel />}
-
-          {/* ─── HISTORY TAB ─── */}
-          {/* ─── PRs TAB ─── */}
-          {activeTab === 'prs' && <PRsPanel />}
-          {/* ─── HEALTH TAB ─── */}
-          {activeTab === 'health' && <HealthPanel />}
-
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
@@ -819,11 +779,6 @@ const styles = StyleSheet.create({
   statCard: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
   statVal: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   statLabel: { fontSize: 9, color: colors.textSubtle, marginTop: 2 },
-  tabRow: { flexDirection: 'row', backgroundColor: colors.bg, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  tab: { flex: 1, paddingVertical: 11, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabActive: { borderBottomColor: colors.textPrimary },
-  tabText: { fontSize: 12, color: colors.textSubtle, fontWeight: '500' },
-  tabTextActive: { color: colors.textPrimary, fontWeight: '700' },
   card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginTop: 14, overflow: 'hidden' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginBottom: 12 },

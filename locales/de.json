@@ -806,8 +806,18 @@
   "settings": {
     "title": "Einstellungen"
   },
+  "nav": {
+    "profile": "Profil",
+    "progress": "Fortschritt"
+  },
   "progress": {
     "loading": "Lädt…",
+    "tabs": {
+      "charts": "Diagramme",
+      "volume": "Volumen",
+      "prs": "Rekorde",
+      "health": "Gesundheit"
+    },
     "sections": {
       "overview": "Übersicht",
       "strengthTrend": "Krafttrend · geschätztes 1RM",

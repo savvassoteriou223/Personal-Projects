@@ -806,8 +806,18 @@
   "settings": {
     "title": "Impostazioni"
   },
+  "nav": {
+    "profile": "Profilo",
+    "progress": "Progressi"
+  },
   "progress": {
     "loading": "Caricamento…",
+    "tabs": {
+      "charts": "Grafici",
+      "volume": "Volume",
+      "prs": "Record",
+      "health": "Salute"
+    },
     "sections": {
       "overview": "Panoramica",
       "strengthTrend": "Tendenza forza · 1RM stimato",
