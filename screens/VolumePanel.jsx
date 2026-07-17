@@ -8,54 +8,15 @@ import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
 import { VOLUME_TARGETS } from './programGenerator';
-import { MOVEMENT_PATTERNS } from './movementLibrary';
+import { MUSCLE_GROUPS, matchesMuscle } from '../lib/muscleAttribution';
 import { supabase, getCurrentUser } from '../supabase';
 
 const SCREEN_W = Dimensions.get('window').width;
-
-const MUSCLE_GROUPS = [
-  'Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps',
-  'Quads', 'Hamstrings', 'Glutes', 'Calves', 'Abs',
-];
 
 function getMuscleTarget(muscle, level, t) {
   const target = VOLUME_TARGETS[muscle.toLowerCase()]?.[level];
   if (!target) return '—';
   return t('profile.setsPerWeek', { low: target.optimal_low, high: target.optimal_high });
-}
-
-// Build exercise → muscles map from movementLibrary (same as TodayScreen / ProfileScreen)
-const _EXERCISE_MUSCLE_MAP = (() => {
-  const map = {};
-  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
-    pattern.exercises.forEach(ex => {
-      map[ex.name.toLowerCase()] = pattern.muscles.map(m => m.toLowerCase());
-    });
-  });
-  return map;
-})();
-
-function _normaliseMuscle(raw) {
-  const r = raw.toLowerCase();
-  if (r === 'chest' || r === 'upper chest' || r === 'lower chest') return 'chest';
-  if (r === 'lats' || r === 'traps' || r === 'upper traps' ||
-      r === 'upper trapezius' || r === 'levator scapulae') return 'back';
-  if (r === 'shoulders' || r === 'anterior delts' || r === 'side deltoids' ||
-      r === 'rear delts' || r === 'rear deltoids' || r === 'external rotators') return 'shoulders';
-  if (r === 'biceps' || r === 'brachialis') return 'biceps';
-  if (r === 'triceps') return 'triceps';
-  if (r === 'quads') return 'quads';
-  if (r === 'hamstrings') return 'hamstrings';
-  if (r === 'glutes' || r === 'glute medius' || r === 'glute minimus') return 'glutes';
-  if (r === 'gastrocnemius' || r === 'soleus') return 'calves';
-  if (r === 'rectus abdominis' || r === 'obliques') return 'abs';
-  return null;
-}
-
-function matchesMuscle(exName, muscle) {
-  const raw = _EXERCISE_MUSCLE_MAP[exName?.toLowerCase()] || [];
-  const normalised = [...new Set(raw.map(_normaliseMuscle).filter(Boolean))];
-  return normalised.includes(muscle.toLowerCase());
 }
 
 function MuscleVolumeChart({ data, width }) {
@@ -182,7 +143,7 @@ export default function VolumePanel() {
       if (sessionData?.length > 0) {
         const ids = sessionData.map(s => s.id);
         const { data: sets } = await supabase.from('completed_sets')
-          .select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
+          .select('exercise_name, pattern_key, weight_kg, reps, session_id').in('session_id', ids);
 
         if (sets?.length > 0) {
           const dateMap = {};
@@ -202,7 +163,7 @@ export default function VolumePanel() {
       const count = allSets.filter(s => {
         if (!s.completed_at) return false;
         return format(new Date(s.completed_at), 'yyyy-MM-dd') === dayStr &&
-          matchesMuscle(s.exercise_name, selectedMuscle);
+          matchesMuscle(s.exercise_name, s.pattern_key, selectedMuscle);
       }).length;
       return { label: format(day, 'EEE'), sets: count };
     });

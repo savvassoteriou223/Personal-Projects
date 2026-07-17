@@ -49,7 +49,13 @@ const EXERCISE_PRIMARY_MAP = (() => {
   return map;
 })();
 
-function getPrimaryMuscleForExercise(exerciseName) {
+function getPrimaryMuscleForExercise(exerciseName, patternKey) {
+  // Prefer the durable pattern_key saved with each set: it survives coach swaps
+  // and display-name variants, so a set whose name isn't an exact library key
+  // still attributes instead of silently registering under no muscle. Falls back
+  // to the exercise name for legacy rows that predate pattern_key.
+  const pattern = patternKey && MOVEMENT_PATTERNS[patternKey];
+  if (pattern) return normaliseMuscle(pattern.muscles[0]);
   return EXERCISE_PRIMARY_MAP[exerciseName?.toLowerCase()] || null;
 }
 
@@ -135,12 +141,12 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
     if (!lastSession) return;
     const { data: sets } = await supabase
       .from('completed_sets')
-      .select('exercise_name')
+      .select('exercise_name, pattern_key')
       .eq('session_id', lastSession.id);
 
     const muscleCounts = {};
     (sets || []).forEach(s => {
-      const primary = getPrimaryMuscleForExercise(s.exercise_name);
+      const primary = getPrimaryMuscleForExercise(s.exercise_name, s.pattern_key);
       if (primary) muscleCounts[primary] = (muscleCounts[primary] || 0) + 1;
     });
     const sorted = Object.entries(muscleCounts)
@@ -402,7 +408,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         const sessionIds = sessions.map(s => s.id);
         const { data: sets } = await supabase
           .from('completed_sets')
-          .select('exercise_name, session_id, created_at, weight_kg, reps')
+          .select('exercise_name, pattern_key, session_id, created_at, weight_kg, reps')
           .in('session_id', sessionIds);
 
         if (!sets?.length) {
@@ -424,7 +430,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
           // a muscle only lights up if the session gave it ≥2 exercises or ≥5 sets.
           const perSessionMuscle = {}; // session_id -> muscle -> { count, exercises }
           sets.forEach(set => {
-            const muscle = getPrimaryMuscleForExercise(set.exercise_name);
+            const muscle = getPrimaryMuscleForExercise(set.exercise_name, set.pattern_key);
             if (!muscle) return;
             const muscles = (perSessionMuscle[set.session_id] ??= {});
             const entry = (muscles[muscle] ??= { count: 0, exercises: new Set() });
