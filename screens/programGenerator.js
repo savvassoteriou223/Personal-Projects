@@ -2290,7 +2290,14 @@ export function applyPermanentEdit(program, edit, equipment = []) {
   const days = program.days.map(day => {
     if (day.id !== edit.dayId) return day;
     let exercises = [...day.exercises];
-    const idx = edit.exerciseIndex ?? -1;
+    // Resolve the target SLOT. slotId is the durable identity (survives block
+    // rotation, skip-learning and dedup); exerciseIndex is the legacy path for
+    // override rows written before slot ids existed. An unresolvable slotId is a
+    // no-op: the slot is gone, and editing "whatever is at some index" instead is
+    // exactly the wrong-target bug this replaces.
+    const idx = edit.slotId != null
+      ? exercises.findIndex(e => e?.slotId === edit.slotId)
+      : (edit.exerciseIndex ?? -1);
     // A replace is an in-place, index-based edit: it never grows or shifts the
     // array, so it can't "land on" a slot the generator placed elsewhere the way
     // an add can. Running the whole-day dedup after it is therefore both
@@ -2311,7 +2318,10 @@ export function applyPermanentEdit(program, edit, equipment = []) {
             sets: current.sets,
             reps: current.reps,
           });
-          if (newEx) exercises[idx] = newEx;
+          // The slot keeps its identity — a replace changes what FILLS the slot,
+          // not which slot it is. Without this the id would follow the new
+          // exercise's pattern and the next edit would miss.
+          if (newEx) exercises[idx] = { ...newEx, slotId: current.slotId };
         }
         skipDedup = true;
         break;
@@ -3406,6 +3416,27 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     ...day,
     exercises: deduplicateDayExercises(day.exercises || [], equipment, level, dislikedIds),
   }));
+
+  // ─── Stable slot identity ──────────────────────────────────────────────────
+  // Edits (coach overrides, live swaps) must target the SLOT — its ROLE in the
+  // day — not a position in an array. Positions shift under block rotation,
+  // skip-learning and dedup; the slot's pattern does not. Stamped once, here, so
+  // every consumer sees the same id and no later filter has to recompute it.
+  // `occurrence` is always 0 today (verified across 810 generated days: a
+  // patternKey never repeats within a day). It exists so that if a future split
+  // template ever does repeat one, the ids stay unique instead of silently
+  // colliding — which is the exact bug class this identity removes.
+  days = days.map(day => {
+    const seen = {};
+    return {
+      ...day,
+      exercises: (day.exercises || []).map(ex => {
+        if (!ex) return ex;
+        const n = seen[ex.pattern] = (seen[ex.pattern] ?? -1) + 1;
+        return { ...ex, slotId: `${day.id}:${ex.pattern}:${n}` };
+      }),
+    };
+  });
 
   const sportEntries = (profile.sports || []).filter(s => s?.days?.length > 0);
   const occupiedDays = [...new Set(sportEntries.flatMap(s => s.days))];

@@ -312,9 +312,21 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       if (overrides?.length) {
         const equipment = normalizeEquipment(profile.equipment || []);
         overrides.forEach(o => {
+          // Mirror TodayScreen exactly: resolve by slot_id so the program the coach
+          // reasons about is the SAME one the user sees. Applying by raw
+          // exercise_index here would mis-target once a slot has shifted position
+          // between generations (injury/equipment/level change, a whole pattern
+          // going disliked) — and then the index the model is given diverges from
+          // reality and proposals miss. Heal legacy rows to slot identity too.
+          let healSlotId = null;
+          if (!o.slot_id) {
+            const day = program.days?.find(d => d.id === o.day_id);
+            healSlotId = day?.exercises?.[o.exercise_index]?.slotId ?? null;
+          }
           program = applyPermanentEdit(program, {
             type: o.edit_type,
             dayId: o.day_id,
+            slotId: o.slot_id ?? healSlotId ?? undefined,
             exerciseIndex: o.exercise_index,
             patternKey: o.pattern_key,
             preferExerciseId: o.exercise_id,
@@ -322,6 +334,12 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
             reps: o.reps,
             rpe: o.rpe,
           }, equipment);
+          if (!o.slot_id && healSlotId) {
+            supabase.from('program_template_overrides')
+              .update({ slot_id: healSlotId })
+              .eq('id', o.id)
+              .then(() => {}, () => {});
+          }
         });
       }
       const baselineInjuryConditions = getConditionsFromInjuryProfile(profile.injury_profile || []);
@@ -644,16 +662,20 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       return false;
     }
     const isAdd = p.type === 'add_exercise' || p.edit_type === 'add_exercise';
-    // Guard against a wrong exercise_index. The coach has pointed exercise_index
-    // at the wrong slot (e.g. it edited "Hanging knee raise" when asked to change
-    // "Standing hammer curl"). When it tells us which exercise it means, relocate
-    // the edit to the slot whose name matches — and refuse if that name isn't on
-    // the day, rather than editing the wrong exercise via a bad index.
-    if (!isAdd && day && p.current_exercise) {
-      const wantLc = p.current_exercise.trim().toLowerCase();
-      const byName = (day.exercises || []).findIndex(ex => (ex.name || '').trim().toLowerCase() === wantLc);
-      if (byName === -1) return false;
-      p = { ...p, exercise_index: byName };
+    // Resolve the model's exercise_index — an index into the list buildContext
+    // just sent it — to the durable slot id, here, while that array is still the
+    // one it refers to. `current_exercise` stays a sanity check ONLY: relocating
+    // by name used findIndex, which returns the FIRST match, so with two
+    // same-named exercises an edit meant for the second hit the first. Reject a
+    // mismatch instead of retargeting it.
+    if (!isAdd && day) {
+      const target = (day.exercises || [])[p.exercise_index];
+      if (!target) return false;
+      if (p.current_exercise) {
+        const wantLc = p.current_exercise.trim().toLowerCase();
+        if ((target.name || '').trim().toLowerCase() !== wantLc) return false;
+      }
+      p = { ...p, slot_id: target.slotId ?? null };
     }
     // Bounds-check the target slot for replaces/swaps (add creates a new slot).
     // A stale or hallucinated index would otherwise edit the wrong exercise or
@@ -709,6 +731,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         user_id: user.id,
         day_id: p.day_id || '',
         exercise_index: p.exercise_index ?? 0,
+        slot_id: p.slot_id ?? null,
         edit_type: p.edit_type || 'replace_exercise',
         pattern_key: patternKey,
         exercise_id: exerciseId,
@@ -718,22 +741,27 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         is_session_swap: sessionOnly,
       }));
     }
-    return !err;
+    // Return the ENRICHED proposal on success (it carries the resolved slot_id),
+    // false on failure. Callers need the slot_id so the mid-workout live apply
+    // (onProposalApplied -> applyCoachEdit) targets the right slot, not just the
+    // stored override. Truthiness is preserved: an object is truthy, false falsy.
+    return err ? false : p;
   };
 
   const doApply = async (index, sessionOnly) => {
     if (confirmingIndex !== null) return;
     setConfirmingIndex(index);
-    const ok = await saveProposal(proposals[index], sessionOnly);
+    const saved = await saveProposal(proposals[index], sessionOnly);
     setConfirmingIndex(null);
-    if (ok) {
+    if (saved) {
       const remaining = proposals.filter((_, i) => i !== index);
       setProposals(remaining);
       if (remaining.length === 0) setProposalSaved(true);
       loadUserData(); // refresh so the coach's program context reflects the change
       if (onProposalApplied) {
         // Pass the canonical library name so the host can match it exactly.
-        const p = proposals[index];
+        // `saved` (not proposals[index]) carries the resolved slot_id.
+        const p = saved;
         let exerciseName = p.exercise_name;
         const resolved = p.exercise_name ? resolveExerciseByName(p.exercise_name) : null;
         if (resolved) {
@@ -810,8 +838,8 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
       exercise_name: option.exercise_name,
       rationale: option.rationale,
     };
-    const ok = await saveProposal(p, sessionOnly);
-    if (!ok) { Alert.alert(t('coach.alerts.cantApplyTitle'), t('coach.alerts.cantApplyMsg')); return; }
+    const saved = await saveProposal(p, sessionOnly);
+    if (!saved) { Alert.alert(t('coach.alerts.cantApplyTitle'), t('coach.alerts.cantApplyMsg')); return; }
     setAlternatives(null);
     setProposalSaved(true);
     loadUserData();
@@ -822,7 +850,8 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         const ex = MOVEMENT_PATTERNS[resolved.patternKey]?.exercises.find(e => e.id === resolved.exerciseId);
         if (ex) exerciseName = ex.name;
       }
-      onProposalApplied({ ...p, exercise_name: exerciseName });
+      // `saved` carries the resolved slot_id so the mid-workout apply hits the right slot.
+      onProposalApplied({ ...saved, exercise_name: exerciseName });
     }
   };
 

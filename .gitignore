@@ -42,3 +42,4 @@ yarn-error.*
 /android
 eas
 .claude/
+.tmp_slot/

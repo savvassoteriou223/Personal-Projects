@@ -70,6 +70,7 @@ function exerciseToSetState(ex) {
   const n = typeof ex.sets === 'number' ? ex.sets : 3;
   return {
     name: ex.name,
+    slotId: ex.slotId || null,
     pattern: ex.pattern || null,
     muscles: ex.muscles || '',
     primaryMuscles: ex.primaryMuscles || ex.patternMuscles || [],
@@ -261,6 +262,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
             sub3: ex.sub3 || '',
             study: ex.study || null,
           }),
+          // An added exercise is not in the template, so it has no pattern-derived
+          // slot. Its addition-row id IS its stable identity.
+          slotId: `${workout.id}:added:${a.id}`,
         };
       });
       setSets(prev => {
@@ -403,7 +407,13 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
     }
 
     const inRange = (i) => i >= 0 && i < sets.length;
-    let idx = p.exercise_index ?? -1;
+    // slot_id is the durable target: the live list and the saved program can
+    // differ in length/order (the live list is not deduped), so an index from one
+    // does not address the other. Fall back to the index only for proposals with
+    // no slot id.
+    let idx = p.slot_id != null
+      ? sets.findIndex(e => e.slotId === p.slot_id)
+      : (p.exercise_index ?? -1);
 
     if (editType === 'remove_exercise') {
       if (!inRange(idx)) return; // removing the wrong slot would be destructive
