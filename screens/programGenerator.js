@@ -3407,6 +3407,27 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     exercises: deduplicateDayExercises(day.exercises || [], equipment, level, dislikedIds),
   }));
 
+  // ─── Stable slot identity ──────────────────────────────────────────────────
+  // Edits (coach overrides, live swaps) must target the SLOT — its ROLE in the
+  // day — not a position in an array. Positions shift under block rotation,
+  // skip-learning and dedup; the slot's pattern does not. Stamped once, here, so
+  // every consumer sees the same id and no later filter has to recompute it.
+  // `occurrence` is always 0 today (verified across 810 generated days: a
+  // patternKey never repeats within a day). It exists so that if a future split
+  // template ever does repeat one, the ids stay unique instead of silently
+  // colliding — which is the exact bug class this identity removes.
+  days = days.map(day => {
+    const seen = {};
+    return {
+      ...day,
+      exercises: (day.exercises || []).map(ex => {
+        if (!ex) return ex;
+        const n = seen[ex.pattern] = (seen[ex.pattern] ?? -1) + 1;
+        return { ...ex, slotId: `${day.id}:${ex.pattern}:${n}` };
+      }),
+    };
+  });
+
   const sportEntries = (profile.sports || []).filter(s => s?.days?.length > 0);
   const occupiedDays = [...new Set(sportEntries.flatMap(s => s.days))];
   const scheduleTemplate = occupiedDays.length > 0
