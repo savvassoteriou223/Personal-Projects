@@ -277,9 +277,18 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         if (overrides?.length) {
           const equipment = normalizeEquipment(prof.equipment || []);
           overrides.forEach(o => {
+            // Legacy rows (written before slot ids) have no slot_id and still
+            // resolve by position. Resolve the slot BEFORE applying the edit so we
+            // can heal the row: the pre-edit array is the one its index refers to.
+            let healSlotId = null;
+            if (!o.slot_id) {
+              const day = prog.days?.find(d => d.id === o.day_id);
+              healSlotId = day?.exercises?.[o.exercise_index]?.slotId ?? null;
+            }
             prog = applyPermanentEdit(prog, {
               type: o.edit_type,
               dayId: o.day_id,
+              slotId: o.slot_id ?? healSlotId ?? undefined,
               exerciseIndex: o.exercise_index,
               patternKey: o.pattern_key,
               preferExerciseId: o.exercise_id,
@@ -287,6 +296,14 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
               reps: o.reps,
               rpe: o.rpe,
             }, equipment);
+            // Best-effort heal: upgrade the row to slot identity so it stops
+            // depending on position. Never block rendering on it.
+            if (!o.slot_id && healSlotId) {
+              supabase.from('program_template_overrides')
+                .update({ slot_id: healSlotId })
+                .eq('id', o.id)
+                .then(() => {}, () => {});
+            }
           });
         }
 
