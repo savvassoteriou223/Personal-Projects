@@ -644,12 +644,6 @@
     }
   },
   "profile": {
-    "tabs": {
-      "profile": "个人资料",
-      "data": "训练量",
-      "prs": "PR",
-      "health": "健康"
-    },
     "admin": "管理员",
     "signOut": "退出登录",
     "noName": "无姓名",

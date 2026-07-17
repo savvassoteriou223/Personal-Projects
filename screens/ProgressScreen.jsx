@@ -1,9 +1,10 @@
 import {
-  useState, useEffect } from 'react';
+  useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Circle, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
@@ -14,6 +15,7 @@ import VolumePanel from './VolumePanel';
 import PRsPanel from './PRsPanel';
 import HealthPanel from './HealthPanel';
 import { isHealthAvailable } from '../lib/healthService';
+import { epley1RM } from '../lib/epley';
 
 const { width: W } = Dimensions.get('window');
 const PAD = 20;
@@ -23,7 +25,8 @@ const CW = W - PAD * 2;
 
 function epley(w, r) {
   if (!w || !r || r <= 0) return 0;
-  return r === 1 ? w : Math.round(w * (1 + r / 30) * 10) / 10;
+  const raw = epley1RM(w, r);
+  return r === 1 ? raw : Math.round(raw * 10) / 10;
 }
 
 function sevenDayMA(entries) {
@@ -453,7 +456,7 @@ function ChartsPanel() {
   // Most improved
   const [mostImproved, setMostImproved] = useState([]);
 
-  useEffect(() => { load(); }, []);
+  useFocusEffect(useCallback(() => { load(); }, []));
 
   const load = async () => {
     setLoading(true);

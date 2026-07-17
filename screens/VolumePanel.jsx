@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import { format, startOfWeek, eachDayOfInterval, endOfWeek, subWeeks } from 'date-fns';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
@@ -164,7 +165,7 @@ export default function VolumePanel() {
   const [weeklyVolumeData, setWeeklyVolumeData] = useState([]);
   const [trainingExperience, setTrainingExperience] = useState('beginner');
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     (async () => {
       const user = await getCurrentUser();
       if (!user) return;
@@ -190,7 +191,7 @@ export default function VolumePanel() {
         }
       }
     })();
-  }, []);
+  }, []));
 
   useEffect(() => {
     const baseDate = subWeeks(new Date(), weekOffset);

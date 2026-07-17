@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../lib/theme';
 import { supabase, getCurrentUser } from '../supabase';
+import { epley1RM } from '../lib/epley';
 
 export default function PRsPanel() {
   const { t } = useTranslation();
   const [prs, setPrs] = useState([]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     (async () => {
       const user = await getCurrentUser();
       if (!user) return;
@@ -32,11 +34,11 @@ export default function PRsPanel() {
         setPrs(Object.entries(prMap).map(([n, s]) => ({
           name: n, weight_kg: s.weight_kg, reps: s.reps,
           // Epley 1RM estimate
-          orm: s.reps && s.reps > 1 ? Math.round(s.weight_kg * (1 + s.reps / 30)) : s.weight_kg,
+          orm: s.reps && s.reps > 1 ? Math.round(epley1RM(s.weight_kg, s.reps)) : s.weight_kg,
         })).sort((a, b) => b.weight_kg - a.weight_kg));
       }
     })();
-  }, []);
+  }, []));
 
   return (
     <View style={{ paddingTop: 4 }}>

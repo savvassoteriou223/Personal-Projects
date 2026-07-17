@@ -644,12 +644,6 @@
     }
   },
   "profile": {
-    "tabs": {
-      "profile": "Profil",
-      "data": "Volumen",
-      "prs": "Rekorde",
-      "health": "Gesundheit"
-    },
     "admin": "Admin",
     "signOut": "Abmelden",
     "noName": "Kein Name",

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Platform, Alert, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   isHealthAvailable, isHealthAuthorized, requestHealthPermissions,
   disconnectHealth, getRecoveryData, openHealthSettings,
@@ -14,7 +15,7 @@ export default function HealthPanel() {
   const [recoveryData, setRecoveryData] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     (async () => {
       const authorized = await isHealthAuthorized();
       setHealthAuthorized(authorized);
@@ -23,7 +24,7 @@ export default function HealthPanel() {
         setRecoveryData(data);
       }
     })();
-  }, []);
+  }, []));
 
   const onConnect = async () => {
     setHealthLoading(true);

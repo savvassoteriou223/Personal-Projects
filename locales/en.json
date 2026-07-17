@@ -646,12 +646,6 @@
     "weeklyReviewCta": "Write my weekly review · uses 1 message"
   },
   "profile": {
-    "tabs": {
-      "profile": "Profile",
-      "data": "Volume",
-      "prs": "PRs",
-      "health": "Health"
-    },
     "admin": "Admin",
     "signOut": "Sign out",
     "noName": "No name",
