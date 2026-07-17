@@ -18,7 +18,7 @@
     "settingsLabel": "Language"
   },
   "welcome": {
-    "tagline": "Science-based training, smart nutrition,\nand AI coaching in one place.",
+    "tagline": "Science-based training, smart nutrition,\nand coaching in one place.",
     "getStarted": "Get started",
     "haveAccount": "I already have an account"
   },
@@ -201,7 +201,7 @@
     },
     "step5": {
       "title": "What supplements\ndo you take?",
-      "sub": "Your AI coach uses these to give you more relevant advice. Optional — tap \"None\" if you don't take any.",
+      "sub": "Your coach uses these to give you more relevant advice. Optional — tap \"None\" if you don't take any.",
       "other": "Other supplements",
       "otherPlaceholder": "e.g. Ashwagandha",
       "add": "Add"
@@ -554,7 +554,7 @@
     }
   },
   "coach": {
-    "title": "AI Coach",
+    "title": "Coach",
     "subtitle": "Science-based · Remembers your training",
     "reset": "Reset",
     "resetTitle": "Reset coach memory?",
@@ -692,7 +692,7 @@
     "targetsLine": "{{cal}} kcal · {{protein}}g protein · {{carbs}}g carbs · {{fat}}g fat",
     "savedAuto": "Saved automatically when you tap Save",
     "whatTrain": "What do you train?",
-    "whatTrainSub": "Select all that apply — helps the AI coach give relevant advice.",
+    "whatTrainSub": "Select all that apply — helps your coach give relevant advice.",
     "activities": {
       "weights": "Weight training",
       "running": "Running",

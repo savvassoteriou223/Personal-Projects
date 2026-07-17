@@ -18,7 +18,7 @@
     "settingsLabel": "Idioma"
   },
   "welcome": {
-    "tagline": "Entrenamiento basado en ciencia, nutrición inteligente\ny coaching con IA en un solo lugar.",
+    "tagline": "Entrenamiento basado en ciencia, nutrición inteligente\ny coaching en un solo lugar.",
     "getStarted": "Empezar",
     "haveAccount": "Ya tengo una cuenta"
   },
@@ -201,7 +201,7 @@
     },
     "step5": {
       "title": "¿Qué suplementos\ntomas?",
-      "sub": "Tu entrenador con IA los usa para darte consejos más relevantes. Opcional — toca \"Ninguno\" si no tomas ninguno.",
+      "sub": "Tu entrenador los usa para darte consejos más relevantes. Opcional — toca \"Ninguno\" si no tomas ninguno.",
       "other": "Otros suplementos",
       "otherPlaceholder": "ej. Ashwagandha",
       "add": "Añadir"
@@ -554,7 +554,7 @@
     }
   },
   "coach": {
-    "title": "Entrenador IA",
+    "title": "Entrenador",
     "subtitle": "Basado en ciencia · Recuerda tu entrenamiento",
     "reset": "Reiniciar",
     "resetTitle": "¿Reiniciar la memoria del entrenador?",
@@ -690,7 +690,7 @@
     "targetsLine": "{{cal}} kcal · {{protein}}g proteína · {{carbs}}g carbohidratos · {{fat}}g grasa",
     "savedAuto": "Se guarda automáticamente al tocar Guardar",
     "whatTrain": "¿Qué entrenas?",
-    "whatTrainSub": "Selecciona todo lo que corresponda — ayuda al coach con IA a dar consejos relevantes.",
+    "whatTrainSub": "Selecciona todo lo que corresponda — ayuda al coach a dar consejos relevantes.",
     "activities": {
       "weights": "Pesas",
       "running": "Correr",

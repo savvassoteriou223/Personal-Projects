@@ -18,7 +18,7 @@
     "settingsLabel": "Sprache"
   },
   "welcome": {
-    "tagline": "Wissenschaftsbasiertes Training, smarte Ernährung\nund KI-Coaching an einem Ort.",
+    "tagline": "Wissenschaftsbasiertes Training, smarte Ernährung\nund Coaching an einem Ort.",
     "getStarted": "Loslegen",
     "haveAccount": "Ich habe bereits ein Konto"
   },
@@ -201,7 +201,7 @@
     },
     "step5": {
       "title": "Welche Nahrungsergänzung\nnimmst du?",
-      "sub": "Dein KI-Coach nutzt diese, um dir relevantere Tipps zu geben. Optional — tippe auf \"Keine\", wenn du keine nimmst.",
+      "sub": "Dein Coach nutzt diese, um dir relevantere Tipps zu geben. Optional — tippe auf \"Keine\", wenn du keine nimmst.",
       "other": "Andere Präparate",
       "otherPlaceholder": "z. B. Ashwagandha",
       "add": "Hinzufügen"
@@ -554,7 +554,7 @@
     }
   },
   "coach": {
-    "title": "KI-Coach",
+    "title": "Coach",
     "subtitle": "Wissenschaftsbasiert · Merkt sich dein Training",
     "reset": "Zurücksetzen",
     "resetTitle": "Coach-Gedächtnis zurücksetzen?",
@@ -690,7 +690,7 @@
     "targetsLine": "{{cal}} kcal · {{protein}}g Protein · {{carbs}}g Kohlenhydrate · {{fat}}g Fett",
     "savedAuto": "Wird automatisch gespeichert, wenn du auf Speichern tippst",
     "whatTrain": "Was trainierst du?",
-    "whatTrainSub": "Wähle alles Zutreffende — hilft dem KI-Coach, relevante Tipps zu geben.",
+    "whatTrainSub": "Wähle alles Zutreffende — hilft dem Coach, relevante Tipps zu geben.",
     "activities": {
       "weights": "Krafttraining",
       "running": "Laufen",

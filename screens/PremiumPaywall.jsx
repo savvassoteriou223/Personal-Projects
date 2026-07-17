@@ -34,7 +34,7 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
 
   const features = {
     Coach: {
-      title: 'AI Coach',
+      title: 'Coach',
       tagline: 'A coach with your full training file open',
       bullets: [
         'Proactive insights — coach flags issues before you ask',
