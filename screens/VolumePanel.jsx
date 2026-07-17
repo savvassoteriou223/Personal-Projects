@@ -1,11 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
+import { format, startOfWeek, eachDayOfInterval, endOfWeek, subWeeks } from 'date-fns';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
 import { VOLUME_TARGETS } from './programGenerator';
+import { MOVEMENT_PATTERNS } from './movementLibrary';
+import { supabase, getCurrentUser } from '../supabase';
+
+const SCREEN_W = Dimensions.get('window').width;
 
 const MUSCLE_GROUPS = [
   'Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps',
@@ -16,6 +21,40 @@ function getMuscleTarget(muscle, level, t) {
   const target = VOLUME_TARGETS[muscle.toLowerCase()]?.[level];
   if (!target) return '—';
   return t('profile.setsPerWeek', { low: target.optimal_low, high: target.optimal_high });
+}
+
+// Build exercise → muscles map from movementLibrary (same as TodayScreen / ProfileScreen)
+const _EXERCISE_MUSCLE_MAP = (() => {
+  const map = {};
+  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
+    pattern.exercises.forEach(ex => {
+      map[ex.name.toLowerCase()] = pattern.muscles.map(m => m.toLowerCase());
+    });
+  });
+  return map;
+})();
+
+function _normaliseMuscle(raw) {
+  const r = raw.toLowerCase();
+  if (r === 'chest' || r === 'upper chest' || r === 'lower chest') return 'chest';
+  if (r === 'lats' || r === 'traps' || r === 'upper traps' ||
+      r === 'upper trapezius' || r === 'levator scapulae') return 'back';
+  if (r === 'shoulders' || r === 'anterior delts' || r === 'side deltoids' ||
+      r === 'rear delts' || r === 'rear deltoids' || r === 'external rotators') return 'shoulders';
+  if (r === 'biceps' || r === 'brachialis') return 'biceps';
+  if (r === 'triceps') return 'triceps';
+  if (r === 'quads') return 'quads';
+  if (r === 'hamstrings') return 'hamstrings';
+  if (r === 'glutes' || r === 'glute medius' || r === 'glute minimus') return 'glutes';
+  if (r === 'gastrocnemius' || r === 'soleus') return 'calves';
+  if (r === 'rectus abdominis' || r === 'obliques') return 'abs';
+  return null;
+}
+
+function matchesMuscle(exName, muscle) {
+  const raw = _EXERCISE_MUSCLE_MAP[exName?.toLowerCase()] || [];
+  const normalised = [...new Set(raw.map(_normaliseMuscle).filter(Boolean))];
+  return normalised.includes(muscle.toLowerCase());
 }
 
 function MuscleVolumeChart({ data, width }) {
@@ -115,15 +154,60 @@ function MuscleVolumeChart({ data, width }) {
   );
 }
 
-export default function VolumePanel({
-  selectedMuscle, setSelectedMuscle,
-  showMuscleDropdown, setShowMuscleDropdown,
-  weekOffset, setWeekOffset,
-  weeklyVolumeData,
-  chartWidth, setChartWidth,
-  trainingExperience,
-}) {
+export default function VolumePanel() {
   const { t } = useTranslation();
+  const [selectedMuscle, setSelectedMuscle] = useState('Chest');
+  const [showMuscleDropdown, setShowMuscleDropdown] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [chartWidth, setChartWidth] = useState(SCREEN_W - 72);
+  const [allSets, setAllSets] = useState([]);
+  const [weeklyVolumeData, setWeeklyVolumeData] = useState([]);
+  const [trainingExperience, setTrainingExperience] = useState('beginner');
+
+  useEffect(() => {
+    (async () => {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { data: prof } = await supabase.from('profiles').select('trainingExperience').eq('id', user.id).single();
+      if (prof?.trainingExperience) setTrainingExperience(prof.trainingExperience);
+
+      const { data: sessionData } = await supabase
+        .from('workout_sessions')
+        .select('id, completed_at')
+        .eq('user_id', user.id)
+        .order('completed_at', { ascending: false });
+
+      if (sessionData?.length > 0) {
+        const ids = sessionData.map(s => s.id);
+        const { data: sets } = await supabase.from('completed_sets')
+          .select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
+
+        if (sets?.length > 0) {
+          const dateMap = {};
+          sessionData.forEach(s => { dateMap[s.id] = s.completed_at; });
+          setAllSets(sets.map(s => ({ ...s, completed_at: dateMap[s.session_id] })));
+        }
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const baseDate = subWeeks(new Date(), weekOffset);
+    const weekStart = startOfWeek(baseDate, { weekStartsOn: 1 });
+    const days = eachDayOfInterval({ start: weekStart, end: endOfWeek(weekStart, { weekStartsOn: 1 }) });
+    const data = days.map(day => {
+      const dayStr = format(day, 'yyyy-MM-dd');
+      const count = allSets.filter(s => {
+        if (!s.completed_at) return false;
+        return format(new Date(s.completed_at), 'yyyy-MM-dd') === dayStr &&
+          matchesMuscle(s.exercise_name, selectedMuscle);
+      }).length;
+      return { label: format(day, 'EEE'), sets: count };
+    });
+    setWeeklyVolumeData(data);
+  }, [selectedMuscle, weekOffset, allSets]);
+
   const totalSets = weeklyVolumeData.reduce((s, d) => s + d.sets, 0);
   const weekLabel = weekOffset === 0 ? t('profile.weekThis') : weekOffset === 1 ? t('profile.weekLast') : t('profile.weekAgo', { n: weekOffset });
 

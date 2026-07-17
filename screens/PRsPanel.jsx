@@ -1,9 +1,43 @@
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../lib/theme';
+import { supabase, getCurrentUser } from '../supabase';
 
-export default function PRsPanel({ prs }) {
+export default function PRsPanel() {
   const { t } = useTranslation();
+  const [prs, setPrs] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { data: sessionData } = await supabase
+        .from('workout_sessions')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (!sessionData?.length) return;
+
+      const ids = sessionData.map(s => s.id);
+      const { data: sets } = await supabase.from('completed_sets')
+        .select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
+
+      if (sets?.length > 0) {
+        const prMap = {};
+        sets.filter(s => s.weight_kg).forEach(s => {
+          if (!prMap[s.exercise_name] || s.weight_kg > prMap[s.exercise_name].weight_kg) prMap[s.exercise_name] = s;
+        });
+        setPrs(Object.entries(prMap).map(([n, s]) => ({
+          name: n, weight_kg: s.weight_kg, reps: s.reps,
+          // Epley 1RM estimate
+          orm: s.reps && s.reps > 1 ? Math.round(s.weight_kg * (1 + s.reps / 30)) : s.weight_kg,
+        })).sort((a, b) => b.weight_kg - a.weight_kg));
+      }
+    })();
+  }, []);
+
   return (
     <View style={{ paddingTop: 4 }}>
       <View style={styles.card}>

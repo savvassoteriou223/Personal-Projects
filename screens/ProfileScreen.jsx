@@ -1,30 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, Dimensions, Alert, Linking, ActivityIndicator, KeyboardAvoidingView, Platform,
+  View, Text, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase, getCurrentUser } from '../supabase';
 import AdminScreen from './AdminScreen';
-import { format, startOfWeek, eachDayOfInterval, endOfWeek, subWeeks } from 'date-fns';
-import { MOVEMENT_PATTERNS } from './movementLibrary';
+import { format, startOfWeek } from 'date-fns';
 import { calculateTDEE, calculateNutritionTargets, INJURY_BODY_PARTS } from './programGenerator';
 import { computeInsights } from './insightsEngine';
 import BodyCompositionCard from './BodyCompositionCard';
 import PRsPanel from './PRsPanel';
 import VolumePanel from './VolumePanel';
 import HealthPanel from './HealthPanel';
-import { isHealthAvailable, isHealthAuthorized, requestHealthPermissions, disconnectHealth, getRecoveryData, openHealthSettings } from '../lib/healthService';
+import { isHealthAvailable } from '../lib/healthService';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import SettingsScreen from './SettingsScreen';
 import { colors } from '../lib/theme';
-import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
-
-const SCREEN_W = Dimensions.get('window').width;
-const CHART_H = 140;
 
 const GOALS = [
   { key: 'lose', label: 'Lose fat' },
@@ -86,40 +81,6 @@ const EXPERIENCE_LEVELS = [
   { key: 'advanced',     label: 'Advanced',     sub: '4+ years' },
 ];
 
-// Build exercise → muscles map from movementLibrary (same as TodayScreen)
-const _EXERCISE_MUSCLE_MAP = (() => {
-  const map = {};
-  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
-    pattern.exercises.forEach(ex => {
-      map[ex.name.toLowerCase()] = pattern.muscles.map(m => m.toLowerCase());
-    });
-  });
-  return map;
-})();
-
-function _normaliseMuscle(raw) {
-  const r = raw.toLowerCase();
-  if (r === 'chest' || r === 'upper chest' || r === 'lower chest') return 'chest';
-  if (r === 'lats' || r === 'traps' || r === 'upper traps' ||
-      r === 'upper trapezius' || r === 'levator scapulae') return 'back';
-  if (r === 'shoulders' || r === 'anterior delts' || r === 'side deltoids' ||
-      r === 'rear delts' || r === 'rear deltoids' || r === 'external rotators') return 'shoulders';
-  if (r === 'biceps' || r === 'brachialis') return 'biceps';
-  if (r === 'triceps') return 'triceps';
-  if (r === 'quads') return 'quads';
-  if (r === 'hamstrings') return 'hamstrings';
-  if (r === 'glutes' || r === 'glute medius' || r === 'glute minimus') return 'glutes';
-  if (r === 'gastrocnemius' || r === 'soleus') return 'calves';
-  if (r === 'rectus abdominis' || r === 'obliques') return 'abs';
-  return null;
-}
-
-function matchesMuscle(exName, muscle) {
-  const raw = _EXERCISE_MUSCLE_MAP[exName?.toLowerCase()] || [];
-  const normalised = [...new Set(raw.map(_normaliseMuscle).filter(Boolean))];
-  return normalised.includes(muscle.toLowerCase());
-}
-
 export default function ProfileScreen({ onSignOut, isAdmin }) {
   const { t } = useTranslation();
   // Health is iOS-only now: isHealthAvailable() is false on Android (Health
@@ -132,9 +93,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [prs, setPrs] = useState([]);
   const [metrics, setMetrics] = useState([]);
-  const [sessions, setSessions] = useState([]);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
   const [weight, setWeight] = useState('');
@@ -157,42 +116,16 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const [injuryProfile, setInjuryProfile] = useState([]); // [{ body_part, severity: 'sometimes'|'always' }]
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMuscle, setSelectedMuscle] = useState('Chest');
-  const [showMuscleDropdown, setShowMuscleDropdown] = useState(false);
-  const [weeklyVolumeData, setWeeklyVolumeData] = useState([]);
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [allSets, setAllSets] = useState([]);
-  const [chartWidth, setChartWidth] = useState(SCREEN_W - 72);
   const [streak, setStreak] = useState(0);
   // Quick body weight log
   const [quickWeight, setQuickWeight] = useState('');
   const [quickWeightSaved, setQuickWeightSaved] = useState(false);
-  // Health
-  const [healthAuthorized, setHealthAuthorized] = useState(false);
-  const [recoveryData, setRecoveryData] = useState(null);
-  const [healthLoading, setHealthLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, [])
   );
-
-  useEffect(() => {
-    const baseDate = subWeeks(new Date(), weekOffset);
-    const weekStart = startOfWeek(baseDate, { weekStartsOn: 1 });
-    const days = eachDayOfInterval({ start: weekStart, end: endOfWeek(weekStart, { weekStartsOn: 1 }) });
-    const data = days.map(day => {
-      const dayStr = format(day, 'yyyy-MM-dd');
-      const count = allSets.filter(s => {
-        if (!s.completed_at) return false;
-        return format(new Date(s.completed_at), 'yyyy-MM-dd') === dayStr &&
-          matchesMuscle(s.exercise_name, selectedMuscle);
-      }).length;
-      return { label: format(day, 'EEE'), sets: count };
-    });
-    setWeeklyVolumeData(data);
-  }, [selectedMuscle, weekOffset, allSets]);
 
   const loadData = async () => {
     const user = await getCurrentUser();
@@ -228,8 +161,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
       .order('completed_at', { ascending: false });
 
     if (sessionData?.length > 0) {
-      setSessions(sessionData);
-
       // ── Performance correlation insights (nutrition + recovery vs session RPE) ──
       (async () => {
         const sixtyAgo = new Date();
@@ -272,104 +203,11 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
         else break;
       }
       setStreak(streakCount);
-
-      const ids = sessionData.map(s => s.id);
-      const { data: sets } = await supabase.from('completed_sets')
-        .select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
-
-      if (sets?.length > 0) {
-        const prMap = {};
-        sets.filter(s => s.weight_kg).forEach(s => {
-          if (!prMap[s.exercise_name] || s.weight_kg > prMap[s.exercise_name].weight_kg) prMap[s.exercise_name] = s;
-        });
-        setPrs(Object.entries(prMap).map(([n, s]) => ({
-          name: n, weight_kg: s.weight_kg, reps: s.reps,
-          // Epley 1RM estimate
-          orm: s.reps && s.reps > 1 ? Math.round(s.weight_kg * (1 + s.reps / 30)) : s.weight_kg,
-        })).sort((a,b) => b.weight_kg - a.weight_kg));
-
-        const dateMap = {};
-        sessionData.forEach(s => { dateMap[s.id] = s.completed_at; });
-        setAllSets(sets.map(s => ({ ...s, completed_at: dateMap[s.session_id] })));
-      }
     }
 
     const { data: bm } = await supabase.from('body_metrics').select('*').eq('user_id', user.id).order('date', { ascending: false }).limit(90);
     if (bm) setMetrics(bm);
     setLoading(false);
-
-    // Load health data independently — non-blocking
-    const authorized = await isHealthAuthorized();
-    setHealthAuthorized(authorized);
-    if (authorized) {
-      const data = await getRecoveryData();
-      setRecoveryData(data);
-    }
-  };
-
-  const handleConnectHealth = async () => {
-    setHealthLoading(true);
-    const result = await requestHealthPermissions();
-    if (result.ok) {
-      setHealthAuthorized(true);
-      const data = await getRecoveryData();
-      setRecoveryData(data);
-      if (!data?.sleep && !data?.hrv && !data?.rhr && !data?.steps) {
-        Alert.alert(
-          t('profile.alerts.connectedNoDataTitle'),
-          Platform.OS === 'ios'
-            ? t('profile.alerts.connectedNoDataIos')
-            : t('profile.alerts.connectedNoDataAndroid'),
-          [
-            { text: t('profile.alerts.ok'), style: 'cancel' },
-            { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
-          ],
-        );
-      }
-    } else if (result.reason === 'not_installed') {
-      Alert.alert(
-        t('profile.alerts.hcRequiredTitle'),
-        t('profile.alerts.hcRequiredMsg'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.alerts.install'), onPress: () => Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() => Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')) },
-        ],
-      );
-    } else if (result.reason === 'update_required') {
-      Alert.alert(t('profile.alerts.updateHcTitle'), t('profile.alerts.updateHcMsg'));
-    } else if (result.reason === 'denied') {
-      // Always offer BOTH a retry and a settings deep-link: after repeated
-      // denials the OS stops re-showing the in-app prompt, so "Try again" alone
-      // would soft-lock the user. "Open settings" is the guaranteed path.
-      Alert.alert(
-        t('profile.alerts.permissionNeededTitle'),
-        Platform.OS === 'ios'
-          ? t('profile.alerts.permissionNeededIos')
-          : t('profile.alerts.permissionNeededAndroid'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
-          { text: t('profile.alerts.tryAgain'), onPress: () => handleConnectHealth() },
-        ],
-      );
-    } else {
-      Alert.alert(
-        t('profile.alerts.couldNotConnectTitle'),
-        t('profile.alerts.couldNotConnectMsg'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
-          { text: t('profile.alerts.tryAgain'), onPress: () => handleConnectHealth() },
-        ],
-      );
-    }
-    setHealthLoading(false);
-  };
-
-  const handleDisconnectHealth = async () => {
-    await disconnectHealth();
-    setHealthAuthorized(false);
-    setRecoveryData(null);
   };
 
   const logQuickWeight = async () => {
@@ -945,34 +783,13 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           )}
 
           {/* ─── DATA TAB ─── */}
-          {activeTab === 'data' && (
-            <VolumePanel
-              selectedMuscle={selectedMuscle}
-              setSelectedMuscle={setSelectedMuscle}
-              showMuscleDropdown={showMuscleDropdown}
-              setShowMuscleDropdown={setShowMuscleDropdown}
-              weekOffset={weekOffset}
-              setWeekOffset={setWeekOffset}
-              weeklyVolumeData={weeklyVolumeData}
-              chartWidth={chartWidth}
-              setChartWidth={setChartWidth}
-              trainingExperience={trainingExperience}
-            />
-          )}
+          {activeTab === 'data' && <VolumePanel />}
 
           {/* ─── HISTORY TAB ─── */}
           {/* ─── PRs TAB ─── */}
-          {activeTab === 'prs' && <PRsPanel prs={prs} />}
+          {activeTab === 'prs' && <PRsPanel />}
           {/* ─── HEALTH TAB ─── */}
-          {activeTab === 'health' && (
-            <HealthPanel
-              healthAuthorized={healthAuthorized}
-              healthLoading={healthLoading}
-              recoveryData={recoveryData}
-              onConnect={handleConnectHealth}
-              onDisconnect={handleDisconnectHealth}
-            />
-          )}
+          {activeTab === 'health' && <HealthPanel />}
 
         </View>
       </ScrollView>

@@ -1,11 +1,95 @@
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Platform, Alert, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { isHealthAvailable } from '../lib/healthService';
+import {
+  isHealthAvailable, isHealthAuthorized, requestHealthPermissions,
+  disconnectHealth, getRecoveryData, openHealthSettings,
+} from '../lib/healthService';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
 
-export default function HealthPanel({ healthAuthorized, healthLoading, recoveryData, onConnect, onDisconnect }) {
+export default function HealthPanel() {
   const { t } = useTranslation();
+  const [healthAuthorized, setHealthAuthorized] = useState(false);
+  const [recoveryData, setRecoveryData] = useState(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const authorized = await isHealthAuthorized();
+      setHealthAuthorized(authorized);
+      if (authorized) {
+        const data = await getRecoveryData();
+        setRecoveryData(data);
+      }
+    })();
+  }, []);
+
+  const onConnect = async () => {
+    setHealthLoading(true);
+    const result = await requestHealthPermissions();
+    if (result.ok) {
+      setHealthAuthorized(true);
+      const data = await getRecoveryData();
+      setRecoveryData(data);
+      if (!data?.sleep && !data?.hrv && !data?.rhr && !data?.steps) {
+        Alert.alert(
+          t('profile.alerts.connectedNoDataTitle'),
+          Platform.OS === 'ios'
+            ? t('profile.alerts.connectedNoDataIos')
+            : t('profile.alerts.connectedNoDataAndroid'),
+          [
+            { text: t('profile.alerts.ok'), style: 'cancel' },
+            { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
+          ],
+        );
+      }
+    } else if (result.reason === 'not_installed') {
+      Alert.alert(
+        t('profile.alerts.hcRequiredTitle'),
+        t('profile.alerts.hcRequiredMsg'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('profile.alerts.install'), onPress: () => Linking.openURL('market://details?id=com.google.android.apps.healthdata').catch(() => Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata')) },
+        ],
+      );
+    } else if (result.reason === 'update_required') {
+      Alert.alert(t('profile.alerts.updateHcTitle'), t('profile.alerts.updateHcMsg'));
+    } else if (result.reason === 'denied') {
+      // Always offer BOTH a retry and a settings deep-link: after repeated
+      // denials the OS stops re-showing the in-app prompt, so "Try again" alone
+      // would soft-lock the user. "Open settings" is the guaranteed path.
+      Alert.alert(
+        t('profile.alerts.permissionNeededTitle'),
+        Platform.OS === 'ios'
+          ? t('profile.alerts.permissionNeededIos')
+          : t('profile.alerts.permissionNeededAndroid'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
+          { text: t('profile.alerts.tryAgain'), onPress: () => onConnect() },
+        ],
+      );
+    } else {
+      Alert.alert(
+        t('profile.alerts.couldNotConnectTitle'),
+        t('profile.alerts.couldNotConnectMsg'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('profile.alerts.openSettings'), onPress: () => openHealthSettings() },
+          { text: t('profile.alerts.tryAgain'), onPress: () => onConnect() },
+        ],
+      );
+    }
+    setHealthLoading(false);
+  };
+
+  const onDisconnect = async () => {
+    await disconnectHealth();
+    setHealthAuthorized(false);
+    setRecoveryData(null);
+  };
+
   return (
     <View style={{ paddingTop: 4 }}>
 
