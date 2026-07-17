@@ -463,7 +463,7 @@
   "workout": {
     "alerts": {
       "dupTitle": "Already in today's workout",
-      "dupMsg": "\"{{name}}\" is already programmed today — replacing will give you it twice. Continue?",
+      "dupMsg": "\"{{name}}\" is already in today’s workout. Pick a different exercise.",
       "doItAnyway": "Do it anyway",
       "replaceTitle": "Replace exercise?",
       "replaceMsg": "You've already logged sets for this exercise. Swapping will clear them.",

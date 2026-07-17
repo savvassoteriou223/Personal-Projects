@@ -463,7 +463,7 @@
   "workout": {
     "alerts": {
       "dupTitle": "已在今天的训练中",
-      "dupMsg": "「{{name}}」今天已安排 — 替换会让它出现两次。继续吗？",
+      "dupMsg": "「{{name}}」已在今天的训练中。请选择其他动作。",
       "doItAnyway": "仍然继续",
       "replaceTitle": "替换动作？",
       "replaceMsg": "你已为此动作记录了组数。替换将清除它们。",

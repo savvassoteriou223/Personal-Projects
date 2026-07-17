@@ -463,7 +463,7 @@
   "workout": {
     "alerts": {
       "dupTitle": "Déjà dans la séance du jour",
-      "dupMsg": "« {{name}} » est déjà programmé aujourd'hui — le remplacer vous le donnera deux fois. Continuer ?",
+      "dupMsg": "« {{name}} » est déjà dans la séance d’aujourd’hui. Choisissez un autre exercice.",
       "doItAnyway": "Faire quand même",
       "replaceTitle": "Remplacer l'exercice ?",
       "replaceMsg": "Vous avez déjà enregistré des séries pour cet exercice. Le changer les effacera.",

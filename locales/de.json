@@ -463,7 +463,7 @@
   "workout": {
     "alerts": {
       "dupTitle": "Bereits im heutigen Workout",
-      "dupMsg": "\"{{name}}\" ist heute schon eingeplant — beim Ersetzen hast du es doppelt. Fortfahren?",
+      "dupMsg": "\"{{name}}\" ist heute schon in deinem Training. Wähle eine andere Übung.",
       "doItAnyway": "Trotzdem machen",
       "replaceTitle": "Übung ersetzen?",
       "replaceMsg": "Du hast für diese Übung bereits Sätze erfasst. Beim Tausch werden sie gelöscht.",

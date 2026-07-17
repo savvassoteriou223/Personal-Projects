@@ -2291,6 +2291,16 @@ export function applyPermanentEdit(program, edit, equipment = []) {
     if (day.id !== edit.dayId) return day;
     let exercises = [...day.exercises];
     const idx = edit.exerciseIndex ?? -1;
+    // A replace is an in-place, index-based edit: it never grows or shifts the
+    // array, so it can't "land on" a slot the generator placed elsewhere the way
+    // an add can. Running the whole-day dedup after it is therefore both
+    // unnecessary AND destructive — if the replacement shares a base movement with
+    // another slot (e.g. the user swaps in a second squat via the coach), dedup
+    // silently DELETES the other, pre-existing exercise. That is data loss the user
+    // never asked for. So skip dedup for replace: a visible duplicate is a far
+    // better failure mode than a silently removed exercise, and duplicate creation
+    // is blocked at the entry points instead.
+    let skipDedup = false;
 
     switch (edit.type) {
       case 'replace_exercise': {
@@ -2303,6 +2313,7 @@ export function applyPermanentEdit(program, edit, equipment = []) {
           });
           if (newEx) exercises[idx] = newEx;
         }
+        skipDedup = true;
         break;
       }
       case 'adjust_sets': {
@@ -2335,11 +2346,12 @@ export function applyPermanentEdit(program, edit, equipment = []) {
     }
 
     // Edits are re-applied to a template that shifts under them (skip-learning,
-    // block rotation), so a replace/add can land on an exercise the generator
-    // already placed elsewhere in the day. The contraindication filter's dedup
-    // safety net only runs for users with health conditions — dedup here so
-    // healthy profiles are covered too.
-    return { ...day, exercises: deduplicateDayExercises(exercises, equipment) };
+    // block rotation), so an ADD can land on an exercise the generator already
+    // placed elsewhere in the day. The contraindication filter's dedup safety net
+    // only runs for users with health conditions — dedup here so healthy profiles
+    // are covered too. Replace is exempt (see skipDedup above): it must never
+    // delete a different, pre-existing exercise.
+    return { ...day, exercises: skipDedup ? exercises : deduplicateDayExercises(exercises, equipment) };
   });
 
   return { ...program, days };
