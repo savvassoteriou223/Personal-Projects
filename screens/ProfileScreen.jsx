@@ -12,6 +12,7 @@ import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { calculateTDEE, calculateNutritionTargets, INJURY_BODY_PARTS } from './programGenerator';
 import { computeInsights } from './insightsEngine';
 import BodyCompositionCard from './BodyCompositionCard';
+import PRsPanel from './PRsPanel';
 import { VOLUME_TARGETS } from './programGenerator';
 import { isHealthAvailable, isHealthAuthorized, requestHealthPermissions, disconnectHealth, getRecoveryData, openHealthSettings } from '../lib/healthService';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
@@ -1176,30 +1177,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
 
           {/* ─── HISTORY TAB ─── */}
           {/* ─── PRs TAB ─── */}
-          {activeTab === 'prs' && (
-            <View style={{ paddingTop: 4 }}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{t('profile.personalRecords', { count: prs.length })}</Text>
-            {prs.length === 0
-              ? <Text style={styles.empty}>{t('profile.noPrs')}</Text>
-              : prs.map((pr, i) => (
-                <View key={i} style={styles.prRow}>
-                  <View style={[styles.prRank, i < 3 && { backgroundColor: i===0?colors.warning:i===1?colors.textSubtle:colors.borderStrong }]}>
-                    <Text style={styles.prRankText}>{i+1}</Text>
-                  </View>
-                  <Text style={styles.prName} numberOfLines={1}>{pr.name}</Text>
-                  <View style={styles.prValGroup}>
-                    <Text style={styles.prWeight}>{t('profile.prVal', { weight: pr.weight_kg, reps: pr.reps || '—' })}</Text>
-                    {pr.orm && pr.reps > 1 && (
-                      <Text style={styles.prOrm}>{t('profile.prOrm', { orm: pr.orm })}</Text>
-                    )}
-                  </View>
-                </View>
-              ))
-            }
-          </View>
-            </View>
-          )}
+          {activeTab === 'prs' && <PRsPanel prs={prs} />}
           {/* ─── HEALTH TAB ─── */}
           {activeTab === 'health' && (
             <View style={{ paddingTop: 4 }}>
@@ -1393,14 +1371,7 @@ const styles = StyleSheet.create({
   dayBreakBar: { flex: 1, height: 6, backgroundColor: colors.control, borderRadius: 3, overflow: 'hidden' },
   dayBreakFill: { height: '100%', backgroundColor: colors.surfaceInverse, borderRadius: 3 },
   dayBreakSets: { fontSize: 11, color: colors.textPrimary, fontWeight: '600', width: 32, textAlign: 'right' },
-  prRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 0.5, borderBottomColor: colors.border },
-  prRank: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surfaceElevated, alignItems: 'center', justifyContent: 'center' },
-  prRankText: { fontSize: 10, fontWeight: '700', color: colors.textPrimary },
-  prName: { fontSize: 13, color: colors.textPrimary, flex: 1 },
-  prValGroup: { alignItems: 'flex-end' },
-  prWeight: { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
   prReps: { fontSize: 12, color: colors.textSubtle },
-  prOrm: { fontSize: 10, color: colors.textSubtle, marginTop: 1 },
   langRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   langRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   langRowValue: { fontSize: 14, color: colors.textMuted },
