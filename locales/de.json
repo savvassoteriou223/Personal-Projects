@@ -803,6 +803,9 @@
       "deleteError": "Konto konnte nicht gelöscht werden. Bitte versuche es erneut oder kontaktiere den Support."
     }
   },
+  "settings": {
+    "title": "Einstellungen"
+  },
   "progress": {
     "loading": "Lädt…",
     "sections": {

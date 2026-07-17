@@ -803,6 +803,9 @@
       "deleteError": "Não foi possível excluir a conta. Tente de novo ou contate o suporte."
     }
   },
+  "settings": {
+    "title": "Definições"
+  },
   "progress": {
     "loading": "Carregando…",
     "sections": {

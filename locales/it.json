@@ -803,6 +803,9 @@
       "deleteError": "Impossibile eliminare l'account. Riprova o contatta l'assistenza."
     }
   },
+  "settings": {
+    "title": "Impostazioni"
+  },
   "progress": {
     "loading": "Caricamento…",
     "sections": {

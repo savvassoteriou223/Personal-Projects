@@ -803,6 +803,9 @@
       "deleteError": "No se pudo eliminar la cuenta. Inténtalo de nuevo o contacta con soporte."
     }
   },
+  "settings": {
+    "title": "Ajustes"
+  },
   "progress": {
     "loading": "Cargando…",
     "sections": {

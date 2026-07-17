@@ -805,6 +805,9 @@
       "deleteError": "Could not delete account. Please try again or contact support."
     }
   },
+  "settings": {
+    "title": "Settings"
+  },
   "progress": {
     "loading": "Loading…",
     "sections": {

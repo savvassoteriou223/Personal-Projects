@@ -803,6 +803,9 @@
       "deleteError": "无法删除账户。请重试或联系支持。"
     }
   },
+  "settings": {
+    "title": "设置"
+  },
   "progress": {
     "loading": "加载中…",
     "sections": {

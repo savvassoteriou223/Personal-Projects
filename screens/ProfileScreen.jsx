@@ -17,8 +17,8 @@ import HealthPanel from './HealthPanel';
 import { isHealthAvailable, isHealthAuthorized, requestHealthPermissions, disconnectHealth, getRecoveryData, openHealthSettings } from '../lib/healthService';
 import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveConditionKeys, conditionSummaryLabel } from '../lib/conditionsDb';
 import { useTranslation } from 'react-i18next';
-import LanguagePicker from '../components/LanguagePicker';
-import { LANGUAGES } from '../lib/i18n';
+import { Ionicons } from '@expo/vector-icons';
+import SettingsScreen from './SettingsScreen';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
@@ -121,7 +121,7 @@ function matchesMuscle(exName, muscle) {
 }
 
 export default function ProfileScreen({ onSignOut, isAdmin }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   // Health is iOS-only now: isHealthAvailable() is false on Android (Health
   // Connect removed) and on web, and every panel under that tab is gated on it.
   // Offering a tab that opens to nothing is worse than not offering it.
@@ -130,7 +130,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
     : ['profile', 'data', 'prs'];
   const [activeTab, setActiveTab] = useState('profile');
   const [showAdmin, setShowAdmin] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState(null);
   const [prs, setPrs] = useState([]);
   const [metrics, setMetrics] = useState([]);
@@ -470,32 +470,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   };
 
   const toggleGoal = k => setSelectedGoals(p => p.includes(k) ? p.filter(g => g !== k) : [...p, k]);
-  const signOut = async () => { await supabase.auth.signOut(); onSignOut?.(); };
-
-  const deleteAccount = () => {
-    Alert.alert(
-      t('profile.alerts.deleteTitle'),
-      t('profile.alerts.deleteMsg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('profile.alerts.deletePermanently'),
-          style: 'destructive',
-          onPress: async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-            const { error } = await supabase.functions.invoke('delete-account', {});
-            if (error) {
-              Alert.alert(t('profile.alerts.errorTitle'), t('profile.alerts.deleteError'));
-              return;
-            }
-            await supabase.auth.signOut();
-            onSignOut?.();
-          },
-        },
-      ]
-    );
-  };
 
   if (loading) return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -543,10 +517,13 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                   <Text style={styles.adminBtnText}>{t('profile.admin')}</Text>
                 </Tappable>
               )}
-              <Tappable onPress={signOut}><Text style={styles.signOut}>{t('profile.signOut')}</Text></Tappable>
+              <Tappable onPress={() => setShowSettings(true)} style={styles.gearBtn} hitSlop={8}>
+                <Ionicons name="settings-outline" size={22} color={colors.textMuted} />
+              </Tappable>
             </View>
           </View>
           <AdminScreen visible={showAdmin} onClose={() => setShowAdmin(false)} />
+          <SettingsScreen visible={showSettings} onClose={() => setShowSettings(false)} onSignOut={onSignOut} />
           <View style={styles.statsRow}>
             {[
               { val: profile?.weight_kg || '—', label: 'kg' },
@@ -964,31 +941,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           {/* Body composition trend card */}
           <BodyCompositionCard metrics={metrics} profile={profile} />
 
-          {/* Language */}
-          <View style={styles.card}>
-            <Tappable style={styles.langRow} onPress={() => setLangOpen(true)}>
-              <Text style={styles.cardTitle}>{t('language.settingsLabel')}</Text>
-              <View style={styles.langRowRight}>
-                <Text style={styles.langRowValue}>
-                  {(LANGUAGES.find(l => l.code === i18n.language?.split('-')[0]) || LANGUAGES[0]).label}
-                </Text>
-                <Text style={styles.dropdownArrow}>▸</Text>
-              </View>
-            </Tappable>
-          </View>
-
-          {/* Account actions */}
-          <View style={styles.accountSection}>
-            <Tappable onPress={() => Linking.openURL('https://venerable-nasturtium-4e9b15.netlify.app/')}>
-              <Text style={styles.privacyLink}>{t('profile.privacyPolicy')}</Text>
-            </Tappable>
-            <Tappable style={styles.deleteAccountBtn} onPress={deleteAccount}>
-              <Text style={styles.deleteAccountText}>{t('profile.deleteAccount')}</Text>
-            </Tappable>
-            <Text style={styles.deleteAccountSub}>
-              {t('profile.deleteAccountSub')}
-            </Text>
-          </View>
             </View>
           )}
 
@@ -1025,7 +977,6 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
-      <LanguagePicker visible={langOpen} onClose={() => setLangOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -1038,9 +989,9 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 19, fontWeight: '700', color: colors.surfaceRaised },
   profileName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary },
   profileEmail: { fontSize: 12, color: colors.textSubtle, marginTop: 1 },
-  signOut: { fontSize: 12, color: colors.textSubtle },
   adminBtn: { backgroundColor: colors.surfaceElevated, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 0.5, borderColor: colors.border },
   adminBtnText: { fontSize: 11, color: colors.textPrimary, fontWeight: '600' },
+  gearBtn: { padding: 4 },
   insightsCard: { marginHorizontal: 20, marginBottom: 16, backgroundColor: colors.successBg, borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: colors.accentHair },
   insightsTitle: { fontSize: 13, fontWeight: '700', color: colors.accent, marginBottom: 12 },
   insightItem: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },
@@ -1102,11 +1053,7 @@ const styles = StyleSheet.create({
   metricDate: { fontSize: 12, color: colors.textSubtle, width: 45 },
   metricVal: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   metricSub: { fontSize: 12, color: colors.textSubtle },
-  dropdownArrow: { fontSize: 9, color: colors.textSubtle },
   prReps: { fontSize: 12, color: colors.textSubtle },
-  langRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  langRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  langRowValue: { fontSize: 14, color: colors.textMuted },
   // History tab
   rpeTag: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
   rpeTagText: { fontSize: 10, fontWeight: '600' },
@@ -1116,11 +1063,6 @@ const styles = StyleSheet.create({
   quickWeightBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 10, paddingHorizontal: 18, justifyContent: 'center', alignItems: 'center' },
   quickWeightBtnText: { color: colors.surfaceRaised, fontWeight: '700', fontSize: 14 },
   quickWeightTip: { fontSize: 11, color: colors.textFaint, lineHeight: 16 },
-  accountSection: { paddingHorizontal: 20, paddingBottom: 16, alignItems: 'center', gap: 4 },
-  privacyLink: { fontSize: 13, color: colors.textSubtle, textDecorationLine: 'underline', paddingVertical: 8 },
-  deleteAccountBtn: { paddingVertical: 10 },
-  deleteAccountText: { fontSize: 13, color: colors.danger, fontWeight: '500' },
-  deleteAccountSub: { fontSize: 11, color: colors.textFaint, textAlign: 'center', marginTop: 4 },
   expBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
   expBtnActive: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderActive },
   expBtnLabel: { fontSize: 13, fontWeight: '600', color: colors.textSubtle },
