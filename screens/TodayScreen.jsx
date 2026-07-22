@@ -5,7 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
-import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment, getConditionsFromInjuryProfile, applyContraindicationsToWorkout, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, getProactiveCoachPrompt, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS } from './programGenerator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment, getConditionsFromInjuryProfile, applyContraindicationsToWorkout, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, getProactiveCoachPrompt, getEligibleGoalMilestones, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS } from './programGenerator';
 import { buildVolumeView } from './volumeEngine';
 import { maybeSendProactiveNudge } from '../lib/notificationService';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
@@ -167,22 +168,55 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   // trainer would raise today and (rate-limited) send it as a notification.
   useEffect(() => {
     if (loading) return;
-    const daysSinceLastSession = lastSession?.created_at
-      ? Math.floor((Date.now() - new Date(lastSession.created_at).getTime()) / 86400000)
-      : null;
-    const prompt = getProactiveCoachPrompt({
-      daysSinceLastSession,
-      weeklyWorkoutsTarget: profile?.weekly_workouts || 3,
-      deload: deloadSuggestion,
-      plateaus,
-      // Stable English label for LOGIC — getProactiveCoachPrompt compares
-      // recoveryLabel === 'Low'. readiness.label is translated (t('today.readiness.low')),
-      // so passing it meant the recovery nudge only ever fired in English.
-      // Prefer today's self-reported check-in; fall back to sensor readiness (iOS).
-      recoveryLabel: checkInLabel ?? readiness?.stableLabel ?? null,
-    });
-    setProactivePrompt(prompt);
-    if (prompt) maybeSendProactiveNudge(prompt);
+    (async () => {
+      const daysSinceLastSession = lastSession?.created_at
+        ? Math.floor((Date.now() - new Date(lastSession.created_at).getTime()) / 86400000)
+        : null;
+
+      // Goal checkpoint (8/12/16-week reviews, target-weight-reached) — lowest
+      // priority of the nudges, only surfaces once nothing more urgent is going
+      // on. No `goal_set_at` column exists, so goalStartedAt is tracked locally
+      // and stamped fresh whenever ProfileScreen detects goals[] actually changed.
+      let goalMilestone = null;
+      if (profile?.goals?.length) {
+        let goalStartedAt = await AsyncStorage.getItem('goalStartedAt');
+        if (!goalStartedAt) {
+          goalStartedAt = new Date().toISOString();
+          await AsyncStorage.setItem('goalStartedAt', goalStartedAt);
+        }
+        const weeksSinceGoalStart = Math.floor((Date.now() - new Date(goalStartedAt).getTime()) / (7 * 86400000));
+        const eligible = getEligibleGoalMilestones(profile.goals, weeksSinceGoalStart, profile.weight_kg, profile.target_weight_kg);
+        if (eligible.length) {
+          const shownRaw = await AsyncStorage.getItem('shownMilestoneIds');
+          const shown = shownRaw ? JSON.parse(shownRaw) : [];
+          goalMilestone = eligible.find(m => !shown.includes(m.id)) || null;
+        }
+      }
+
+      const prompt = getProactiveCoachPrompt({
+        daysSinceLastSession,
+        weeklyWorkoutsTarget: profile?.weekly_workouts || 3,
+        deload: deloadSuggestion,
+        plateaus,
+        // Stable English label for LOGIC — getProactiveCoachPrompt compares
+        // recoveryLabel === 'Low'. readiness.label is translated (t('today.readiness.low')),
+        // so passing it meant the recovery nudge only ever fired in English.
+        // Prefer today's self-reported check-in; fall back to sensor readiness (iOS).
+        recoveryLabel: checkInLabel ?? readiness?.stableLabel ?? null,
+        goalMilestone,
+      });
+      setProactivePrompt(prompt);
+      if (prompt) {
+        maybeSendProactiveNudge(prompt);
+        // Only burn the milestone once it actually won the slot — a
+        // higher-priority nudge that day must not silently consume it.
+        if (goalMilestone && prompt.key === `milestone_${goalMilestone.id}`) {
+          const shownRaw = await AsyncStorage.getItem('shownMilestoneIds');
+          const shown = shownRaw ? JSON.parse(shownRaw) : [];
+          await AsyncStorage.setItem('shownMilestoneIds', JSON.stringify([...shown, goalMilestone.id]));
+        }
+      }
+    })();
   }, [loading, lastSession, deloadSuggestion, plateaus, readiness, checkInLabel, profile]);
 
   const loadData = async () => {
@@ -198,7 +232,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
       // Load profile
       const { data: prof } = await supabase
         .from('profiles')
-        .select('id, name, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes')
+        .select('id, name, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes, weight_kg, target_weight_kg')
         .eq('id', user.id)
         .single();
 
@@ -814,7 +848,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         </View>
 
         {/* Simple ↔ per-head detail toggle */}
-        <Tappable onPress={() => { animateLayout(); setShowVolumeDetail(v => !v); }} style={styles.volumeDetailToggle}>
+        <Tappable
+          onPress={() => { animateLayout(); setShowVolumeDetail(v => !v); }}
+          style={styles.volumeDetailToggle}
+          accessibilityState={{ expanded: showVolumeDetail }}
+        >
           <Text style={styles.volumeDetailToggleText}>
             {showVolumeDetail
               ? t('today.volume.hideDetail', { defaultValue: 'Hide per-head detail' })
@@ -891,7 +929,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
               {junk.length > 0 && (
                 <View style={styles.junkWarning}>
                   <View style={styles.junkWarningHeader}>
-                    <Ionicons name="warning" size={12} color={colors.danger} style={{ marginTop: 1 }} />
+                    <Ionicons name="warning" size={12} color={colors.danger} style={{ marginTop: 1 }} accessibilityElementsHidden importantForAccessibility="no" />
                     <Text style={styles.junkWarningTitle}>{t('today.volume.junkTitle')}</Text>
                   </View>
                   <Text style={styles.junkWarningText}>
@@ -915,6 +953,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                   name={deloadSuggestion.trigger === 'autoreg' ? 'flash' : 'refresh'}
                   size={20}
                   color={colors.textPrimary}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
                 />
               </View>
               <View style={styles.deloadHeaderText}>
@@ -989,7 +1029,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             }}
           >
             <View style={styles.coachNudgeHeader}>
-              <Ionicons name="chatbubble-ellipses" size={18} color={colors.info} style={{ marginTop: 1 }} />
+              <Ionicons name="chatbubble-ellipses" size={18} color={colors.info} style={{ marginTop: 1 }} accessibilityElementsHidden importantForAccessibility="no" />
               <Text style={styles.coachNudgeTitle}>{proactivePrompt.title}</Text>
             </View>
             <Text style={styles.coachNudgeBody}>{proactivePrompt.body}</Text>
@@ -1010,6 +1050,8 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                   size={18}
                   color={p.type === 'confirmed' ? colors.danger : colors.warning}
                   style={{ marginTop: 1 }}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
                 />
                 <View style={styles.plateauHeaderText}>
                   <Text style={styles.plateauExercise}>{p.exercise}</Text>
@@ -1118,6 +1160,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                         key={val}
                         style={[styles.checkInOpt, answer === val && styles.checkInOptActive]}
                         onPress={() => setInjuryCheckIn(s => ({ ...s, answers: { ...s.answers, [injury.body_part]: val } }))}
+                        accessibilityState={{ selected: answer === val }}
                       >
                         <Text style={[styles.checkInOptText, answer === val && styles.checkInOptTextActive]}>{label}</Text>
                       </Tappable>

@@ -3,6 +3,7 @@ import {
 import { View, Text, StyleSheet, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
@@ -12,6 +13,9 @@ import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
 
 const MEAL_KEYS = ['breakfast', 'lunch', 'dinner', 'snack'];
+// One icon per meal for identity/scanability — same single accent color for
+// all of them (not a rainbow per meal), the icon itself carries the distinction.
+const MEAL_ICONS = { breakfast: 'sunny-outline', lunch: 'restaurant-outline', dinner: 'moon-outline', snack: 'nutrition-outline' };
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const MEAL_PROTEIN_SHARE = { breakfast: 0.25, lunch: 0.35, dinner: 0.30, snack: 0.10 };
@@ -57,6 +61,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
+  const [proteinHistory, setProteinHistory] = useState([]); // last 7 days: [{date, protein}]
   const [isTrainingDay, setIsTrainingDay] = useState(true);
   // Once the user toggles Train/Rest manually, don't overwrite it on refresh.
   const trainingDayTouched = useRef(false);
@@ -69,12 +74,24 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
     const user = await getCurrentUser();
     if (!user) return;
     try {
-      const [{ data: prof }, { data: logs }] = await Promise.all([
+      const sevenDaysAgoStr = format(new Date(Date.now() - 6 * 86400000), 'yyyy-MM-dd'); // today + 6 prior = 7 days
+      const [{ data: prof }, { data: logs }, { data: weekLogs }] = await Promise.all([
         supabase.from('profiles').select('caloric_target, protein_target, carb_target, fat_target, training_caloric_target, training_carb_target, rest_caloric_target, rest_carb_target, nutrition_focus, trainingExperience, equipment, weekly_workouts, goals, selected_split, sports, health_conditions, injury_profile, coach_notes').eq('id', user.id).single(),
         supabase.from('nutrition_logs').select('*').eq('user_id', user.id).eq('date', today).order('created_at', { ascending: true }),
+        supabase.from('nutrition_logs').select('date, protein_g').eq('user_id', user.id).gte('date', sevenDaysAgoStr),
       ]);
       if (prof) setProfile(prof);
       if (logs) setEntries(logs);
+      if (weekLogs) {
+        const byDate = {};
+        weekLogs.forEach(l => { byDate[l.date] = (byDate[l.date] || 0) + (l.protein_g || 0); });
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = format(new Date(Date.now() - i * 86400000), 'yyyy-MM-dd');
+          days.push({ date: d, protein: byDate[d] || 0 });
+        }
+        setProteinHistory(days);
+      }
       // Default Train/Rest to follow the program split: today is a training day if
       // the split's weekly schedule assigns a session to today's weekday — same
       // rule TodayScreen uses to decide rest vs workout. The toggle still lets the
@@ -149,10 +166,18 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
               </Text>
             </View>
             <View style={styles.trainingToggle}>
-              <Tappable style={[styles.toggleBtn, isTrainingDay && styles.toggleBtnActive]} onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(true); }}>
+              <Tappable
+                style={[styles.toggleBtn, isTrainingDay && styles.toggleBtnActive]}
+                onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(true); }}
+                accessibilityState={{ selected: isTrainingDay }}
+              >
                 <Text style={[styles.toggleBtnText, isTrainingDay && styles.toggleBtnTextActive]}>{t('nutrition.train')}</Text>
               </Tappable>
-              <Tappable style={[styles.toggleBtn, !isTrainingDay && styles.toggleBtnActive]} onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(false); }}>
+              <Tappable
+                style={[styles.toggleBtn, !isTrainingDay && styles.toggleBtnActive]}
+                onPress={() => { trainingDayTouched.current = true; setIsTrainingDay(false); }}
+                accessibilityState={{ selected: !isTrainingDay }}
+              >
                 <Text style={[styles.toggleBtnText, !isTrainingDay && styles.toggleBtnTextActive]}>{t('nutrition.rest')}</Text>
               </Tappable>
             </View>
@@ -193,6 +218,35 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
         ))}
       </View>
 
+      {/* Protein hit-rate — real nutrition_logs, last 7 days. Same 90%-of-target
+          threshold computeInsights uses, so this never contradicts what Coach
+          says about the same data. */}
+      {targets.protein > 0 && proteinHistory.length > 0 && (
+        <View style={styles.proteinCard}>
+          <Text style={styles.proteinTitle}>{t('nutrition.proteinHistoryTitle')}</Text>
+          <View style={styles.proteinBars}>
+            {proteinHistory.map((d) => {
+              const hit = d.protein >= targets.protein * 0.9;
+              const pct = Math.min(100, Math.max(6, (d.protein / targets.protein) * 100));
+              const isToday = d.date === today;
+              return (
+                <View key={d.date} style={styles.proteinBarCol}>
+                  <View style={styles.proteinBarTrack}>
+                    <View style={[styles.proteinBarFill, { height: `${pct}%` }, hit ? styles.proteinBarHit : styles.proteinBarMiss]} />
+                  </View>
+                  <Text style={[styles.proteinBarDay, isToday && styles.proteinBarDayToday]}>
+                    {format(new Date(d.date + 'T00:00:00'), 'EEEEE')}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+          <Text style={styles.proteinCaption}>
+            {t('nutrition.proteinHistoryCaption', { count: proteinHistory.filter(d => d.protein >= targets.protein * 0.9).length })}
+          </Text>
+        </View>
+      )}
+
       {/* Meals */}
       <View style={styles.mealsSection}>
         {MEAL_KEYS.map(mealKey => {
@@ -202,9 +256,14 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
           return (
             <View key={mealKey} style={styles.mealCard}>
               <View style={styles.mealHeader}>
-                <View>
-                  <Text style={styles.mealName}>{t(`nutrition.meals.${mealKey}`)}</Text>
-                  <Text style={styles.mealSub}>{mealEntries.length === 0 ? t('nutrition.nothingLogged') : t('nutrition.kcal', { value: Math.round(mealMacros.calories) })}</Text>
+                <View style={styles.mealHeaderLeft}>
+                  <View style={styles.mealIconWrap}>
+                    <Ionicons name={MEAL_ICONS[mealKey]} size={15} color={colors.accent} accessibilityElementsHidden importantForAccessibility="no" />
+                  </View>
+                  <View>
+                    <Text style={styles.mealName}>{t(`nutrition.meals.${mealKey}`)}</Text>
+                    <Text style={styles.mealSub}>{mealEntries.length === 0 ? t('nutrition.nothingLogged') : t('nutrition.kcal', { value: Math.round(mealMacros.calories) })}</Text>
+                  </View>
                 </View>
                 <Tappable style={styles.addBtn} onPress={() => onOpenNutritionMeal(mealKey)}>
                   <Text style={styles.addBtnText}>{t('nutrition.add')}</Text>
@@ -241,7 +300,9 @@ const styles = StyleSheet.create({
   upgradeChip: { backgroundColor: colors.control, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 0.5, borderColor: colors.borderStrong },
   upgradeChipText: { fontSize: 11, color: colors.textMuted, fontWeight: '500' },
 
-  morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border },
+  // Accent-tinted, not the same flat gray as the meal cards below it — this
+  // is today's target, the one thing on the screen worth glancing at first.
+  morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: colors.surfaceElevated, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.accentHair },
   morningRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   morningTitle: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 3 },
   morningTarget: { fontSize: 11, color: colors.textSubtle, lineHeight: 16 },
@@ -264,9 +325,23 @@ const styles = StyleSheet.create({
   macroBarFill: { height: 5, borderRadius: 3 },
   macroVal: { fontSize: 11, color: colors.textSubtle, width: 68, textAlign: 'right' },
 
+  proteinCard: { marginHorizontal: 24, marginBottom: 24, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border },
+  proteinTitle: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 12 },
+  proteinBars: { flexDirection: 'row', alignItems: 'flex-end', height: 64, gap: 6, marginBottom: 8 },
+  proteinBarCol: { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end', gap: 6 },
+  proteinBarTrack: { width: '100%', height: 48, justifyContent: 'flex-end' },
+  proteinBarFill: { width: '100%', borderRadius: 4 },
+  proteinBarHit: { backgroundColor: colors.accent },
+  proteinBarMiss: { backgroundColor: colors.control, borderWidth: 1, borderColor: colors.border },
+  proteinBarDay: { fontSize: 9, color: colors.textFaint, fontWeight: '600' },
+  proteinBarDayToday: { color: colors.textPrimary },
+  proteinCaption: { fontSize: 11.5, color: colors.textMuted, lineHeight: 16 },
+
   mealsSection: { paddingHorizontal: 24 },
   mealCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 0.5, borderColor: colors.border },
   mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  mealHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  mealIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   mealName: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
   mealSub: { fontSize: 13, color: colors.textSubtle },
   addBtn: { borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },

@@ -68,7 +68,7 @@ function TabIcon({ route, color, focused, isLocked }) {
 
 // ─── PROFILE + PROGRESS COMBINED TAB ─────────────────────────────────────────
 
-function ProfileTabScreen({ onSignOut, isAdmin }) {
+function ProfileTabScreen({ onSignOut, isAdmin, isPremium, onUpgrade, onRestore }) {
   const { t } = useTranslation();
   const [view, setView] = useState('profile'); // 'profile' | 'progress'
 
@@ -91,7 +91,7 @@ function ProfileTabScreen({ onSignOut, isAdmin }) {
       </View>
 
       {view === 'profile'
-        ? <ProfileScreen onSignOut={onSignOut} isAdmin={isAdmin} />
+        ? <ProfileScreen onSignOut={onSignOut} isAdmin={isAdmin} isPremium={isPremium} onUpgrade={onUpgrade} onRestore={onRestore} />
         : <ProgressScreen />
       }
     </View>
@@ -620,6 +620,9 @@ export default function App() {
             <ProfileTabScreen
               onSignOut={() => supabase.auth.signOut()}
               isAdmin={isAdmin}
+              isPremium={isPremium}
+              onUpgrade={handleUpgrade}
+              onRestore={handleRestore}
             />
           )}
         </Tab.Screen>

@@ -119,6 +119,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                 key={d}
                 style={[styles.dayBtn, draftDays === d && styles.dayBtnActive]}
                 onPress={() => setDraftDays(d)}
+                accessibilityState={{ selected: draftDays === d }}
               >
                 <Text style={[styles.dayBtnText, draftDays === d && styles.dayBtnTextActive]}>{d}</Text>
               </Tappable>
@@ -194,6 +195,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   <Tappable
                     style={[styles.selectSplitBtn, isActive && styles.selectSplitBtnActive]}
                     onPress={() => saveSplitChoice(split.id, draftDays)}
+                    accessibilityState={{ selected: isActive }}
                   >
                     <Text style={[styles.selectSplitBtnText, isActive && styles.selectSplitBtnTextActive]}>
                       {isActive ? t('program.currentSplit') : t('program.selectSplit')}
@@ -332,6 +334,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                       key={tab.key}
                       style={[styles.infoTab, openInfo === tab.key && styles.infoTabActive]}
                       onPress={() => setOpenInfo(openInfo === tab.key ? null : tab.key)}
+                      accessibilityState={{ selected: openInfo === tab.key }}
                     >
                       <Text style={[styles.infoTabText, openInfo === tab.key && styles.infoTabTextActive]}>
                         {tab.label} {openInfo === tab.key ? '▲' : '▼'}
@@ -408,7 +411,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                 <Text style={styles.dayCardFocus}>{day.focus}</Text>
                 <Text style={styles.dayCardCount}>{t('program.exercises', { count: day.exercises.length })}</Text>
               </View>
-              <Text style={styles.dayCardArrow}>›</Text>
+              <Text style={styles.dayCardArrow} accessibilityElementsHidden importantForAccessibility="no">›</Text>
             </Tappable>
           ))}
         </View>
@@ -428,7 +431,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                   {day.tip && <Text style={styles.dayCardTip}>{day.tip}</Text>}
                   <Text style={styles.dayCardCount}>{t('program.exercises', { count: day.exercises.length })}</Text>
                 </View>
-                <Text style={styles.dayCardArrow}>›</Text>
+                <Text style={styles.dayCardArrow} accessibilityElementsHidden importantForAccessibility="no">›</Text>
               </Tappable>
             ))}
           </View>
@@ -463,7 +466,7 @@ function ExerciseCard({ ex, isSimple = false }) {
   const borderColor = getMuscleColor(ex.muscles);
   return (
     <View style={styles.exCard}>
-      <Tappable onPress={() => { animateLayout(); setExpanded(!expanded); }}>
+      <Tappable onPress={() => { animateLayout(); setExpanded(!expanded); }} accessibilityState={{ expanded }}>
         <View style={styles.exHeader}>
           <View style={styles.exTitleWrap}>
             <View style={[styles.muscleDot, { backgroundColor: borderColor }]} />

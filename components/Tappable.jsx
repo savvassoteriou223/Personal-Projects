@@ -28,7 +28,7 @@ AccessibilityInfo.addEventListener?.('reduceMotionChanged', v => { reduceMotion 
 
 export default function Tappable({
   style, dim = 0.6, scaleTo = 0.97, haptic = false, hitSlop = 6,
-  children, onPressIn, onPressOut, disabled, ...props
+  accessibilityRole = 'button', children, onPressIn, onPressOut, disabled, ...props
 }) {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
@@ -52,6 +52,7 @@ export default function Tappable({
     <AnimatedPressable
       disabled={disabled}
       hitSlop={hitSlop}
+      accessibilityRole={accessibilityRole}
       onPressIn={handleIn}
       onPressOut={handleOut}
       // Animated opacity only when enabled, so a disabled button's own dim shows through.

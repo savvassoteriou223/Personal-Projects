@@ -578,7 +578,6 @@
     "inputPlaceholder": "ej. Añade más hombros a mi próximo día de empuje",
     "noAnswer": "No se generó ninguna respuesta.",
     "failedConnect": "Error de conexión.",
-    "failedConnectCheck": "Error de conexión. Comprueba tu conexión a internet.",
     "altPrompt": "Dame una alternativa diferente a {{what}}{{where}}. Elige la mejor — no me preguntes, proponla directamente.",
     "thatExercise": "ese ejercicio",
     "onDay": " en {{day}}",
@@ -598,12 +597,6 @@
     "saved": "Añadido a tu programa. Aparecerá en tu próximo entrenamiento.",
     "thinking": "Pensando...",
     "askBtn": "Preguntar",
-    "weeklyInsight": "Análisis semanal",
-    "weeklyInsightSub": "Analiza tu volumen, PRs y sesiones recientes frente a objetivos científicos",
-    "insightEmpty": "Toca abajo para obtener un análisis semanal personalizado según tus datos de entrenamiento.",
-    "analysing": "Analizando...",
-    "refreshInsight": "Actualizar análisis",
-    "generateInsight": "Generar análisis",
     "quickQuestions": "Preguntas rápidas",
     "quick": {
       "neglecting": "¿Qué grupo muscular estoy descuidando más?",
@@ -641,7 +634,8 @@
       "preference": "Preferencia",
       "goal": "Objetivo",
       "note": "Nota"
-    }
+    },
+    "recentChanges": "Cambios recientes"
   },
   "profile": {
     "admin": "Admin",
@@ -1096,5 +1090,30 @@
       "forearms": "Antebrazos",
       "abs": "Abdominales"
     }
+  },
+  "data": {
+    "rowTitle": "Tus datos",
+    "rowSub": "Historial completo de entrenamiento, nutrición y recuperación",
+    "title": "Tus datos",
+    "scopeNote": "Mostrando tus últimas {{sessions}} sesiones y {{nutrition}} registros de nutrición.",
+    "trainingTitle": "Historial de entrenamiento",
+    "emptyTraining": "Aún no hay sesiones de fuerza registradas.",
+    "untitledSession": "Entrenamiento",
+    "noSets": "No hay series registradas para esta sesión.",
+    "minutes": "{{n}} min",
+    "cardioTitle": "Historial de cardio",
+    "emptyCardio": "Aún no hay sesiones de cardio registradas.",
+    "nutritionTitle": "Registro de nutrición",
+    "emptyNutrition": "Aún no hay comidas registradas.",
+    "recoveryTitle": "Registros de recuperación",
+    "emptyRecovery": "Aún no hay registros de recuperación.",
+    "checkin": "Registro",
+    "sleepHrs": "{{n}} h de sueño",
+    "sorenessLabel": "Dolor muscular",
+    "energyLabel": "Energía",
+    "healthTitle": "Métricas de salud",
+    "emptyHealth": "Aún no hay datos de salud sincronizados.",
+    "weightTitle": "Peso corporal",
+    "emptyWeight": "Aún no hay peso registrado."
   }
 }

@@ -46,12 +46,22 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
     Nutrition: {
       icon: '◈',
       title: 'Smart Nutrition',
-      tagline: 'Adaptive targets that respond to your training',
+      tagline: 'Log any meal by describing it, snapping it, or saying it',
       bullets: [
-        'Calories auto-adjust based on weekly training volume',
-        'Training day vs rest day macro splits',
-        'Medical condition filters (IBS, PCOS, celiac, CKD)',
-        '54 micronutrients tracked with deficiency alerts',
+        'Describe a meal in plain words — macros calculated for you',
+        'Snap a photo of your plate and log the whole thing',
+        'Hands-free voice logging',
+      ],
+    },
+    Data: {
+      icon: '◫',
+      title: 'Your Data',
+      tagline: 'Every workout, every meal, every recovery signal — not just this week',
+      bullets: [
+        'Full training history — every logged set, not a 7-day window',
+        'Complete nutrition log, searchable by day',
+        'Recovery trends: sleep, HRV, resting heart rate over time',
+        'Cardio session history alongside your lifting log',
       ],
     },
   };
@@ -68,6 +78,31 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
         </View>
         <Text style={pw.title}>{f.title}</Text>
         <Text style={pw.tagline}>{f.tagline}</Text>
+
+        {/* What Coach actually looks like — sample content, not a live user's
+            data. Replaces a wall of sales bullets with the real UI so someone
+            decides to start the trial having seen the product, not read about it. */}
+        {feature === 'Coach' && (
+          <View style={pw.previewCard}>
+            <View style={pw.previewDoneRow}>
+              <View style={pw.previewCheck}><FontAwesome5 name="check" size={7} color={colors.accent} /></View>
+              <Text style={pw.previewDoneText}>Squat 3 → 4 sets — 3 sessions at full reps</Text>
+            </View>
+            <View style={pw.previewDoneRow}>
+              <View style={pw.previewCheck}><FontAwesome5 name="check" size={7} color={colors.accent} /></View>
+              <Text style={pw.previewDoneText}>Face pulls dropped — flat 4 weeks</Text>
+            </View>
+            <View style={pw.previewFocus}>
+              <Text style={pw.previewFocusEyebrow}>THIS WEEK'S REAL ISSUE</Text>
+              <Text style={pw.previewFocusTitle}>Bench press has plateaued</Text>
+              <Text style={pw.previewFocusBody}>Stuck at 100kg for 3 weeks — and protein missed 4 of 7 days. Fix protein first; deload is the fallback.</Text>
+            </View>
+            <View style={pw.previewLockRow}>
+              <FontAwesome5 name="lock" size={10} color={colors.textFaint} />
+              <Text style={pw.previewLockText}>Sample content — this is what your Coach actually shows</Text>
+            </View>
+          </View>
+        )}
 
         <View style={pw.bulletList}>
           {f.bullets.map((b, i) => (
@@ -130,6 +165,19 @@ const pw = StyleSheet.create({
   icon: { fontSize: 26, color: colors.textPrimary },
   title: { fontSize: 26, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5, marginBottom: 8, textAlign: 'center' },
   tagline: { fontSize: 15, color: colors.textSubtle, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  previewCard: {
+    alignSelf: 'stretch', backgroundColor: colors.surfaceRaised, borderRadius: 16,
+    borderWidth: 0.5, borderColor: colors.border, padding: 14, marginBottom: 24,
+  },
+  previewDoneRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  previewCheck: { width: 16, height: 16, borderRadius: 5, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  previewDoneText: { fontSize: 12, color: colors.textSecondary, flex: 1 },
+  previewFocus: { backgroundColor: colors.surfaceElevated, borderRadius: 12, padding: 12, marginTop: 8 },
+  previewFocusEyebrow: { fontSize: 9, fontWeight: '700', color: colors.danger, letterSpacing: 0.6, marginBottom: 4 },
+  previewFocusTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
+  previewFocusBody: { fontSize: 11.5, color: colors.textMuted, lineHeight: 17 },
+  previewLockRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, justifyContent: 'center' },
+  previewLockText: { fontSize: 10, color: colors.textFaint },
   bulletList: { alignSelf: 'stretch', marginBottom: 32, gap: 14 },
   bulletRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   bulletDot: { fontSize: 18, color: colors.textPrimary, lineHeight: 22, marginTop: 1 },

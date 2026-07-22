@@ -578,7 +578,6 @@
     "inputPlaceholder": "es. Aggiungi più spalle al mio prossimo giorno di spinta",
     "noAnswer": "Nessuna risposta generata.",
     "failedConnect": "Connessione non riuscita.",
-    "failedConnectCheck": "Connessione non riuscita. Controlla la connessione a internet.",
     "altPrompt": "Dammi un'alternativa diversa a {{what}}{{where}}. Scegli la migliore — non chiedermelo, proponila direttamente.",
     "thatExercise": "quell'esercizio",
     "onDay": " in {{day}}",
@@ -598,12 +597,6 @@
     "saved": "Aggiunto al tuo programma. Apparirà nel prossimo allenamento.",
     "thinking": "Sto pensando...",
     "askBtn": "Chiedi",
-    "weeklyInsight": "Analisi settimanale",
-    "weeklyInsightSub": "Analizza volume, PR e sessioni recenti rispetto agli obiettivi della ricerca",
-    "insightEmpty": "Tocca qui sotto per un'analisi settimanale personalizzata basata sui tuoi dati di allenamento.",
-    "analysing": "Analisi...",
-    "refreshInsight": "Aggiorna analisi",
-    "generateInsight": "Genera analisi",
     "quickQuestions": "Domande rapide",
     "quick": {
       "neglecting": "Quale gruppo muscolare sto trascurando di più?",
@@ -641,7 +634,8 @@
       "preference": "Preferenza",
       "goal": "Obiettivo",
       "note": "Nota"
-    }
+    },
+    "recentChanges": "Modifiche recenti"
   },
   "profile": {
     "admin": "Admin",
@@ -1096,5 +1090,30 @@
       "forearms": "Avambracci",
       "abs": "Addominali"
     }
+  },
+  "data": {
+    "rowTitle": "I tuoi dati",
+    "rowSub": "Cronologia completa di allenamento, nutrizione e recupero",
+    "title": "I tuoi dati",
+    "scopeNote": "Mostrando le tue ultime {{sessions}} sessioni e {{nutrition}} voci nutrizionali.",
+    "trainingTitle": "Cronologia allenamenti",
+    "emptyTraining": "Nessuna sessione di forza ancora registrata.",
+    "untitledSession": "Allenamento",
+    "noSets": "Nessuna serie registrata per questa sessione.",
+    "minutes": "{{n}} min",
+    "cardioTitle": "Cronologia cardio",
+    "emptyCardio": "Nessuna sessione di cardio ancora registrata.",
+    "nutritionTitle": "Diario nutrizionale",
+    "emptyNutrition": "Nessun pasto ancora registrato.",
+    "recoveryTitle": "Check-in di recupero",
+    "emptyRecovery": "Nessun check-in di recupero ancora.",
+    "checkin": "Check-in",
+    "sleepHrs": "{{n}} h di sonno",
+    "sorenessLabel": "Indolenzimento",
+    "energyLabel": "Energia",
+    "healthTitle": "Metriche di salute",
+    "emptyHealth": "Nessun dato di salute ancora sincronizzato.",
+    "weightTitle": "Peso corporeo",
+    "emptyWeight": "Nessun peso ancora registrato."
   }
 }

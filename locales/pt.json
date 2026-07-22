@@ -578,7 +578,6 @@
     "inputPlaceholder": "ex. Adicione mais ombros ao meu próximo dia de empurrar",
     "noAnswer": "Nenhuma resposta gerada.",
     "failedConnect": "Falha na conexão.",
-    "failedConnectCheck": "Falha na conexão. Verifique sua conexão com a internet.",
     "altPrompt": "Me dê uma alternativa diferente para {{what}}{{where}}. Escolha a melhor — não me pergunte, proponha direto.",
     "thatExercise": "esse exercício",
     "onDay": " em {{day}}",
@@ -598,12 +597,6 @@
     "saved": "Adicionado ao seu programa. Aparecerá no seu próximo treino.",
     "thinking": "Pensando...",
     "askBtn": "Perguntar",
-    "weeklyInsight": "Análise semanal",
-    "weeklyInsightSub": "Analisa seu volume, recordes e sessões recentes em relação às metas da pesquisa",
-    "insightEmpty": "Toque abaixo para uma análise semanal personalizada com base nos seus dados de treino.",
-    "analysing": "Analisando...",
-    "refreshInsight": "Atualizar análise",
-    "generateInsight": "Gerar análise",
     "quickQuestions": "Perguntas rápidas",
     "quick": {
       "neglecting": "Qual grupo muscular estou mais negligenciando?",
@@ -641,7 +634,8 @@
       "preference": "Preferência",
       "goal": "Objetivo",
       "note": "Nota"
-    }
+    },
+    "recentChanges": "Alterações recentes"
   },
   "profile": {
     "admin": "Admin",
@@ -1096,5 +1090,30 @@
       "forearms": "Antebraços",
       "abs": "Abdômen"
     }
+  },
+  "data": {
+    "rowTitle": "Seus dados",
+    "rowSub": "Histórico completo de treino, nutrição e recuperação",
+    "title": "Seus dados",
+    "scopeNote": "Mostrando suas últimas {{sessions}} sessões e {{nutrition}} registros de nutrição.",
+    "trainingTitle": "Histórico de treino",
+    "emptyTraining": "Nenhuma sessão de força registrada ainda.",
+    "untitledSession": "Treino",
+    "noSets": "Nenhuma série registrada para esta sessão.",
+    "minutes": "{{n}} min",
+    "cardioTitle": "Histórico de cardio",
+    "emptyCardio": "Nenhuma sessão de cardio registrada ainda.",
+    "nutritionTitle": "Registro de nutrição",
+    "emptyNutrition": "Nenhuma refeição registrada ainda.",
+    "recoveryTitle": "Check-ins de recuperação",
+    "emptyRecovery": "Nenhum check-in de recuperação ainda.",
+    "checkin": "Check-in",
+    "sleepHrs": "{{n}} h de sono",
+    "sorenessLabel": "Dor muscular",
+    "energyLabel": "Energia",
+    "healthTitle": "Métricas de saúde",
+    "emptyHealth": "Nenhum dado de saúde sincronizado ainda.",
+    "weightTitle": "Peso corporal",
+    "emptyWeight": "Nenhum peso registrado ainda."
   }
 }

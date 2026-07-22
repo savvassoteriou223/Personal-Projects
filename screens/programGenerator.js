@@ -1299,6 +1299,24 @@ export const PLATEAU_RESEARCH = {
       "Increase protein per meal — trained individuals rely more on nutrition to sustain growth",
     ],
     science: "Kataoka R, Hammert WB, Yamada Y et al. (2024) Sports Med 54:31–48. Pelland JC et al. (2026) Sports Med 56:481–505.",
+    // The Kataoka refractory-signalling mechanism is measured in already-trained
+    // tissue repeating the same stimulus — it doesn't describe true beginners,
+    // who should see near-linear progress for months. A short stall for them is
+    // far more likely adherence/technique than a real ceiling, so beginners get
+    // a longer runway before either flag, and different (fundamentals-first)
+    // advice instead of the variation/rep-range tricks meant for adapted lifters.
+    beginnerOverride: {
+      earlyWarningWeeks: 3,
+      confirmedWeeks: 6,
+      earlyMessage: "Your estimated strength on this lift hasn't improved in 3 weeks. This early on you should still be adding weight or reps almost every session — check you're actually progressing load and not just repeating the same numbers before treating this as a real plateau.",
+      confirmedMessage: "6 weeks without progress this early in training is unusual — at this stage it's far more likely to be missed sessions, inconsistent load progression, or technique than a genuine biological ceiling. Rule those out before changing exercises.",
+      interventions: [
+        "Confirm you're adding weight or reps most sessions — beginners should rarely repeat the same numbers twice",
+        "Check you haven't missed sessions — consistency drives almost all of a beginner's progress, not programming",
+        "Get your form checked — a technique limit looks identical to a plateau on paper",
+        "Make sure protein and sleep are consistent day to day, not just averaged over the week",
+      ],
+    },
   },
 
   strength: {
@@ -1317,6 +1335,20 @@ export const PLATEAU_RESEARCH = {
       "If deloading, reduce sets by 30–50% but keep the same load (Bell consensus 2023)",
     ],
     science: "Coleman M, Burke R et al. (2024) PeerJ PMID:38274324. Bell L et al. (2023) Sports Med Open. Deloading Practices Survey PMC10948666.",
+    // Same rationale as muscle.beginnerOverride above — the neural-ceiling
+    // framing doesn't apply yet to a true beginner's strength curve.
+    beginnerOverride: {
+      earlyWarningWeeks: 3,
+      confirmedWeeks: 5,
+      earlyMessage: "Your 1RM estimate hasn't moved in 3 weeks. This early on, that's usually not a real strength plateau — check you're still adding weight or reps most sessions before assuming you've hit a ceiling.",
+      confirmedMessage: "5 weeks without strength progress this early in training is unusual — it's more likely a consistency, sleep, or technique issue than a genuine neural adaptation ceiling. Rule those out before changing your program.",
+      interventions: [
+        "Confirm you're adding weight or reps most sessions — linear progression should still be available this early",
+        "Check you haven't missed sessions — consistency drives most beginner progress, not programming tweaks",
+        "Get your form checked — a technique ceiling looks identical to a strength plateau on paper",
+        "Confirm sleep and calorie intake are consistent, not just adequate on average",
+      ],
+    },
   },
 
   lose: {
@@ -1526,7 +1558,14 @@ export function detectPlateaus(sets = [], profile = {}) {
     : goals.includes('endurance') ? 'endurance'
     : 'muscle';
 
-  const research = PLATEAU_RESEARCH[goalKey];
+  const baseResearch = PLATEAU_RESEARCH[goalKey];
+  // True beginners haven't reached the trained-tissue ceiling this research
+  // describes yet — a short stall for them is far more likely adherence or
+  // technique than a real plateau, so they get a longer runway and different
+  // (fundamentals-first) advice. See beginnerOverride comments above.
+  const research = profile.trainingExperience === 'beginner' && baseResearch.beginnerOverride
+    ? { ...baseResearch, ...baseResearch.beginnerOverride }
+    : baseResearch;
   const plateaus = [];
 
   // ── Strength / muscle plateau: track estimated 1RM per compound lift ──────
@@ -1595,6 +1634,35 @@ export function detectPlateaus(sets = [], profile = {}) {
   return plateaus;
 }
 
+// GOAL_MILESTONES is keyed on single raw goal strings ('lose', 'muscle',
+// 'strength', 'aesthetics', 'endurance'), not resolveGoalCombo's combo
+// taxonomy — 'gain' maps to the 'muscle' checkpoints since that's the closer
+// checkpoint content (hypertrophy block review), even though resolveGoalCombo
+// treats 'gain' and 'aesthetics' as the same combo elsewhere.
+const GOAL_MILESTONE_KEY = { lose: 'lose', gain: 'muscle', strength: 'strength', aesthetics: 'aesthetics', endurance: 'endurance' };
+
+// Which of the user's goal-checkpoint messages are due right now. Pure
+// function — caller is responsible for tracking which ids have already been
+// shown (these conditions stay true indefinitely once met, so re-showing the
+// same milestone every day would need a dedupe layer this function doesn't own).
+export function getEligibleGoalMilestones(goals = [], weeksSinceGoalStart = 0, currentWeightKg = null, targetWeightKg = null) {
+  const eligible = [];
+  for (const g of goals) {
+    const milestones = GOAL_MILESTONES[GOAL_MILESTONE_KEY[g]];
+    if (!milestones) continue;
+    for (const m of milestones) {
+      if (m.type === 'weight') {
+        if (currentWeightKg == null || targetWeightKg == null) continue;
+        const reached = g === 'lose' ? currentWeightKg <= targetWeightKg : currentWeightKg >= targetWeightKg;
+        if (reached) eligible.push(m);
+      } else if (typeof m.weeks === 'number' && weeksSinceGoalStart >= m.weeks) {
+        eligible.push(m);
+      }
+    }
+  }
+  return eligible;
+}
+
 // ─── PROACTIVE COACH PROMPT ──────────────────────────────────────────────────
 // A pocket personal trainer reaches out instead of waiting to be asked. Given
 // the signals already computed on the home screen, pick the single most
@@ -1607,6 +1675,7 @@ export function getProactiveCoachPrompt({
   deload = null,
   plateaus = [],
   recoveryLabel = null,
+  goalMilestone = null,
 } = {}) {
   // 1. Recovery comes first — training hard on a low-recovery day is the most
   //    time-sensitive call.
@@ -1648,6 +1717,17 @@ export function getProactiveCoachPrompt({
         ask: `I haven’t trained in ${daysSinceLastSession} days — how should I restart without overdoing it?`,
       };
     }
+  }
+  // 5. Goal checkpoint — lowest urgency, a periodic "time to reassess" moment
+  //    rather than a problem to fix. Caller has already deduped against
+  //    previously-shown milestone ids before passing one in here.
+  if (goalMilestone) {
+    return {
+      key: `milestone_${goalMilestone.id}`,
+      title: goalMilestone.label,
+      body: goalMilestone.message,
+      ask: `${goalMilestone.message} What should I actually change based on this?`,
+    };
   }
   return null;
 }
@@ -2143,6 +2223,20 @@ function buildSubstituteExercise(patternKey, rawEx, originalSets, originalRpe) {
     optional: false,
     contraindication_substitute: true,
   };
+}
+
+// Same rule lookup applyContraindicationFilters uses, exposed standalone so a
+// pattern can be checked without a full program — used to keep the Coach's
+// exercise menu structurally safe instead of trusting the model to self-police
+// every proposal against the SAFETY instruction in its prompt.
+export function getPatternContraindication(patternKey, conditions = []) {
+  const rules = CONTRAINDICATION_MAP[patternKey] || [];
+  const matched = rules.filter(r => r.conditions.some(c => conditions.includes(c)));
+  if (matched.length === 0) return null;
+  const hardMatch = matched.find(r => r.hard);
+  return hardMatch
+    ? { hard: true, reason: hardMatch.reason }
+    : { hard: false, reason: matched.map(r => r.reason).join(' ') };
 }
 
 // Filter a program's exercises based on the user's health conditions.

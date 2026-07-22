@@ -578,7 +578,6 @@
     "inputPlaceholder": "例如 在我下次推日加入更多肩部",
     "noAnswer": "未生成回答。",
     "failedConnect": "连接失败。",
-    "failedConnectCheck": "连接失败。请检查你的网络连接。",
     "altPrompt": "给我一个{{what}}{{where}}的不同替代动作。直接选最好的 — 不用问我，直接提议。",
     "thatExercise": "那个动作",
     "onDay": "（{{day}}）",
@@ -598,12 +597,6 @@
     "saved": "已加入你的计划。将出现在你的下次训练中。",
     "thinking": "思考中...",
     "askBtn": "提问",
-    "weeklyInsight": "每周洞察",
-    "weeklyInsightSub": "对照研究目标分析你的训练量、PR 和近期训练",
-    "insightEmpty": "点击下方，基于你的训练数据获取个性化的每周分析。",
-    "analysing": "分析中...",
-    "refreshInsight": "刷新洞察",
-    "generateInsight": "生成洞察",
     "quickQuestions": "快捷问题",
     "quick": {
       "neglecting": "我最忽视哪个肌群？",
@@ -641,7 +634,8 @@
       "preference": "偏好",
       "goal": "目标",
       "note": "备注"
-    }
+    },
+    "recentChanges": "最近的更改"
   },
   "profile": {
     "admin": "管理员",
@@ -1096,5 +1090,30 @@
       "forearms": "前臂",
       "abs": "腹"
     }
+  },
+  "data": {
+    "rowTitle": "你的数据",
+    "rowSub": "完整的训练、营养和恢复记录",
+    "title": "你的数据",
+    "scopeNote": "显示最近 {{sessions}} 次训练和 {{nutrition}} 条营养记录。",
+    "trainingTitle": "训练历史",
+    "emptyTraining": "尚无力量训练记录。",
+    "untitledSession": "训练",
+    "noSets": "本次训练没有记录的组数。",
+    "minutes": "{{n}} 分钟",
+    "cardioTitle": "有氧历史",
+    "emptyCardio": "尚无有氧训练记录。",
+    "nutritionTitle": "营养日志",
+    "emptyNutrition": "尚无饮食记录。",
+    "recoveryTitle": "恢复打卡",
+    "emptyRecovery": "尚无恢复打卡记录。",
+    "checkin": "打卡",
+    "sleepHrs": "睡眠 {{n}} 小时",
+    "sorenessLabel": "酸痛",
+    "energyLabel": "精力",
+    "healthTitle": "健康指标",
+    "emptyHealth": "尚无同步的健康数据。",
+    "weightTitle": "体重",
+    "emptyWeight": "尚无体重记录。"
   }
 }

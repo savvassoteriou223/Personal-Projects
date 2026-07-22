@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert,
+  View, Text, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,12 +9,41 @@ import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import { MOVEMENT_PATTERNS, getAllExercisesForPattern } from './movementLibrary';
 import { formatEvidenceBase } from './studiesLibrary';
-import { VOLUME_TARGETS, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays } from './programGenerator';
+import { VOLUME_TARGETS, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getPatternContraindication, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS, detectPlateaus, detectDeloadNeeded, getProactiveCoachPrompt, getEligibleGoalMilestones, checkReadyToProgress, detectRotationTrigger, getBlockLength, generateDeloadWeek } from './programGenerator';
+import { expandAllConditions } from '../lib/conditionsDb';
 import { computeHeadVolume } from './volumeEngine';
-import { getRecentCheckIns } from '../lib/recoveryStore';
+import { computeInsights } from './insightsEngine';
+import { getRecentCheckIns, getTodayCheckIn } from '../lib/recoveryStore';
 import { format, subDays, startOfWeek } from 'date-fns';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
+import Svg, { Path, Circle, Line as SvgLine } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
+
+// Real per-session trend chart for the focus card — same est-1RM series
+// plateauTrend carries, same react-native-svg pattern already used by
+// BodyCompositionCard/VolumePanel elsewhere in the app. Flat data draws a
+// flat line; it isn't decoration, it's what actually happened.
+function PlateauChart({ points }) {
+  if (!points || points.length < 2) return null;
+  const W = 280, H = 56, padX = 4, padY = 10;
+  const vals = points.map(p => p.est1rm);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = (max - min) || 1;
+  const plotW = W - padX * 2, plotH = H - padY * 2;
+  const x = i => padX + (i / (points.length - 1)) * plotW;
+  const y = v => padY + plotH - ((v - min) / range) * plotH;
+  const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(i).toFixed(1)} ${y(p.est1rm).toFixed(1)}`).join(' ');
+  return (
+    <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} style={{ marginBottom: 10 }}>
+      <SvgLine x1={padX} y1={y(points[0].est1rm)} x2={W - padX} y2={y(points[0].est1rm)} stroke={colors.textFaint} strokeWidth="1" strokeDasharray="3,4" opacity={0.5} />
+      <Path d={path} fill="none" stroke={colors.danger} strokeWidth="2" strokeLinecap="round" />
+      {points.map((p, i) => (
+        <Circle key={i} cx={x(i)} cy={y(p.est1rm)} r={i === points.length - 1 ? 4 : 2.5} fill={colors.danger} />
+      ))}
+    </Svg>
+  );
+}
 
 const MONTHLY_QUOTA = 100;
 
@@ -70,8 +99,6 @@ function getPrimaryMuscle(name) {
 export default function CoachScreen({ onClose, workoutContext, onProposalApplied, prefill, onPrefillConsumed }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [loading, setLoading] = useState(false);
-  const [insight, setInsight] = useState(null);
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   // `answer` is now ERROR-ONLY. Successful replies live in conversationHistory and
@@ -82,11 +109,18 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   // The question in flight. conversationHistory isn't updated until the reply
   // lands, so without this the user's own message vanishes while they wait.
   const [pendingQuestion, setPendingQuestion] = useState(null);
+  // Gates the answer panel: conversationHistory is reloaded from coach_memory on
+  // every open (so the coach still has full context), but that used to also make
+  // an old exchange from days ago pop up looking like something new. This only
+  // flips true once the user actually asks something THIS session.
+  const [hasAskedThisSession, setHasAskedThisSession] = useState(false);
   const [proposals, setProposals] = useState([]);
   const [confirmingIndex, setConfirmingIndex] = useState(null);
   const [proposalSaved, setProposalSaved] = useState(false);
   const [alternatives, setAlternatives] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [focusDismissed, setFocusDismissed] = useState(false); // local-only, resets next load — "not now", not permanent
+  const [undoing, setUndoing] = useState(false);
   const [quota, setQuota] = useState({ used: 0, remaining: MONTHLY_QUOTA });
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]);
@@ -95,6 +129,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const [weeklyOffered, setWeeklyOffered] = useState(false); // review is due, not yet generated
   const weeklyReviewChecked = useRef(false);
   const scrollRef = useRef(null);
+  const askCardY = useRef(0); // captured via onLayout — real scroll target, not a guess
 
   // Follow the newest turn. Timeout lets the new turn lay out before we measure —
   // scrolling on the same tick lands short of the actual end.
@@ -185,6 +220,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     setPendingQuestion(null); // else a cleared thread leaves an orphaned bubble
     setProposals([]);
     setAlternatives(null);
+    setHasAskedThisSession(false);
   };
 
   // Remove a single durable fact the coach has learned. Deleting a "dislike"
@@ -214,7 +250,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const user = await getCurrentUser();
     if (!user) return;
 
-    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }, recoveryCheckIns] = await Promise.all([
+    const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }, { data: bodyMetrics }, { data: streakSessions }, { data: insightSessions }, { data: insightNutrition }, { data: insightHealth }, recoveryCheckIns] = await Promise.all([
       supabase.from('profiles').select('*, ai_calls_used, ai_calls_reset_at').eq('id', user.id).single(),
       supabase.from('workout_sessions').select('id, name, completed_at, duration_min, perceived_exertion, session_type')
         .eq('user_id', user.id).order('completed_at', { ascending: false }).limit(20),
@@ -232,8 +268,76 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         .eq('user_id', user.id)
         .gte('date', format(subDays(new Date(), 7), 'yyyy-MM-dd'))
         .order('date', { ascending: false }),
+      // Manually logged (Profile's "Log today's weight"), not automatic — no
+      // guaranteed daily density, so this stays a list of whatever was actually
+      // logged, not an assumed-continuous trend.
+      supabase.from('body_metrics')
+        .select('date, weight_kg')
+        .eq('user_id', user.id)
+        .gte('date', format(subDays(new Date(), 30), 'yyyy-MM-dd'))
+        .order('date', { ascending: false }),
+      // Wider, single-column window just for the streak calc — the main
+      // `sessions` query above is capped at 20 rows for prompt size, which
+      // would silently truncate a longer real streak.
+      supabase.from('workout_sessions')
+        .select('completed_at')
+        .eq('user_id', user.id)
+        .gte('completed_at', subDays(new Date(), 180).toISOString())
+        .order('completed_at', { ascending: false }),
+      // 60-day windows for computeInsights() — the same performance-correlation
+      // engine ProfileScreen's "What's driving your training" already runs.
+      // Separate from the queries above since those are scoped to 7/20 rows
+      // for different purposes; insights needs real history to find a signal.
+      supabase.from('workout_sessions')
+        .select('id, completed_at, perceived_exertion, session_type')
+        .eq('user_id', user.id)
+        .gte('completed_at', subDays(new Date(), 60).toISOString()),
+      supabase.from('nutrition_logs')
+        .select('date, protein_g, calories')
+        .eq('user_id', user.id)
+        .gte('date', format(subDays(new Date(), 60), 'yyyy-MM-dd')),
+      supabase.from('daily_health_logs')
+        .select('date, sleep_hours, hrv_ms')
+        .eq('user_id', user.id)
+        .gte('date', format(subDays(new Date(), 60), 'yyyy-MM-dd')),
       getRecentCheckIns(7),
     ]);
+
+    // Same transform ProfileScreen does before calling computeInsights — kept
+    // identical so the two surfaces can't produce different findings from the
+    // same underlying data.
+    const insightNutByDate = {};
+    (insightNutrition || []).forEach(l => {
+      if (!insightNutByDate[l.date]) insightNutByDate[l.date] = { protein: 0, calories: 0 };
+      insightNutByDate[l.date].protein += l.protein_g || 0;
+      insightNutByDate[l.date].calories += l.calories || 0;
+    });
+    const insightHealthByDate = {};
+    (insightHealth || []).forEach(l => { insightHealthByDate[l.date] = { sleep_hours: l.sleep_hours, hrv_ms: l.hrv_ms }; });
+    const insights = computeInsights({
+      sessions: (insightSessions || []).filter(s => !s.session_type || s.session_type === 'strength'),
+      nutritionByDate: insightNutByDate,
+      healthByDate: insightHealthByDate,
+      targets: { protein_target: profile?.protein_target, caloric_target: profile?.caloric_target },
+    });
+
+    // Same algorithm as ProfileScreen's streak stat — consecutive weeks with
+    // at least 1 session. Kept in sync deliberately: if this ever needs to
+    // change, change it in both places or Coach and Profile will disagree.
+    let streak = 0;
+    if (streakSessions?.length) {
+      const weekSet = new Set(streakSessions.map(s => {
+        const weekStart = startOfWeek(new Date(s.completed_at), { weekStartsOn: 1 });
+        return weekStart.toISOString().split('T')[0];
+      }));
+      const sortedWeeks = [...weekSet].sort().reverse();
+      let checkDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+      for (const wk of sortedWeeks) {
+        const wkDate = new Date(wk);
+        const diff = Math.round((checkDate - wkDate) / (1000 * 60 * 60 * 24 * 7));
+        if (diff <= 1) { streak++; checkDate = wkDate; } else break;
+      }
+    }
 
     if (profile) {
       const resetAt = profile.ai_calls_reset_at ? new Date(profile.ai_calls_reset_at) : null;
@@ -250,6 +354,13 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     let headVol = {}; // per-head { direct, indirect } from the shared volume engine
     let prs = {};
     let recentSessions = sessions || [];
+    // Same detectors TodayScreen runs — reusing them here (not re-deriving
+    // plateau/deload logic independently) is what keeps Coach from ever
+    // contradicting what the user already sees on Today.
+    let plateaus = [];
+    let plateauTrend = [];
+    let deloadSuggestion = null;
+    let recentSetsForProgress = []; // hoisted out of the block below — needed later for readyToProgress
 
     if (sessions?.length) {
       const ids = sessions.map(s => s.id);
@@ -276,6 +387,41 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
           }
         });
         headVol = computeHeadVolume(weekSets);
+
+        // Mirror TodayScreen: last 30 days, RPE pulled from the session's
+        // perceived_exertion (no per-set RPE is logged).
+        const thirtyDaysAgo = subDays(new Date(), 30);
+        const sessionRpeMap = {};
+        sessions.forEach(s => { sessionRpeMap[s.id] = s.perceived_exertion; });
+        const setsWithDates = sets.map(s => ({
+          ...s,
+          completed_at: sessionDateMap[s.session_id]?.toISOString(),
+          rpe: sessionRpeMap[s.session_id] ?? null,
+        })).filter(s => s.completed_at && new Date(s.completed_at) >= thirtyDaysAgo);
+        const sessions30d = sessions.filter(s => new Date(s.completed_at) >= thirtyDaysAgo);
+
+        plateaus = detectPlateaus(setsWithDates, profile);
+        deloadSuggestion = detectDeloadNeeded(sessions30d, setsWithDates, profile);
+        recentSetsForProgress = setsWithDates;
+
+        // Real per-session trend for the plateaued exercise — same Epley 1RM
+        // estimate and per-session max that detectPlateaus computes internally,
+        // just exposed as a series instead of only the final stall verdict.
+        // This is real data (recentSetsForProgress), not a decorative chart.
+        if (plateaus[0]?.exercise) {
+          const byDate = {};
+          setsWithDates
+            .filter(s => s.exercise_name === plateaus[0].exercise && s.weight_kg && s.reps)
+            .forEach(s => {
+              const day = new Date(s.completed_at).toDateString();
+              const est1rm = s.reps === 1 ? s.weight_kg : s.weight_kg * (1 + s.reps / 30);
+              if (!byDate[day] || est1rm > byDate[day]) byDate[day] = est1rm;
+            });
+          plateauTrend = Object.entries(byDate)
+            .sort(([a], [b]) => new Date(a) - new Date(b))
+            .slice(-6)
+            .map(([date, est1rm]) => ({ date, est1rm: Math.round(est1rm) }));
+        }
       }
     }
 
@@ -303,6 +449,9 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       ...dislikedExerciseIdsFromNotes(profile?.coach_notes || []),
     ])];
     let program = profile ? generateProgram(profile, blockIndex, blockStartDate, { dislikedIds }) : null;
+    let recentChanges = [];
+    let changeEffectiveness = null;
+    let activeConditions = [];
     if (program) {
       const { data: overrides } = await supabase
         .from('program_template_overrides')
@@ -341,9 +490,56 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
               .then(() => {}, () => {});
           }
         });
+
+        // A readable log of what Coach itself has already changed — without this,
+        // any "I already did X" the coach says is fabricated, not remembered.
+        // Resolved against the final program state, so names reflect what's
+        // actually in the slot now rather than a stale pre-edit label.
+        // id carried alongside the display text so the done-strip's Undo can
+        // delete this exact override row — not just re-word what happened.
+        recentChanges = overrides.slice(-10).reverse().map(o => {
+          const day = program.days?.find(d => d.id === o.day_id);
+          const dayName = day?.name?.split('—')[0].trim() || o.day_id;
+          const when = o.created_at ? format(new Date(o.created_at), 'MMM d') : 'unknown date';
+          const resolved = o.exercise_id ? MOVEMENT_PATTERNS[o.pattern_key]?.exercises.find(e => e.id === o.exercise_id) : null;
+          const slotEx = day?.exercises?.find(e => e.slotId === o.slot_id) || day?.exercises?.[o.exercise_index];
+          const exName = resolved?.name || slotEx?.name || 'an exercise';
+          let text;
+          switch (o.edit_type) {
+            case 'replace_exercise': text = `${when}: swapped in ${exName} (${dayName})`; break;
+            case 'remove_exercise': text = `${when}: removed ${exName} (${dayName})`; break;
+            case 'adjust_sets': text = `${when}: changed ${exName} to ${o.sets} sets (${dayName})`; break;
+            case 'adjust_reps': text = `${when}: changed ${exName} to ${o.reps} reps (${dayName})`; break;
+            case 'adjust_rpe': text = `${when}: changed ${exName} target RPE to ${o.rpe} (${dayName})`; break;
+            default: text = `${when}: updated ${exName} (${dayName})`; break;
+          }
+          return { text, id: o.id };
+        });
+
+        // Did Coach's own last set-count change actually hold? Real check, not
+        // a restated fact — looks at completed_sets logged after the edit for
+        // the same exercise. Only claims "holding" with evidence (2+ sessions
+        // since); otherwise it stays quiet rather than guessing.
+        const lastSetsEdit = [...overrides].reverse().find(o => o.edit_type === 'adjust_sets' && o.created_at);
+        if (lastSetsEdit) {
+          const day = program.days?.find(d => d.id === lastSetsEdit.day_id);
+          const resolved = lastSetsEdit.exercise_id ? MOVEMENT_PATTERNS[lastSetsEdit.pattern_key]?.exercises.find(e => e.id === lastSetsEdit.exercise_id) : null;
+          const slotEx = day?.exercises?.find(e => e.slotId === lastSetsEdit.slot_id) || day?.exercises?.[lastSetsEdit.exercise_index];
+          const exName = resolved?.name || slotEx?.name;
+          const editDate = new Date(lastSetsEdit.created_at);
+          const sessionsSince = new Set(
+            recentSetsForProgress
+              .filter(s => s.exercise_name === exName && new Date(s.completed_at) > editDate)
+              .map(s => s.completed_at.slice(0, 10))
+          ).size;
+          if (exName && sessionsSince >= 2) {
+            changeEffectiveness = `${exName} moved to ${lastSetsEdit.sets} sets ${format(editDate, 'MMM d')} — sets have stayed clean since, that change is holding.`;
+          }
+        }
       }
       const baselineInjuryConditions = getConditionsFromInjuryProfile(profile.injury_profile || []);
       const mergedConditions = [...new Set([...(profile.health_conditions || []), ...baselineInjuryConditions])];
+      activeConditions = mergedConditions;
       program = applyContraindicationFilters(program, { ...profile, health_conditions: mergedConditions });
       // Match TodayScreen: if an optional specialisation day was completed this
       // week, the main days' isolation for those heads is trimmed so the program
@@ -355,13 +551,98 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       program = rebalanceForCompletedOptionalDays(program, completedThisWeek);
     }
 
-    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], recoveryCheckIns: recoveryCheckIns || [] };
+    // checkReadyToProgress already exists and is real — it just only ever
+    // fired once, mid-set, during a live workout (WorkoutExecutionScreen).
+    // This is the first place it's aggregated across the whole program and
+    // surfaced proactively instead of being easy to miss.
+    let readyToProgress = [];
+    if (program?.days && recentSetsForProgress.length) {
+      const seen = new Set();
+      for (const day of program.days) {
+        for (const ex of (day.exercises || [])) {
+          if (!ex?.name || seen.has(ex.name)) continue;
+          seen.add(ex.name);
+          const result = checkReadyToProgress(recentSetsForProgress, ex.name, ex.reps);
+          if (result.status === 'increase_weight') {
+            readyToProgress.push(`${ex.name} ready for more weight — ${result.note}`);
+          }
+          if (readyToProgress.length >= 2) break;
+        }
+        if (readyToProgress.length >= 2) break;
+      }
+    }
+
+    // checkProgramVolume was tried here and removed — it lowercases raw
+    // muscle strings ('Lats', 'Rhomboids', 'Rear delts') and compares them
+    // directly against VOLUME_TARGETS keys ('back', 'side_delts'), which
+    // never match without the same head-aggregation headVol/weeklyVolume do
+    // elsewhere in this file. Verified empirically: it reported 0 sets for
+    // back and side delts on a normal, unconstrained, fully-equipped program.
+    // Real bug, not real signal — do not re-add without fixing the function
+    // itself first (aggregate by DELT_HEADS/CHEST_HEADS/BACK_HEADS the same
+    // way volumeLines above does, not a raw per-muscle-string lowercase).
+
+    // detectRotationTrigger — combines block-end, plateau, and skip-pattern
+    // signals into one prioritized rotation call per exercise. Real detector,
+    // never called anywhere in the app before this either.
+    let rotationDue = null;
+    if (program?.days && recentSetsForProgress.length) {
+      for (const day of program.days) {
+        if (rotationDue) break;
+        for (const ex of (day.exercises || [])) {
+          if (!ex?.name) continue;
+          const trigger = detectRotationTrigger(ex.name, recentSetsForProgress, recentSessions, blockStartDate, profile?.trainingExperience || 'beginner');
+          if (trigger.trigger !== 'none') {
+            rotationDue = `${ex.name} — ${trigger.reason}`;
+            break;
+          }
+        }
+      }
+    }
+
+    // The exact same call TodayScreen makes to decide what to push as a
+    // notification. Without this, a user who taps that notification and opens
+    // Coach to follow up finds a coach that has no idea what it just told them.
+    const lastSessionDate = recentSessions[0]?.completed_at ? new Date(recentSessions[0].completed_at) : null;
+    const daysSinceLastSession = lastSessionDate
+      ? Math.floor((Date.now() - lastSessionDate.getTime()) / 86400000)
+      : null;
+    const todayCheckIn = await getTodayCheckIn().catch(() => null);
+    const recoveryLabel = todayCheckIn?.skipped ? null : (todayCheckIn?.label ?? null);
+
+    // Read-only mirror of TodayScreen's milestone check — Coach must never
+    // contradict what the notification already told the user, but only
+    // TodayScreen (the surface that actually shows the nudge) marks one shown.
+    let goalMilestone = null;
+    if (profile?.goals?.length) {
+      const goalStartedAt = await AsyncStorage.getItem('goalStartedAt');
+      if (goalStartedAt) {
+        const weeksSinceGoalStart = Math.floor((Date.now() - new Date(goalStartedAt).getTime()) / (7 * 86400000));
+        const eligible = getEligibleGoalMilestones(profile.goals, weeksSinceGoalStart, profile.weight_kg, profile.target_weight_kg);
+        if (eligible.length) {
+          const shownRaw = await AsyncStorage.getItem('shownMilestoneIds');
+          const shown = shownRaw ? JSON.parse(shownRaw) : [];
+          goalMilestone = eligible.find(m => !shown.includes(m.id)) || null;
+        }
+      }
+    }
+
+    const proactivePrompt = getProactiveCoachPrompt({
+      daysSinceLastSession,
+      weeklyWorkoutsTarget: profile?.weekly_workouts || 3,
+      deload: deloadSuggestion,
+      plateaus,
+      recoveryLabel,
+      goalMilestone,
+    });
+
+    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, dislikedIds, streak, insights, proactivePrompt };
     setUserData(data);
     return data;
   };
 
   const buildContext = (data) => {
-    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], recoveryCheckIns = [] } = data;
+    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], bodyMetrics = [], recoveryCheckIns = [], recentChanges = [], activeConditions = [], plateaus = [], deloadSuggestion = null, dislikedIds = [], streak = 0, insights = [], proactivePrompt = null, rotationDue = null } = data;
     const exp = profile?.trainingExperience || 'intermediate';
     // Volume judged on DIRECT sets against the (direct-isolation) targets; indirect
     // work from compounds is reported separately so the coach can see it without
@@ -403,14 +684,38 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         ).join('\n')
       : '  Program not available';
 
+    // How the days are actually spaced — without this, Coach can't reason
+    // about fatigue relative to the program's own built-in recovery structure
+    // (e.g. "you have 0 rest days between Upper A and Lower A").
+    const restBetweenLine = program?.rest_between?.length
+      ? program.days.filter(d => !d.optional).map((day, i, arr) => {
+          if (i === arr.length - 1) return null;
+          const rest = program.rest_between[i] || 0;
+          return `${day.name.split('—')[0].trim()} → ${rest === 0 ? 'no rest day' : `${rest} rest day(s)`} → ${arr[i + 1].name.split('—')[0].trim()}`;
+        }).filter(Boolean).join('; ')
+      : 'not available';
+
     // The coach's menu of REAL exercises (equipment-filtered). Without this it
     // invents exercise names (e.g. a nonexistent "Cable fly (low to high)") and
     // gets their muscle targeting wrong. The library names encode the region, so
     // forcing the model to copy from here also fixes wrong-region picks.
     const menuEquipment = normalizeEquipment(profile?.equipment || []);
+    // Structural safety, not just a prompt instruction: hard-blocked patterns
+    // (e.g. overhead pressing with a shoulder injury) never appear in the menu
+    // at all, so Coach can't propose them even if it ignores the SAFETY note
+    // below. Soft-blocked patterns stay in, flagged inline, since they're
+    // usable with modification rather than off-limits.
+    const expandedConditions = expandAllConditions(activeConditions);
+    const excludedPatternLines = [];
     const libraryLines = Object.entries(MOVEMENT_PATTERNS).map(([key, pat]) => {
+      const block = expandedConditions.length ? getPatternContraindication(key, expandedConditions) : null;
+      if (block?.hard) {
+        excludedPatternLines.push(`  ${pat.label} — excluded, contraindicated with a condition on file`);
+        return null;
+      }
       const exs = (getAllExercisesForPattern(key, menuEquipment) || []).map(e => e.name);
-      return exs.length ? `  ${pat.label}: ${exs.join(', ')}` : null;
+      if (!exs.length) return null;
+      return block ? `  ${pat.label} [caution — condition on file]: ${exs.join(', ')}` : `  ${pat.label}: ${exs.join(', ')}`;
     }).filter(Boolean).join('\n');
 
     const healthLines = healthLogs?.length
@@ -452,6 +757,26 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
 
     const activityTypes = (profile?.activity_types || []).join(', ') || 'not set';
 
+    // Which specific days sports/cardio actually land on — without this, Coach
+    // can't reason about scheduling (e.g. "don't squat the day before your run")
+    // even though it already knows sports exist via activityTypes.
+    const sportsLine = (profile?.sports || []).length
+      ? profile.sports.map(s => `${s.label || s.key}${(s.days || []).length ? ` (${s.days.join(', ')})` : ' (no days set)'}`).join('; ')
+      : 'none';
+
+    // dislikedIds silently keeps these exercises out of the generated program
+    // below — stated explicitly so Coach can explain an absence if asked, same
+    // reasoning as the injuries block.
+    const dislikedNames = dislikedIds.length
+      ? dislikedIds.map(id => {
+          for (const pattern of Object.values(MOVEMENT_PATTERNS)) {
+            const ex = pattern.exercises.find(e => e.id === id);
+            if (ex) return ex.name;
+          }
+          return null;
+        }).filter(Boolean).join(', ')
+      : 'none';
+
     // Durable facts the coach has learned — always injected so they survive even
     // when the raw conversation scrolls out of the window sent to the model.
     const notes = profile?.coach_notes || [];
@@ -481,31 +806,88 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       fat: Math.round(nutDays.reduce((s, d) => s + nutByDate[d].fat, 0) / nutDays.length),
     } : null;
     const nutritionBlock = nutTargets.calories
-      ? `  Daily target: ${nutTargets.calories} kcal · ${nutTargets.protein}g protein · ${nutTargets.carbs}g carbs · ${nutTargets.fat}g fat\n` +
+      ? `  Strategy: ${profile?.nutrition_focus || 'not set'} (this is WHY the targets are what they are — a cutting user under target is a problem, a bulking user under target may not be)\n` +
+        `  Daily target: ${nutTargets.calories} kcal · ${nutTargets.protein}g protein · ${nutTargets.carbs}g carbs · ${nutTargets.fat}g fat\n` +
         (nutAvg
           ? `  Logged average over last ${nutDays.length} day(s): ${nutAvg.calories} kcal · ${nutAvg.protein}g protein · ${nutAvg.carbs}g carbs · ${nutAvg.fat}g fat`
           : `  No food logged in the last 7 days`)
       : '  No calorie/macro targets set yet';
 
-    return `User profile:
+    // Manually logged (Profile's "Log today's weight") — never assume daily
+    // density. State exactly how many entries exist in the window so the model
+    // doesn't imply a smooth trend from 2 sparse data points.
+    const bodyweightBlock = bodyMetrics.length
+      ? (() => {
+          const sorted = [...bodyMetrics].sort((a, b) => new Date(a.date) - new Date(b.date));
+          const first = sorted[0], last = sorted[sorted.length - 1];
+          const delta = Math.round((last.weight_kg - first.weight_kg) * 10) / 10;
+          const trend = sorted.length >= 3
+            ? `  ${first.date}: ${first.weight_kg}kg → ${last.date}: ${last.weight_kg}kg (${delta >= 0 ? '+' : ''}${delta}kg over ${sorted.length} logged entries)`
+            : `  Only ${sorted.length} entry(ies) in the last 30 days — not enough to call a trend`;
+          return trend;
+        })()
+      : '  No weigh-ins logged in the last 30 days';
+
+    // Injuries/conditions are already used to silently filter contraindicated
+    // exercises out of the program below — without stating them explicitly here,
+    // the coach can benefit from that filtering but can never explain it (e.g.
+    // "why no overhead press?" has no answer without this).
+    const injuryLines = (profile?.injury_profile || []).length
+      ? profile.injury_profile.map(i => {
+          const bp = INJURY_BODY_PARTS.find(b => b.key === i.body_part);
+          return `${bp?.label || i.body_part} (${i.severity})`;
+        }).join(', ')
+      : 'none reported';
+    const conditionsLine = activeConditions.length ? activeConditions.join(', ') : 'none';
+
+    // If this is set, the app already pushed this exact thing to the user as a
+    // notification today (same function, same priority order TodayScreen uses).
+    // If they're asking about it, you already raised it — don't act surprised.
+    const proactiveLine = proactivePrompt
+      ? `You already proactively flagged this to the user today (as a notification): "${proactivePrompt.title} — ${proactivePrompt.body}"\n\n`
+      : '';
+
+    return `${proactiveLine}User profile:
 - Name: ${profile?.name || 'unknown'}
 - Experience: ${exp}
 - Goal: ${(profile?.goals || []).join(', ') || 'not set'}
 - Activities: ${activityTypes}
+- Sports schedule: ${sportsLine}
+- Equipment available: ${(profile?.equipment || []).join(', ') || 'none set'}
 - Supplements: ${(profile?.supplements || []).filter(s => s !== 'None').join(', ') || 'none'}
 - Training: ${profile?.weekly_workouts} days/week, ${profile?.session_length} min sessions
-- Weight: ${profile?.weight_kg}kg, Height: ${profile?.height_cm}cm
+- Current streak: ${streak} consecutive week${streak === 1 ? '' : 's'} trained
+- Weight: ${profile?.weight_kg}kg${profile?.target_weight_kg ? ` (target ${profile.target_weight_kg}kg)` : ''}, Height: ${profile?.height_cm}cm
+- Exercises excluded from the program (disliked/repeatedly skipped): ${dislikedNames}
+- Injuries: ${injuryLines}
+- Active conditions (already filtered out of the program below): ${conditionsLine}
 ${memoryBlock}
 Current program: ${program?.name || 'unknown'} (split ID: ${profile?.selected_split || 'unknown'})
 Days and exercises:
 ${programLines}
 
-AVAILABLE EXERCISES (equipment-filtered for this user). When you propose adding or
-replacing an exercise, the exercise_name MUST be copied EXACTLY from this list —
-never invent, rename, or paraphrase an exercise. The name already encodes the
-target region (e.g. "Cable crossover (lower chest)"), so pick the one that matches
-the user's request. If nothing here fits, say so instead of proposing:
+Rest days between sessions (the program's own built-in spacing):
+  ${restBetweenLine}
+
+Changes you (the coach) already made to this program — do not re-propose these,
+and you can truthfully reference having already done them:
+${recentChanges.length ? recentChanges.map(c => `  - ${c.text}`).join('\n') : '  None yet'}
+
+AVAILABLE EXERCISES (equipment-filtered; patterns hard-contraindicated by the
+conditions on file are already removed below — you cannot propose them because
+they are not in this list). When you propose adding or replacing an exercise,
+the exercise_name MUST be copied EXACTLY from this list — never invent, rename,
+or paraphrase an exercise. The name already encodes the target region (e.g.
+"Cable crossover (lower chest)"), so pick the one that matches the user's
+request. If nothing here fits, say so instead of proposing:
 ${libraryLines}
+${excludedPatternLines.length ? `\nPatterns removed from the list above (contraindicated, no safe substitute to mention):\n${excludedPatternLines.join('\n')}\n` : ''}
+SAFETY — some patterns above are marked "[caution — condition on file]": they are
+still usable but need modification (reduced range, different grip, lighter load,
+etc). Before proposing one of those, state the modification, matching the reason
+implied by the condition on file. This applies even when the user explicitly
+asks for that exercise by name — explain the caution rather than refusing outright,
+since these are soft, not hard, restrictions.
 
 EVIDENCE BASE — the app's curated findings. This is your source of truth: cite and
 stay consistent with these, and do NOT contradict them or invent science beyond
@@ -515,9 +897,22 @@ ${formatEvidenceBase()}
 
 This week's volume — last 7 days (sets per muscle):
 ${volumeLines}
-
+${rotationDue ? `\nRotation due (block-end / plateau / skip-pattern trigger): ${rotationDue}\n` : ''}
 Personal records:
 ${prLines}
+
+Plateau detection (same detector Today shows — stay consistent with it, never
+contradict a plateau or its absence):
+${plateaus.length ? plateaus.map(p => `  - ${p.exercise}: ${p.type === 'confirmed' ? 'confirmed' : 'early'} plateau, ${p.days} days without progress (est. 1RM ${p.est1rm}kg)`).join('\n') : '  None detected'}
+
+Deload status (same detector Today shows):
+${deloadSuggestion
+  ? `  Recommended — ${deloadSuggestion.headline} (${deloadSuggestion.trigger === 'autoreg' ? 'fatigue-triggered' : `${deloadSuggestion.weeksTraining} weeks of consistent training`}). ${Math.round(deloadSuggestion.volumeReduction * 100)}% fewer sets suggested this week.`
+  : '  Not currently suggested'}
+
+Performance correlations (same engine ProfileScreen's insights card uses —
+sleep/nutrition patterns found against actual session RPE, not generic advice):
+${insights.length ? insights.map(i => `  - ${i}`).join('\n') : '  Not enough history yet to correlate'}
 
 Recent strength sessions:
 ${sessionLines}
@@ -532,7 +927,10 @@ Self-reported readiness (last 7 days):
 ${checkInLines}
 
 Nutrition — targets vs recent intake:
-${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training right now):\n${workoutContext}` : ''}`;
+${nutritionBlock}
+
+Bodyweight (last 30 days, manually logged — may be sparse):
+${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training right now):\n${workoutContext}` : ''}`;
   };
 
   const callCoach = async (messages, userContext, mode) => {
@@ -630,25 +1028,6 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
     setWeeklySummary(null);
     setWeeklyLoading(false);
     AsyncStorage.setItem(WEEKLY_DISMISSED_KEY, currentWeekKey()).catch(() => {});
-  };
-
-  const generateInsight = async () => {
-    if (quotaExceeded) return;
-    setLoading(true);
-    setInsight(null);
-    const data = userData || await loadUserData();
-    if (!data) { setLoading(false); return; }
-
-    try {
-      const result = await callCoach(
-        [{ role: 'user', content: 'Analyse my training this week and give me your top insight.' }],
-        buildContext(data)
-      );
-      setInsight(result?.text || 'No insight generated.');
-    } catch {
-      setInsight(t('coach.failedConnectCheck'));
-    }
-    setLoading(false);
   };
 
   const saveProposal = async (p, sessionOnly = false) => {
@@ -801,6 +1180,64 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
     setProposals(proposals.filter((_, i) => i !== index));
   };
 
+  // Turns a real deload recommendation into real, reviewable proposals routed
+  // through the exact same apply pipeline as any AI-driven edit — nothing is
+  // written until the user taps Apply/Apply All on the proposal cards below.
+  // deloadSuggestion already carries the exact shape generateDeloadWeek expects
+  // (it's spread straight from DELOAD_RESEARCH.byGoal). generateDeloadWeek
+  // FILTERS optional exercises before mapping, so deloaded days can be shorter
+  // than the original — matching must be done by exercise name, never by index,
+  // or a dropped exercise earlier in the day would misalign every proposal after it.
+  const buildDeloadProposals = () => {
+    const program = userData?.program;
+    const deload = userData?.deloadSuggestion;
+    if (!program?.days || !deload) return [];
+    const deloaded = generateDeloadWeek(program, deload);
+    if (!deloaded) return [];
+    const built = [];
+    program.days.forEach((day, dayIdx) => {
+      const deloadDay = deloaded.days[dayIdx];
+      const deloadByName = new Map((deloadDay?.exercises || []).map(e => [e.name, e]));
+      const dayName = day.name?.split('—')[0].trim();
+      (day.exercises || []).forEach((ex, exIdx) => {
+        if (!ex?.name) return;
+        const deloadEx = deloadByName.get(ex.name);
+        const rationale = t('coach.deloadRationale', { label: deload.label });
+        if (!deloadEx) {
+          built.push({ type: 'remove_exercise', edit_type: 'remove_exercise', day_id: day.id, day_name: dayName, exercise_index: exIdx, current_exercise: ex.name, exercise_name: ex.name, rationale });
+        } else if (deloadEx.sets !== ex.sets) {
+          built.push({ type: 'adjust_sets', edit_type: 'adjust_sets', day_id: day.id, day_name: dayName, exercise_index: exIdx, current_exercise: ex.name, exercise_name: ex.name, sets: deloadEx.sets, rationale });
+        }
+      });
+    });
+    return built;
+  };
+
+  const applyDeloadProposals = () => {
+    const built = buildDeloadProposals();
+    if (!built.length) {
+      Alert.alert(t('coach.deloadNothingTitle'), t('coach.deloadNothingMsg'));
+      return;
+    }
+    setProposals(built);
+    // Scroll to the Ask card's real position — the proposal review cards render
+    // inside it, below everything else on screen.
+    scrollRef.current?.scrollTo({ y: Math.max(0, askCardY.current - 16), animated: true });
+  };
+
+  // Real delete of the exact override row shown as the top done-strip item —
+  // not a re-word, not a local-only toggle. Refetches afterward so the
+  // program, done-strip, and AI context all immediately reflect the reversal.
+  const undoLastChange = async () => {
+    const mostRecent = userData?.recentChanges?.[0];
+    if (!mostRecent?.id || undoing) return;
+    setUndoing(true);
+    const { error } = await supabase.from('program_template_overrides').delete().eq('id', mostRecent.id);
+    setUndoing(false);
+    if (error) { Alert.alert(t('coach.alerts.cantApplyTitle'), t('coach.undoFailedMsg')); return; }
+    loadUserData();
+  };
+
   const requestAlternative = (p) => {
     // Swap the proposed exercise for a different one in the SAME movement pattern,
     // locally and instantly — no AI round-trip (that was unreliable and often
@@ -877,6 +1314,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
     setProposals([]);
     setAlternatives(null);
     setProposalSaved(false);
+    setHasAskedThisSession(true);
     setPendingQuestion(currentQuestion); // show the user's turn immediately
     const data = userData || await loadUserData();
 
@@ -999,131 +1437,133 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         </View>
       </View>
 
-      {/* Quota bar */}
-      <View style={styles.quotaCard}>
-        <View style={styles.quotaRow}>
-          <Text style={styles.quotaLabel}>{t('coach.monthlyMessages')}</Text>
-          <Text style={[styles.quotaCount, quotaExceeded && styles.quotaCountExceeded]}>
-            {quota.used} / {MONTHLY_QUOTA}
-          </Text>
-        </View>
-        <View style={styles.quotaBarBg}>
-          <View
-            style={[
-              styles.quotaBarFill,
-              { width: `${Math.min(100, (quota.used / MONTHLY_QUOTA) * 100)}%` },
-              quota.used / MONTHLY_QUOTA > 0.8 && styles.quotaBarWarn,
-              quotaExceeded && styles.quotaBarExceeded,
-            ]}
-          />
-        </View>
-        {quotaExceeded && (
-          <Text style={styles.quotaExceededText}>
-            {t('coach.limitReached')}
-          </Text>
-        )}
-      </View>
-
-      {/* Weekly narrative review — auto-generated once per week, hidden mid-workout */}
-      {!isMidWorkout && (weeklyOffered || weeklyLoading || weeklySummary) && (
-        <View style={styles.card}>
-          <View style={styles.weeklyHeader}>
-            <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
-            {/* Dismissable — it otherwise re-renders on every Coach open all week. */}
-            {(weeklySummary || weeklyOffered) && !weeklyLoading && (
-              <Tappable onPress={dismissWeeklyReview} hitSlop={12} accessibilityLabel={t('common.close')}>
-                <Text style={styles.weeklyDismiss}>✕</Text>
-              </Tappable>
-            )}
-          </View>
-          {weeklySummary ? (
-            <View style={[styles.insightBox, { marginTop: 12, marginBottom: 0 }]}>
-              <Text style={styles.insightText}>{weeklySummary}</Text>
-            </View>
-          ) : weeklyLoading ? (
-            <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 0 }]}>{t('coach.weeklyReviewLoading')}</Text>
-          ) : (
-            <>
-              {/* The cost is stated on the button. It used to be spent silently. */}
-              <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 12 }]}>{t('coach.weeklyReviewOffer')}</Text>
-              <Tappable
-                style={[styles.weeklyBtn, quotaExceeded && styles.btnDisabled]}
-                onPress={generateWeeklyReview}
-                disabled={quotaExceeded}
-              >
-                <Text style={styles.weeklyBtnText}>{t('coach.weeklyReviewCta')}</Text>
-              </Tappable>
-            </>
-          )}
-        </View>
-      )}
-
-      {/* Ask a question */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('coach.ask')}</Text>
-        <Text style={styles.cardSub}>{t('coach.askSub')}</Text>
-
-        {/* ── Conversation thread ────────────────────────────────────────────
-            conversationHistory was already being kept and sent to the model, but
-            never drawn: only the newest answer rendered, so a follow-up erased the
-            exchange the coach was still reasoning about. Render the whole thread. */}
-        {(conversationHistory.length > 0 || pendingQuestion || asking || answer) && (
-          <View style={styles.thread}>
-            {conversationHistory.map((turn, i) => (
-              <View
-                key={i}
-                style={[styles.turn, turn.role === 'user' ? styles.turnUser : styles.turnCoach]}
-              >
-                <Text style={turn.role === 'user' ? styles.turnUserText : styles.turnCoachText}>
-                  {turn.content}
-                </Text>
+      {/* ── Memory-chip strip — a real snapshot of what Coach already knows,
+          not a new memory store. Sourced from health_conditions_structured
+          (already saved by ProfileScreen), coachNotes (preference-category),
+          and profile.goals. Up to 3 — hidden entirely if none exist. */}
+      {!isMidWorkout && (() => {
+        const chips = [];
+        (userData?.profile?.health_conditions_structured || []).forEach(raw => {
+          if (chips.length >= 3) return;
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed?.conditionLabel) chips.push(`${parsed.conditionLabel} sensitivity`);
+          } catch { /* malformed row — skip, don't crash the screen over it */ }
+        });
+        coachNotes.filter(n => n.category === 'preference').forEach(n => {
+          if (chips.length < 3 && n.summary) chips.push(n.summary);
+        });
+        if (chips.length < 3 && userData?.profile?.goals?.[0]) {
+          chips.push(t('coach.goalChip', { goal: t(`onboarding.goals.${userData.profile.goals[0]}`, { defaultValue: userData.profile.goals[0] }) }));
+        }
+        if (!chips.length) return null;
+        return (
+          <View style={styles.memoryStrip}>
+            {chips.map((c, i) => (
+              <View key={i} style={styles.memoryChip}>
+                <View style={styles.memoryChipDot} />
+                <Text style={styles.memoryChipText}>{c}</Text>
               </View>
             ))}
-            {pendingQuestion && (
-              <View style={[styles.turn, styles.turnUser]}>
-                <Text style={styles.turnUserText}>{pendingQuestion}</Text>
-              </View>
-            )}
-            {asking && (
-              <View style={[styles.turn, styles.turnCoach]}>
+          </View>
+        );
+      })()}
+
+      {/* ── Vitals row — bold, prominent, real stats at a glance: sessions +
+          streak (already computed) plus bodyweight-vs-target when both a
+          target and a real weigh-in exist. Same bold treatment as the rest
+          of the header stats, not a faint caption easy to miss. */}
+      {!isMidWorkout && (() => {
+        const sessionsThisWeek = (userData?.recentSessions || [])
+          .filter(s => new Date(s.completed_at) >= subDays(new Date(), 7)).length;
+        const streak = userData?.streak || 0;
+        let bwPart = null;
+        if (userData?.profile?.target_weight_kg && userData?.bodyMetrics?.length > 0) {
+          const sorted = [...userData.bodyMetrics].sort((a, b) => new Date(b.date) - new Date(a.date));
+          const latest = sorted[0];
+          if (latest?.weight_kg) {
+            const target = userData.profile.target_weight_kg;
+            const diff = +(latest.weight_kg - target).toFixed(1);
+            if (diff !== 0) {
+              const direction = diff > 0 ? t('coach.bodyweightAbove', { n: Math.abs(diff) }) : t('coach.bodyweightBelow', { n: Math.abs(diff) });
+              bwPart = t('coach.bodyweightLine', { weight: latest.weight_kg, target, direction });
+            }
+          }
+        }
+        if (!sessionsThisWeek && !streak && !bwPart) return null;
+        return (
+          <View style={styles.vitalsRow}>
+            <Text style={styles.vitalsText}>
+              {sessionsThisWeek || streak
+                ? <Text>{t('coach.weekStat', { count: sessionsThisWeek, streak })}</Text>
+                : null}
+              {bwPart ? <Text>{(sessionsThisWeek || streak) ? ' · ' : ''}{bwPart}</Text> : null}
+            </Text>
+          </View>
+        );
+      })()}
+
+      {/* Ask a question — the primary action on this screen, so it renders
+          first; the proof-of-work/insight cards below are supporting
+          context, not the thing the user came here to do. */}
+      <View style={styles.card} onLayout={(e) => { askCardY.current = e.nativeEvent.layout.y; }}>
+        <View style={styles.askHeader}>
+          <View style={styles.askIconWrap}>
+            <Ionicons name="chatbubble-ellipses-outline" size={15} color={colors.accent} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.ask')}</Text>
+          </View>
+        </View>
+
+        {/* ── Latest answer ──────────────────────────────────────────────────
+            conversationHistory is still kept in full in state and sent to the
+            model (and persisted to coach_memory) so the coach keeps its
+            memory — but the screen shows only the exchange in progress, not a
+            growing chat log. */}
+        {(() => {
+          const lastUserTurn = pendingQuestion
+            ? { content: pendingQuestion }
+            : [...conversationHistory].reverse().find(t => t.role === 'user');
+          const lastAssistantTurn = !pendingQuestion
+            ? [...conversationHistory].reverse().find(t => t.role === 'assistant')
+            : null;
+          if (!hasAskedThisSession || (!lastUserTurn && !asking && !answer)) return null;
+          return (
+            <View style={styles.answerPanel}>
+              {lastUserTurn && <Text style={styles.answerQuestion}>{lastUserTurn.content}</Text>}
+              {asking ? (
                 <Text style={styles.turnThinking}>{t('coach.thinking')}</Text>
-              </View>
-            )}
-            {answer && !asking && (
-              <View style={[styles.turn, styles.turnError]}>
+              ) : answer ? (
                 <Text style={styles.turnErrorText}>{answer}</Text>
-              </View>
-            )}
-          </View>
-        )}
+              ) : lastAssistantTurn ? (
+                <Text style={styles.turnCoachText}>{lastAssistantTurn.content}</Text>
+              ) : null}
+            </View>
+          );
+        })()}
 
-        {/* Example chips are the empty state: an invitation on a blank thread,
-            noise once a conversation exists. */}
-        {!quotaExceeded && conversationHistory.length === 0 && !pendingQuestion && (
-          <View style={styles.exampleChips}>
-            {[
-              { label: t('coach.examples.swapLabel'), prompt: t('coach.examples.swapPrompt') },
-              { label: t('coach.examples.shouldersLabel'), prompt: t('coach.examples.shouldersPrompt') },
-              { label: t('coach.examples.glutesLabel'), prompt: t('coach.examples.glutesPrompt') },
-              { label: t('coach.examples.easeOffLabel'), prompt: t('coach.examples.easeOffPrompt') },
-            ].map((c) => (
-              <Tappable key={c.label} style={styles.exampleChip} onPress={() => setQuestion(c.prompt)}>
-                <Text style={styles.exampleChipText}>{c.label}</Text>
-              </Tappable>
-            ))}
-          </View>
-        )}
-
-        <TextInput
-          style={[styles.questionInput, quotaExceeded && { opacity: 0.4 }]}
-          value={quotaExceeded ? '' : question}
-          onChangeText={setQuestion}
-          placeholder={quotaExceeded ? t('coach.limitPlaceholder') : t('coach.inputPlaceholder')}
-          placeholderTextColor={colors.textFaint}
-          multiline
-          numberOfLines={3}
-          editable={!quotaExceeded}
-        />
+        <View style={styles.askInputRow}>
+          <TextInput
+            style={[styles.questionInput, quotaExceeded && { opacity: 0.4 }]}
+            value={quotaExceeded ? '' : question}
+            onChangeText={setQuestion}
+            placeholder={quotaExceeded ? t('coach.limitPlaceholder') : t('coach.inputPlaceholder')}
+            placeholderTextColor={colors.textFaint}
+            multiline
+            editable={!quotaExceeded}
+          />
+          <Tappable
+            style={[styles.askBtn, (asking || quotaExceeded) && styles.btnDisabled]}
+            onPress={askQuestion}
+            disabled={asking || quotaExceeded}
+            accessibilityLabel={t('coach.askBtn')}
+          >
+            {asking
+              ? <ActivityIndicator size="small" color={colors.textOnLight} />
+              : <Ionicons name="arrow-up" size={18} color={colors.textOnLight} />}
+          </Tappable>
+        </View>
 
         {/* Proposal confirmation card */}
         {proposals.length > 0 && (
@@ -1186,6 +1626,7 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
                     style={styles.proposalRemoveBtn}
                     onPress={() => dismissProposal(i)}
                     disabled={confirmingIndex !== null}
+                    accessibilityLabel={t('common.close')}
                   >
                     <Text style={styles.proposalRemoveText}>✕</Text>
                   </Tappable>
@@ -1248,43 +1689,160 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
           </View>
         )}
 
-        <Tappable
-          style={[styles.askBtn, (asking || quotaExceeded) && styles.btnDisabled]}
-          onPress={askQuestion}
-          disabled={asking || quotaExceeded}
-        >
-          <Text style={styles.askBtnText}>{asking ? t('coach.thinking') : t('coach.askBtn')}</Text>
-        </Tappable>
-      </View>
-
-      {/* Weekly insight — hidden mid-workout to keep that view focused */}
-      {!isMidWorkout && (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('coach.weeklyInsight')}</Text>
-        <Text style={styles.cardSub}>{t('coach.weeklyInsightSub')}</Text>
-
-        {insight ? (
-          <View style={styles.insightBox}>
-            <Text style={styles.insightText}>{insight}</Text>
-          </View>
-        ) : (
-          <View style={styles.insightEmpty}>
-            <Text style={styles.insightEmptyText}>
-              {t('coach.insightEmpty')}
-            </Text>
+        {/* Quick questions are the only "pick a canned prompt" mechanism on
+            this card — a second, separate set of example chips used to sit
+            above the input doing the same job, which was the actual
+            redundancy, not the color. */}
+        {!isMidWorkout && (
+          <View style={styles.quickSection}>
+            <Text style={styles.quickSectionTitle}>{t('coach.quickQuestions')}</Text>
+            {[
+              t('coach.quick.neglecting'),
+              t('coach.quick.frequency'),
+              t('coach.quick.prioritise'),
+              t('coach.quick.recovering'),
+            ].map((q, i) => (
+              <Tappable
+                key={i}
+                style={[styles.quickRow, i > 0 && styles.quickRowBorder, (quotaExceeded || asking) && styles.quickChipDisabled]}
+                disabled={quotaExceeded || asking}
+                onPress={() => askQuestion(q)}
+              >
+                <Text style={styles.quickRowText}>{q}</Text>
+                <Text style={styles.quickRowArrow}>→</Text>
+              </Tappable>
+            ))}
           </View>
         )}
-
-        <Tappable
-          style={[styles.generateBtn, (loading || quotaExceeded) && styles.btnDisabled]}
-          onPress={generateInsight}
-          disabled={loading || quotaExceeded}
-        >
-          <Text style={styles.generateBtnText}>
-            {loading ? t('coach.analysing') : insight ? t('coach.refreshInsight') : t('coach.generateInsight')}
-          </Text>
-        </Tappable>
       </View>
+
+      {/* ── Proof of work — costs zero AI messages. recentChanges is real
+          (program_template_overrides), proactivePrompt is the same
+          recovery→deload→plateau→missed-session→milestone chain the
+          home-screen notification uses, insights come from computeInsights.
+          Nothing here is model-generated. */}
+      {!isMidWorkout && !focusDismissed && (() => {
+        const recentChanges = userData?.recentChanges || [];
+        const proactivePrompt = userData?.proactivePrompt || null;
+        const insights = userData?.insights || [];
+        const changeEffectiveness = userData?.changeEffectiveness || null;
+        const readyToProgress = userData?.readyToProgress || [];
+        const focusItem = proactivePrompt
+          ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
+          : insights.length > 0
+            ? { eyebrow: t('coach.focusEyebrowWeek'), title: insights[0], body: null }
+            : null;
+        const remainingInsights = proactivePrompt ? insights : insights.slice(1);
+        // changeEffectiveness first — "coach checks its own work" is the
+        // strongest kind of fragment — then ready-to-progress, then whatever
+        // correlations are left. Capped at 3 further down.
+        const rotationDue = userData?.rotationDue || null;
+        const fragments = [changeEffectiveness, rotationDue, ...readyToProgress, ...remainingInsights].filter(Boolean);
+        if (!recentChanges.length && !focusItem && !fragments.length) return null;
+
+        return (
+          <View style={{ marginBottom: 4 }}>
+            {recentChanges.length > 0 && (
+              <View style={styles.doneStrip}>
+                <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
+                {recentChanges.slice(0, 3).map((c, i) => {
+                  // Split "changed Squat to 4 sets (Lower A)" into a bold main
+                  // clause and a muted trailing day-name — real string, just
+                  // formatted in two tones instead of one flat sentence.
+                  const match = c.text.match(/^(.*)\s(\([^)]+\))$/);
+                  return (
+                    <View key={c.id ?? i} style={[styles.doneRow, i > 0 && styles.doneRowBorder]}>
+                      <View style={styles.doneCheck}><Text style={styles.doneCheckMark}>✓</Text></View>
+                      <Text style={styles.doneText}>
+                        {match ? match[1] : c.text}
+                        {match ? <Text style={styles.doneTextMuted}>  {match[2]}</Text> : null}
+                      </Text>
+                    </View>
+                  );
+                })}
+                {recentChanges[0]?.id && (
+                  <Tappable onPress={undoLastChange} disabled={undoing} hitSlop={8} style={{ marginTop: 8 }}>
+                    <Text style={styles.undoBtnText}>{undoing ? t('coach.undoing') : t('coach.undo')}</Text>
+                  </Tappable>
+                )}
+              </View>
+            )}
+
+            {focusItem && (() => {
+              const plateauTrend = proactivePrompt?.key === 'plateau' ? (userData?.plateauTrend || []) : [];
+              const trendChange = plateauTrend.length >= 2 ? plateauTrend[plateauTrend.length - 1].est1rm - plateauTrend[0].est1rm : null;
+              return (
+              <View style={styles.focusCard}>
+                <Text style={styles.focusEyebrow}>{focusItem.eyebrow}</Text>
+                <Text style={styles.focusTitle}>{focusItem.title}</Text>
+                <PlateauChart points={plateauTrend} />
+                {trendChange !== null && (
+                  <Text style={styles.focusChartLabel}>{trendChange > 0 ? '+' : ''}{trendChange}kg over {plateauTrend.length} sessions</Text>
+                )}
+                {focusItem.body ? <Text style={styles.focusBody}>{focusItem.body}</Text> : null}
+                <View style={styles.focusActions}>
+                  {proactivePrompt?.key === 'deload' && (
+                    <Tappable style={[styles.focusBtn, styles.focusBtnPrimary]} onPress={applyDeloadProposals}>
+                      <Text style={styles.focusBtnPrimaryText}>{t('coach.applyDeload')}</Text>
+                    </Tappable>
+                  )}
+                  <Tappable style={styles.focusBtn} onPress={() => setFocusDismissed(true)}>
+                    <Text style={styles.focusBtnText}>{t('coach.dismissToday')}</Text>
+                  </Tappable>
+                </View>
+              </View>
+              );
+            })()}
+
+            {fragments.length > 0 && (
+              <View style={styles.fragmentList}>
+                {fragments.slice(0, 3).map((f, i) => (
+                  <View key={i} style={[styles.fragmentRow, i > 0 && styles.fragmentRowBorder]}>
+                    <View style={styles.fragmentDot} />
+                    <Text style={styles.fragmentText}>{f}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        );
+      })()}
+
+      {/* Weekly narrative review — auto-generated once per week, hidden mid-workout.
+          Full accent-hair border (not a side-stripe), same restrained technique
+          as everywhere else accent shows up on this screen — marks this as the
+          week's real payoff moment, distinct from the plain utility cards below. */}
+      {!isMidWorkout && (
+        <View style={[styles.card, styles.weeklyReviewCard]}>
+          <View style={styles.weeklyHeader}>
+            <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
+            {/* Dismissable — it otherwise re-renders on every Coach open all week. */}
+            {(weeklySummary || weeklyOffered) && !weeklyLoading && (
+              <Tappable onPress={dismissWeeklyReview} hitSlop={12} accessibilityLabel={t('common.close')}>
+                <Text style={styles.weeklyDismiss}>✕</Text>
+              </Tappable>
+            )}
+          </View>
+          {weeklySummary ? (
+            <View style={[styles.insightBox, { marginTop: 12, marginBottom: 0 }]}>
+              <Text style={styles.insightText}>{weeklySummary}</Text>
+            </View>
+          ) : weeklyLoading ? (
+            <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 0 }]}>{t('coach.weeklyReviewLoading')}</Text>
+          ) : (
+            <>
+              {/* The cost is stated on the button. It used to be spent silently. */}
+              <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 12 }]}>{t('coach.weeklyReviewOffer')}</Text>
+              <Tappable
+                style={[styles.weeklyBtn, quotaExceeded && styles.btnDisabled]}
+                onPress={generateWeeklyReview}
+                disabled={quotaExceeded}
+              >
+                <Text style={styles.weeklyBtnText}>{t('coach.weeklyReviewCta')}</Text>
+              </Tappable>
+            </>
+          )}
+        </View>
       )}
 
       {/* Coach memory — durable facts the user can review and forget */}
@@ -1305,27 +1863,6 @@ ${nutritionBlock}${workoutContext ? `\n\nCurrent live workout (user is training 
         ))}
       </View>
       )}
-
-      {/* Quick question chips */}
-      {!isMidWorkout && (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('coach.quickQuestions')}</Text>
-        {[
-          t('coach.quick.neglecting'),
-          t('coach.quick.frequency'),
-          t('coach.quick.prioritise'),
-          t('coach.quick.recovering'),
-        ].map((q, i) => (
-          <Tappable
-            key={i}
-            style={[styles.quickChip, quotaExceeded && styles.quickChipDisabled]}
-            onPress={() => { if (!quotaExceeded) setQuestion(q); }}
-          >
-            <Text style={styles.quickChipText}>{q}</Text>
-          </Tappable>
-        ))}
-      </View>
-      )}
     </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -1337,49 +1874,67 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5 },
   subtitle: { fontSize: 12, color: colors.textSubtle, marginTop: 4 },
 
-  quotaCard: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
-  quotaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  quotaLabel: { fontSize: 12, color: colors.textSubtle },
-  quotaCount: { fontSize: 12, fontWeight: '600', color: colors.textPrimary },
-  quotaCountExceeded: { color: colors.danger },
-  quotaBarBg: { height: 4, backgroundColor: colors.control, borderRadius: 2 },
-  quotaBarFill: { height: 4, backgroundColor: colors.surfaceInverse, borderRadius: 2 },
-  quotaBarWarn: { backgroundColor: colors.warning },
-  quotaBarExceeded: { backgroundColor: colors.danger },
-  quotaExceededText: { fontSize: 11, color: colors.danger, marginTop: 8 },
+  memoryStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginHorizontal: 20, marginTop: 14, marginBottom: 2 },
+  memoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.surfaceInset, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 11, borderWidth: 0.5, borderColor: colors.border },
+  memoryChipDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent },
+  memoryChipText: { fontSize: 11, color: colors.textSecondary },
+
+  vitalsRow: { marginHorizontal: 20, marginTop: 14, marginBottom: 2 },
+  vitalsText: { fontSize: 13.5, fontWeight: '600', color: colors.textSecondary, lineHeight: 19 },
+
+  doneStrip: { marginHorizontal: 20, marginTop: 12, backgroundColor: colors.surfaceElevated, borderRadius: 14, padding: 12, borderWidth: 0.5, borderColor: colors.accentHair, marginBottom: 12 },
+  doneStripEyebrow: { fontSize: 10, fontWeight: '700', color: colors.accent, letterSpacing: 0.6, marginBottom: 6, textTransform: 'uppercase' },
+  doneRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  doneRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border, marginTop: 2, paddingTop: 8 },
+  doneCheck: { width: 16, height: 16, borderRadius: 5, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  doneCheckMark: { fontSize: 9, fontWeight: '700', color: colors.accent },
+  doneText: { fontSize: 12.5, color: colors.textSecondary, flex: 1 },
+  doneTextMuted: { fontSize: 11, color: colors.textFaint },
+  undoBtnText: { fontSize: 11, fontWeight: '600', color: colors.textFaint, textDecorationLine: 'underline' },
+
+  focusCard: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 18, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 12 },
+  focusEyebrow: { fontSize: 10, fontWeight: '700', color: colors.danger, letterSpacing: 0.6, marginBottom: 6, textTransform: 'uppercase' },
+  focusTitle: { fontSize: 17, fontWeight: '700', color: colors.textPrimary, marginBottom: 8, letterSpacing: -0.2 },
+  focusChartLabel: { fontSize: 10.5, fontWeight: '700', color: colors.danger, textAlign: 'right', marginTop: -6, marginBottom: 10 },
+  focusBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19, marginBottom: 14 },
+  focusActions: { flexDirection: 'row', gap: 8 },
+  focusBtn: { flex: 1, backgroundColor: colors.control, borderRadius: 10, paddingVertical: 10, alignItems: 'center', borderWidth: 0.5, borderColor: colors.borderStrong },
+  focusBtnText: { fontSize: 12.5, fontWeight: '600', color: colors.textPrimary },
+  focusBtnPrimary: { backgroundColor: colors.surfaceInverse, borderWidth: 0 },
+  focusBtnPrimaryText: { fontSize: 12.5, fontWeight: '600', color: colors.textOnLight },
+
+  fragmentList: { marginHorizontal: 20, paddingHorizontal: 2, marginBottom: 14 },
+  fragmentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 8 },
+  fragmentRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
+  fragmentDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.textFaint, marginTop: 6 },
+  fragmentText: { fontSize: 12.5, color: colors.textMuted, lineHeight: 18, flex: 1 },
 
   card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
   cardTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
   cardSub: { fontSize: 11, color: colors.textSubtle, marginBottom: 14, lineHeight: 16 },
-  exampleChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  exampleChip: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceAlt, borderRadius: 14, paddingVertical: 7, paddingHorizontal: 12 },
-  exampleChipText: { color: colors.textMuted, fontSize: 12 },
-
+  askHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
+  askIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   insightBox: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: colors.border },
   insightText: { fontSize: 13, color: colors.textPrimary, lineHeight: 21 },
-  insightEmpty: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14 },
-  insightEmptyText: { fontSize: 13, color: colors.textSubtle, lineHeight: 20 },
 
-  generateBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  generateBtnText: { color: colors.surfaceRaised, fontSize: 14, fontWeight: '600' },
-
-  questionInput: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 12, color: colors.textPrimary, fontSize: 14, lineHeight: 20, marginBottom: 12, minHeight: 72, textAlignVertical: 'top', borderWidth: 0.5, borderColor: colors.border },
+  askInputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surfaceInset, borderRadius: 16, borderWidth: 0.5, borderColor: colors.border, paddingLeft: 16, paddingRight: 8, paddingVertical: 8, marginBottom: 14 },
+  questionInput: { flex: 1, color: colors.textPrimary, fontSize: 15, maxHeight: 100, paddingVertical: 8 },
+  weeklyReviewCard: { borderColor: colors.accentHair, backgroundColor: colors.surfaceElevated },
   weeklyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   weeklyDismiss: { fontSize: 15, color: colors.textSubtle, fontWeight: '600' },
-  weeklyBtn: { backgroundColor: colors.control, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: colors.borderStrong },
-  weeklyBtnText: { color: colors.textPrimary, fontSize: 14, fontWeight: '600' },
+  // Accent-tinted, not the flat gray "control" treatment other secondary
+  // buttons use — generating the week's review is a real payoff action, not
+  // a neutral utility one, and it was reading as disabled next to Ask's
+  // white pill. Same accent language the done-strip/focus card already use
+  // for "this is something worth doing," not a new color introduced here.
+  weeklyBtn: { backgroundColor: colors.accentSoft, borderRadius: 12, paddingVertical: 12, alignItems: 'center', borderWidth: 0.5, borderColor: colors.accentHair },
+  weeklyBtnText: { color: colors.accent, fontSize: 14, fontWeight: '700' },
 
-  // ── Conversation thread ─────────────────────────────────────────────────────
-  // Reuses the app's existing vocabulary: accent green = you, surface = coach.
-  // Deliberately not bubbles-with-tails — this is product UI, not a messenger.
-  thread: { gap: 8, marginBottom: 14 },
-  turn: { maxWidth: '88%', borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10 },
-  turnUser: { alignSelf: 'flex-end', backgroundColor: colors.accent, borderBottomRightRadius: 4 },
-  turnUserText: { fontSize: 13, color: colors.textPrimary, lineHeight: 20 },
-  turnCoach: { alignSelf: 'flex-start', backgroundColor: colors.surfaceInset, borderWidth: 0.5, borderColor: colors.border, borderBottomLeftRadius: 4 },
+  // ── Latest answer (no persistent chat log — just the exchange in progress) ──
+  answerPanel: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: colors.border },
+  answerQuestion: { fontSize: 12, color: colors.textSubtle, fontWeight: '600', marginBottom: 8 },
   turnCoachText: { fontSize: 13, color: colors.textPrimary, lineHeight: 21 },
   turnThinking: { fontSize: 13, color: colors.textSubtle, lineHeight: 21, fontStyle: 'italic' },
-  turnError: { alignSelf: 'flex-start', backgroundColor: colors.dangerBg, borderWidth: 0.5, borderColor: '#E85D5C55', borderBottomLeftRadius: 4 },
   turnErrorText: { fontSize: 13, color: colors.danger, lineHeight: 21 },
 
   proposalCard: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
@@ -1421,8 +1976,7 @@ const styles = StyleSheet.create({
   savedBanner: { backgroundColor: colors.successBg, borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 0.5, borderColor: colors.accent },
   savedBannerText: { fontSize: 13, color: colors.accent, lineHeight: 18 },
 
-  askBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  askBtnText: { color: colors.textOnLight, fontSize: 15, fontWeight: '600' },
+  askBtn: { width: 44, height: 44, borderRadius: 13, backgroundColor: colors.surfaceInverse, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 
   memoryRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingVertical: 10, gap: 12 },
   memoryRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
@@ -1431,7 +1985,11 @@ const styles = StyleSheet.create({
   memoryForgetBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.dangerBg, borderRadius: 8, borderWidth: 0.5, borderColor: colors.dangerHair },
   memoryForgetText: { color: colors.danger, fontSize: 12, fontWeight: '600' },
 
-  quickChip: { backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 0.5, borderColor: colors.border },
   quickChipDisabled: { opacity: 0.4 },
-  quickChipText: { fontSize: 13, color: colors.textMuted },
+  quickSection: { marginTop: 16, paddingTop: 14, borderTopWidth: 0.5, borderTopColor: colors.border },
+  quickSectionTitle: { fontSize: 11, fontWeight: '600', color: colors.textSubtle, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
+  quickRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
+  quickRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
+  quickRowText: { flex: 1, fontSize: 13, color: colors.textSecondary },
+  quickRowArrow: { fontSize: 13, color: colors.accent, fontWeight: '600', marginLeft: 8 },
 });

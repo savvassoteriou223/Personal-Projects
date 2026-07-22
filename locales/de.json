@@ -578,7 +578,6 @@
     "inputPlaceholder": "z. B. Füge meinem nächsten Push-Tag mehr Schultern hinzu",
     "noAnswer": "Keine Antwort generiert.",
     "failedConnect": "Verbindung fehlgeschlagen.",
-    "failedConnectCheck": "Verbindung fehlgeschlagen. Prüfe deine Internetverbindung.",
     "altPrompt": "Gib mir eine andere Alternative zu {{what}}{{where}}. Wähle einfach die beste — frag mich nicht, schlage sie direkt vor.",
     "thatExercise": "diese Übung",
     "onDay": " am {{day}}",
@@ -598,12 +597,6 @@
     "saved": "Zu deinem Programm hinzugefügt. Es erscheint in deinem nächsten Workout.",
     "thinking": "Denke nach...",
     "askBtn": "Fragen",
-    "weeklyInsight": "Wöchentliche Analyse",
-    "weeklyInsightSub": "Analysiert dein Volumen, PRs und jüngste Einheiten anhand von Forschungszielen",
-    "insightEmpty": "Tippe unten für eine personalisierte Wochenanalyse auf Basis deiner Trainingsdaten.",
-    "analysing": "Analysiere...",
-    "refreshInsight": "Analyse aktualisieren",
-    "generateInsight": "Analyse erstellen",
     "quickQuestions": "Schnelle Fragen",
     "quick": {
       "neglecting": "Welche Muskelgruppe vernachlässige ich am meisten?",
@@ -641,7 +634,8 @@
       "preference": "Präferenz",
       "goal": "Ziel",
       "note": "Notiz"
-    }
+    },
+    "recentChanges": "Letzte Änderungen"
   },
   "profile": {
     "admin": "Admin",
@@ -1096,5 +1090,30 @@
       "forearms": "Unterarme",
       "abs": "Bauch"
     }
+  },
+  "data": {
+    "rowTitle": "Deine Daten",
+    "rowSub": "Vollständiger Verlauf: Training, Ernährung, Erholung",
+    "title": "Deine Daten",
+    "scopeNote": "Zeigt deine letzten {{sessions}} Einheiten und {{nutrition}} Ernährungseinträge.",
+    "trainingTitle": "Trainingsverlauf",
+    "emptyTraining": "Noch keine Krafteinheiten aufgezeichnet.",
+    "untitledSession": "Workout",
+    "noSets": "Für diese Einheit wurden keine Sätze aufgezeichnet.",
+    "minutes": "{{n}} Min",
+    "cardioTitle": "Cardio-Verlauf",
+    "emptyCardio": "Noch keine Cardio-Einheiten aufgezeichnet.",
+    "nutritionTitle": "Ernährungsprotokoll",
+    "emptyNutrition": "Noch keine Mahlzeiten erfasst.",
+    "recoveryTitle": "Erholungs-Check-ins",
+    "emptyRecovery": "Noch keine Erholungs-Check-ins.",
+    "checkin": "Check-in",
+    "sleepHrs": "{{n}} Std. Schlaf",
+    "sorenessLabel": "Muskelkater",
+    "energyLabel": "Energie",
+    "healthTitle": "Gesundheitsdaten",
+    "emptyHealth": "Noch keine synchronisierten Gesundheitsdaten.",
+    "weightTitle": "Körpergewicht",
+    "emptyWeight": "Noch kein Gewicht erfasst."
   }
 }

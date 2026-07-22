@@ -578,7 +578,6 @@
     "inputPlaceholder": "ex. Ajoute plus d'épaules à mon prochain jour de poussée",
     "noAnswer": "Aucune réponse générée.",
     "failedConnect": "Échec de la connexion.",
-    "failedConnectCheck": "Échec de la connexion. Vérifiez votre connexion internet.",
     "altPrompt": "Donne-moi une autre alternative à {{what}}{{where}}. Choisis simplement la meilleure — ne me demande pas, propose-la directement.",
     "thatExercise": "cet exercice",
     "onDay": " le {{day}}",
@@ -598,12 +597,6 @@
     "saved": "Ajouté à votre programme. Cela apparaîtra dans votre prochaine séance.",
     "thinking": "Réflexion...",
     "askBtn": "Demander",
-    "weeklyInsight": "Analyse hebdomadaire",
-    "weeklyInsightSub": "Analyse votre volume, vos PR et vos séances récentes par rapport aux objectifs scientifiques",
-    "insightEmpty": "Touchez ci-dessous pour obtenir une analyse hebdomadaire personnalisée basée sur vos données d'entraînement.",
-    "analysing": "Analyse...",
-    "refreshInsight": "Actualiser l'analyse",
-    "generateInsight": "Générer l'analyse",
     "quickQuestions": "Questions rapides",
     "quick": {
       "neglecting": "Quel groupe musculaire est-ce que je néglige le plus ?",
@@ -641,7 +634,8 @@
       "preference": "Préférence",
       "goal": "Objectif",
       "note": "Note"
-    }
+    },
+    "recentChanges": "Modifications récentes"
   },
   "profile": {
     "admin": "Admin",
@@ -1096,5 +1090,30 @@
       "forearms": "Avant-bras",
       "abs": "Abdominaux"
     }
+  },
+  "data": {
+    "rowTitle": "Vos données",
+    "rowSub": "Historique complet : entraînement, nutrition et récupération",
+    "title": "Vos données",
+    "scopeNote": "Affichage de vos {{sessions}} dernières séances et {{nutrition}} entrées nutritionnelles.",
+    "trainingTitle": "Historique d'entraînement",
+    "emptyTraining": "Aucune séance de force enregistrée pour le moment.",
+    "untitledSession": "Séance",
+    "noSets": "Aucune série enregistrée pour cette séance.",
+    "minutes": "{{n}} min",
+    "cardioTitle": "Historique cardio",
+    "emptyCardio": "Aucune séance de cardio enregistrée pour le moment.",
+    "nutritionTitle": "Journal nutritionnel",
+    "emptyNutrition": "Aucun repas enregistré pour le moment.",
+    "recoveryTitle": "Bilans de récupération",
+    "emptyRecovery": "Aucun bilan de récupération pour le moment.",
+    "checkin": "Bilan",
+    "sleepHrs": "{{n}} h de sommeil",
+    "sorenessLabel": "Courbatures",
+    "energyLabel": "Énergie",
+    "healthTitle": "Données de santé",
+    "emptyHealth": "Aucune donnée de santé synchronisée pour le moment.",
+    "weightTitle": "Poids corporel",
+    "emptyWeight": "Aucun poids enregistré pour le moment."
   }
 }

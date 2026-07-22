@@ -127,7 +127,8 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
   const isSimple = workout.trainingExperience === 'beginner';
   const [currentExIdx, setCurrentExIdx] = useState(0);
   const [sets, setSets] = useState(() => workout.exercises.map(exerciseToSetState));
-  const [restTimer, setRestTimer] = useState(null);
+  const [restEndAt, setRestEndAt] = useState(null); // absolute ms epoch when rest ends — survives app close, unlike a plain countdown
+  const [, setRestTick] = useState(0); // forces a re-render each second while resting so the derived countdown below updates
   const [finishTime, setFinishTime] = useState(null);
   const [rpe, setRpe] = useState(7);
   const [finished, setFinished] = useState(false);
@@ -194,6 +195,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
         if (typeof draft.rpe === 'number') setRpe(draft.rpe);
         if (draft.startTime) startTime.current = draft.startTime;
         if (draft.finished) { setFinished(true); setFinishTime(draft.finishTime || Date.now()); }
+        if (typeof draft.restEndAt === 'number' && draft.restEndAt > Date.now()) setRestEndAt(draft.restEndAt);
       } catch (_) {}
     })();
   }, []);
@@ -207,7 +209,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       } catch (_) {}
     }, 300);
     return () => clearTimeout(draftTimer.current);
-  }, [sets, currentExIdx, rpe, finished, finishTime]);
+  }, [sets, currentExIdx, rpe, finished, finishTime, restEndAt]);
 
   // ─── Flush draft immediately when app goes to background ─────────────────
   useEffect(() => {
@@ -472,6 +474,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
     finished,
     finishTime,
     startTime: startTime.current,
+    restEndAt,
   };
 
   useEffect(() => {
@@ -482,11 +485,16 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
     return () => clearInterval(id);
   }, [finished]);
 
+  const restTimer = restEndAt ? Math.max(0, Math.ceil((restEndAt - Date.now()) / 1000)) : 0;
+
   useEffect(() => {
-    if (!restTimer || restTimer <= 0) return;
-    const timeout = setTimeout(() => setRestTimer(sec => sec - 1), 1000);
-    return () => clearTimeout(timeout);
-  }, [restTimer]);
+    if (!restEndAt) return;
+    const id = setInterval(() => {
+      if (Date.now() >= restEndAt) setRestEndAt(null);
+      else setRestTick(t => t + 1);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [restEndAt]);
 
   useEffect(() => {
     const load = async () => {
@@ -587,7 +595,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
     if (!wasAlreadyDone) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       const restSeconds = parseRestSeconds(sets[exIdx].rest);
-      setRestTimer(restSeconds);
+      setRestEndAt(Date.now() + restSeconds * 1000);
     }
   };
 
@@ -913,7 +921,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       {restTimer > 0 && (
         <View style={styles.restBanner}>
           <Text style={styles.restText}>{t('workout.restTimer', { time: formatTime(restTimer) })}</Text>
-          <Tappable onPress={() => setRestTimer(0)}>
+          <Tappable onPress={() => setRestEndAt(null)}>
             <Text style={styles.restSkip}>{t('workout.skip')}</Text>
           </Tappable>
         </View>

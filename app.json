@@ -44,7 +44,7 @@
         "android.permission.health.READ_STEPS"
       ],
       "package": "com.helixfit.app",
-      "versionCode": 30
+      "versionCode": 35
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -85,9 +85,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "b34eb723-b7ca-4176-be39-5ee9f81ac340"
+        "projectId": "436bdf27-2b05-4550-84c6-04aafdd4d19d"
       }
     },
-    "owner": "helixfitapp"
+    "owner": "savvas223"
   }
 }

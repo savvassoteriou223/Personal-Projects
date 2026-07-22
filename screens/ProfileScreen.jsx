@@ -5,6 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase, getCurrentUser } from '../supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AdminScreen from './AdminScreen';
 import { format, startOfWeek } from 'date-fns';
 import { calculateTDEE, calculateNutritionTargets, INJURY_BODY_PARTS } from './programGenerator';
@@ -14,7 +15,9 @@ import { CONDITIONS_DB, SEVERITY_OPTIONS, POST_OP_TIMELINE_OPTIONS, deriveCondit
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import SettingsScreen from './SettingsScreen';
+import DataScreen from './DataScreen';
 import { colors } from '../lib/theme';
+import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
 
 const GOALS = [
@@ -77,10 +80,11 @@ const EXPERIENCE_LEVELS = [
   { key: 'advanced',     label: 'Advanced',     sub: '4+ years' },
 ];
 
-export default function ProfileScreen({ onSignOut, isAdmin }) {
+export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade, onRestore }) {
   const { t } = useTranslation();
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showData, setShowData] = useState(false);
   const [profile, setProfile] = useState(null);
   const [metrics, setMetrics] = useState([]);
   const [editing, setEditing] = useState(false);
@@ -104,11 +108,25 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const [nutritionFocus, setNutritionFocus] = useState('maintain');
   const [injuryProfile, setInjuryProfile] = useState([]); // [{ body_part, severity: 'sometimes'|'always' }]
   const [insights, setInsights] = useState([]);
+  const [weeklySetTrend, setWeeklySetTrend] = useState([]); // last 6 weeks: [{weekStart, sets}]
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
   // Quick body weight log
   const [quickWeight, setQuickWeight] = useState('');
   const [quickWeightSaved, setQuickWeightSaved] = useState(false);
+  // Edit-form accordion: which collapsible sections are open. Independent,
+  // not mutually exclusive — a settings form benefits from comparing two
+  // groups at once, unlike a single-lens content tab.
+  const [openSections, setOpenSections] = useState({});
+  const toggleSection = (key) => {
+    animateLayout();
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+  const summarize = (labels, max = 3) => {
+    if (!labels.length) return null;
+    if (labels.length <= max) return labels.join(', ');
+    return `${labels.slice(0, max).join(', ')} +${labels.length - max}`;
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -192,6 +210,32 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
         else break;
       }
       setStreak(streakCount);
+
+      // Training volume trend — real completed_sets, last 6 weeks, total sets
+      // per week. Distinct from Today/Program's "this week only" snapshot —
+      // this is the consistency-over-time view.
+      (async () => {
+        const sixWeeksAgo = startOfWeek(new Date(Date.now() - 42 * 86400000), { weekStartsOn: 1 });
+        const recentSessions = sessionData.filter(s => new Date(s.completed_at) >= sixWeeksAgo);
+        if (!recentSessions.length) { setWeeklySetTrend([]); return; }
+        const ids = recentSessions.map(s => s.id);
+        const { data: sets } = await supabase.from('completed_sets').select('session_id').in('session_id', ids);
+        const sessionWeek = {};
+        recentSessions.forEach(s => {
+          sessionWeek[s.id] = startOfWeek(new Date(s.completed_at), { weekStartsOn: 1 }).toISOString().split('T')[0];
+        });
+        const byWeek = {};
+        (sets || []).forEach(row => {
+          const wk = sessionWeek[row.session_id];
+          if (wk) byWeek[wk] = (byWeek[wk] || 0) + 1;
+        });
+        const weeks = [];
+        for (let i = 5; i >= 0; i--) {
+          const wk = startOfWeek(new Date(Date.now() - i * 7 * 86400000), { weekStartsOn: 1 }).toISOString().split('T')[0];
+          weeks.push({ weekStart: wk, sets: byWeek[wk] || 0 });
+        }
+        setWeeklySetTrend(weeks);
+      })();
     }
 
     const { data: bm } = await supabase.from('body_metrics').select('*').eq('user_id', user.id).order('date', { ascending: false }).limit(90);
@@ -226,6 +270,11 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
     const newConditionKeys = [...new Set(profileHealthEntries.flatMap(e => deriveConditionKeys(e)))];
     const equipmentChanged = JSON.stringify([...selectedEquipment].sort()) !== JSON.stringify([...prevEquipment].sort());
     const conditionsChanged = JSON.stringify([...newConditionKeys].sort()) !== JSON.stringify([...prevConditions].sort());
+    // No goal_set_at column exists — a changed goals[] restarts the local
+    // milestone clock instead, and clears any milestones already shown for
+    // the old goal so a genuinely new goal gets its own checkpoints.
+    const prevGoals = profile?.goals || [];
+    const goalsChanged = JSON.stringify([...selectedGoals].sort()) !== JSON.stringify([...prevGoals].sort());
 
     const wKg = parseFloat(weight) || null;
     const hCm = parseFloat(height) || null;
@@ -265,6 +314,11 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
     }).eq('id', user.id);
 
     if (error) { Alert.alert(t('profile.alerts.saveFailTitle'), t('profile.alerts.saveFailMsg')); return; }
+
+    if (goalsChanged) {
+      await AsyncStorage.setItem('goalStartedAt', new Date().toISOString());
+      await AsyncStorage.removeItem('shownMilestoneIds');
+    }
 
     setProfile(p => ({
       ...p, name, sex,
@@ -311,6 +365,11 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
   const bmi = h && w ? (w / ((h/100)**2)).toFixed(1) : null;
   const bmiColor = bmi ? (bmi < 18.5 ? colors.warning : bmi < 25 ? colors.accent : bmi < 30 ? colors.warning : colors.danger) : null;
 
+  // Live preview of the calculated nutrition targets — used both inside the
+  // Nutrition focus section and in its collapsed-section summary.
+  const previewTdee = calculateTDEE(parseFloat(weight), parseFloat(height), profile?.age, sex, parseInt(weeklyWorkouts) || 3);
+  const previewTargets = previewTdee && parseFloat(weight) ? calculateNutritionTargets(previewTdee, parseFloat(weight), nutritionFocus) : null;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -332,7 +391,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                   <Text style={styles.adminBtnText}>{t('profile.admin')}</Text>
                 </Tappable>
               )}
-              <Tappable onPress={() => setShowSettings(true)} style={styles.gearBtn} hitSlop={8}>
+              <Tappable onPress={() => setShowSettings(true)} style={styles.gearBtn} hitSlop={8} accessibilityLabel={t('settings.title')}>
                 <Ionicons name="settings-outline" size={22} color={colors.textMuted} />
               </Tappable>
             </View>
@@ -353,6 +412,23 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
             ))}
           </View>
         </View>
+
+        <Tappable style={styles.dataRow} onPress={() => setShowData(true)}>
+          <View style={styles.dataRowIconWrap}>
+            <Ionicons name="server-outline" size={16} color={colors.accent} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.dataRowLabel}>{t('data.rowTitle')}</Text>
+            <Text style={styles.dataRowSub}>{t('data.rowSub')}</Text>
+          </View>
+          {!isPremium && (
+            <View style={styles.dataRowLock}>
+              <Ionicons name="lock-closed" size={9} color={colors.textOnLight} />
+            </View>
+          )}
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+        </Tappable>
+        <DataScreen visible={showData} onClose={() => setShowData(false)} isPremium={isPremium} onUpgrade={onUpgrade} onRestore={onRestore} />
 
         {/* Performance insights */}
         {insights.length > 0 && (
@@ -390,7 +466,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 <Text style={styles.inputLabel}>{t('profile.daysPerWeek')}</Text>
                 <View style={styles.optionRow}>
                   {[2,3,4,5,6].map(d => (
-                    <Tappable key={d} style={[styles.optionBtn, parseInt(weeklyWorkouts)===d && styles.optionBtnActive]} onPress={() => setWeeklyWorkouts(d.toString())}>
+                    <Tappable key={d} style={[styles.optionBtn, parseInt(weeklyWorkouts)===d && styles.optionBtnActive]} onPress={() => setWeeklyWorkouts(d.toString())} accessibilityState={{ selected: parseInt(weeklyWorkouts)===d }}>
                       <Text style={[styles.optionBtnText, parseInt(weeklyWorkouts)===d && styles.optionBtnTextActive]}>{d}</Text>
                     </Tappable>
                   ))}
@@ -398,7 +474,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 <Text style={styles.inputLabel}>{t('profile.sessionLength')}</Text>
                 <View style={styles.optionRow}>
                   {[30,45,60,90,120].map(m => (
-                    <Tappable key={m} style={[styles.optionBtn, parseInt(sessionLength)===m && styles.optionBtnActive]} onPress={() => setSessionLength(m.toString())}>
+                    <Tappable key={m} style={[styles.optionBtn, parseInt(sessionLength)===m && styles.optionBtnActive]} onPress={() => setSessionLength(m.toString())} accessibilityState={{ selected: parseInt(sessionLength)===m }}>
                       <Text style={[styles.optionBtnText, parseInt(sessionLength)===m && styles.optionBtnTextActive]}>{m}m</Text>
                     </Tappable>
                   ))}
@@ -406,72 +482,82 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                 <Text style={styles.inputLabel}>{t('profile.experienceLevel')}</Text>
                 <View style={styles.optionRow}>
                   {EXPERIENCE_LEVELS.map(lvl => (
-                    <Tappable key={lvl.key} style={[styles.expBtn, trainingExperience === lvl.key && styles.expBtnActive]} onPress={() => setTrainingExperience(lvl.key)}>
+                    <Tappable key={lvl.key} style={[styles.expBtn, trainingExperience === lvl.key && styles.expBtnActive]} onPress={() => setTrainingExperience(lvl.key)} accessibilityState={{ selected: trainingExperience === lvl.key }}>
                       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.expBtnLabel, trainingExperience === lvl.key && styles.expBtnLabelActive]}>{t(`levels.${lvl.key}`)}</Text>
                       <Text style={[styles.expBtnSub, trainingExperience === lvl.key && styles.expBtnSubActive]}>{t(`profile.expSub.${lvl.key}`)}</Text>
                     </Tappable>
                   ))}
                 </View>
-                <Text style={styles.inputLabel}>{t('profile.goals')}</Text>
-                <View style={styles.goalsWrap}>
-                  {GOALS.map(g => (
-                    <Tappable key={g.key} style={[styles.goalChip, selectedGoals.includes(g.key) && styles.goalChipActive]} onPress={() => toggleGoal(g.key)}>
-                      <Text style={[styles.goalChipText, selectedGoals.includes(g.key) && styles.goalChipTextActive]}>{t(`onboarding.goals.${g.key}`)}</Text>
-                    </Tappable>
-                  ))}
-                </View>
-                <Text style={styles.inputLabel}>{t('profile.equipment')}</Text>
-                <Text style={styles.inputSub}>{t('profile.equipmentSub')}</Text>
-                <View style={styles.goalsWrap}>
+                <AccordionSection
+                  title={t('profile.goals')}
+                  summary={summarize(selectedGoals.map(g => t(`onboarding.goals.${g}`, { defaultValue: g })))}
+                  isOpen={!!openSections.goals}
+                  onToggle={() => toggleSection('goals')}
+                >
+                  <View style={styles.goalsWrap}>
+                    {GOALS.map(g => (
+                      <Tappable key={g.key} style={[styles.goalChip, selectedGoals.includes(g.key) && styles.goalChipActive]} onPress={() => toggleGoal(g.key)} accessibilityState={{ selected: selectedGoals.includes(g.key) }}>
+                        <Text style={[styles.goalChipText, selectedGoals.includes(g.key) && styles.goalChipTextActive]}>{t(`onboarding.goals.${g.key}`)}</Text>
+                      </Tappable>
+                    ))}
+                  </View>
+                </AccordionSection>
+
+                <AccordionSection
+                  title={t('profile.equipment')}
+                  summary={summarize(selectedEquipment.map(e => equipLabel(t, e)))}
+                  isOpen={!!openSections.equipment}
+                  onToggle={() => toggleSection('equipment')}
+                >
+                  <Text style={styles.inputSub}>{t('profile.equipmentSub')}</Text>
+                  <View style={styles.goalsWrap}>
                   {EQUIPMENT_OPTIONS.map(e => (
                     <Tappable
                       key={e}
                       style={[styles.goalChip, selectedEquipment.includes(e) && styles.goalChipActive]}
                       onPress={() => setSelectedEquipment(p => p.includes(e) ? p.filter(x => x !== e) : [...p, e])}
+                      accessibilityState={{ selected: selectedEquipment.includes(e) }}
                     >
                       <Text style={[styles.goalChipText, selectedEquipment.includes(e) && styles.goalChipTextActive]}>{equipLabel(t, e)}</Text>
                     </Tappable>
                   ))}
-                </View>
-                <Text style={styles.inputLabel}>{t('profile.bioSex')}</Text>
-                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-                  {[['male', t('profile.sexMale')], ['female', t('profile.sexFemale')], ['other', t('profile.sexOther')]].map(([val, label]) => (
-                    <Tappable key={val} style={[styles.goalChip, sex === val && styles.goalChipActive]} onPress={() => setSex(val)}>
-                      <Text style={[styles.goalChipText, sex === val && styles.goalChipTextActive]}>{label}</Text>
-                    </Tappable>
-                  ))}
-                </View>
+                  </View>
+                </AccordionSection>
 
-                <Text style={styles.inputLabel}>{t('profile.nutritionFocus')}</Text>
-                <Text style={styles.inputSub}>{t('profile.nutritionFocusSub')}</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                  {[['cut', t('profile.focus.cut'), t('profile.focus.cutSub')], ['bulk', t('profile.focus.bulk'), t('profile.focus.bulkSub')], ['maintain', t('profile.focus.maintain'), t('profile.focus.maintainSub')], ['recomp', t('profile.focus.recomp'), t('profile.focus.recompSub')]].map(([val, label, sub]) => (
-                    <Tappable key={val} style={[styles.goalChip, nutritionFocus === val && styles.goalChipActive, { paddingVertical: 10 }]} onPress={() => setNutritionFocus(val)}>
-                      <Text style={[styles.goalChipText, nutritionFocus === val && styles.goalChipTextActive]}>{label}</Text>
-                      <Text style={[{ fontSize: 9, color: nutritionFocus === val ? colors.textMuted : colors.textFaint, marginTop: 2 }]}>{sub}</Text>
-                    </Tappable>
-                  ))}
-                </View>
+                <AccordionSection
+                  title={t('profile.nutritionFocus')}
+                  summary={previewTargets
+                    ? `${t(`profile.focus.${nutritionFocus}`)} · ${previewTargets.caloric_target} kcal · ${previewTargets.protein_target}g protein`
+                    : t(`profile.focus.${nutritionFocus}`)}
+                  isOpen={!!openSections.nutrition}
+                  onToggle={() => toggleSection('nutrition')}
+                >
+                  <Text style={styles.inputSub}>{t('profile.nutritionFocusSub')}</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                    {[['cut', t('profile.focus.cut'), t('profile.focus.cutSub')], ['bulk', t('profile.focus.bulk'), t('profile.focus.bulkSub')], ['maintain', t('profile.focus.maintain'), t('profile.focus.maintainSub')], ['recomp', t('profile.focus.recomp'), t('profile.focus.recompSub')]].map(([val, label, sub]) => (
+                      <Tappable key={val} style={[styles.goalChip, nutritionFocus === val && styles.goalChipActive, { paddingVertical: 10 }]} onPress={() => setNutritionFocus(val)} accessibilityState={{ selected: nutritionFocus === val }}>
+                        <Text style={[styles.goalChipText, nutritionFocus === val && styles.goalChipTextActive]}>{label}</Text>
+                        <Text style={[{ fontSize: 9, color: nutritionFocus === val ? colors.textMuted : colors.textFaint, marginTop: 2 }]}>{sub}</Text>
+                      </Tappable>
+                    ))}
+                  </View>
 
-                {(() => {
-                  const wKg = parseFloat(weight);
-                  const hCm = parseFloat(height);
-                  const userAge = profile?.age;
-                  const weeklyW = parseInt(weeklyWorkouts) || 3;
-                  const previewTdee = calculateTDEE(wKg, hCm, userAge, sex, weeklyW);
-                  const previewTargets = previewTdee && wKg ? calculateNutritionTargets(previewTdee, wKg, nutritionFocus) : null;
-                  if (!previewTargets) return null;
-                  return (
-                    <View style={{ backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12, marginBottom: 16, borderWidth: 0.5, borderColor: colors.border }}>
+                  {previewTargets && (
+                    <View style={{ backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: colors.border }}>
                       <Text style={{ fontSize: 10, color: colors.textFaint, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>{t('profile.calculatedTargets')}</Text>
                       <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 2 }}>{t('profile.maintenanceTdee', { tdee: previewTdee })}</Text>
                       <Text style={{ fontSize: 13, color: colors.textPrimary, fontWeight: '600', marginBottom: 2 }}>{t('profile.targetsLine', { cal: previewTargets.caloric_target, protein: previewTargets.protein_target, carbs: previewTargets.carb_target, fat: previewTargets.fat_target })}</Text>
                       <Text style={{ fontSize: 11, color: colors.textFaint, marginTop: 4 }}>{t('profile.savedAuto')}</Text>
                     </View>
-                  );
-                })()}
+                  )}
+                </AccordionSection>
 
-                <Text style={styles.inputLabel}>{t('profile.whatTrain')}</Text>
+                <AccordionSection
+                  title={t('profile.whatTrain')}
+                  summary={summarize(selectedActivities.map(k => t(`profile.activities.${k}`)))}
+                  isOpen={!!openSections.activities}
+                  onToggle={() => toggleSection('activities')}
+                >
                 <Text style={styles.inputSub}>{t('profile.whatTrainSub')}</Text>
                 <View style={styles.goalsWrap}>
                   {ACTIVITY_TYPES.map(a => (
@@ -479,12 +565,20 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                       key={a.key}
                       style={[styles.goalChip, selectedActivities.includes(a.key) && styles.goalChipActive]}
                       onPress={() => setSelectedActivities(p => p.includes(a.key) ? p.filter(x => x !== a.key) : [...p, a.key])}
+                      accessibilityState={{ selected: selectedActivities.includes(a.key) }}
                     >
                       <Text style={[styles.goalChipText, selectedActivities.includes(a.key) && styles.goalChipTextActive]}>{t(`profile.activities.${a.key}`)}</Text>
                     </Tappable>
                   ))}
                 </View>
-                <Text style={[styles.inputLabel, { marginTop: 20 }]}>{t('profile.sports')}</Text>
+                </AccordionSection>
+
+                <AccordionSection
+                  title={t('profile.sports')}
+                  summary={summarize(selectedSports.map(s => t(`onboarding.sports.${s.key}`, { defaultValue: s.label || s.key })))}
+                  isOpen={!!openSections.sports}
+                  onToggle={() => toggleSection('sports')}
+                >
                 <Text style={styles.inputSub}>{t('profile.sportsSub')}</Text>
                 <View style={styles.goalsWrap}>
                   {[
@@ -504,6 +598,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                         onPress={() => setSelectedSports(p =>
                           selected ? p.filter(x => x.key !== s.key) : [...p, { key: s.key, label: s.label, days: [] }]
                         )}
+                        accessibilityState={{ selected: !!selected }}
                       >
                         <Text style={[styles.goalChipText, selected && styles.goalChipTextActive]}>{t(`onboarding.sports.${s.key}`, { defaultValue: s.label })}</Text>
                       </Tappable>
@@ -526,6 +621,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                                 onPress={() => setSelectedSports(prev => prev.map(x =>
                                   x.key !== s.key ? x : { ...x, days: active ? x.days.filter(d => d !== full) : [...(x.days || []), full] }
                                 ))}
+                                accessibilityState={{ selected: active }}
                               >
                                 <Text style={[styles.profDayBtnText, active && styles.profDayBtnTextActive]}>{t(`weekdaysShort.${wd}`)}</Text>
                               </Tappable>
@@ -536,8 +632,17 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                     ))}
                   </View>
                 )}
+                </AccordionSection>
 
-                <Text style={styles.inputLabel}>{t('profile.injuries')}</Text>
+                <AccordionSection
+                  title={t('profile.injuries')}
+                  summary={summarize(injuryProfile.map(i => {
+                    const bp = INJURY_BODY_PARTS.find(b => b.key === i.body_part);
+                    return `${bp?.label || i.body_part} — ${i.severity === 'always' ? t('profile.injAlways') : t('profile.injSometimes')}`;
+                  }))}
+                  isOpen={!!openSections.injuries}
+                  onToggle={() => toggleSection('injuries')}
+                >
                 <Text style={styles.inputSub}>{t('profile.injuriesSub')}</Text>
                 {INJURY_BODY_PARTS.map(bp => {
                   const entry = injuryProfile.find(i => i.body_part === bp.key);
@@ -556,6 +661,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                             key={label}
                             style={[styles.injuryOpt, (entry?.severity ?? null) === val && styles.injuryOptActive]}
                             onPress={() => setSeverity(val)}
+                            accessibilityState={{ selected: (entry?.severity ?? null) === val }}
                           >
                             <Text style={[styles.injuryOptText, (entry?.severity ?? null) === val && styles.injuryOptTextActive]}>{label}</Text>
                           </Tappable>
@@ -564,8 +670,16 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                     </View>
                   );
                 })}
+                </AccordionSection>
 
-                <Text style={[styles.inputLabel, { marginTop: 20 }]}>{t('profile.injuriesConditions')}</Text>
+                <AccordionSection
+                  title={t('profile.injuriesConditions')}
+                  summary={profileHealthEntries.length
+                    ? t('profile.conditionsCount', { count: profileHealthEntries.length, defaultValue: `${profileHealthEntries.length} on file` })
+                    : null}
+                  isOpen={!!openSections.conditions}
+                  onToggle={() => toggleSection('conditions')}
+                >
                 <Text style={styles.inputSub}>{t('profile.injuriesConditionsSub')}</Text>
 
                 {/* Saved entries */}
@@ -577,7 +691,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                           <Text style={styles.profEntryRegion}>{CONDITIONS_DB[e.region]?.label}</Text>
                           <Text style={styles.profEntryLabel}>{conditionSummaryLabel(e)}</Text>
                         </View>
-                        <Tappable onPress={() => setProfileHealthEntries(prev => prev.filter((_, idx) => idx !== i))} style={{ padding: 6 }}>
+                        <Tappable onPress={() => setProfileHealthEntries(prev => prev.filter((_, idx) => idx !== i))} style={{ padding: 6 }} accessibilityLabel={t('common.close')}>
                           <Text style={{ color: colors.textSubtle, fontSize: 14 }}>✕</Text>
                         </Tappable>
                       </View>
@@ -621,7 +735,7 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                                   <Text style={styles.profCondLabel}>{cond.label}</Text>
                                   <Text style={styles.profCondDesc}>{cond.desc}</Text>
                                 </View>
-                                <Text style={{ fontSize: 18, color: colors.textFaint }}>›</Text>
+                                <Text style={{ fontSize: 18, color: colors.textFaint }} accessibilityElementsHidden importantForAccessibility="no">›</Text>
                               </Tappable>
                             ))}
                           </View>
@@ -683,19 +797,29 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
                     ))}
                   </View>
                 )}
+                </AccordionSection>
               </>
             ) : (
               <>
-                <Text style={styles.profileField}>{t('profile.fieldName')}: <Text style={styles.profileFieldVal}>{profile?.name}</Text></Text>
-                <Text style={styles.profileField}>{t('profile.fieldWeight')}: <Text style={styles.profileFieldVal}>{profile?.weight_kg ? `${profile.weight_kg} kg` : '—'}</Text></Text>
-                <Text style={styles.profileField}>{t('profile.fieldHeight')}: <Text style={styles.profileFieldVal}>{profile?.height_cm ? `${profile.height_cm} cm` : '—'}</Text></Text>
-                <Text style={styles.profileField}>{t('profile.fieldTarget')}: <Text style={styles.profileFieldVal}>{profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : '—'}</Text></Text>
-                <Text style={styles.profileField}>{t('profile.fieldTraining')}: <Text style={styles.profileFieldVal}>{t('profile.trainingVal', { days: profile?.weekly_workouts, min: profile?.session_length })}</Text></Text>
-                <Text style={styles.profileField}>{t('profile.fieldExperience')}: <Text style={styles.profileFieldVal}>{t(`levels.${profile?.trainingExperience || 'beginner'}`)}</Text></Text>
-                <Text style={styles.profileField}>{t('profile.fieldNutrition')}: <Text style={styles.profileFieldVal}>{(profile?.nutrition_focus ? t(`profile.focus.${profile.nutrition_focus}`) : t('profile.nutritionNotSet'))}{profile?.caloric_target ? t('profile.nutritionSuffix', { cal: profile.caloric_target, protein: profile.protein_target }) : ''}</Text></Text>
-                {(profile?.sports || []).length > 0 && (
-                  <Text style={styles.profileField}>{t('profile.fieldSports')}: <Text style={styles.profileFieldVal}>{profile.sports.map(s => t(`onboarding.sports.${s.key}`, { defaultValue: s.label || s.key })).join(', ')}</Text></Text>
-                )}
+                {[
+                  { icon: 'barbell-outline', label: t('profile.fieldWeight'), value: profile?.weight_kg ? `${profile.weight_kg} kg` : '—' },
+                  { icon: 'resize-outline', label: t('profile.fieldHeight'), value: profile?.height_cm ? `${profile.height_cm} cm` : '—' },
+                  { icon: 'flag-outline', label: t('profile.fieldTarget'), value: profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : '—' },
+                  { icon: 'calendar-outline', label: t('profile.fieldTraining'), value: t('profile.trainingVal', { days: profile?.weekly_workouts, min: profile?.session_length }) },
+                  { icon: 'trending-up-outline', label: t('profile.fieldExperience'), value: t(`levels.${profile?.trainingExperience || 'beginner'}`) },
+                  { icon: 'nutrition-outline', label: t('profile.fieldNutrition'), value: `${profile?.nutrition_focus ? t(`profile.focus.${profile.nutrition_focus}`) : t('profile.nutritionNotSet')}${profile?.caloric_target ? t('profile.nutritionSuffix', { cal: profile.caloric_target, protein: profile.protein_target }) : ''}` },
+                  ...((profile?.sports || []).length > 0
+                    ? [{ icon: 'fitness-outline', label: t('profile.fieldSports'), value: profile.sports.map(s => t(`onboarding.sports.${s.key}`, { defaultValue: s.label || s.key })).join(', ') }]
+                    : []),
+                ].map((row, i, arr) => (
+                  <View key={row.label} style={[styles.profileRow, i > 0 && styles.profileRowBorder]}>
+                    <View style={styles.profileRowIconWrap}>
+                      <Ionicons name={row.icon} size={14} color={colors.accent} />
+                    </View>
+                    <Text style={styles.profileRowLabel}>{row.label}</Text>
+                    <Text style={styles.profileRowValue} numberOfLines={1}>{row.value}</Text>
+                  </View>
+                ))}
                 <View style={[styles.goalsWrap, { marginTop: 8 }]}>
                   {(profile?.goals || []).map(g => (
                     <View key={g} style={styles.goalChipActive}><Text style={styles.goalChipTextActive}>{t(`onboarding.goals.${g}`, { defaultValue: g })}</Text></View>
@@ -751,10 +875,53 @@ export default function ProfileScreen({ onSignOut, isAdmin }) {
           {/* Body composition trend card */}
           <BodyCompositionCard metrics={metrics} profile={profile} />
 
+          {/* Training volume trend — real completed_sets, last 6 weeks */}
+          {weeklySetTrend.length > 0 && weeklySetTrend.some(w => w.sets > 0) && (
+            <View style={styles.volumeTrendCard}>
+              <Text style={styles.volumeTrendTitle}>{t('profile.volumeTrendTitle', { defaultValue: 'Training volume — last 6 weeks' })}</Text>
+              <View style={styles.volumeTrendBars}>
+                {weeklySetTrend.map((w, i) => {
+                  const max = Math.max(...weeklySetTrend.map(x => x.sets), 1);
+                  const pct = Math.max(4, (w.sets / max) * 100);
+                  const isThisWeek = i === weeklySetTrend.length - 1;
+                  return (
+                    <View key={w.weekStart} style={styles.volumeTrendCol}>
+                      <View style={styles.volumeTrendTrack}>
+                        <View style={[styles.volumeTrendFill, { height: `${pct}%` }, isThisWeek && styles.volumeTrendFillActive]} />
+                      </View>
+                      <Text style={styles.volumeTrendCount}>{w.sets}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+              <Text style={styles.volumeTrendCaption}>{t('profile.volumeTrendCaption', { defaultValue: 'Total sets logged per week, oldest to most recent.' })}</Text>
+            </View>
+          )}
+
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+// ─── EDIT-FORM ACCORDION SECTION ─────────────────────────────────────────────
+// Collapsible group for the profile editor: only Basics (name/weight/height/
+// target, days/week, session length, experience, sex) stays open by default —
+// everything else opens on demand, with a one-line summary of what's set so
+// you don't have to open a section just to check it.
+function AccordionSection({ title, summary, isOpen, onToggle, children }) {
+  return (
+    <View style={styles.section}>
+      <Tappable onPress={onToggle} style={styles.sectionHead} accessibilityState={{ expanded: isOpen }}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          {!!summary && <Text style={styles.sectionSummary} numberOfLines={1}>{summary}</Text>}
+        </View>
+        <Text style={styles.sectionChevron} accessibilityElementsHidden importantForAccessibility="no">{isOpen ? '▲' : '▼'}</Text>
+      </Tappable>
+      {isOpen && <View style={styles.sectionBody}>{children}</View>}
+    </View>
   );
 }
 
@@ -775,12 +942,25 @@ const styles = StyleSheet.create({
   insightDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accent, marginTop: 6 },
   insightText: { flex: 1, fontSize: 13, color: colors.textMuted, lineHeight: 19 },
 
+  dataRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginBottom: 16, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border },
+  dataRowIconWrap: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  dataRowLabel: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
+  dataRowSub: { fontSize: 11.5, color: colors.textFaint, marginTop: 2 },
+  dataRowLock: { width: 15, height: 15, borderRadius: 8, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
   statsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   statCard: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
   statVal: { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
   statLabel: { fontSize: 9, color: colors.textSubtle, marginTop: 2 },
   card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginTop: 14, overflow: 'hidden' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+
+  // Edit-form accordion sections
+  section: { backgroundColor: colors.surfaceInset, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, marginTop: 10, overflow: 'hidden' },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
+  sectionTitle: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
+  sectionSummary: { fontSize: 11.5, color: colors.textSubtle, marginTop: 2 },
+  sectionChevron: { fontSize: 11, color: colors.textFaint },
+  sectionBody: { paddingHorizontal: 14, paddingBottom: 14 },
   cardTitle: { fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginBottom: 12 },
   editBtn: { fontSize: 13, color: colors.textPrimary, fontWeight: '500' },
   cancelBtn: { fontSize: 13, color: colors.textSubtle },
@@ -795,6 +975,11 @@ const styles = StyleSheet.create({
   optionBtnTextActive: { color: colors.surfaceRaised },
   profileField: { fontSize: 13, color: colors.textSubtle, marginBottom: 5 },
   profileFieldVal: { color: colors.textPrimary, fontWeight: '500' },
+  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  profileRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
+  profileRowIconWrap: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  profileRowLabel: { flex: 1, fontSize: 13, color: colors.textSubtle },
+  profileRowValue: { fontSize: 13, color: colors.textPrimary, fontWeight: '600', maxWidth: '50%' },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   injuryRow: { marginBottom: 12 },
   injuryLabel: { fontSize: 13, color: colors.textSecondary, fontWeight: '500', marginBottom: 6 },
@@ -835,6 +1020,16 @@ const styles = StyleSheet.create({
   quickWeightBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 10, paddingHorizontal: 18, justifyContent: 'center', alignItems: 'center' },
   quickWeightBtnText: { color: colors.surfaceRaised, fontWeight: '700', fontSize: 14 },
   quickWeightTip: { fontSize: 11, color: colors.textFaint, lineHeight: 16 },
+
+  volumeTrendCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border },
+  volumeTrendTitle: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 12 },
+  volumeTrendBars: { flexDirection: 'row', alignItems: 'flex-end', height: 70, gap: 8, marginBottom: 8 },
+  volumeTrendCol: { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end', gap: 6 },
+  volumeTrendTrack: { width: '100%', height: 52, justifyContent: 'flex-end' },
+  volumeTrendFill: { width: '100%', borderRadius: 4, backgroundColor: colors.control },
+  volumeTrendFillActive: { backgroundColor: colors.accent },
+  volumeTrendCount: { fontSize: 9.5, color: colors.textFaint, fontWeight: '600' },
+  volumeTrendCaption: { fontSize: 11, color: colors.textSubtle, lineHeight: 15 },
   expBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', borderWidth: 0.5, borderColor: colors.border },
   expBtnActive: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderActive },
   expBtnLabel: { fontSize: 13, fontWeight: '600', color: colors.textSubtle },
