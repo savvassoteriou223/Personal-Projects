@@ -131,13 +131,17 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const scrollRef = useRef(null);
   const askCardY = useRef(0); // captured via onLayout — real scroll target, not a guess
 
-  // Follow the newest turn. Timeout lets the new turn lay out before we measure —
-  // scrolling on the same tick lands short of the actual end.
+  // Follow the newest turn — but only once the user has actually asked something
+  // this session. conversationHistory is reloaded from coach_memory on open (so the
+  // coach keeps context), and without this guard that cold load would fire a
+  // scrollToEnd and dump the user at the bottom, past the focus card, onto an empty
+  // answer panel. Timeout lets the new turn lay out before we measure — scrolling on
+  // the same tick lands short of the actual end.
   useEffect(() => {
-    if (!conversationHistory.length && !pendingQuestion) return;
+    if (!hasAskedThisSession) return;
     const id = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
     return () => clearTimeout(id);
-  }, [conversationHistory.length, pendingQuestion, asking]);
+  }, [conversationHistory.length, pendingQuestion, asking, hasAskedThisSession]);
 
   // useEffect (not useFocusEffect) so this also works when embedded in the
   // workout modal, which renders outside the navigation container.
@@ -636,7 +640,38 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       goalMilestone,
     });
 
-    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, dislikedIds, streak, insights, proactivePrompt };
+    // Neglected major muscle — a regression signal, not a "you stopped" one.
+    // Only fires when the user IS actively training (trained in the last 3 days),
+    // for a major group that (a) their program actually targets and (b) they HAVE
+    // trained inside the 30-day window but not in 8+ days. Requiring a prior
+    // last-trained date means we flag a group that slipped, never one a new user
+    // simply hasn't cycled to yet — a factual gap, not a guess. This is the safe,
+    // always-checkable read that keeps the focus card populated between the rarer
+    // plateau/deload/correlation triggers.
+    const MAJOR_GROUPS = { chest: 'Chest', back: 'Back', quads: 'Quads', hamstrings: 'Hamstrings', shoulders: 'Shoulders' };
+    let neglectedMuscle = null;
+    if (recentSetsForProgress.length && daysSinceLastSession != null && daysSinceLastSession <= 3) {
+      const programGroups = new Set();
+      (program?.days || []).forEach(day => (day.exercises || []).forEach(ex => {
+        const g = getPrimaryMuscle(ex.name);
+        if (g && MAJOR_GROUPS[g]) programGroups.add(g);
+      }));
+      const lastTrained = {};
+      recentSetsForProgress.forEach(s => {
+        const g = getPrimaryMuscle(s.exercise_name);
+        if (!g || !MAJOR_GROUPS[g] || !programGroups.has(g)) return;
+        const d = new Date(s.completed_at);
+        if (!lastTrained[g] || d > lastTrained[g]) lastTrained[g] = d;
+      });
+      let worst = null;
+      Object.entries(lastTrained).forEach(([g, last]) => {
+        const gapDays = Math.floor((Date.now() - last.getTime()) / 86400000);
+        if (gapDays >= 8 && (!worst || gapDays > worst.gapDays)) worst = { group: g, label: MAJOR_GROUPS[g], gapDays };
+      });
+      if (worst) neglectedMuscle = worst;
+    }
+
+    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, dislikedIds, streak, insights, proactivePrompt, neglectedMuscle };
     setUserData(data);
     return data;
   };
@@ -1727,21 +1762,81 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         const insights = userData?.insights || [];
         const changeEffectiveness = userData?.changeEffectiveness || null;
         const readyToProgress = userData?.readyToProgress || [];
+        const neglectedMuscle = userData?.neglectedMuscle || null;
+        // Focus card fallback chain — most time-sensitive first. proactivePrompt
+        // is a trigger (deload/plateau/missed/recovery/milestone); below it come
+        // the always-checkable data reads so the card is populated far more often
+        // than the old proactive-or-correlation-only path (which was usually
+        // empty). Each read is factual — a real gap, a real correlation, a real
+        // progression — never a manufactured "insight".
         const focusItem = proactivePrompt
           ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
-          : insights.length > 0
-            ? { eyebrow: t('coach.focusEyebrowWeek'), title: insights[0], body: null }
-            : null;
-        const remainingInsights = proactivePrompt ? insights : insights.slice(1);
-        // changeEffectiveness first — "coach checks its own work" is the
-        // strongest kind of fragment — then ready-to-progress, then whatever
-        // correlations are left. Capped at 3 further down.
-        const rotationDue = userData?.rotationDue || null;
-        const fragments = [changeEffectiveness, rotationDue, ...readyToProgress, ...remainingInsights].filter(Boolean);
-        if (!recentChanges.length && !focusItem && !fragments.length) return null;
+          : neglectedMuscle
+            ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning, title: t('coach.neglectTitle', { muscle: neglectedMuscle.label, days: neglectedMuscle.gapDays }), body: t('coach.neglectBody', { muscle: neglectedMuscle.label.toLowerCase() }) }
+            : insights.length > 0
+              ? { eyebrow: t('coach.focusEyebrowWeek'), title: insights[0], body: null }
+              : readyToProgress.length > 0
+                ? { eyebrow: t('coach.focusEyebrowProgress'), eyebrowColor: colors.accent, title: readyToProgress[0], body: null, promotedProgress: true }
+                : null;
+        // Structured signal tiles for the bento grid — each a real detector,
+        // rendered as a short label + value. Only the ones with data appear.
+        const recovery = (userData?.recoveryCheckIns || []).find(c => !c.skipped)?.label || null;
+        const weeklySets = Object.values(userData?.weeklyVolume || {}).reduce((a, b) => a + (b || 0), 0);
+        const plateauEx = userData?.plateaus?.[0]?.exercise || null;
+        const signals = [];
+        if (readyToProgress.length) signals.push({ k: t('coach.sigProgression'), v: t('coach.sigReady', { n: readyToProgress.length }) });
+        if (plateauEx) signals.push({ k: t('coach.sigPlateau'), v: plateauEx, amber: true });
+        if (recovery) signals.push({ k: t('coach.sigRecovery'), v: recovery });
+        if (weeklySets > 0) signals.push({ k: t('coach.sigWeek'), v: t('coach.sigSets', { n: weeklySets }) });
+        if (!recentChanges.length && !focusItem && !signals.length) return null;
 
         return (
-          <View style={{ marginBottom: 4 }}>
+          <View style={styles.bentoWrap}>
+            {/* Priority-read hero tile — the single most important read, from the
+                same fallback chain as before (proactive → gap → correlation →
+                progression). White is reserved for the one action. */}
+            {focusItem && (() => {
+              const plateauTrend = proactivePrompt?.key === 'plateau' ? (userData?.plateauTrend || []) : [];
+              const trendChange = plateauTrend.length >= 2 ? plateauTrend[plateauTrend.length - 1].est1rm - plateauTrend[0].est1rm : null;
+              return (
+              <View style={styles.heroTile}>
+                <View style={styles.tileKRow}>
+                  <View style={[styles.tileDot, focusItem.eyebrowColor === colors.warning && { backgroundColor: colors.warning }]} />
+                  <Text style={styles.tileK}>{focusItem.eyebrow}</Text>
+                </View>
+                <Text style={styles.heroTitle}>{focusItem.title}</Text>
+                <PlateauChart points={plateauTrend} />
+                {trendChange !== null && (
+                  <Text style={styles.focusChartLabel}>{trendChange > 0 ? '+' : ''}{trendChange}kg over {plateauTrend.length} sessions</Text>
+                )}
+                {focusItem.body ? <Text style={styles.heroBody}>{focusItem.body}</Text> : null}
+                <View style={styles.heroActions}>
+                  {proactivePrompt?.key === 'deload' && (
+                    <Tappable style={styles.heroBtnPrimary} onPress={applyDeloadProposals}>
+                      <Text style={styles.heroBtnPrimaryText}>{t('coach.applyDeload')}</Text>
+                    </Tappable>
+                  )}
+                  <Tappable style={styles.heroBtnGhost} onPress={() => setFocusDismissed(true)}>
+                    <Text style={styles.heroBtnGhostText}>{t('coach.dismissToday')}</Text>
+                  </Tappable>
+                </View>
+              </View>
+              );
+            })()}
+
+            {/* Signal tiles — a 2-up grid of the structured detector reads. */}
+            {signals.length > 0 && (
+              <View style={styles.bentoGrid}>
+                {signals.map((s, i) => (
+                  <View key={i} style={styles.tile}>
+                    <Text style={styles.tileK}>{s.k}</Text>
+                    <Text style={[styles.tileV, s.amber && { color: colors.warning }]} numberOfLines={1}>{s.v}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Recent changes — the retrospective changelog, demoted to the bottom. */}
             {recentChanges.length > 0 && (
               <View style={styles.doneStrip}>
                 <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
@@ -1765,43 +1860,6 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                     <Text style={styles.undoBtnText}>{undoing ? t('coach.undoing') : t('coach.undo')}</Text>
                   </Tappable>
                 )}
-              </View>
-            )}
-
-            {focusItem && (() => {
-              const plateauTrend = proactivePrompt?.key === 'plateau' ? (userData?.plateauTrend || []) : [];
-              const trendChange = plateauTrend.length >= 2 ? plateauTrend[plateauTrend.length - 1].est1rm - plateauTrend[0].est1rm : null;
-              return (
-              <View style={styles.focusCard}>
-                <Text style={styles.focusEyebrow}>{focusItem.eyebrow}</Text>
-                <Text style={styles.focusTitle}>{focusItem.title}</Text>
-                <PlateauChart points={plateauTrend} />
-                {trendChange !== null && (
-                  <Text style={styles.focusChartLabel}>{trendChange > 0 ? '+' : ''}{trendChange}kg over {plateauTrend.length} sessions</Text>
-                )}
-                {focusItem.body ? <Text style={styles.focusBody}>{focusItem.body}</Text> : null}
-                <View style={styles.focusActions}>
-                  {proactivePrompt?.key === 'deload' && (
-                    <Tappable style={[styles.focusBtn, styles.focusBtnPrimary]} onPress={applyDeloadProposals}>
-                      <Text style={styles.focusBtnPrimaryText}>{t('coach.applyDeload')}</Text>
-                    </Tappable>
-                  )}
-                  <Tappable style={styles.focusBtn} onPress={() => setFocusDismissed(true)}>
-                    <Text style={styles.focusBtnText}>{t('coach.dismissToday')}</Text>
-                  </Tappable>
-                </View>
-              </View>
-              );
-            })()}
-
-            {fragments.length > 0 && (
-              <View style={styles.fragmentList}>
-                {fragments.slice(0, 3).map((f, i) => (
-                  <View key={i} style={[styles.fragmentRow, i > 0 && styles.fragmentRowBorder]}>
-                    <View style={styles.fragmentDot} />
-                    <Text style={styles.fragmentText}>{f}</Text>
-                  </View>
-                ))}
               </View>
             )}
           </View>
@@ -1908,6 +1966,23 @@ const styles = StyleSheet.create({
   fragmentRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
   fragmentDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.textFaint, marginTop: 6 },
   fragmentText: { fontSize: 12.5, color: colors.textMuted, lineHeight: 18, flex: 1 },
+
+  // ── Bento reads: a priority-read hero tile + a 2-up grid of signal tiles ──
+  bentoWrap: { marginHorizontal: 20, marginBottom: 4 },
+  heroTile: { backgroundColor: colors.surface, borderRadius: 18, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 9 },
+  tileKRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  tileDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent },
+  tileK: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.textSubtle },
+  heroTitle: { fontSize: 17, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.2, marginBottom: 8 },
+  heroBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19, marginBottom: 14 },
+  heroActions: { flexDirection: 'row', gap: 8 },
+  heroBtnPrimary: { backgroundColor: colors.surfaceInverse, borderRadius: 11, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center' },
+  heroBtnPrimaryText: { fontSize: 12.5, fontWeight: '700', color: colors.textOnLight },
+  heroBtnGhost: { borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 11, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center' },
+  heroBtnGhostText: { fontSize: 12.5, fontWeight: '600', color: colors.textPrimary },
+  bentoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginBottom: 9 },
+  tile: { backgroundColor: colors.surface, borderRadius: 16, padding: 14, borderWidth: 0.5, borderColor: colors.border, flexGrow: 1, flexBasis: '47%', minWidth: 0 },
+  tileV: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginTop: 6, letterSpacing: -0.2 },
 
   card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
   cardTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },

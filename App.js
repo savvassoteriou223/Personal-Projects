@@ -124,6 +124,11 @@ const pt = StyleSheet.create({
 export default function App() {
   const [screen, setScreen] = useState('loading');
   const [activeWorkout, setActiveWorkout] = useState(false);
+  // Backgrounded workout: the session is still live (its full state is persisted
+  // to AsyncStorage by WorkoutExecutionScreen and restored on remount), but we
+  // render the tab navigator instead so the user can use the rest of the app. A
+  // persistent resume bar brings the workout back.
+  const [workoutMinimized, setWorkoutMinimized] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
   const [nutritionMeal, setNutritionMeal] = useState(null);
   const [nutritionRefresh, setNutritionRefresh] = useState(0);
@@ -513,18 +518,20 @@ export default function App() {
       );
     }
 
-    if (activeWorkout) {
+    if (activeWorkout && !workoutMinimized) {
       return (
         <WorkoutExecutionScreen
           workout={typeof activeWorkout === 'object' ? activeWorkout : { name: 'Workout', exercises: [] }}
           isPremium={isPremium}
           onUpgrade={handleUpgrade}
           onRestore={handleRestore}
+          onMinimize={() => setWorkoutMinimized(true)}
           onFinish={() => {
             setActiveWorkout(false);
+            setWorkoutMinimized(false);
             setRefreshToday(prev => prev + 1);
           }}
-          onCancel={() => setActiveWorkout(false)}
+          onCancel={() => { setActiveWorkout(false); setWorkoutMinimized(false); }}
         />
       );
     }
@@ -536,6 +543,7 @@ export default function App() {
           onClose={() => setPreviewWorkout(null)}
           onStartWorkout={(workout) => {
             setPreviewWorkout(null);
+            setWorkoutMinimized(false);
             setActiveWorkout(workout || true);
           }}
           onSplitChanged={() => setRefreshToday(prev => prev + 1)}
@@ -580,7 +588,7 @@ export default function App() {
           {() => (
             <TodayScreen
               key={refreshToday}
-              onStartWorkout={(workout) => setActiveWorkout(workout || true)}
+              onStartWorkout={(workout) => { setWorkoutMinimized(false); setActiveWorkout(workout || true); }}
               onPreviewWorkout={(workout) => setPreviewWorkout(workout)}
               onAskCoach={(question) => setCoachPrefill(question)}
             />
@@ -590,7 +598,7 @@ export default function App() {
         <Tab.Screen name="Program">
           {() => (
             <ProgramScreen
-              onStartWorkout={(workout) => setActiveWorkout(workout || true)}
+              onStartWorkout={(workout) => { setWorkoutMinimized(false); setActiveWorkout(workout || true); }}
               onSplitChanged={() => setRefreshToday(prev => prev + 1)}
             />
           )}
@@ -645,6 +653,18 @@ export default function App() {
           </Pressable>
         </View>
       )}
+      {screen === 'main' && activeWorkout && workoutMinimized && (
+        <Pressable style={resumeBarStyles.container} onPress={() => setWorkoutMinimized(false)}>
+          <View style={resumeBarStyles.dot} />
+          <View style={{ flex: 1 }}>
+            <Text style={resumeBarStyles.title} numberOfLines={1}>
+              {typeof activeWorkout === 'object' ? (activeWorkout.name || 'Workout') : 'Workout'} in progress
+            </Text>
+            <Text style={resumeBarStyles.sub}>Tap to resume</Text>
+          </View>
+          <Ionicons name="chevron-up" size={18} color={colors.textPrimary} />
+        </Pressable>
+      )}
       <Modal
         visible={showNutrition}
         animationType="slide"
@@ -680,4 +700,27 @@ const updateBannerStyles = StyleSheet.create({
   btn: { marginRight: 10 },
   btnText: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
   close: { padding: 2 },
+});
+
+// Sits directly above the tab bar (height 56 + bottom inset). Tapping anywhere
+// on it restores the full workout screen — the session never stopped.
+const resumeBarStyles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 56 + (initialWindowMetrics?.insets?.bottom ?? 0),
+    backgroundColor: colors.surfaceElevated,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.accentHair,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 998,
+  },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
+  title: { color: colors.textPrimary, fontSize: 14, fontWeight: '600' },
+  sub: { color: colors.textSubtle, fontSize: 11, marginTop: 1 },
 });

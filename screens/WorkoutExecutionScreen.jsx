@@ -121,7 +121,7 @@ function calculatePlates(targetKg, barKg) {
   return plates;
 }
 
-export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, isPremium, onUpgrade, onRestore }) {
+export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, onMinimize, isPremium, onUpgrade, onRestore }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const isSimple = workout.trainingExperience === 'beginner';
@@ -848,22 +848,39 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, is
       {/* Top bar — hidden when slideshow is open to prevent bleed-through */}
       {!slideshowExercise && (
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <Tappable onPress={() => {
-          if (totalSetsCompleted > 0) {
-            Alert.alert(
-              t('workout.alerts.cancelTitle'),
-              t('workout.alerts.cancelMsg'),
-              [
-                { text: t('workout.alerts.keepGoing'), style: 'cancel' },
-                { text: t('common.cancel'), style: 'destructive', onPress: onCancel },
-              ]
-            );
-          } else {
-            onCancel();
-          }
-        }} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>✕</Text>
-        </Tappable>
+        <View style={styles.topLeftGroup}>
+          {onMinimize && (
+            <Tappable
+              onPress={async () => {
+                // Flush the draft synchronously first — the auto-save is debounced,
+                // and unmounting on minimize would otherwise drop the last change.
+                try { await AsyncStorage.setItem(WORKOUT_DRAFT_KEY, JSON.stringify(latestDraftRef.current)); } catch (_) {}
+                onMinimize();
+              }}
+              style={styles.minimizeBtn}
+              hitSlop={8}
+              accessibilityLabel={t('workout.minimize')}
+            >
+              <Text style={styles.minimizeText}>⌄</Text>
+            </Tappable>
+          )}
+          <Tappable onPress={() => {
+            if (totalSetsCompleted > 0) {
+              Alert.alert(
+                t('workout.alerts.cancelTitle'),
+                t('workout.alerts.cancelMsg'),
+                [
+                  { text: t('workout.alerts.keepGoing'), style: 'cancel' },
+                  { text: t('common.cancel'), style: 'destructive', onPress: onCancel },
+                ]
+              );
+            } else {
+              onCancel();
+            }
+          }} style={styles.cancelBtn}>
+            <Text style={styles.cancelText}>✕</Text>
+          </Tappable>
+        </View>
         <View style={styles.dotIndicators}>
           {sets.map((ex, i) => (
             <Tappable
@@ -1432,7 +1449,10 @@ const styles = StyleSheet.create({
 
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: colors.border },
   elapsedTimer: { textAlign: 'center', fontSize: 11, color: colors.textFaint, letterSpacing: 0.5, paddingVertical: 4 },
-  cancelBtn: { padding: 8, width: 60 },
+  topLeftGroup: { flexDirection: 'row', alignItems: 'center' },
+  minimizeBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  minimizeText: { color: colors.textPrimary, fontSize: 26, lineHeight: 26, marginTop: -6, fontWeight: '400' },
+  cancelBtn: { padding: 8, paddingLeft: 4 },
   cancelText: { color: colors.textSubtle, fontSize: 18 },
   dotIndicators: { flexDirection: 'row', gap: 4, marginTop: 5 },
   dotIndicator: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.control },
