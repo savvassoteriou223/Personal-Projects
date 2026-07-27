@@ -1089,7 +1089,12 @@
       "title": "Muscle recovery",
       "sub": "Based on your recent training history",
       "daysAgo": "{{count}}d ago",
-      "never": "Never"
+      "never": "Never",
+      "details": "Details",
+      "tabBody": "Body",
+      "tabMuscles": "Muscles",
+      "readyCount": "{{count}} ready",
+      "recoveringCount": "{{count}} recovering"
     },
     "volume": {
       "title": "This week's volume",

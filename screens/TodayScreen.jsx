@@ -12,6 +12,7 @@ import { maybeSendProactiveNudge } from '../lib/notificationService';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
 import CardioLogModal from './CardioLogModal';
+import BodyHeatMap from './BodyHeatMap';
 import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
 import { getTodayCheckIn } from '../lib/recoveryStore';
 import { Platform } from 'react-native';
@@ -117,6 +118,10 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   const [weeklyVolume, setWeeklyVolume] = useState({});
   const [weekVolumeSets, setWeekVolumeSets] = useState([]); // raw working sets, last 7 days, for the head-level engine
   const [showVolumeDetail, setShowVolumeDetail] = useState(false);
+  // Recovery detail sheet — the Today card stays compact; the body map and the
+  // full muscle grid live behind it so recovery doesn't dominate the screen.
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryTab, setRecoveryTab] = useState('body');
   const [lastSession, setLastSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -232,7 +237,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
       // Load profile
       const { data: prof } = await supabase
         .from('profiles')
-        .select('id, name, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes, weight_kg, target_weight_kg')
+        .select('id, name, sex, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes, weight_kg, target_weight_kg')
         .eq('id', user.id)
         .single();
 
@@ -803,28 +808,105 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         )}
       </View>
 
-      {/* Muscle recovery */}
+      {/* Muscle recovery — compact on Today. The body map and the full muscle
+          grid live in the detail sheet so this stays roughly the footprint of
+          the old chip grid instead of taking over the screen. */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('today.recovery.title')}</Text>
-        <Text style={styles.sectionSub}>{t('today.recovery.sub')}</Text>
-        <View style={styles.muscleGrid}>
-          {Object.keys(MUSCLE_DISPLAY).map((muscle) => {
-            const r = muscleRecovery[muscle];
-            const status = r?.status || 'fresh';
-            const rc = RECOVERY_COLORS[status];
-            return (
-              <View key={muscle} style={[styles.muscleChip, { backgroundColor: rc.bg, borderColor: rc.color + '44' }]}>
-                <Text style={[styles.muscleChipName, { color: rc.color }]}>{t(`today.muscles.${muscle}`)}</Text>
-                <Text style={[styles.muscleChipStatus, { color: rc.color }]}>
-                  {status === 'trained_today' ? t('dates.today')
-                    : r?.daysSince == null ? t('today.recovery.never')
-                    : t('today.recovery.daysAgo', { count: r.daysSince })}
-                </Text>
+        {(() => {
+          const keys = Object.keys(MUSCLE_DISPLAY);
+          const counts = keys.reduce((acc, m) => {
+            const status = muscleRecovery[m]?.status || 'fresh';
+            if (status === 'trained_today' || status === 'recovering') acc.recovering += 1;
+            else acc.ready += 1;
+            return acc;
+          }, { ready: 0, recovering: 0 });
+          return (
+            <Tappable
+              style={styles.recoveryCard}
+              onPress={() => { setRecoveryTab('body'); setShowRecovery(true); }}
+              accessibilityLabel={t('today.recovery.title')}
+            >
+              <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="front" height={130} />
+              <View style={styles.recoveryInfo}>
+                <View style={styles.recoveryTopRow}>
+                  <Text style={styles.recoveryTitle}>{t('today.recovery.title')}</Text>
+                  <Text style={styles.recoveryMore}>{t('today.recovery.details')} ›</Text>
+                </View>
+                <Text style={styles.recoverySub}>{t('today.recovery.sub')}</Text>
+                <View style={styles.recoveryPills}>
+                  <View style={[styles.recoveryPill, { backgroundColor: colors.accentSoft, borderColor: colors.accentHair }]}>
+                    <Text style={[styles.recoveryPillText, { color: colors.accent }]}>
+                      {t('today.recovery.readyCount', { count: counts.ready })}
+                    </Text>
+                  </View>
+                  {counts.recovering > 0 && (
+                    <View style={[styles.recoveryPill, { backgroundColor: colors.warningSoft, borderColor: colors.warningHair }]}>
+                      <Text style={[styles.recoveryPillText, { color: colors.warning }]}>
+                        {t('today.recovery.recoveringCount', { count: counts.recovering })}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            );
-          })}
-        </View>
+            </Tappable>
+          );
+        })()}
       </View>
+
+      {/* Recovery detail — Body (anatomy, front + back) / Muscles (the same grid
+          the app has always used, unchanged). */}
+      <Modal visible={showRecovery} animationType="slide" onRequestClose={() => setShowRecovery(false)}>
+        <SafeAreaView style={styles.container} edges={['top']}>
+          <View style={styles.recoveryHeader}>
+            <Text style={styles.recoveryHeaderTitle}>{t('today.recovery.title')}</Text>
+            <Tappable onPress={() => setShowRecovery(false)} hitSlop={12}>
+              <Text style={styles.recoveryDone}>{t('common.done')}</Text>
+            </Tappable>
+          </View>
+
+          <View style={styles.recoveryTabs}>
+            {['body', 'muscles'].map(tab => (
+              <Tappable
+                key={tab}
+                style={[styles.recoveryTab, recoveryTab === tab && styles.recoveryTabActive]}
+                onPress={() => setRecoveryTab(tab)}
+                accessibilityState={{ selected: recoveryTab === tab }}
+              >
+                <Text style={[styles.recoveryTabText, recoveryTab === tab && styles.recoveryTabTextActive]}>
+                  {t(tab === 'body' ? 'today.recovery.tabBody' : 'today.recovery.tabMuscles')}
+                </Text>
+              </Tappable>
+            ))}
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+            {recoveryTab === 'body' ? (
+              <View style={styles.recoveryBodies}>
+                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="front" height={330} />
+                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="back" height={330} />
+              </View>
+            ) : (
+              <View style={styles.muscleGrid}>
+                {Object.keys(MUSCLE_DISPLAY).map((muscle) => {
+                  const r = muscleRecovery[muscle];
+                  const status = r?.status || 'fresh';
+                  const rc = RECOVERY_COLORS[status];
+                  return (
+                    <View key={muscle} style={[styles.muscleChip, { backgroundColor: rc.bg, borderColor: rc.color + '44' }]}>
+                      <Text style={[styles.muscleChipName, { color: rc.color }]}>{t(`today.muscles.${muscle}`)}</Text>
+                      <Text style={[styles.muscleChipStatus, { color: rc.color }]}>
+                        {status === 'trained_today' ? t('dates.today')
+                          : r?.daysSince == null ? t('today.recovery.never')
+                          : t('today.recovery.daysAgo', { count: r.daysSince })}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
 
       {/* Weekly volume */}
       <View style={styles.section}>
@@ -1185,9 +1267,9 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
 
-  header: { padding: 24, paddingTop: 16 },
-  greeting: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5 },
-  dateText: { fontSize: 13, color: colors.textSubtle, marginTop: 2 },
+  header: { padding: 24, paddingTop: 20, paddingBottom: 8 },
+  greeting: { fontSize: 34, fontWeight: '800', color: colors.textPrimary, letterSpacing: -1.2, lineHeight: 38 },
+  dateText: { fontSize: 13, color: colors.textMuted, marginTop: 6, fontWeight: '600', letterSpacing: 0.2, textTransform: 'uppercase' },
   checkInOverlay: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' },
   checkInCard: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderTopColor: colors.border },
   checkInTitle: { fontSize: 20, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
@@ -1217,9 +1299,9 @@ const styles = StyleSheet.create({
   blockPillText: { fontSize: 11, color: colors.textSecondary, fontWeight: '500' },
 
   // Today's session
-  sessionCard: { marginHorizontal: 20, backgroundColor: colors.surfaceElevated, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: colors.border, marginBottom: 24 },
-  sessionLabel: { fontSize: 10, color: colors.textPrimary, fontWeight: '700', letterSpacing: 1.2, marginBottom: 6 },
-  sessionName: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, marginBottom: 4, letterSpacing: -0.3 },
+  sessionCard: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 18, padding: 18, borderWidth: 0.5, borderColor: colors.border, marginBottom: 16 },
+  sessionLabel: { fontSize: 10, color: colors.textSubtle, fontWeight: '700', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
+  sessionName: { fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 4, letterSpacing: -0.4 },
   sessionFocus: { fontSize: 13, color: colors.textSecondary, marginBottom: 12 },
   sessionMeta: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   sessionMetaChip: { backgroundColor: colors.surfaceInset, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 0.5, borderColor: colors.border },
@@ -1264,6 +1346,36 @@ const styles = StyleSheet.create({
   cardioRowDate:      { fontSize: 11, color: colors.textFaint },
 
   // Muscle recovery grid
+  // ── Recovery: compact Today card + detail sheet ──
+  recoveryCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: colors.surface, borderRadius: 16, padding: 14,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  recoveryInfo: { flex: 1, minWidth: 0 },
+  recoveryTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  recoveryTitle: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  recoveryMore: { fontSize: 11.5, color: colors.textSubtle, fontWeight: '600' },
+  recoverySub: { fontSize: 12, color: colors.textMuted, lineHeight: 17, marginTop: 6 },
+  recoveryPills: { flexDirection: 'row', gap: 6, marginTop: 12, flexWrap: 'wrap' },
+  recoveryPill: { borderRadius: 20, paddingHorizontal: 9, paddingVertical: 3, borderWidth: 0.5 },
+  recoveryPillText: { fontSize: 10.5, fontWeight: '700' },
+  recoveryHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14,
+  },
+  recoveryHeaderTitle: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.4 },
+  recoveryDone: { fontSize: 15, fontWeight: '600', color: colors.textMuted },
+  recoveryTabs: {
+    flexDirection: 'row', gap: 4, marginHorizontal: 20, padding: 4,
+    backgroundColor: colors.surfaceAlt, borderRadius: 14, borderWidth: 0.5, borderColor: colors.border,
+  },
+  recoveryTab: { flex: 1, paddingVertical: 9, borderRadius: 10, alignItems: 'center' },
+  recoveryTabActive: { backgroundColor: colors.surfaceInverse },
+  recoveryTabText: { fontSize: 13, fontWeight: '700', color: colors.textSubtle },
+  recoveryTabTextActive: { color: colors.textOnLight },
+  recoveryBodies: { flexDirection: 'row', justifyContent: 'center', gap: 10 },
+
   muscleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   muscleChip: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 0.5, minWidth: '30%', flex: 1 },
   muscleChipName: { fontSize: 12, fontWeight: '600' },
