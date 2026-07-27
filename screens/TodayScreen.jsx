@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -122,6 +122,14 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   // full muscle grid live behind it so recovery doesn't dominate the screen.
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryTab, setRecoveryTab] = useState('body');
+
+  // buildVolumeView walks every working set from the last 7 days and rebuilds
+  // the per-head tree. It used to run inline in JSX, so it recomputed on every
+  // render — including unrelated state changes like opening a modal.
+  const volumeView = useMemo(
+    () => buildVolumeView(weekVolumeSets, profile?.trainingExperience || 'beginner'),
+    [weekVolumeSets, profile?.trainingExperience],
+  );
   const [lastSession, setLastSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -231,15 +239,17 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
       // Self-reported readiness check-in (best-effort; never throws). A skipped
       // check-in carries no signal, so it must not produce a stable label.
-      const todayCheckIn = await getTodayCheckIn();
+      // Independent of the profile fetch, so both go out at once rather than
+      // costing two serial round-trips on the first screen the user sees.
+      const [todayCheckIn, { data: prof }] = await Promise.all([
+        getTodayCheckIn(),
+        supabase
+          .from('profiles')
+          .select('id, name, sex, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes, weight_kg, target_weight_kg')
+          .eq('id', user.id)
+          .single(),
+      ]);
       setCheckInLabel(todayCheckIn?.skipped ? null : (todayCheckIn?.label ?? null));
-
-      // Load profile
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('id, name, sex, trainingExperience, equipment, weekly_workouts, goals, selected_split, health_conditions, injury_profile, coach_notes, weight_kg, target_weight_kg')
-        .eq('id', user.id)
-        .single();
 
       if (prof) {
         setProfile(prof);
@@ -300,11 +310,21 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         // treated as disliked and dropped from the generated program.
         const skipsSince = new Date();
         skipsSince.setDate(skipsSince.getDate() - 90);
-        const { data: skipRows } = await supabase
-          .from('exercise_skips')
-          .select('exercise_name')
-          .eq('user_id', user.id)
-          .gte('skipped_at', skipsSince.toISOString());
+        // Skips and coach overrides both depend only on the user, so they're
+        // fetched together; the program is generated from the first while the
+        // second is already in hand.
+        const [{ data: skipRows }, { data: overrides }] = await Promise.all([
+          supabase
+            .from('exercise_skips')
+            .select('exercise_name')
+            .eq('user_id', user.id)
+            .gte('skipped_at', skipsSince.toISOString()),
+          supabase
+            .from('program_template_overrides')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: true }),
+        ]);
         const dislikedIds = [...new Set([
           ...computeDislikedExerciseIds(skipRows || []),
           ...dislikedExerciseIdsFromNotes(prof.coach_notes || []),
@@ -313,11 +333,6 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         let prog = generateProgram(prof, block.block_index, block.block_start_date, { dislikedIds });
 
         // Apply any permanent AI coach edits on top of the generated program
-        const { data: overrides } = await supabase
-          .from('program_template_overrides')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true });
 
         if (overrides?.length) {
           const equipment = normalizeEquipment(prof.equipment || []);
@@ -944,7 +959,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
         {(() => {
           const tier = profile?.trainingExperience || 'beginner';
-          const view = buildVolumeView(weekVolumeSets, tier);
+          const view = volumeView;
           const fmt = (n) => (Number.isInteger(n) ? `${n}` : n.toFixed(1));
 
           // Junk-volume callout: any group/head whose DIRECT volume is >1.5× optimal.

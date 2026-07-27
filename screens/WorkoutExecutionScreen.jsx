@@ -121,6 +121,58 @@ function calculatePlates(targetKg, barKg) {
   return plates;
 }
 
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+// ─── Ticking clocks own their own state ──────────────────────────────────────
+// Both of these used to live as state on the screen itself, so every tick
+// re-rendered all ~1600 lines of it: every exercise page in the pager, every
+// getExerciseInsight() lookup, every muscle map — once a second, for the whole
+// session. Keeping the tick local means only the clock re-renders.
+
+function ElapsedTimer({ startRef, stopped }) {
+  const [secs, setSecs] = useState(() => Math.floor((Date.now() - startRef.current) / 1000));
+  useEffect(() => {
+    if (stopped) return;
+    const id = setInterval(() => setSecs(Math.floor((Date.now() - startRef.current) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [stopped, startRef]);
+  return <Text style={styles.elapsedTimer}>{formatTime(secs)}</Text>;
+}
+
+function RestBanner({ endAt, onSkip, onDone }) {
+  const { t } = useTranslation();
+  const [left, setLeft] = useState(() => (endAt ? Math.max(0, Math.ceil((endAt - Date.now()) / 1000)) : 0));
+  // Held in a ref so an inline parent callback can't restart the interval.
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
+
+  useEffect(() => {
+    if (!endAt) return;
+    const tick = () => {
+      const s = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      setLeft(s);
+      if (s <= 0) doneRef.current?.();
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [endAt]);
+
+  if (!endAt || left <= 0) return null;
+  return (
+    <View style={styles.restBanner}>
+      <Text style={styles.restText}>{t('workout.restTimer', { time: formatTime(left) })}</Text>
+      <Tappable onPress={onSkip}>
+        <Text style={styles.restSkip}>{t('workout.skip')}</Text>
+      </Tappable>
+    </View>
+  );
+}
+
 export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, onMinimize, isPremium, onUpgrade, onRestore }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -128,7 +180,6 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
   const [currentExIdx, setCurrentExIdx] = useState(0);
   const [sets, setSets] = useState(() => workout.exercises.map(exerciseToSetState));
   const [restEndAt, setRestEndAt] = useState(null); // absolute ms epoch when rest ends — survives app close, unlike a plain countdown
-  const [, setRestTick] = useState(0); // forces a re-render each second while resting so the derived countdown below updates
   const [finishTime, setFinishTime] = useState(null);
   const [rpe, setRpe] = useState(7);
   const [finished, setFinished] = useState(false);
@@ -447,7 +498,6 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
   };
 
   const [overloadSuggestions, setOverloadSuggestions] = useState([]);
-  const [elapsed, setElapsed] = useState(0);
   const [pageWidth, setPageWidth] = useState(SCREEN_W);
   const [userBodyWeight, setUserBodyWeight] = useState(null);
   const [bwMode, setBwMode] = useState({});
@@ -477,24 +527,8 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
     restEndAt,
   };
 
-  useEffect(() => {
-    if (finished) return;
-    const id = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTime.current) / 1000));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [finished]);
-
-  const restTimer = restEndAt ? Math.max(0, Math.ceil((restEndAt - Date.now()) / 1000)) : 0;
-
-  useEffect(() => {
-    if (!restEndAt) return;
-    const id = setInterval(() => {
-      if (Date.now() >= restEndAt) setRestEndAt(null);
-      else setRestTick(t => t + 1);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [restEndAt]);
+  // The elapsed and rest clocks tick inside <ElapsedTimer> / <RestBanner> so
+  // this screen no longer re-renders once a second for the whole session.
 
   useEffect(() => {
     const load = async () => {
@@ -566,12 +600,6 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
     };
     load();
   }, []);
-
-  const formatTime = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
 
   const parseRestSeconds = (restStr) => {
     if (!restStr) return 120;
@@ -912,7 +940,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
 
       {/* Elapsed timer */}
       {!slideshowExercise && (
-        <Text style={styles.elapsedTimer}>{formatTime(elapsed)}</Text>
+        <ElapsedTimer startRef={startTime} stopped={finished} />
       )}
 
       {/* Progress bar */}
@@ -934,15 +962,12 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
         </View>
       )}
 
-      {/* Rest timer */}
-      {restTimer > 0 && (
-        <View style={styles.restBanner}>
-          <Text style={styles.restText}>{t('workout.restTimer', { time: formatTime(restTimer) })}</Text>
-          <Tappable onPress={() => setRestEndAt(null)}>
-            <Text style={styles.restSkip}>{t('workout.skip')}</Text>
-          </Tappable>
-        </View>
-      )}
+      {/* Rest timer — self-ticking, so counting down doesn't re-render the screen */}
+      <RestBanner
+        endAt={restEndAt}
+        onSkip={() => setRestEndAt(null)}
+        onDone={() => setRestEndAt(null)}
+      />
 
       {/* Exercise swipe pager — KeyboardAvoidingView shrinks content when keyboard opens */}
       <KeyboardAvoidingView
