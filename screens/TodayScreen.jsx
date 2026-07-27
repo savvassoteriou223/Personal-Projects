@@ -13,6 +13,7 @@ import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
 import CardioLogModal from './CardioLogModal';
 import BodyHeatMap from './BodyHeatMap';
+import VolumeBar from '../components/VolumeBar';
 import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
 import { getTodayCheckIn } from '../lib/recoveryStore';
 import { Platform } from 'react-native';
@@ -980,15 +981,10 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             }
           });
 
-          const Bar = ({ done, target, color }) => {
-            const high = target?.optimal_high || Math.max(done, 1);
-            const fillPct = Math.min(done / high, 1) * 100;
-            return (
-              <View style={styles.volumeBarTrack}>
-                <View style={[styles.volumeBarFill, { width: `${fillPct}%`, backgroundColor: color }]} />
-              </View>
-            );
-          };
+          // Gradient anchored to the research thresholds — see VolumeBar. The
+          // colour prop is no longer needed: the bar derives its own status so
+          // it can also show overshoot turning back toward red.
+          const Bar = ({ done, target }) => <VolumeBar done={done} target={target} />;
 
           const targetLabel = (tgt) =>
             t('today.volume.target', { min: tgt.min, low: tgt.optimal_low, high: tgt.optimal_high });
@@ -1004,7 +1000,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                         <Text style={styles.volumeMuscleName}>{label}</Text>
                         {!!g.target && <Text style={styles.volumeTargetLabel}>{targetLabel(g.target)}</Text>}
                       </View>
-                      <Bar done={g.done} target={g.target} color={g.color} />
+                      <Bar done={g.done} target={g.target} />
                       <Text style={[styles.volumeCount, { color: g.color }]}>{fmt(g.done)}</Text>
                     </View>
 
@@ -1019,7 +1015,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                             <Text style={styles.volumeHeadName}>{headLabel}</Text>
                             <Text style={styles.volumeTargetLabel}>{subParts.join(' · ')}</Text>
                           </View>
-                          {h.target ? <Bar done={h.direct} target={h.target} color={h.color} /> : <View style={styles.volumeBarTrack} />}
+                          {h.target ? <Bar done={h.direct} target={h.target} /> : <View style={styles.volumeBarTrack} />}
                           <Text style={[styles.volumeCount, { color: h.target ? h.color : colors.textSubtle }]}>{fmt(h.direct)}</Text>
                         </View>
                       );
@@ -1412,7 +1408,6 @@ const styles = StyleSheet.create({
   volumeMuscleName: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
   volumeTargetLabel: { fontSize: 10, color: colors.textMuted, marginTop: 2 },
   volumeBarTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.control },
-  volumeBarFill: { height: 6, borderRadius: 3 },
   volumeCount: { fontSize: 11, fontWeight: '700', width: 36, textAlign: 'right' },
   volumeDetailToggle: { alignSelf: 'flex-start', marginBottom: 14, paddingVertical: 4, paddingHorizontal: 0 },
   volumeDetailToggleText: { fontSize: 12, fontWeight: '600', color: colors.accent },

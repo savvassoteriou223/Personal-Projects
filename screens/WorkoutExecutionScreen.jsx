@@ -1207,45 +1207,50 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                 {ex.completedSets.map((set, setIdx) => {
                   const typeMeta = SET_TYPE_META[set.type];
                   return (
+                    // Borderless row: the numbers are the interface. Input boxes,
+                    // steppers and a filled button all made this read as a form;
+                    // large type on a hairline-separated row reads as a log.
                     <View key={setIdx} style={[styles.setRow, set.done && styles.setRowDone]}>
                       <Tappable style={styles.setTypeBtn} onPress={() => cycleSetType(exIdx, setIdx)}>
                         {typeMeta
                           ? <Text style={[styles.setTypeBtnText, { color: typeMeta.color }]}>{typeMeta.label}</Text>
-                          : <Text style={styles.setTypeBtnDot}>·</Text>
+                          : <Text style={styles.setNum}>{setIdx + 1}</Text>
                         }
                       </Tappable>
-                      <Text style={[styles.setNum, { width: 16 }]}>{setIdx + 1}</Text>
 
-                      {/* Plain fields. Ticking a set copies its numbers into the
-                          next one, so a repeated set needs no typing at all —
-                          the speed comes from the prefill, not from extra
-                          controls crowding the row. */}
-                      <TextInput
-                        style={[styles.weightInput, { flex: 1 }]}
-                        value={set.weight}
-                        onChangeText={v => updateWeight(exIdx, setIdx, v)}
-                        keyboardType="decimal-pad"
-                        placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
-                        placeholderTextColor={colors.textFaint}
-                        editable={!set.done}
-                        selectTextOnFocus
-                      />
-                      <TextInput
-                        style={[styles.weightInput, { flex: 1 }]}
-                        value={set.reps}
-                        onChangeText={v => updateReps(exIdx, setIdx, v)}
-                        keyboardType="number-pad"
-                        placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
-                        placeholderTextColor={colors.textFaint}
-                        editable={!set.done}
-                        selectTextOnFocus
-                      />
+                      <View style={styles.setValues}>
+                        <TextInput
+                          style={[styles.setField, set.done && styles.setFieldDone]}
+                          value={set.weight}
+                          onChangeText={v => updateWeight(exIdx, setIdx, v)}
+                          keyboardType="decimal-pad"
+                          placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
+                          placeholderTextColor={colors.textFaint}
+                          editable={!set.done}
+                          selectTextOnFocus
+                        />
+                        <Text style={styles.setUnit}>kg</Text>
+                        <Text style={styles.setTimes}>×</Text>
+                        <TextInput
+                          style={[styles.setField, set.done && styles.setFieldDone]}
+                          value={set.reps}
+                          onChangeText={v => updateReps(exIdx, setIdx, v)}
+                          keyboardType="number-pad"
+                          placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
+                          placeholderTextColor={colors.textFaint}
+                          editable={!set.done}
+                          selectTextOnFocus
+                        />
+                      </View>
 
                       <Tappable
-                        style={[styles.tickBtn, set.done && styles.tickBtnDone, { width: 54 }]}
+                        style={[styles.setMark, set.done && styles.setMarkDone]}
                         onPress={() => tickSet(exIdx, setIdx)}
+                        hitSlop={10}
+                        accessibilityLabel={t('workout.presc.sets')}
+                        accessibilityState={{ checked: set.done }}
                       >
-                        <Text style={[styles.tickText, set.done && styles.tickTextDone]}>✓</Text>
+                        {set.done && <Text style={styles.setMarkTick}>✓</Text>}
                       </Tappable>
                     </View>
                   );
@@ -1608,14 +1613,24 @@ const styles = StyleSheet.create({
   setsCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   setHeaderRow: { flexDirection: 'row', marginBottom: 8 },
   setHeaderText: { fontSize: 11, color: colors.textSubtle },
-  setRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  setRowDone: { opacity: 0.5 },
+  setRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+  },
+  setRowDone: { opacity: 0.55 },
+  setValues: { flex: 1, flexDirection: 'row', alignItems: 'baseline' },
+  // Numbers sized to be read at arm's length, mid-set.
+  setField: { fontSize: 19, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.4, minWidth: 42, paddingVertical: 2 },
+  setFieldDone: { color: colors.textMuted },
+  setUnit: { fontSize: 12, color: colors.textFaint, fontWeight: '600', marginLeft: 2 },
+  setTimes: { fontSize: 15, color: colors.textFaint, marginHorizontal: 10, fontWeight: '300' },
+  setMark: {
+    width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: colors.borderStrong,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  setMarkDone: { backgroundColor: colors.surfaceInverse, borderColor: colors.surfaceInverse },
+  setMarkTick: { color: colors.textOnLight, fontSize: 14, fontWeight: '800', lineHeight: 16 },
   setNum: { fontSize: 14, color: colors.textSubtle, textAlign: 'center' },
-  weightInput: { backgroundColor: colors.control, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 12, color: colors.textPrimary, fontSize: 15, textAlign: 'center', minWidth: 0 },
-  tickBtn: { height: 44, borderRadius: 10, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
-  tickBtnDone: { backgroundColor: colors.accent },
-  tickText: { color: colors.textSubtle, fontSize: 18 },
-  tickTextDone: { color: colors.textPrimary, fontWeight: '700' },
 
   nextExBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   nextExLeft: { flex: 1 },
@@ -1673,7 +1688,6 @@ const styles = StyleSheet.create({
   // Set type tap button
   setTypeBtn: { width: 28, height: 36, alignItems: 'center', justifyContent: 'center' },
   setTypeBtnText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
-  setTypeBtnDot: { fontSize: 16, color: colors.border },
 
   // Coach top button
   coachTopBtn: { backgroundColor: colors.control, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
