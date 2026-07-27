@@ -13,6 +13,7 @@ import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
 import CardioLogModal from './CardioLogModal';
 import BodyHeatMap from './BodyHeatMap';
+import EvidenceBand from '../components/EvidenceBand';
 import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
 import { getTodayCheckIn } from '../lib/recoveryStore';
 import { Platform } from 'react-native';
@@ -975,15 +976,18 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             }
           });
 
-          const Bar = ({ done, target, color }) => {
-            const high = target?.optimal_high || Math.max(done, 1);
-            const fillPct = Math.min(done / high, 1) * 100;
-            return (
-              <View style={styles.volumeBarTrack}>
-                <View style={[styles.volumeBarFill, { width: `${fillPct}%`, backgroundColor: color }]} />
-              </View>
-            );
-          };
+          // Evidence band, not a fill bar: the row shows the researched zones
+          // (below minimum / working / optimal / diminishing) and marks where
+          // the user actually sits, so the target is readable without the
+          // separate "min 10 · opt 10-20" caption doing all the work.
+          const Bar = ({ done, target }) => (
+            <EvidenceBand
+              value={done}
+              min={target?.min || 0}
+              low={target?.optimal_low || 0}
+              high={target?.optimal_high || 0}
+            />
+          );
 
           const targetLabel = (tgt) =>
             t('today.volume.target', { min: tgt.min, low: tgt.optimal_low, high: tgt.optimal_high });
@@ -999,7 +1003,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                         <Text style={styles.volumeMuscleName}>{label}</Text>
                         {!!g.target && <Text style={styles.volumeTargetLabel}>{targetLabel(g.target)}</Text>}
                       </View>
-                      <Bar done={g.done} target={g.target} color={g.color} />
+                      <Bar done={g.done} target={g.target} />
                       <Text style={[styles.volumeCount, { color: g.color }]}>{fmt(g.done)}</Text>
                     </View>
 
@@ -1014,7 +1018,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                             <Text style={styles.volumeHeadName}>{headLabel}</Text>
                             <Text style={styles.volumeTargetLabel}>{subParts.join(' · ')}</Text>
                           </View>
-                          {h.target ? <Bar done={h.direct} target={h.target} color={h.color} /> : <View style={styles.volumeBarTrack} />}
+                          {h.target ? <Bar done={h.direct} target={h.target} /> : <View style={styles.volumeBarTrack} />}
                           <Text style={[styles.volumeCount, { color: h.target ? h.color : colors.textSubtle }]}>{fmt(h.direct)}</Text>
                         </View>
                       );
