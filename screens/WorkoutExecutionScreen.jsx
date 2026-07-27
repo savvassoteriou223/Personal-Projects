@@ -19,6 +19,7 @@ import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { checkReadyToProgress } from './programGenerator';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
+import WhySheet, { buildWhy, WhyMark } from '../components/WhySheet';
 
 const WORKOUT_DRAFT_KEY = '@helix_workout_draft';
 
@@ -187,6 +188,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
   const [restWarning, setRestWarning] = useState(null);
   const [slideshowExercise, setSlideshowExercise] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [why, setWhy] = useState(null); // 'why this number?' sheet
   const [showCoach, setShowCoach] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false); // free users tapping Coach mid-workout
   const [showCheckIn, setShowCheckIn] = useState(false);
@@ -1055,30 +1057,31 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                   </View>
                 )}
 
-                {/* Prescription */}
+                {/* Prescription — every number is tappable and explains itself
+                    from the research library rather than asking for trust. */}
                 <View style={styles.prescRow}>
-                  <View style={styles.prescBox}>
+                  <Tappable style={styles.prescBox} onPress={() => setWhy(buildWhy('sets', { value: String(ex.target_sets) }))}>
                     <Text style={styles.prescVal}>{ex.target_sets}</Text>
-                    <Text style={styles.prescLabel}>{t('workout.presc.sets')}</Text>
-                  </View>
-                  <View style={styles.prescBox}>
+                    <Text style={styles.prescLabel}>{t('workout.presc.sets')} <WhyMark /></Text>
+                  </Tappable>
+                  <Tappable style={styles.prescBox} onPress={() => setWhy(buildWhy('reps', { value: String(ex.target_reps) }))}>
                     <Text style={styles.prescVal}>{ex.target_reps}</Text>
-                    <Text style={styles.prescLabel}>{t('workout.presc.reps')}</Text>
-                  </View>
-                  <View style={styles.prescBox}>
+                    <Text style={styles.prescLabel}>{t('workout.presc.reps')} <WhyMark /></Text>
+                  </Tappable>
+                  <Tappable style={styles.prescBox} onPress={() => setWhy(buildWhy('rest', { value: String(ex.rest) }))}>
                     <Text style={styles.prescVal}>{ex.rest}</Text>
-                    <Text style={styles.prescLabel}>{t('workout.presc.rest')}</Text>
-                  </View>
+                    <Text style={styles.prescLabel}>{t('workout.presc.rest')} <WhyMark /></Text>
+                  </Tappable>
                   {isSimple ? (
-                    <View style={[styles.prescBox, { flex: 1.5 }]}>
+                    <Tappable style={[styles.prescBox, { flex: 1.5 }]} onPress={() => setWhy(buildWhy('rpe', { value: String(ex.last_rpe ?? 8) }))}>
                       <Text style={[styles.prescVal, { fontSize: 11 }]}>{t('workout.presc.lastSetHard')}</Text>
-                      <Text style={styles.prescLabel}>{t('workout.presc.effort')}</Text>
-                    </View>
+                      <Text style={styles.prescLabel}>{t('workout.presc.effort')} <WhyMark /></Text>
+                    </Tappable>
                   ) : (
-                    <View style={styles.prescBox}>
+                    <Tappable style={styles.prescBox} onPress={() => setWhy(buildWhy('rpe', { value: `${ex.early_rpe}→${ex.last_rpe}` }))}>
                       <Text style={styles.prescVal}>{ex.early_rpe}→{ex.last_rpe}</Text>
-                      <Text style={styles.prescLabel}>{t('workout.presc.rpe')}</Text>
-                    </View>
+                      <Text style={styles.prescLabel}>{t('workout.presc.rpe')} <WhyMark /></Text>
+                    </Tappable>
                   )}
                 </View>
 
@@ -1404,6 +1407,8 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
       />
 
       {/* ── Coach modal — full AI Coach, same as the Coach tab ── */}
+      <WhySheet topic={why} onClose={() => setWhy(null)} />
+
       <Modal visible={showCoach} animationType="slide" onRequestClose={() => setShowCoach(false)}>
         <View style={{ flex: 1, backgroundColor: colors.bg }}>
           <CoachScreen
