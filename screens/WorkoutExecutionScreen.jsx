@@ -626,7 +626,38 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       const restSeconds = parseRestSeconds(sets[exIdx].rest);
       setRestEndAt(Date.now() + restSeconds * 1000);
+      // Carry this set's numbers into the next empty one. Sets in an exercise
+      // usually repeat, so the common case becomes a single tap on the tick
+      // instead of retyping the same weight and reps every time.
+      const just = sets[exIdx].completedSets[setIdx];
+      if (just?.weight || just?.reps) {
+        setSets(prev => prev.map((ex, i) => i !== exIdx ? ex : {
+          ...ex,
+          completedSets: ex.completedSets.map((s, j) => (
+            j === setIdx + 1 && !s.done && !s.weight && !s.reps
+              ? { ...s, weight: just.weight, reps: just.reps }
+              : s
+          )),
+        }));
+      }
     }
+  };
+
+  // Nudge a logged value without opening the keyboard — 2.5kg is the smallest
+  // plate pair on most bars, 1 rep is the natural rep step.
+  const stepValue = (exIdx, setIdx, field, delta) => {
+    setSets(prev => prev.map((ex, i) => i !== exIdx ? ex : {
+      ...ex,
+      completedSets: ex.completedSets.map((s, j) => {
+        if (j !== setIdx || s.done) return s;
+        const fallback = field === 'weight'
+          ? (prevWeights[ex.name]?.weight ?? 0)
+          : (prevWeights[ex.name]?.reps ?? 0);
+        const base = parseFloat(s[field] !== '' ? s[field] : fallback) || 0;
+        const next = Math.max(0, Math.round((base + delta) * 100) / 100);
+        return { ...s, [field]: String(next) };
+      }),
+    }));
   };
 
   const updateWeight = (exIdx, setIdx, val) => {
@@ -1178,27 +1209,51 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                           : <Text style={styles.setTypeBtnDot}>·</Text>
                         }
                       </Tappable>
-                      <Text style={[styles.setNum, { width: 22 }]}>{setIdx + 1}</Text>
-                      <TextInput
-                        style={[styles.weightInput, { flex: 1 }]}
-                        value={set.weight}
-                        onChangeText={v => updateWeight(exIdx, setIdx, v)}
-                        keyboardType="decimal-pad"
-                        placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
-                        placeholderTextColor={colors.textFaint}
-                        editable={!set.done}
-                      />
-                      <TextInput
-                        style={[styles.weightInput, { flex: 1, marginLeft: 6 }]}
-                        value={set.reps}
-                        onChangeText={v => updateReps(exIdx, setIdx, v)}
-                        keyboardType="number-pad"
-                        placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
-                        placeholderTextColor={colors.textFaint}
-                        editable={!set.done}
-                      />
+                      <Text style={[styles.setNum, { width: 16 }]}>{setIdx + 1}</Text>
+
+                      {/* Weight and reps each get −/+ so a set can be logged
+                          without ever opening the keyboard; tapping the number
+                          still allows direct entry. */}
+                      <View style={styles.stepGroup}>
+                        <Tappable style={styles.stepBtn} onPress={() => stepValue(exIdx, setIdx, 'weight', -2.5)} disabled={set.done} hitSlop={6}>
+                          <Text style={styles.stepBtnText}>−</Text>
+                        </Tappable>
+                        <TextInput
+                          style={styles.stepInput}
+                          value={set.weight}
+                          onChangeText={v => updateWeight(exIdx, setIdx, v)}
+                          keyboardType="decimal-pad"
+                          placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
+                          placeholderTextColor={colors.textFaint}
+                          editable={!set.done}
+                          selectTextOnFocus
+                        />
+                        <Tappable style={styles.stepBtn} onPress={() => stepValue(exIdx, setIdx, 'weight', 2.5)} disabled={set.done} hitSlop={6}>
+                          <Text style={styles.stepBtnText}>+</Text>
+                        </Tappable>
+                      </View>
+
+                      <View style={styles.stepGroup}>
+                        <Tappable style={styles.stepBtn} onPress={() => stepValue(exIdx, setIdx, 'reps', -1)} disabled={set.done} hitSlop={6}>
+                          <Text style={styles.stepBtnText}>−</Text>
+                        </Tappable>
+                        <TextInput
+                          style={styles.stepInput}
+                          value={set.reps}
+                          onChangeText={v => updateReps(exIdx, setIdx, v)}
+                          keyboardType="number-pad"
+                          placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
+                          placeholderTextColor={colors.textFaint}
+                          editable={!set.done}
+                          selectTextOnFocus
+                        />
+                        <Tappable style={styles.stepBtn} onPress={() => stepValue(exIdx, setIdx, 'reps', 1)} disabled={set.done} hitSlop={6}>
+                          <Text style={styles.stepBtnText}>+</Text>
+                        </Tappable>
+                      </View>
+
                       <Tappable
-                        style={[styles.tickBtn, set.done && styles.tickBtnDone, { width: 50 }]}
+                        style={[styles.tickBtn, set.done && styles.tickBtnDone, { width: 46 }]}
                         onPress={() => tickSet(exIdx, setIdx)}
                       >
                         <Text style={[styles.tickText, set.done && styles.tickTextDone]}>✓</Text>
@@ -1568,6 +1623,12 @@ const styles = StyleSheet.create({
   setRowDone: { opacity: 0.5 },
   setNum: { fontSize: 14, color: colors.textSubtle, textAlign: 'center' },
   weightInput: { backgroundColor: colors.control, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12, color: colors.textPrimary, fontSize: 15, textAlign: 'center', minWidth: 0 },
+  // Stepper group: −  value  + as one control, so the row still reads as a
+  // single field rather than three separate buttons.
+  stepGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.control, borderRadius: 9, minWidth: 0 },
+  stepBtn: { width: 26, height: 40, alignItems: 'center', justifyContent: 'center' },
+  stepBtnText: { color: colors.textMuted, fontSize: 17, fontWeight: '600', lineHeight: 20 },
+  stepInput: { flex: 1, color: colors.textPrimary, fontSize: 15, fontWeight: '600', textAlign: 'center', paddingVertical: 10, minWidth: 0 },
   tickBtn: { height: 40, borderRadius: 8, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   tickBtnDone: { backgroundColor: colors.accent },
   tickText: { color: colors.textSubtle, fontSize: 18 },

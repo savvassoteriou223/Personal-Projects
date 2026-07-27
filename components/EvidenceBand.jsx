@@ -2,68 +2,67 @@
  * EvidenceBand.jsx — Helix's signature control.
  *
  * Every other training app hands you a number and asks you to trust it. Helix
- * shows the researched range and where you actually sit in it, so the evidence
- * is readable at a glance instead of buried in a paragraph nobody opens.
- *
- * The track is divided into the zones the research defines — below minimum,
- * working, optimal, diminishing — and a marker shows the user's position.
+ * shows where that number sits against the researched target.
  *
  *   <EvidenceBand value={14} min={10} low={10} high={20} />
  *
- * Colour follows the app's status language: amber means "look here", accent
- * means on-target, danger means below the effective threshold. Zones are drawn
- * as low-opacity tints so the marker — the one thing you're actually reading —
- * stays the highest-contrast element on the row.
+ * Design: a normal progress fill — instantly readable, familiar — coloured by
+ * status, with hairline notches marking the researched target boundaries. An
+ * earlier version tinted the whole track into four coloured zones; it turned
+ * every row into a muddy stripe and read as a broken progress bar. The fill
+ * carries the value, the notches carry the target, and nothing competes.
  */
 import { View, StyleSheet } from 'react-native';
 import { colors } from '../lib/theme';
 
-const TINT = { under: '#E85D5C2E', working: '#BA751733', optimal: '#1D9E7547', over: '#BA751733' };
+// Status of a value against its researched range — the same language the rest
+// of the app uses: danger below the effective minimum, warning outside the
+// optimal band, accent inside it.
+export function bandStatus(value, min, low, high) {
+  if (!value) return 'empty';
+  if (min > 0 && value < min) return 'under';
+  if (high > 0 && value > high) return 'over';
+  if (low > 0 && value < low) return 'working';
+  return 'optimal';
+}
+
+const FILL = {
+  under: colors.danger,
+  working: colors.warning,
+  optimal: colors.accent,
+  over: colors.warning,
+  empty: 'transparent',
+};
 
 export default function EvidenceBand({
   value = 0,
   min = 0,
   low = 0,
   high = 0,
-  height = 6,
-  showMarker = true,
+  height = 8,
   style,
 }) {
-  // Headroom so a user above the optimal band still lands inside the track and
-  // the "diminishing returns" zone is actually visible rather than clipped off.
-  const max = Math.max(high * 1.35, value * 1.1, 1);
-  const clamp = (n) => Math.max(0, Math.min(100, (n / max) * 100));
-  const pct = (n) => `${clamp(n)}%`;
-  const span = (a, b) => `${Math.max(0, clamp(b) - clamp(a))}%`;
-
-  const hasZones = high > 0;
-  const markerH = height + 6;
+  // Headroom so someone past the optimal band still lands on the track and the
+  // upper notch stays visible rather than pinned to the edge.
+  const max = Math.max(high * 1.25, value * 1.08, 1);
+  const pct = (n) => `${Math.max(0, Math.min(100, (n / max) * 100))}%`;
+  const status = bandStatus(value, min, low, high);
 
   return (
-    // The marker deliberately overhangs the track, so it can't live inside the
-    // clipped (rounded) track view — it's a sibling in a taller wrapper.
-    <View style={[styles.wrap, { height: markerH }, style]}>
-      <View style={[styles.track, { height, borderRadius: height / 2 }]}>
-        {hasZones && (
-          <>
-            {min > 0 && <View style={[styles.zone, { left: 0, width: pct(min), backgroundColor: TINT.under }]} />}
-            {low > min && <View style={[styles.zone, { left: pct(min), width: span(min, low), backgroundColor: TINT.working }]} />}
-            <View style={[styles.zone, { left: pct(low), width: span(low, high), backgroundColor: TINT.optimal }]} />
-            <View style={[styles.zone, { left: pct(high), right: 0, backgroundColor: TINT.over }]} />
-          </>
-        )}
-      </View>
-      {showMarker && value > 0 && (
-        <View style={[styles.marker, { left: pct(value), height: markerH }]} />
+    <View style={[styles.track, { height, borderRadius: height / 2 }, style]}>
+      {value > 0 && (
+        <View style={[styles.fill, { width: pct(value), backgroundColor: FILL[status], borderRadius: height / 2 }]} />
       )}
+      {/* Target boundaries — hairlines, not zones. */}
+      {low > 0 && <View style={[styles.notch, { left: pct(low) }]} />}
+      {high > low && <View style={[styles.notch, { left: pct(high) }]} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, justifyContent: 'center', position: 'relative' },
-  track: { width: '100%', backgroundColor: colors.surfaceInset, overflow: 'hidden', position: 'relative' },
-  zone: { position: 'absolute', top: 0, bottom: 0 },
-  // 2px reads as a hairline on a 6px track but stays visible against every tint.
-  marker: { position: 'absolute', top: 0, width: 2, borderRadius: 1, marginLeft: -1, backgroundColor: colors.textPrimary },
+  track: { flex: 1, backgroundColor: colors.surfaceInset, overflow: 'hidden', position: 'relative' },
+  fill: { position: 'absolute', left: 0, top: 0, bottom: 0 },
+  // Sits above the fill so the target stays readable even when the bar passes it.
+  notch: { position: 'absolute', top: 0, bottom: 0, width: 1.5, marginLeft: -0.75, backgroundColor: '#FFFFFF55' },
 });

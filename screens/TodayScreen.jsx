@@ -842,7 +842,12 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
               onPress={() => { setRecoveryTab('body'); setShowRecovery(true); }}
               accessibilityLabel={t('today.recovery.title')}
             >
-              <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="front" height={130} />
+              {/* Front and back — showing only the front hid every posterior
+                  muscle (back, glutes, hamstrings), which is most of the body. */}
+              <View style={styles.recoveryBodiesCompact}>
+                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="front" height={124} />
+                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="back" height={124} />
+              </View>
               <View style={styles.recoveryInfo}>
                 <View style={styles.recoveryTopRow}>
                   <Text style={styles.recoveryTitle}>{t('today.recovery.title')}</Text>
@@ -1371,6 +1376,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface, borderRadius: 16, padding: 14,
     borderWidth: 0.5, borderColor: colors.border,
   },
+  recoveryBodiesCompact: { flexDirection: 'row', gap: 2, flexShrink: 0 },
   recoveryInfo: { flex: 1, minWidth: 0 },
   recoveryTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   recoveryTitle: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
