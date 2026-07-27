@@ -612,6 +612,28 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
     return 120;
   };
 
+  // ─── Prefill from last time ───────────────────────────────────────────────
+  // Last session's numbers used to be a grey placeholder, so every set still had
+  // to be typed even when nothing changed. They're now real values: if you lift
+  // the same as last time, logging the whole exercise is just tapping the tick.
+  // Only empty, un-ticked sets are touched, so a restored draft is never
+  // overwritten — and saveWorkout only ever writes sets the user actually
+  // ticked, so a prefilled set that's never confirmed is not logged.
+  useEffect(() => {
+    if (!Object.keys(prevWeights).length) return;
+    setSets(prev => prev.map(ex => {
+      const p = prevWeights[ex.name];
+      if (!p || (p.weight == null && p.reps == null)) return ex;
+      let changed = false;
+      const completedSets = ex.completedSets.map(s => {
+        if (s.done || s.weight !== '' || s.reps !== '') return s;
+        changed = true;
+        return { ...s, weight: p.weight != null ? String(p.weight) : '', reps: p.reps != null ? String(p.reps) : '' };
+      });
+      return changed ? { ...ex, completedSets } : ex;
+    }));
+  }, [prevWeights]);
+
   const tickSet = (exIdx, setIdx) => {
     const wasAlreadyDone = sets[exIdx].completedSets[setIdx].done;
     setSets(prev => prev.map((ex, i) =>
@@ -1220,7 +1242,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                       />
 
                       <Tappable
-                        style={[styles.tickBtn, set.done && styles.tickBtnDone, { width: 46 }]}
+                        style={[styles.tickBtn, set.done && styles.tickBtnDone, { width: 54 }]}
                         onPress={() => tickSet(exIdx, setIdx)}
                       >
                         <Text style={[styles.tickText, set.done && styles.tickTextDone]}>✓</Text>
@@ -1589,8 +1611,8 @@ const styles = StyleSheet.create({
   setRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   setRowDone: { opacity: 0.5 },
   setNum: { fontSize: 14, color: colors.textSubtle, textAlign: 'center' },
-  weightInput: { backgroundColor: colors.control, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12, color: colors.textPrimary, fontSize: 15, textAlign: 'center', minWidth: 0 },
-  tickBtn: { height: 40, borderRadius: 8, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
+  weightInput: { backgroundColor: colors.control, borderRadius: 10, paddingVertical: 12, paddingHorizontal: 12, color: colors.textPrimary, fontSize: 15, textAlign: 'center', minWidth: 0 },
+  tickBtn: { height: 44, borderRadius: 10, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   tickBtnDone: { backgroundColor: colors.accent },
   tickText: { color: colors.textSubtle, fontSize: 18 },
   tickTextDone: { color: colors.textPrimary, fontWeight: '700' },
