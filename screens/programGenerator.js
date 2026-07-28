@@ -714,10 +714,11 @@ export const SPLIT_RANKINGS = {
 // This is the single source of truth used by split selection, goal profiles,
 // and calorie calculation — so all three systems stay consistent.
 export function resolveGoalCombo(goals = []) {
-  const hasFat      = goals.includes('lose');
-  const hasMuscle   = goals.includes('gain') || goals.includes('aesthetics');
-  const hasStrength = goals.includes('strength');
-  const hasEnd      = goals.includes('endurance');
+  const hasFat        = goals.includes('lose');
+  const hasAesthetics = goals.includes('aesthetics');
+  const hasMuscle     = goals.includes('gain') || hasAesthetics;
+  const hasStrength   = goals.includes('strength');
+  const hasEnd        = goals.includes('endurance');
 
   // 4-way (all active → athletic recomp near maintenance)
   if (hasFat && hasMuscle && hasStrength && hasEnd) return 'athletic_recomp';
@@ -736,11 +737,16 @@ export function resolveGoalCombo(goals = []) {
   if (hasMuscle && hasEnd)     return 'hybrid_muscle';
   if (hasStrength && hasEnd)   return 'hybrid_strength';
 
-  // Single goals
-  if (hasFat)      return 'cut';
-  if (hasMuscle)   return 'muscle';
-  if (hasStrength) return 'strength';
-  if (hasEnd)      return 'endurance';
+  // Single goals. These MUST be keys of GOAL_PROFILES — this function used to
+  // return 'cut' for fat loss while the profile was named 'lose', so
+  // getGoalProfile fell through to GOAL_PROFILES.muscle and everyone who picked
+  // "lose fat" alone was silently handed the muscle-building prescription. The
+  // resolveGoalCombo test guards the mapping now.
+  if (hasFat)        return 'lose';
+  if (hasAesthetics) return 'aesthetics';
+  if (hasMuscle)     return 'muscle';
+  if (hasStrength)   return 'strength';
+  if (hasEnd)        return 'endurance';
   return 'maintain';
 }
 
@@ -1221,7 +1227,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    cardioNote: 'Add 2–3 cardio sessions/week (20–30 min moderate intensity). Keep them separate from lifting if possible.',
+    cardioNote: '2–3 cardio sessions/week (20–30 min moderate). Cardio does not blunt muscle growth — across 43 studies the interference effect on hypertrophy was essentially zero — so schedule it whenever you will actually do it.',
   },
   aesthetics: {
     label: 'Aesthetics',
@@ -1234,7 +1240,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2 min',
     restIsolation: '60–90 sec',
-    cardioNote: '1–2 low-intensity cardio sessions/week supports conditioning without compromising recovery.',
+    cardioNote: '1–2 easy cardio sessions/week for conditioning. It will not cost you muscle; the interference effect is close to nil for hypertrophy.',
   },
   endurance: {
     label: 'Improve endurance',
@@ -1247,7 +1253,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '60 sec',
     restIsolation: '30–45 sec',
-    cardioNote: '3–5 cardio sessions/week is the primary driver. Resistance training supports it.',
+    cardioNote: '3–5 cardio sessions/week is the main driver here. Lifting protects the muscle you have while you build the engine.',
   },
   maintain: {
     label: 'Stay healthy',
@@ -1260,7 +1266,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '90 sec',
     restIsolation: '60 sec',
-    cardioNote: '2–3 moderate cardio sessions/week supports cardiovascular health alongside lifting.',
+    cardioNote: '2–3 moderate cardio sessions/week. This is the part with the strongest link to living longer, so treat it as non-optional.',
   },
 
   // ── Combination goal profiles ──────────────────────────────────────────────
@@ -1275,7 +1281,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2 min',
     restIsolation: '90 sec',
-    cardioNote: '1–2 cardio sessions/week. Keep intensity moderate — high-intensity cardio in a deficit increases muscle loss risk.',
+    cardioNote: '1–2 moderate cardio sessions/week. Keep total stress manageable in a deficit — the limit is your recovery, not an interference effect.',
   },
   cut_strength: {
     label: 'Strength-focused cut',
@@ -1288,7 +1294,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    cardioNote: '2–3 cardio sessions/week. Separate from lifting by at least 6 hours to protect strength performance.',
+    cardioNote: '2–3 cardio sessions/week. Prefer cycling to running: running is the modality that shows interference with leg strength and size, cycling largely does not.',
   },
   cut_endurance: {
     label: 'Endurance cut',
@@ -1301,7 +1307,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '45–60 sec',
     restIsolation: '30–45 sec',
-    cardioNote: '4–5 cardio sessions/week is the primary driver. Resistance training preserves muscle during the deficit.',
+    cardioNote: '4–5 cardio sessions/week is the main driver. Lifting is what stops the deficit eating your muscle.',
   },
   powerbuilding: {
     label: 'Powerbuilding',
@@ -1314,7 +1320,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '3–4 min',
     restIsolation: '90 sec–2 min',
-    cardioNote: '1–2 low-intensity cardio sessions/week (GPP). Avoid high-intensity cardio — it compromises recovery for heavy compound work.',
+    cardioNote: '1–2 easy cardio sessions/week for work capacity. Bias toward cycling, and keep it clear of your heaviest lower days for fatigue reasons rather than fear of losing gains.',
   },
   hybrid_muscle: {
     label: 'Muscle + endurance',
@@ -1327,7 +1333,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '90 sec–2 min',
     restIsolation: '60–90 sec',
-    cardioNote: '2–3 cardio sessions/week. Separate lifting and cardio by 6+ hours. Prioritise sleep and protein to offset the interference effect (Wilson et al., 2012).',
+    cardioNote: '2–3 cardio sessions/week. Lift first if you do both in one session; that ordering favours the strength and size side.',
   },
   hybrid_strength: {
     label: 'Strength + endurance',
@@ -1340,7 +1346,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2–4 min',
     restIsolation: '90 sec',
-    cardioNote: '2–3 cardio sessions/week strictly separate from lifting (6+ hours). High-intensity cardio on the same day as heavy lifting acutely reduces strength output.',
+    cardioNote: '2–3 cardio sessions/week, cycling preferred over running. Lift before you ride if they share a day.',
   },
   powerbuilding_cut: {
     label: 'Powerbuilding cut',
@@ -1350,10 +1356,10 @@ export const GOAL_PROFILES = {
     compoundSets: 4,
     isolationSets: 2,
     compoundRPE: 8,
-    lastSetRPE: 10,
+    lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    cardioNote: '2–3 cardio sessions/week at low-to-moderate intensity. High-intensity cardio combined with heavy lifting in a deficit accelerates overtraining.',
+    cardioNote: '2–3 low-to-moderate cardio sessions/week. In a deficit the constraint is total recovery, so add cardio only as far as your lifting performance holds up.',
   },
   athletic_recomp: {
     label: 'Athletic recomposition',
@@ -1366,7 +1372,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '90 sec',
     restIsolation: '60 sec',
-    cardioNote: '3–4 conditioning sessions/week. Prioritise sleep, high protein, and session quality over quantity — this is a complex concurrent training goal.',
+    cardioNote: '3–4 conditioning sessions/week. Prioritise sleep, protein and session quality; concurrent training works, it just needs recovery to match.',
   },
   athletic_cut: {
     label: 'Athletic cut',
@@ -1379,7 +1385,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2 min',
     restIsolation: '60–90 sec',
-    cardioNote: '3–4 cardio sessions/week. Alternate high and low intensity to balance fat loss with athletic performance retention.',
+    cardioNote: '3–4 cardio sessions/week, alternating hard and easy. Lift first on shared days to protect output.',
   },
   athletic_bulk: {
     label: 'Athletic bulk',
@@ -1392,7 +1398,7 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    cardioNote: '2–3 cardio sessions/week. Keep them aerobic-dominant — high-intensity cardio competes with resistance training recovery and limits the surplus benefit.',
+    cardioNote: '2–3 easy conditioning sessions/week to keep your engine while you gain.',
   },
 };
 
@@ -3004,6 +3010,10 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     rest_between: split.rest_between || [],
     science_basis: split.science_basis,
     honest_note: split.honest_note,
+    // Goal-specific cardio guidance. It sat on GOAL_PROFILES unread, so the
+    // advice never reached anyone; it rides on the program object now so the UI
+    // has something to show.
+    cardio_note: gp.cardioNote || null,
     // ── Block tracking ─────────────────────────────────────────────────────
     block_index: blockIndex,
     block_start_date: blockStartDate || new Date().toISOString(),

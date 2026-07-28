@@ -163,6 +163,14 @@ Two corrections came out of the research:
   under 60 seconds cuts the reps completed on later sets, and training quality is
   precisely what a deficit puts at risk.
 
+Two profiles were unreachable entirely. `resolveGoalCombo()` returned `'cut'` for
+fat loss while the profile was named `lose`, and `getGoalProfile()` falls back to
+`GOAL_PROFILES.muscle` on an unknown key — silently. So **every user who picked
+"lose fat" on its own was handed the muscle-building prescription**, and the
+`aesthetics` profile was never reachable at all because it folded into
+`hasMuscle`. `lib/goalProfiles.test.js` now asserts that every goal combination
+maps to a real profile and that no profile is orphaned.
+
 `volumeMultiplier` and `prioritiseIsolation` were deleted rather than wired.
 `volumeMultiplier` in particular was a hazard: weekly volume is now solved per
 muscle, so anyone "fixing" the dead field by connecting it would silently push
