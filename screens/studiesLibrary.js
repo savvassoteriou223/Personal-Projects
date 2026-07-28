@@ -54,15 +54,16 @@ export const STUDIES = {
   },
 
   // ── REST ──────────────────────────────────────────────────────────────────
-  rest_strength_vs_size: {
-    insight: 'Longer rest clearly helps STRENGTH but barely moves growth — so rest long on heavy compounds, and keep it short only if time is the constraint.',
+  rest_hypertrophy: {
+    insight: 'Resting longer than 60 s helps growth a little, and past about 90 s it stops mattering — so 1–2 min on isolation work is plenty.',
     cite: 'Singer et al. 2024 · Bayesian meta-analysis',
-    tags: ['rest', 'strength', 'programming'],
+    tags: ['rest', 'hypertrophy', 'programming'],
   },
-  rest_short_cost: {
-    insight: 'Resting under 60 seconds cuts the reps you complete on later sets, quietly costing you volume at the same effort.',
-    cite: 'Singer et al. 2024',
-    tags: ['rest', 'volume', 'programming'],
+  rest_strength: {
+    insight: 'Strength and power are what suffer from short rest, not size — give heavy compounds the full 3–5 min.',
+    metric: { this: 'longer rest', control: 'under 60 s', method: 'SMD −0.74 for strength vs −0.08 for size' },
+    cite: 'Davidson & Barillas 2025 · preprint',
+    tags: ['rest', 'strength', 'programming'],
   },
 
   // ── CONCURRENT TRAINING ───────────────────────────────────────────────────
@@ -80,7 +81,7 @@ export const STUDIES = {
   // ── EFFORT / PROXIMITY TO FAILURE ─────────────────────────────────────────
   effort_strength_insensitive: {
     insight: 'Strength gains do not depend on training to failure — so leave a rep in the tank on heavy compounds; the fatigue costs more than it buys.',
-    cite: 'Robinson et al. 2024 · 67 strength studies',
+    cite: 'Robinson et al. 2024 · meta-regression',
     tags: ['effort', 'failure', 'strength', 'programming'],
   },
   effort_dose: {
