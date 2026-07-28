@@ -36,15 +36,23 @@ export function auditProgram(profile) {
   const weekSets = []; // one entry per working set, as the app records them
 
   for (const day of p.days || []) {
-    const slot = {}, patternsToday = new Set();
+    const slot = {}, byName = {}, patternsToday = new Set();
     for (const ex of day.exercises || []) {
       if (!ex?.name || (ex.sets || 0) <= 0) continue;
       slot[ex.pattern] = (slot[ex.pattern] || 0) + 1;
+      byName[ex.name] = (byName[ex.name] || 0) + 1;
       patternsToday.add(ex.pattern);
       for (let i = 0; i < ex.sets; i++) weekSets.push({ exercise_name: ex.name });
     }
+    // Redundancy means the same JOB twice, not the same pattern twice. A squat
+    // plus a leg press, or a walking lunge plus a hip abduction, are two
+    // different movements that happen to share a pattern key — that is normal
+    // programming. What is a defect is the same exercise appearing twice, or a
+    // pattern run three or more times in one session.
     for (const [pat, n] of Object.entries(slot))
-      if (n > 1) issues.push({ type: 'duplicate-slot', detail: `${pat} ×${n}`, day: day.name });
+      if (n > 2) issues.push({ type: 'duplicate-slot', detail: `${pat} ×${n}`, day: day.name });
+    for (const [nm, n] of Object.entries(byName))
+      if (n > 1) issues.push({ type: 'duplicate-exercise', detail: `${nm} ×${n}`, day: day.name });
     for (const rule of DAY_RULES) {
       if (!rule.match.test(day.name)) continue;
       for (const bad of rule.forbid)
@@ -79,12 +87,14 @@ let n = 0, clean = 0;
 for (const [, equipment] of Object.entries(EQUIP))
   for (const trainingExperience of EXPS)
     for (const weekly_workouts of DAYS)
-      for (const goals of GOALS) {
+      for (const goals of GOALS)
+       for (const sex of ['male', 'female']) {
         n++;
         let r;
-        try { r = auditProgram({ trainingExperience, equipment, weekly_workouts, goals, sex: 'male', weight_kg: 80 }); }
+        try { r = auditProgram({ trainingExperience, equipment, weekly_workouts, goals, sex, weight_kg: 80 }); }
         catch (e) { tally['ERROR ' + e.message.slice(0, 50)] = (tally['ERROR ' + e.message.slice(0, 50)] || 0) + 1; continue; }
         if (!r.issues.length) clean++;
+        else if (process.env.DETAIL) console.log(`  ${Object.keys(EQUIP).find(k=>EQUIP[k]===equipment)} / ${trainingExperience} / ${weekly_workouts}d / ${goals} / ${sex} -> ${r.split}: ${r.issues.map(i=>i.detail).join(', ')}`);
         for (const i of r.issues) {
           const k = `${i.type}: ${i.detail}`;
           tally[k] = (tally[k] || 0) + 1;

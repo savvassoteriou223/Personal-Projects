@@ -910,6 +910,182 @@ export function selectSplit(profile) {
 //   wrapping around when exhausted.
 // An explicit `prefer` override always wins regardless of block.
 
+/**
+ * Split day templates.
+ *
+ * Every day is a list of SLOTS — one movement pattern plus a set count. The set
+ * counts are not judgement calls: they are the output of a verifier that measures
+ * each split with the app's OWN attribution (computeHeadVolume credits DIRECT
+ * volume to muscles[0] only) against the intersection of VOLUME_TARGETS and the
+ * split-design rules, for BOTH sexes. All 10 splits pass on all 11 tracked
+ * muscles. See docs/specs/split-design.md.
+ *
+ * These replaced 840 lines of hand-written day lists that pinned exact exercises
+ * via `prefer:`. That is why the same movements appeared all week: there were 36
+ * hard-coded side-delt slots, 13 of them locked to one cable lateral raise, and
+ * side-delt work landed on pull days where shoulder abduction does not belong.
+ *
+ * Two rules the tables now hold to:
+ *   • One ROLE per day. A pattern may repeat within a day only when the two
+ *     slots are genuinely different jobs — squat + leg press, walking lunge +
+ *     hip abduction — or on a day dedicated to that muscle.
+ *   • Side delts only on push / upper / shoulder days, never on a pull day.
+ *
+ * `f` is isFemale. The sex tilt only ever swaps an accessory slot: women take
+ * glute isolation (hip abduction), men take the cable pull-through — a hip-hinge
+ * COMPOUND — so men reach glute range with no glute isolation at all, which is
+ * what the design rules require. The walking lunge stays for both sexes and is
+ * the movement that makes that possible.
+ */
+const SPLIT_DAYS = {
+  full_body_2x: f => [
+    { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
+      ['squat_pattern', [3, 5, 6]], ['chest_horizontal_push', [3, 5, 6]], ['back_horizontal_pull', [3, 4, 5]], ['back_inner', [3, 3, 5]], ['shoulders_side_delt', [4, 6, 6]], ['triceps', [3, 6, 6]], ['calves', [2, 3, 5]], ['glute_focused', [3, 4, 5], 'walking_lunge'], ['hip_hinge', [3, 4, 5], 'romanian_deadlift']
+    ] },
+    { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
+      ['squat_pattern', [3, 5, 6], 'leg_press'], ['hip_hinge', [2, 4, 5], 'conventional_deadlift'], ['chest_incline_push', [3, 5, 6]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [3, 6, 6]], ['biceps', [3, 6, 6]], ['calves', [2, 3, 5]], (f ? ['glute_focused', [3, 4, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through'])
+    ] },
+  ],
+  full_body_3x: f => [
+    { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
+      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 3, 5]], ['triceps', [2, 3, 5]], ['calves', [2, 3, 5]], ['biceps', [2, 3, 4]], ['core', [2, 2, 3]]
+    ] },
+    { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
+      ['hip_hinge', [3, 4, 5], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 4]], ['back_vertical_pull', [3, 3, 5]], ['rear_delt', [2, 3, 4]], ['biceps', [2, 3, 4]], ['glute_focused', [3, 4, 5], 'walking_lunge'], ['quad_isolation', [2, 3, 4]], ['calves', [2, 3, 5]], ['core', [2, 2, 3]]
+    ] },
+    { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
+      ['squat_pattern', [2, 3, 4], 'leg_press'], ['chest_isolation', [2, 3, 4]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 3, 5]], ['rear_delt', [2, 3, 4]], ['triceps', [2, 3, 5]], (f ? ['glute_focused', [3, 4, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 4, 5]], ['core', [2, 2, 2]]
+    ] },
+  ],
+  hybrid_3x: f => [
+    { id: 'full_body', name: 'Full Body', focus: 'Squat · press · row', slots: [
+      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 3, 5]], ['rear_delt', [2, 3, 4]], ['triceps', [2, 3, 5]], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
+    ] },
+    { id: 'upper', name: 'Upper', focus: 'Full upper body', slots: [
+      ['chest_incline_push', [2, 3, 4]], ['chest_isolation', [2, 3, 4]], ['back_vertical_pull', [3, 3, 5]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 3, 5]], ['rear_delt', [2, 3, 4]], ['biceps', [2, 3, 4]], ['triceps', [2, 3, 5]]
+    ] },
+    { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
+      ['squat_pattern', [2, 3, 4], 'leg_press'], ['hip_hinge', [3, 4, 5], 'conventional_deadlift'], ['glute_focused', [3, 4, 5], 'walking_lunge'], (f ? ['glute_focused', [3, 4, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['quad_isolation', [2, 3, 4]], ['hamstring_isolation', [2, 4, 5]], ['calves', [2, 3, 5]], ['biceps', [2, 3, 4]], ['core', [2, 3, 4]]
+    ] },
+  ],
+  upper_lower_4x: f => [
+    { id: 'upper_a', name: 'Upper A', focus: 'Heavy push + pull', slots: [
+      ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5]], ['biceps', [2, 4, 4]]
+    ] },
+    { id: 'lower_a', name: 'Lower A', focus: 'Squat + glutes', slots: [
+      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), ['quad_isolation', [2, 4, 4]], ['calves', [2, 5, 5]], ['core', [2, 4, 4]]
+    ] },
+    { id: 'upper_b', name: 'Upper B', focus: 'Incline + arms', slots: [
+      ['chest_incline_push', [2, 4, 4]], ['chest_isolation', [2, 4, 4]], ['back_vertical_pull', [3, 4, 5]], ['back_inner', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5]], ['biceps', [2, 4, 4]]
+    ] },
+    { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [2, 4, 3], 'walking_lunge'] : ['glute_focused', [2, 3, 3], 'walking_lunge']), (f ? ['glute_focused', [2, 4, 3], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 3], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 5, 5]], ['core', [2, 4, 4]]
+    ] },
+  ],
+  chest_back_shoulders_legs_4x: f => [
+    { id: 'chest_triceps', name: 'Chest + Triceps', focus: 'Chest · triceps', slots: [
+      ['chest_horizontal_push', [2, 4, 4]], ['chest_incline_push', [2, 4, 4]], ['chest_isolation', [2, 4, 4]], ['triceps', [2, 4, 5]], ['triceps', [2, 4, 5]], ['core', [2, 4, 4]]
+    ] },
+    { id: 'back_biceps', name: 'Back + Biceps', focus: 'Back · biceps', slots: [
+      ['back_vertical_pull', [3, 4, 5]], ['back_horizontal_pull', [3, 4, 5]], ['back_inner', [2, 4, 4]], ['biceps', [2, 4, 4]], ['biceps', [2, 4, 4]], ['core', [2, 4, 4]]
+    ] },
+    { id: 'shoulders', name: 'Shoulders', focus: 'Delts · calves', slots: [
+      ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['rear_delt', [2, 4, 4]], ['calves', [2, 5, 5]]
+    ] },
+    { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
+      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [3, 5, 5], 'romanian_deadlift'], ['squat_pattern', [2, 4, 4], 'leg_press'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 5, 5]], ['calves', [2, 5, 5]]
+    ] },
+  ],
+  full_body_4x: f => [
+    { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
+      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]], ['calves', [2, 5, 5]]
+    ] },
+    { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
+      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 4, 4]], ['back_vertical_pull', [3, 4, 5]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['core', [2, 4, 4]]
+    ] },
+    { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['chest_isolation', [2, 4, 4]], ['back_inner', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]], ['calves', [2, 5, 5]], ['core', [2, 4, 4]]
+    ] },
+    { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
+      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]]
+    ] },
+  ],
+  ul_ppl_hybrid_5x: f => [
+    { id: 'push', name: 'Push', focus: 'Chest · shoulders · triceps', slots: [
+      ['chest_horizontal_push', [2, 4, 4]], ['chest_incline_push', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]]
+    ] },
+    { id: 'pull', name: 'Pull', focus: 'Back · rear delts · biceps', slots: [
+      ['back_vertical_pull', [3, 4, 5]], ['back_horizontal_pull', [3, 4, 5]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
+      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['quad_isolation', [2, 4, 4]], ['calves', [2, 5, 5]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'upper', name: 'Upper', focus: 'Full upper body', slots: [
+      ['chest_isolation', [2, 4, 4]], ['back_inner', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5]], ['biceps', [2, 4, 4]]
+    ] },
+    { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 5, 5]], ['core', [2, 2, 2]]
+    ] },
+  ],
+  full_body_5x: f => [
+    { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
+      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]]
+    ] },
+    { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
+      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 4, 4]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]]
+    ] },
+    { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['chest_isolation', [2, 4, 4]], ['back_inner', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['calves', [2, 5, 5]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
+      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'full_body_e', name: 'Full Body E', focus: 'Isolation · weak points', slots: [
+      ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['back_vertical_pull', [2, 3, 3]], ['biceps', [2, 4, 4]], ['calves', [2, 5, 5]], ['core', [2, 2, 2]]
+    ] },
+  ],
+  ppl_6x: f => [
+    { id: 'push_a', name: 'Push A', focus: 'Flat press focus', slots: [
+      ['chest_horizontal_push', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['chest_isolation', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]]
+    ] },
+    { id: 'pull_a', name: 'Pull A', focus: 'Vertical pull focus', slots: [
+      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'legs_a', name: 'Legs A', focus: 'Squat focus', slots: [
+      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['quad_isolation', [2, 4, 4]], ['calves', [2, 5, 5]]
+    ] },
+    { id: 'push_b', name: 'Push B', focus: 'Incline focus', slots: [
+      ['chest_incline_push', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'pull_b', name: 'Pull B', focus: 'Horizontal pull focus', slots: [
+      ['back_vertical_pull', [2, 3, 3]], ['back_inner', [2, 3, 3]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]], ['core', [2, 2, 2]]
+    ] },
+    { id: 'legs_b', name: 'Legs B', focus: 'Posterior chain', slots: [
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 5, 5]]
+    ] },
+  ],
+  upper_lower_6x: f => [
+    { id: 'upper_a', name: 'Upper A', focus: 'Heavy push + pull', slots: [
+      ['chest_horizontal_push', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5]]
+    ] },
+    { id: 'lower_a', name: 'Lower A', focus: 'Squat + glutes', slots: [
+      ['squat_pattern', [2, 3, 3]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['calves', [2, 4, 4]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'upper_b', name: 'Upper B', focus: 'Incline + arms', slots: [
+      ['chest_incline_push', [2, 4, 4]], ['back_vertical_pull', [3, 4, 5]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]], ['triceps', [2, 4, 5]]
+    ] },
+    { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
+      ['squat_pattern', [2, 3, 3], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], ['quad_isolation', [2, 3, 3]], ['calves', [2, 3, 3]], ['core', [2, 3, 3]]
+    ] },
+    { id: 'upper_c', name: 'Upper C', focus: 'Isolation + delts', slots: [
+      ['chest_isolation', [2, 4, 4]], ['back_inner', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4]]
+    ] },
+    { id: 'lower_c', name: 'Lower C', focus: 'Glutes + hamstrings', slots: [
+      (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['quad_isolation', [2, 3, 3]], ['calves', [2, 3, 3]], ['core', [2, 2, 2]]
+    ] },
+  ],
+};
+
 function buildExercise(patternKey, equipment, overrides = {}) {
   const pattern = MOVEMENT_PATTERNS[patternKey];
   if (!pattern) return null;
@@ -2606,27 +2782,66 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
   // (Schoenfeld, Ogborn & Krieger 2017 J Sports Sci; Pelland/Nuckols et al. 2026
   // Sports Med 56:481-505; Enes et al. 2024 J Appl Physiol — progressively raising
   // volume beats holding it static in trained lifters). Beginners grow on less and
-  // should not accrue junk volume; advanced lifters need more. The factor scales
-  // the whole program around the intermediate baseline the splits are designed at.
-  // SAME factor for both sexes — per-set hypertrophy does not differ by sex
+  // should not accrue junk volume; advanced lifters need more.
+  //
+  // This used to be a flat 0.8 / 1.0 / 1.2 multiplier over one set of intermediate
+  // set counts. A single factor cannot work, because the tiers do not scale
+  // uniformly across muscles: back runs 8-10 → 10-20 → 14-24 while quads run
+  // 6-10 → 10-15 → 12-20, so any one factor overshoots some muscles and
+  // undershoots others, and per-slot rounding compounds it. SPLIT_DAYS therefore
+  // carries a set count PER TIER, each derived from that muscle's own window.
+  //
+  // SAME counts for both sexes — per-set hypertrophy does not differ by sex
   // (Refalo, Nuckols et al. 2025 PeerJ 13:e19042); women simply tolerate the top
   // of the range better via faster intra/inter-set recovery (Hunter 2014).
-  const LEVEL_VOLUME_FACTOR = { beginner: 0.8, intermediate: 1.0, advanced: 1.2 };
-  const volumeFactor = LEVEL_VOLUME_FACTOR[level] || 1.0;
+  const tierIndex = { beginner: 0, intermediate: 1, advanced: 2 }[level] ?? 1;
   // Sex-based lower-body emphasis. Same weekly volume per muscle for both — the
   // accessory slots just point at quads (male/other/unset) or glutes (female),
   // keeping every muscle inside its target range either way.
   const isFemale = (profile?.sex || '').toLowerCase() === 'female';
 
+  // A slot whose pattern has nothing for this user's equipment must not silently
+  // disappear — that is how a bodyweight-only lifter ended up with a program
+  // containing zero back sets and zero biceps sets. Fall back to a sibling
+  // pattern that credits the SAME muscle directly (computeHeadVolume credits
+  // muscles[0]), so the week's volume still lands where the split designed it.
+  // Only same-direct-muscle substitutions belong here: sending a side-delt slot
+  // to the overhead press would move the credit to front delts and quietly
+  // reintroduce the mistargeting this table exists to prevent.
+  const PATTERN_FALLBACK = {
+    back_vertical_pull:   ['back_horizontal_pull', 'back_inner'],
+    back_horizontal_pull: ['back_inner', 'back_vertical_pull'],
+    back_inner:           ['back_horizontal_pull', 'back_vertical_pull'],
+    upper_traps:          ['back_inner', 'back_horizontal_pull'],
+    chest_isolation:      ['chest_horizontal_push', 'chest_incline_push'],
+    chest_incline_push:   ['chest_horizontal_push'],
+    chest_horizontal_push:['chest_incline_push'],
+    quad_isolation:       ['squat_pattern'],
+    hamstring_isolation:  ['hip_hinge'],
+  };
+
   // be() — block-aware exercise builder. Threads blockIndex automatically so
-  // exercise selection rotates each time a new block is generated, then scales
-  // the set count by the experience-based volume factor.
+  // exercise selection rotates each time a new block is generated.
   const be = (patternKey, overrides = {}) => {
-    const ex = buildExercise(patternKey, equipment, { blockIndex, level, excludeIds: dislikedIds, ...overrides });
-    if (ex && typeof ex.sets === 'number' && volumeFactor !== 1.0) {
-      ex.sets = Math.max(1, Math.round(ex.sets * volumeFactor));
+    const { avoidPatterns, ...opts } = overrides;
+    let ex = buildExercise(patternKey, equipment, { blockIndex, level, excludeIds: dislikedIds, ...opts });
+    if (!ex) {
+      // `prefer` names an exercise in the ORIGINAL pattern, so it cannot carry
+      // over to a different one.
+      const { prefer, ...rest } = opts;
+      const candidates = PATTERN_FALLBACK[patternKey] || [];
+      // Prefer a pattern the day is not already running; only double up if every
+      // candidate is already used, since a repeat still beats a missing slot.
+      const ordered = [
+        ...candidates.filter(p => !avoidPatterns?.has(p)),
+        ...candidates.filter(p => avoidPatterns?.has(p)),
+      ];
+      for (const alt of ordered) {
+        ex = buildExercise(alt, equipment, { blockIndex, level, excludeIds: dislikedIds, ...rest });
+        if (ex) break;
+      }
     }
-    if (ex) ex._pattern = patternKey;
+    if (ex) ex._pattern = ex.pattern;
     return ex;
   };
 
@@ -2634,853 +2849,53 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
   const compoundReps = gp.compoundReps;
   const isolationReps = gp.isolationReps;
   const compoundRPE = gp.compoundRPE;
-  const compoundSets = gp.compoundSets;
-  const isolationSets = gp.isolationSets;
-
-  // Keep wantsStrength for any legacy references
-  const wantsStrength = goals.includes('strength');
+  // gp.compoundSets / gp.isolationSets are deliberately NOT read here any more.
+  // Set counts now come from SPLIT_DAYS, which is derived from each muscle's
+  // weekly volume target — and those targets do not move with the training goal.
+  // Letting the goal profile add or remove sets on top would push muscles out of
+  // the very ranges the tables were solved for. The goal still shapes the
+  // session through reps, RPE and rest, which is where it belongs.
 
   let days = [];
 
-  switch (split.id) {
+  // Rep and RPE prescription by slot role, so the tables carry only set counts.
+  const SLOT_REPS = {
+    squat_pattern: [compoundReps, compoundRPE],
+    hip_hinge: [compoundReps, compoundRPE],
+    chest_horizontal_push: [compoundReps, compoundRPE],
+    chest_incline_push: [compoundReps, compoundRPE],
+    back_horizontal_pull: [compoundReps, compoundRPE],
+    back_vertical_pull: ['6–10', compoundRPE],
+    shoulders_vertical_push: [compoundReps, compoundRPE],
+    glute_focused: ['10–15'], back_inner: ['10–15'], upper_traps: ['10–15'],
+    chest_isolation: [isolationReps], hamstring_isolation: [isolationReps],
+    biceps: [isolationReps], triceps: [isolationReps],
+    quad_isolation: ['12–20'], shoulders_side_delt: ['12–20'],
+    rear_delt: ['15–20'], calves: ['10–15'], core: ['12–20'],
+    forearms: [isolationReps],
+  };
 
-    case 'full_body_2x': {
-      days = [
-        {
-          id: 'day_a',
-          name: 'Full Body A',
-          focus: isFemale ? 'Squat · Chest · Back · Glutes' : 'Squat · Chest · Back · Quads',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            // Lower-body emphasis (sex tilt): quads for male/other, glutes for female
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'day_b',
-          name: 'Full Body B',
-          focus: isFemale ? 'Hinge · Incline · Vertical pull · Glutes' : 'Hinge · Incline · Vertical pull · Quads',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'romanian_deadlift' }),
-            be('chest_incline_push', { reps: compoundReps, sets: compoundSets }),
-            be('back_vertical_pull', { reps: compoundReps, sets: compoundSets }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            // Lower-body emphasis (sex tilt): both get a quad squat here so women
-            // still hit quad volume; the glute lean for women lives on Day A (hip thrust)
-            isFemale
-              ? be('squat_pattern', { prefer: 'hack_squat', sets: isolationSets, reps: isolationReps })
-              : be('squat_pattern', { prefer: 'leg_press', sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
+  days = (SPLIT_DAYS[split.id]?.(isFemale) || []).map(d => {
+    // Patterns already placed today. A fallback must not land on one of them:
+    // a bodyweight user has no vertical pull, and without this the substitute
+    // lands on the horizontal pull the day is already running.
+    const usedToday = new Set();
+    const exercises = d.slots.map(([pattern, setsByTier, prefer, extra]) => {
+      const [reps, rpe] = SLOT_REPS[pattern] || [isolationReps];
+      const ex = be(pattern, {
+        sets: setsByTier[tierIndex],
+        reps,
+        avoidPatterns: usedToday,
+        ...(rpe ? { early_rpe: rpe } : {}),
+        ...(prefer ? { prefer } : {}),
+        ...(extra || {}),
+      });
+      if (ex) usedToday.add(ex.pattern);
+      return ex;
+    }).filter(Boolean);
+    return { id: d.id, name: d.name, focus: d.focus, exercises };
+  });
 
-    case 'full_body_3x': {
-      days = [
-        {
-          id: 'day_a',
-          name: 'Full Body A',
-          focus: isFemale ? 'Squat · Push · Glutes' : 'Squat · Push · Quads',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_vertical_pull', { reps: '8–12', sets: compoundSets, prefer: 'lat_pulldown' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            // Lower tilt: quad iso (male) vs glute (female)
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'day_b',
-          name: 'Full Body B',
-          focus: 'Hinge · Pull · Hamstrings',
-          exercises: [
-            be('hip_hinge', { reps: '8–12', sets: compoundSets, prefer: 'romanian_deadlift' }),
-            be('chest_incline_push', { reps: '8–12', sets: compoundSets }),
-            be('back_horizontal_pull', { reps: '8–12', sets: compoundSets }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('rear_delt', { sets: isolationSets, reps: '15–20' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'day_c',
-          name: 'Full Body C',
-          focus: isFemale ? 'Legs (glute lean) · volume' : 'Legs (quad lean) · volume',
-          exercises: [
-            be('squat_pattern', { reps: '8–12', sets: compoundSets, prefer: 'leg_press' }),
-            be('chest_horizontal_push', { reps: '10–15', sets: isolationSets, prefer: 'machine_chest_press' }),
-            be('back_vertical_pull', { reps: '10–15', sets: compoundSets, prefer: 'close_grip_lat_pulldown' }),
-            // Tilt: female gets a glute slot here; male spends it on rear delts (the most undertrained head)
-            isFemale
-              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
-              : be('rear_delt', { sets: isolationSets, reps: '15–20' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'upper_lower_4x': {
-      days = [
-        {
-          id: 'upper_a',
-          name: 'Upper A — Push + Pull Strength',
-          focus: 'Heavy horizontal press and row, OHP, side delts, overhead tricep extension',
-          exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
-            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower_a',
-          name: isFemale ? 'Lower A — Squat + Glutes' : 'Lower A — Squat + Quads',
-          focus: 'Heavy squat, RDL, then quad or glute emphasis',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hip_hinge', { reps: '8–12', sets: compoundSets, prefer: 'romanian_deadlift' }),
-            // Emphasis tilt 1
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            // Emphasis tilt 2: female → glute isolation, male → extra calves
-            isFemale
-              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
-              : be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'upper_b',
-          name: 'Upper B — Hypertrophy + Arms',
-          focus: 'Incline press, vertical pull, lower chest, side delts, rear delts, arms',
-          exercises: [
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 4 }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
-            be('chest_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '15–20' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'preacher_curl' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
-            be('core', { sets: isolationSets }),
-            be('core', { sets: 3, reps: '8–12', prefer: 'ab_wheel_rollout' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower_b',
-          name: isFemale ? 'Lower B — Deadlift + Glutes' : 'Lower B — Deadlift + Quads',
-          focus: 'Deadlift, squat variation, then quad or glute emphasis',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
-            be('squat_pattern', { reps: '8–12', sets: compoundSets, prefer: 'hack_squat' }),
-            // Emphasis tilt 1
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
-            // Emphasis tilt 2: female → glute isolation, male → extra calves
-            isFemale
-              ? be('glute_focused', { prefer: 'kettlebell_hip_thrust', sets: isolationSets, reps: '12–20' })
-              : be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'optional_shoulders',
-          name: 'Shoulders Day',
-          optional: true,
-          focus: 'OHP · cable lateral raises · Lu raises · Y raises · rear delts · shrugs — ~45 min',
-          tip: 'Add as a 5th session when shoulder volume feels low. Replace a rest day — ideally Saturday.',
-          exercises: [
-            be('shoulders_vertical_push', { reps: '8–12', sets: 4 }),
-            be('shoulders_side_delt', { sets: 4, reps: '12–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: 3, reps: '15–20', prefer: 'reverse_pec_deck' }),
-            be('rear_delt', { sets: 2, reps: '12–15', prefer: 'lu_lateral_raise' }),
-            be('upper_traps', { sets: 3, reps: '12–15', prefer: 'barbell_shrug' }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'chest_back_shoulders_legs_4x': {
-      days = [
-        {
-          id: 'chest_tri',
-          name: 'Chest + Triceps',
-          focus: 'Full chest development + tricep isolation',
-          exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
-            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
-            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'overhead_tricep_extension' }),
-            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'back_bi',
-          name: 'Back + Biceps',
-          focus: 'Lat width + back thickness + side delt frequency + bicep volume',
-          exercises: [
-            be('back_vertical_pull', { reps: '6–10', sets: compoundSets }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
-            be('rear_delt', { sets: isolationSets }),
-            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('biceps', { sets: isolationSets, reps: '10–15' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'preacher_curl' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'shoulders_abs',
-          name: 'Shoulders + Abs',
-          focus: 'Full shoulder development + core',
-          exercises: [
-            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: isolationSets }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'legs',
-          name: 'Legs',
-          focus: 'Complete lower body — quads, hamstrings, glutes, calves',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hip_hinge', { reps: '8–12', sets: 3 }),
-            // Mid-block tilts toward sex: male = quad lean, female = glute lean
-            ...(isFemale
-              ? [
-                  be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' }),
-                  be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' }),
-                  be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-                  be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-                ]
-              : [
-                  be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-                  be('squat_pattern', { sets: isolationSets, reps: '12–15', prefer: 'leg_press' }),
-                  be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-                ]),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'ul_ppl_hybrid_5x': {
-      days = [
-        {
-          id: 'push',
-          name: 'Push — Chest / Shoulders / Triceps',
-          focus: 'Heavy chest + OHP, side delts, lower chest, overhead extension + pushdown',
-          exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
-            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'pull',
-          name: 'Pull — Back / Biceps',
-          focus: 'Vertical + horizontal pulls, inner back, rear delts, face pull, incline curl + hammer curl',
-          exercises: [
-            be('back_vertical_pull', { reps: '6–10', sets: 4 }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
-            be('back_inner', { reps: '10–15', sets: 3 }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
-            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15', prefer: 'barbell_shrug' }) : null,
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
-            be('biceps', { sets: 2, reps: isolationReps, prefer: 'standing_hammer_curl' }),
-            be('core', { sets: isolationSets }),
-            be('core', { sets: 3, reps: '8–12', prefer: 'ab_wheel_rollout' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'legs',
-          name: 'Legs',
-          focus: 'Squat, RDL, leg extension reclined, seated curl, calves',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hip_hinge', { reps: '8–12', sets: 3 }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'upper',
-          name: 'Upper — Full Upper Body',
-          focus: 'Incline chest, vertical pull, chest isolation, side delts, rear delts, arms volume',
-          exercises: [
-            be('chest_incline_push', { reps: '8–12', sets: 3, prefer: 'incline_dumbbell_press' }),
-            be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
-            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '15–20' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower',
-          name: 'Lower — Posterior Chain Focus',
-          focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            // Lower-body tilt (stays lower): male quad lean, female glute lean
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('squat_pattern', { prefer: 'leg_press', sets: isolationSets, reps: '10–15' }),
-            isFemale
-              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: 2, reps: '15–20' })
-              : be('quad_isolation', { sets: 2, reps: '12–15' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'optional_shoulders',
-          name: 'Shoulders Day',
-          optional: true,
-          focus: 'OHP · cable laterals · Lu raise · Y raise · rear delts · shrugs — ~45 min',
-          tip: 'Add as a 6th session. Brings side delt to 11 sets/week and rear delt to 9 — hitting the optimal research range.',
-          exercises: [
-            be('shoulders_vertical_push', { reps: '8–12', sets: 4 }),
-            be('shoulders_side_delt', { sets: 4, reps: '12–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: 3, reps: '15–20', prefer: 'reverse_pec_deck' }),
-            be('rear_delt', { sets: 2, reps: '12–15', prefer: 'lu_lateral_raise' }),
-            be('upper_traps', { sets: 3, reps: '12–15', prefer: 'barbell_shrug' }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'ppl_6x': {
-      days = [
-        {
-          id: 'push_a',
-          name: 'Push A — Chest Focus',
-          focus: 'Flat bench, incline press, chest isolation, side delts x2, overhead tricep extension',
-          exercises: [
-            // Flat press anchors the day — the sternocostal (mid/lower) pec needs
-            // horizontal pressing; incline alone leaves it understimulated
-            // (regional hypertrophy: incline grows clavicular, flat grows sternocostal).
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_incline_push', { reps: '8–12', sets: isolationSets }),
-            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
-            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'pull_a',
-          name: 'Pull A — Back Focus',
-          focus: 'Heavy vertical + horizontal pull, inner back, Y raise, face pull, incline curl',
-          exercises: [
-            be('back_vertical_pull', { reps: '5–8', sets: 4 }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 4 }),
-            be('back_inner', { reps: '10–15', sets: 3 }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'incline_y_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            gp.prioritiseIsolation ? be('upper_traps', { sets: isolationSets, reps: '12–15' }) : null,
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
-            be('core', { sets: isolationSets }),
-            be('core', { sets: 3, reps: '10–15', prefer: 'cable_crunch' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'legs_a',
-          name: 'Legs A — Quad Focus',
-          focus: 'Heavy squat, leg extension reclined, seated curl, calves',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hip_hinge', { reps: '8–10', sets: 3 }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'push_b',
-          name: 'Push B — Shoulder Focus',
-          focus: 'OHP, lateral raises, incline press, overhead extension + pushdown',
-          exercises: [
-            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: 3, reps: '12–20' }),
-            be('shoulders_side_delt', { sets: 3, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('chest_incline_push', { reps: '8–12', sets: 2, prefer: 'incline_dumbbell_press' }),
-            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'overhead_tricep_extension' }),
-            be('triceps', { sets: isolationSets, reps: '10–15', prefer: 'cable_tricep_pushdown' }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'pull_b',
-          name: 'Pull B — Bicep Focus',
-          focus: 'Vertical pull volume, inner back, face pull, reverse pec deck, Bayesian curl + hammer curl',
-          exercises: [
-            be('back_vertical_pull', { reps: '8–12', sets: 4, prefer: 'chin_up' }),
-            // 2 sets (not 3) keeps weekly direct back volume at the 20-set ceiling
-            be('back_horizontal_pull', { reps: '10–15', sets: 2 }),
-            be('back_inner', { reps: '12–15', sets: 3 }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('biceps', { sets: isolationSets, reps: '10–15', prefer: 'bayesian_cable_curl' }),
-            be('biceps', { sets: 2, reps: '10–15', prefer: 'standing_hammer_curl' }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'legs_b',
-          name: 'Legs B — Posterior Chain Focus',
-          focus: 'Deadlift, hip thrust, hamstrings, glutes, calves',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'romanian_deadlift' }),
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
-            // Glute slot: male keeps compound lunge, female dedicated glute (hip thrust)
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('glute_focused', { sets: isolationSets, reps: '12–15', prefer: 'walking_lunge' }),
-            // Tilt (stays lower): male quad (leg press), female glute (abduction)
-            isFemale
-              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'hip_abduction_machine' })
-              : be('squat_pattern', { sets: 2, reps: '12–15', prefer: 'leg_press' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'lying_leg_curl' }),
-            be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'hybrid_3x': {
-      days = [
-        {
-          id: 'full_body',
-          name: 'Full Body',
-          focus: 'Compounds + ' + (isFemale ? 'glute' : 'quad') + ' emphasis',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_vertical_pull', { reps: '8–12', sets: compoundSets, prefer: 'lat_pulldown' }),
-            be('hip_hinge', { reps: '8–12', sets: isolationSets, prefer: 'romanian_deadlift' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            // Lower tilt: quad iso (male) vs glute (female)
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'upper',
-          name: 'Upper Body',
-          focus: 'Chest, back, shoulders, arms',
-          exercises: [
-            be('chest_incline_push', { reps: '8–12', sets: compoundSets }),
-            be('back_horizontal_pull', { reps: '8–12', sets: compoundSets }),
-            be('chest_horizontal_push', { reps: '10–15', sets: isolationSets, prefer: 'machine_chest_press' }),
-            be('back_vertical_pull', { reps: '10–15', sets: isolationSets, prefer: 'close_grip_lat_pulldown' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: isolationSets, reps: '15–20', prefer: 'face_pull' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower',
-          name: isFemale ? 'Lower Body — Glute focus' : 'Lower Body — Quad focus',
-          focus: 'Squat, hinge, then quad or glute emphasis',
-          exercises: [
-            be('squat_pattern', { reps: '8–12', sets: compoundSets, prefer: 'leg_press' }),
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'conventional_deadlift' }),
-            // Emphasis tilt 1
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: compoundSets, reps: '8–12' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            // Emphasis tilt 2: female → glute, male → calves
-            isFemale
-              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
-              : be('calves', { sets: isolationSets, prefer: 'seated_calf_raise' }),
-            be('calves', { sets: isolationSets, prefer: 'standing_calf_raise' }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'full_body_4x': {
-      days = [
-        {
-          id: 'fb_a',
-          name: 'Full Body A',
-          focus: 'Squat + horizontal push/pull focus',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            // Tilt: female glute (hip thrust), male extra side delt
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_b',
-          name: 'Full Body B',
-          focus: 'Hip hinge + vertical push/pull focus',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            // Tilt: female glute (hip abduction), male rear delt
-            isFemale
-              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
-              : be('rear_delt', { sets: isolationSets, reps: '15–20' }),
-            be('back_vertical_pull', { reps: '6–10', sets: 3 }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('chest_incline_push', { reps: '8–12', sets: 3, prefer: 'incline_dumbbell_press' }),
-            be('quad_isolation', { sets: isolationSets }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_c',
-          name: 'Full Body C',
-          focus: 'Incline + isolation volume focus',
-          exercises: [
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets }),
-            // Triceps here instead of a 4th ham-curl day — hams are already covered by
-            // the curls on A/B/D plus the B and D hinges; this balances arm volume.
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('rear_delt', { sets: isolationSets }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            // Tilt: female glute (hip abduction), male extra side delt
-            isFemale
-              ? be('glute_focused', { prefer: 'hip_abduction_machine', sets: isolationSets, reps: '12–20' })
-              : be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_d',
-          name: 'Full Body D',
-          focus: 'Posterior chain + arms volume',
-          exercises: [
-            be('hip_hinge', { reps: '8–12', sets: 3, prefer: isFemale ? 'hip_thrust' : 'romanian_deadlift' }),
-            // Tilt: female glute (hip thrust), male quad (leg extension)
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
-            be('chest_isolation', { sets: isolationSets }),
-            be('hamstring_isolation', { sets: isolationSets }),
-            be('shoulders_side_delt', { sets: isolationSets }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'upper_lower_6x': {
-      days = [
-        {
-          id: 'upper_a',
-          name: 'Upper A — Heavy Push + Pull',
-          focus: 'Heavy horizontal press/row, overhead press, side delts, overhead tricep extension',
-          exercises: [
-            be('chest_horizontal_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: compoundSets }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: isolationReps }),
-            be('shoulders_side_delt', { sets: 2, reps: '15–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20' }),
-            be('biceps', { sets: 2, reps: isolationReps, prefer: 'incline_dumbbell_curl' }),
-            be('triceps', { sets: 2, reps: isolationReps, prefer: 'overhead_tricep_extension' }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower_a',
-          name: 'Lower A — Quad Focus',
-          focus: 'Heavy squat, leg extension reclined, calves, core',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('hip_hinge', { reps: '6–10', sets: 3 }),
-            be('glute_focused', { sets: isolationSets, reps: '15–20' }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps, prefer: 'seated_leg_curl' }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'upper_b',
-          name: 'Upper B — Hypertrophy Volume',
-          focus: 'Incline push, vertical pull, chest isolation, lower chest, rear delts, pushdowns',
-          exercises: [
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_vertical_pull', { reps: '8–12', sets: 4 }),
-            be('chest_isolation', { sets: isolationSets, reps: '12–15' }),
-            be('chest_decline', { sets: isolationSets, reps: '12–15' }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'reverse_pec_deck' }),
-            be('biceps', { sets: isolationSets, reps: isolationReps, prefer: 'bayesian_cable_curl' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps, prefer: 'cable_tricep_pushdown' }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower_b',
-          name: 'Lower B — Posterior Chain',
-          focus: 'RDL/deadlift, hip thrust, hamstrings, glutes, calves',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE, prefer: 'hip_thrust' }),
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets }),
-            // Tilt (stays lower): male calves, female glute (abduction)
-            isFemale
-              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'hip_abduction_machine' })
-              : be('calves', { sets: 2, prefer: 'standing_calf_raise' }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'upper_c',
-          name: 'Upper C — Shoulders Specialisation',
-          focus: 'Overhead press, lateral raises, Y raise, Lu raise, rear delts, traps',
-          exercises: [
-            be('shoulders_vertical_push', { reps: compoundReps, sets: compoundSets, early_rpe: compoundRPE }),
-            be('shoulders_side_delt', { sets: 4, reps: '12–20' }),
-            be('rear_delt', { sets: 3, reps: '15–20' }),
-            be('rear_delt', { sets: 2, reps: '15–20', prefer: 'face_pull' }),
-            be('upper_traps', { sets: 3, reps: '12–15' }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
-            be('biceps', { sets: 2, reps: isolationReps, prefer: 'standing_hammer_curl' }),
-            be('triceps', { sets: 2, reps: isolationReps, prefer: 'ez_bar_skullcrusher' }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'lower_c',
-          name: 'Lower C — Full Lower Body',
-          focus: 'Complete lower body — quads, hamstrings, glutes, calves',
-          exercises: [
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('hip_hinge', { reps: '8–12', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets }),
-            be('glute_focused', { sets: isolationSets }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    case 'full_body_5x': {
-      days = [
-        {
-          id: 'fb_a',
-          name: 'Full Body A',
-          focus: 'Squat + horizontal push/pull',
-          exercises: [
-            be('squat_pattern', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            be('chest_horizontal_push', { reps: compoundReps, sets: 3 }),
-            be('back_horizontal_pull', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            // Lower tilt (stays lower): male quad, female glute (keeps walking lunge)
-            isFemale
-              ? be('glute_focused', { sets: isolationSets, reps: '12–15', prefer: 'walking_lunge' })
-              : be('quad_isolation', { sets: isolationSets, reps: '15–20' }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('core', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_b',
-          name: 'Full Body B',
-          focus: 'Hip hinge + vertical pull + triceps',
-          exercises: [
-            be('hip_hinge', { reps: compoundReps, sets: 3, early_rpe: compoundRPE }),
-            // Tilt: female glute (hip thrust); male gets side delts here — Day B already
-            // has a leg curl + RDL, so a 2nd curl was redundant; full-body day, not a leg day
-            isFemale
-              ? be('hip_hinge', { prefer: 'hip_thrust', sets: isolationSets, reps: '10–15' })
-              : be('shoulders_side_delt', { sets: isolationSets, reps: '12–20' }),
-            be('back_vertical_pull', { reps: '6–10', sets: 3 }),
-            be('shoulders_vertical_push', { reps: compoundReps, sets: 3 }),
-            be('shoulders_side_delt', { sets: isolationSets, reps: '12–20', prefer: 'cable_lateral_raise' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('hamstring_isolation', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_c',
-          name: 'Full Body C',
-          focus: 'Incline + isolation volume',
-          exercises: [
-            be('squat_pattern', { reps: '8–12', sets: 3 }),
-            be('chest_incline_push', { reps: '8–12', sets: 3 }),
-            be('back_horizontal_pull', { reps: '10–15', sets: 3 }),
-            be('quad_isolation', { sets: isolationSets }),
-            // Lower tilt (stays lower): male hamstring, female glute (abduction)
-            isFemale
-              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'hip_abduction_machine' })
-              : be('hamstring_isolation', { sets: 2, reps: isolationReps, prefer: 'lying_leg_curl' }),
-            be('shoulders_side_delt', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_d',
-          name: 'Full Body D',
-          focus: 'Posterior chain + arms',
-          exercises: [
-            be('hip_hinge', { reps: '8–12', sets: 3, prefer: 'hip_thrust' }),
-            be('back_vertical_pull', { reps: '8–12', sets: 3, prefer: 'chin_up' }),
-            be('chest_isolation', { sets: isolationSets }),
-            be('hamstring_isolation', { sets: isolationSets }),
-            be('biceps', { sets: isolationSets, reps: isolationReps }),
-            // Lower tilt (stays lower): male calves, female glute (bridge)
-            isFemale
-              ? be('glute_focused', { sets: 2, reps: '15–20', prefer: 'glute_bridge' })
-              : be('calves', { sets: 2, prefer: 'standing_calf_raise' }),
-            be('triceps', { sets: isolationSets, reps: isolationReps }),
-            be('calves', { sets: isolationSets }),
-            be('forearms', { sets: 2, reps: isolationReps, optional: true }),
-          ].filter(Boolean),
-        },
-        {
-          id: 'fb_e',
-          name: 'Full Body E',
-          focus: 'Weak points + isolation',
-          exercises: [
-            be('squat_pattern', { reps: '10–15', sets: 3 }),
-            be('back_vertical_pull', { reps: '10–15', sets: 3, prefer: 'lat_pulldown' }),
-            be('chest_isolation', { sets: isolationSets }),
-            be('rear_delt', { sets: isolationSets }),
-            be('biceps', { sets: 2, reps: isolationReps }),
-            be('triceps', { sets: 2, reps: isolationReps }),
-            be('glute_focused', { sets: isolationSets }),
-            be('calves', { sets: isolationSets }),
-            be('core', { sets: isolationSets }),
-          ].filter(Boolean),
-        },
-      ];
-      break;
-    }
-
-    default:
-      days = [];
-  }
 
   // ── Dedup pass: no exercise should appear twice in the same day. If it does,
   // swap the duplicate for a different exercise from the same movement pattern. ──
@@ -3658,8 +3073,24 @@ export function rebalanceForCompletedOptionalDays(program, completedDayNames = [
 
 // ─── LEVEL DETECTOR ──────────────────────────────────────────────────────────
 
+// Training-experience answer → the three tiers everything downstream keys on.
+// This used to return `profile.trainingExperience` verbatim ('under_6m',
+// '6m_to_2y', …), which is not a tier. Every consumer therefore missed:
+// LEVEL_VOLUME_FACTOR[level] was undefined so the factor silently fell back to
+// 1.0 and no program was ever scaled by experience, and gatePoolByLevel's
+// `level === 'beginner'` test never fired, so beginners were offered advanced
+// lifts. getVolumeTargets() defaulted to the intermediate tier for everyone.
+const EXPERIENCE_TIER = {
+  under_6m: 'beginner',
+  '6m_to_2y': 'intermediate',
+  '2y_to_4y': 'intermediate',
+  over_4y: 'advanced',
+};
+
 function getLevelFromProfile(profile) {
-  return profile.trainingExperience || 'beginner';
+  const raw = profile?.trainingExperience;
+  if (['beginner', 'intermediate', 'advanced'].includes(raw)) return raw;
+  return EXPERIENCE_TIER[raw] || 'beginner';
 }
 
 // ─── WEEKLY VOLUME CHECKER ───────────────────────────────────────────────────
