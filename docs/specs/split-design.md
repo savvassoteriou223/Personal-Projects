@@ -113,6 +113,28 @@ exercise twice in a day**, or a pattern run three or more times in one session. 
 day dedicated to a muscle may run two variations of it, so a shoulder day is
 allowed its two side-delt movements.
 
+## Goal changes distribution, not total
+
+Total weekly volume per muscle does **not** move with the training goal. The
+dose-response that sets it — 10-20 sets per muscle per week, scaling with
+training age — is a hypertrophy finding, and strength responds much more flatly
+to volume because it is driven by load and practice specificity rather than set
+count. Cutting is the case that matters most: volume has to be **held** in a
+deficit, since dropping it is what costs you muscle.
+
+The old goal profiles got that backwards. `lose` prescribed 3 compound / 2
+isolation sets against `muscle`'s 4 / 3, shedding roughly a third of weekly
+volume exactly when it needed protecting.
+
+What the goal legitimately changes is *where* a muscle's sets sit.
+`tiltTowardCompounds()` moves sets from an isolation slot to a compound slot for
+the same muscle **on the same day**, so the muscle's weekly total is
+arithmetically untouched and the solved tables stay valid. A strength user gets
+5x3-6 squat + 3x12-20 leg extension where a hypertrophy user gets 4x6-10 + 4x12-20.
+The size of the shift is read off the goal profile's own
+`compoundSets`/`isolationSets` gap, and an isolation slot is never stripped below
+2 working sets.
+
 ## Equipment fallback
 
 If a slot's pattern has nothing for the user's equipment, `be()` substitutes a

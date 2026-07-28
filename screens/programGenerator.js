@@ -2875,6 +2875,55 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     forearms: [isolationReps],
   };
 
+  // Goal shifts the DISTRIBUTION of a muscle's sets, never its weekly total.
+  //
+  // Total weekly volume per muscle is goal-independent: the dose-response that
+  // sets it (10-20 sets/muscle/week, scaling with training age) is a hypertrophy
+  // finding, and strength has a much flatter response to volume because it is
+  // driven by load and practice specificity rather than set count. Cutting is
+  // the case that matters most — volume must be HELD in a deficit, since
+  // dropping it is what costs you muscle. The old goal profiles got this
+  // backwards, prescribing 3 compound / 2 isolation sets on 'lose' and shedding
+  // roughly a third of weekly volume exactly when it needed protecting.
+  //
+  // What the goal legitimately changes is where a muscle's sets sit. For
+  // strength, specificity says the barbell lift itself is the stimulus, so sets
+  // belong on the compound rather than the isolation. So we move sets from an
+  // isolation slot to a compound slot FOR THE SAME MUSCLE ON THE SAME DAY. The
+  // muscle's weekly total is arithmetically untouched, which is what keeps the
+  // solved SPLIT_DAYS numbers — and the audit that proves them — valid.
+  //
+  // The size of the shift is read off the goal profile rather than hard-coded:
+  // a profile that asks for meaningfully more compound than isolation work
+  // (strength: 5 vs 2) tilts; one that does not (muscle: 4 vs 3) leaves it flat.
+  const COMPOUND_PATTERNS = new Set([
+    'squat_pattern', 'hip_hinge', 'chest_horizontal_push', 'chest_incline_push',
+    'back_horizontal_pull', 'back_vertical_pull', 'shoulders_vertical_push',
+  ]);
+  const ISOLATION_OF = {
+    squat_pattern: 'quad_isolation',
+    hip_hinge: 'hamstring_isolation',
+    chest_horizontal_push: 'chest_isolation',
+    chest_incline_push: 'chest_isolation',
+    back_horizontal_pull: 'back_inner',
+    back_vertical_pull: 'back_inner',
+  };
+  const compoundTilt = Math.max(0, Math.min(2,
+    Math.floor(((gp.compoundSets || 0) - (gp.isolationSets || 0) - 1) / 2)));
+
+  function tiltTowardCompounds(exercises) {
+    if (!compoundTilt) return exercises;
+    for (const ex of exercises) {
+      if (!COMPOUND_PATTERNS.has(ex.pattern)) continue;
+      const iso = exercises.find(e => e.pattern === ISOLATION_OF[ex.pattern]);
+      // Never strip an isolation slot below 2 working sets — a 1-set exercise
+      // is not worth the setup, and the slot exists to cover that muscle.
+      const move = Math.min(compoundTilt, (iso?.sets || 0) - 2);
+      if (iso && move > 0) { iso.sets -= move; ex.sets += move; }
+    }
+    return exercises;
+  }
+
   days = (SPLIT_DAYS[split.id]?.(isFemale) || []).map(d => {
     // Patterns already placed today. A fallback must not land on one of them:
     // a bodyweight user has no vertical pull, and without this the substitute
@@ -2893,7 +2942,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
       if (ex) usedToday.add(ex.pattern);
       return ex;
     }).filter(Boolean);
-    return { id: d.id, name: d.name, focus: d.focus, exercises };
+    return { id: d.id, name: d.name, focus: d.focus, exercises: tiltTowardCompounds(exercises) };
   });
 
 
