@@ -2993,6 +2993,40 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     };
   });
 
+  // Session length is measured off the program that was actually built, not read
+  // off the split. split.session_time_est is one fixed string per split and takes
+  // no account of training age, so once set counts became tier-specific it was
+  // wrong in both directions — it promised 70–90 min to an advanced lifter on
+  // Full Body 2x whose real sessions run past two hours, and 60–80 min to a
+  // beginner who is done in forty.
+  const sessionMinutes = (day) => {
+    const secs = (day.exercises || []).reduce((total, ex) => {
+      // ~45 s under the bar per set, plus the prescribed rest after it.
+      const rest = String(ex.rest || '2 min');
+      const nums = (rest.match(/\d+/g) || ['2']).map(Number);
+      const mid = nums.reduce((a, b) => a + b, 0) / nums.length;
+      const restSecs = /sec/i.test(rest) ? mid : mid * 60;
+      return total + (ex.sets || 0) * (45 + restSecs);
+    }, 0);
+    return Math.round(secs / 60);
+  };
+  const sessionTimes = days.map(sessionMinutes).filter(n => n > 0);
+  const sessionTimeEst = sessionTimes.length
+    ? `${Math.min(...sessionTimes)}–${Math.max(...sessionTimes)} min`
+    : split.session_time_est;
+
+  // A lifter who picks few days but has the training age for high volume gets
+  // long sessions — that is the honest trade, not a bug, but they should be told
+  // rather than surprised by it.
+  const longest = sessionTimes.length ? Math.max(...sessionTimes) : 0;
+  const sessionWarning = (longest > 100 && days.length <= 3) ? {
+    type: 'session_length',
+    level: 'info',
+    title: `Long sessions (up to ${longest} min)`,
+    message: `Your training age calls for volume that has to fit into ${days.length} sessions, so each one runs long. Spreading the same weekly volume over more days would shorten them at no cost — weekly volume drives growth, not how it is split up.`,
+    source: 'Schoenfeld, Ogborn & Krieger (2016). Effects of resistance training frequency on measures of muscle hypertrophy. Sports Medicine, 46(11):1689–1697.',
+  } : null;
+
   const sportEntries = (profile.sports || []).filter(s => s?.days?.length > 0);
   const occupiedDays = [...new Set(sportEntries.flatMap(s => s.days))];
   const scheduleTemplate = occupiedDays.length > 0
@@ -3005,7 +3039,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     split,
     days_per_week: split.days,
     level,
-    session_time: split.session_time_est,
+    session_time: sessionTimeEst,
     schedule: scheduleTemplate,
     rest_between: split.rest_between || [],
     science_basis: split.science_basis,
@@ -3027,7 +3061,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     progression: 'Double progression — add reps each session within the rep range. When every set hits the ceiling on all sets, increase load by the smallest available increment and return to the bottom of the range.',
     progression_model: PROGRESSIVE_OVERLOAD.model,
     // ── Program metadata ───────────────────────────────────────────────────
-    warnings: generateWarnings(profile, split),
+    warnings: [...generateWarnings(profile, split), ...(sessionWarning ? [sessionWarning] : [])],
     volume_targets: VOLUME_TARGETS,
     sport_sessions: sportEntries.flatMap(s => s.days.map(d => ({ day: d, sport: s.label || s.key }))),
     days: days.map((day, i) => ({
