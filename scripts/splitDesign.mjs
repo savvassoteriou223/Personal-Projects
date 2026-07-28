@@ -19,7 +19,8 @@ import { MOVEMENT_PATTERNS } from '../screens/movementLibrary.js';
 import { muscleToHead } from '../screens/volumeEngine.js';
 import { getVolumeTargets } from '../screens/programGenerator.js';
 
-// slot key → [pattern, preferred exercise id or null, display name]
+// slot key → [pattern, preferred exercise id or null, display name, load?]
+// `load` filters the exercise pool by load_position to guarantee a muscle HEAD.
 const SLOT = {
   squat:    ['squat_pattern', null, 'Squat'],
   legpress: ['squat_pattern', 'leg_press', 'Leg press'],
@@ -40,7 +41,11 @@ const SLOT = {
   core:     ['core', null, 'Abs'],
   benchFlat:['chest_horizontal_push', null, 'Bench press'],
   benchInc: ['chest_incline_push', null, 'Incline press'],
+  // Lower chest. The pattern has six exercises and the old tables used none of
+  // them, so no program trained the sternal head at all.
+  benchDec: ['chest_decline', null, 'Decline press / dip'],
   chestIso: ['chest_isolation', null, 'Chest fly'],
+  latIso:   ['back_isolation', null, 'Lat pullover'],
   ohp:      ['shoulders_vertical_push', null, 'Overhead press'],
   rowH:     ['back_horizontal_pull', null, 'Row'],
   pullV:    ['back_vertical_pull', null, 'Pull-up / pulldown'],
@@ -48,8 +53,16 @@ const SLOT = {
   traps:    ['upper_traps', null, 'Shrug'],
   sideDelt: ['shoulders_side_delt', null, 'Lateral raise'],
   rearDelt: ['rear_delt', null, 'Rear delt'],
-  biceps:   ['biceps', null, 'Curl'],
-  triceps:  ['triceps', null, 'Triceps'],
+  // Arms are split by HEAD, not by exercise. `load` filters the pool by where the
+  // load sits, which is what distinguishes the heads, while leaving block
+  // rotation free to vary the movement inside that head.
+  bicepsLong: ['biceps', null, 'Curl (long head)', 'stretch'],
+  bicepsShort:['biceps', null, 'Curl (short head)', 'contracted'],
+  tricepsLong:['triceps', null, 'Triceps (long head)', 'stretch'],
+  tricepsLat: ['triceps', null, 'Triceps (lateral)', 'contracted'],
+  // Calves have no load_position, and a bent knee slackens the gastrocnemius so
+  // the soleus does the work — seated and standing are not interchangeable.
+  calvesSeat: ['calves', 'seated_calf_raise', 'Seated calf raise'],
 };
 
 // head → display group, mirroring volumeEngine's MUSCLE_GROUPS rollup.
@@ -97,70 +110,71 @@ function ranges(tier, f, mev) {
 const G2 = f => (f ? 'glute2F' : 'glute2M');
 
 const SPLITS = {
-// Two sessions cannot reach MEV for eleven muscles — 9 slots x 2 is ~18, and MEV
-// needs ~26. So this one is judged on the movers only, and arms/delts ride on
-// the indirect work the compounds already supply.
-'Full Body 2x': { only:['quads','chest','back','hamstrings','glutes','calves'], mev:true, days:f=>[
-  ['Full Body A',[['squat',5],['benchFlat',5],['rowH',5],['rowInner',4],['sideDelt',5],['triceps',4],['calves',5],['lunge',5],['hinge',4]]],
-  ['Full Body B',[['legpress',5],['deadlift',5],['benchInc',5],['pullV',5],['rearDelt',4],['biceps',4],['calves',5],[G2(f),5]]]]},
+// Two sessions cannot carry eighteen muscle heads AND MEV volume — 9 slots x 2
+// is 18 slots for 18 heads with nothing left for a second slot on anything. This
+// split is judged on the movers and on reduced head coverage; the arms get one
+// head each rather than two.
+'Full Body 2x': { only:['quads','chest','back','hamstrings','glutes','calves'], mev:true, heads:'reduced', days:f=>[
+  ['Full Body A',[['squat',5],['benchFlat',5],['rowH',5],['rowInner',4],['sideDelt',5],['tricepsLong',4],['calves',5],['lunge',5],['hinge',4]]],
+  ['Full Body B',[['legpress',5],['deadlift',5],['benchInc',5],['pullV',5],['ohp',3],['rearDelt',4],['bicepsLong',4],['calvesSeat',5],[G2(f),5]]]]},
 
 'Full Body 3x': { mev:true, days:f=>[
-  ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['triceps',3],['calves',6],['biceps',4],['core',3]]],
-  ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',3],['biceps',6],['lunge',4],['quadIso',4],['calves',4],['core',3]]],
-  ['Full Body C',[['legpress',4],['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',3],['triceps',3],[G2(f),4],['hamIso',4],['core',3]]]]},
+  ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['rearDelt',4],['tricepsLong',3],['bicepsLong',4],['calves',5],['core',3]]],
+  ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',3],['lunge',4],['quadIso',4],['calvesSeat',4],['core',3]]],
+  ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['ohp',3],['tricepsLat',3],['bicepsShort',3],[G2(f),4],['hamIso',4]]]]},
 
-'Full Body / Upper / Lower 3x': { mev:true, days:f=>[
-  ['Full Body',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['rearDelt',4],['triceps',3],['calves',4],['core',3]]],
-  ['Upper',[['benchInc',4],['chestIso',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',6],['biceps',3],['triceps',3]]],
-  ['Lower',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['quadIso',4],['hamIso',4],['calves',4],['biceps',3],['core',3]]]]},
+'Full Body / Upper / Lower 3x': { mev:true, heads:'reduced', days:f=>[
+  ['Full Body',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['rearDelt',4],['tricepsLong',3],['bicepsLong',4],['calves',4],['core',3]]],
+  ['Upper',[['benchInc',4],['benchDec',4],['pullV',4],['rowInner',4],['sideDelt',5],['ohp',3],['rearDelt',4],['bicepsLong',3],['tricepsLat',3]]],
+  ['Lower',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['quadIso',4],['hamIso',4],['calvesSeat',4],['core',3]]]]},
 
 'Upper / Lower 4x': { days:f=>[
-  ['Upper A',[['benchFlat',4],['rowH',4],['ohp',3],['sideDelt',5],['rearDelt',4],['triceps',4],['biceps',4]]],
+  ['Upper A',[['benchFlat',4],['rowH',4],['ohp',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4],['bicepsLong',4]]],
   ['Lower A',[['squat',4],['hinge',4],['lunge',4],['quadIso',4],['calves',5],['core',4]]],
-  ['Upper B',[['benchInc',4],['chestIso',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['triceps',4],['biceps',4]]],
-  ['Lower B',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),f?4:4],['hamIso',4],['calves',5],['core',4]]]]},
+  ['Upper B',[['benchInc',4],['benchDec',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['tricepsLat',4],['bicepsShort',4]]],
+  ['Lower B',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['hamIso',4],['calvesSeat',5],['core',4]]]]},
 
 'Chest+Tri / Back+Bi / Shoulders / Legs': { days:f=>[
-  ['Chest + Triceps',[['benchFlat',4],['benchInc',4],['chestIso',4],['triceps',4],['triceps',4],['core',5]]],
-  ['Back + Biceps',[['pullV',4],['rowH',4],['rowInner',4],['biceps',4],['biceps',4],['core',5]]],
-  ['Shoulders',[['ohp',3],['sideDelt',5],['sideDelt',5],['rearDelt',4],['rearDelt',4],['calves',5]]],
-  ['Legs',[['squat',4],['hinge',5],['legpress',4],['lunge',f?6:4],[G2(f),f?6:4],['quadIso',4],['hamIso',5],['calves',5]]]]},
+  ['Chest + Triceps',[['benchFlat',4],['benchInc',4],['benchDec',4],['chestIso',4],['tricepsLong',4],['tricepsLat',4],['core',5]]],
+  ['Back + Biceps',[['pullV',4],['rowH',4],['rowInner',4],['latIso',3],['bicepsLong',4],['bicepsShort',4],['core',5]]],
+  ['Shoulders',[['ohp',3],['sideDelt',5],['sideDelt',5],['rearDelt',4],['rearDelt',4],['calves',5],['calvesSeat',5]]],
+  ['Legs',[['squat',4],['hinge',5],['legpress',4],['lunge',f?6:4],[G2(f),f?6:4],['quadIso',4],['hamIso',5]]]]},
 
 'Full Body 4x': { days:f=>[
-  ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['triceps',4],['calves',5]]],
-  ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['biceps',4],['lunge',f?6:4],['core',4]]],
-  ['Full Body C',[['legpress',4],['chestIso',4],['rowInner',4],['sideDelt',5],['triceps',4],['calves',5],['core',4]]],
-  ['Full Body D',[['deadlift',4],[G2(f),f?6:4],['quadIso',4],['ohp',3],['rearDelt',4],['biceps',4],['hamIso',4]]]]},
+  ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['calves',5],['core',4]]],
+  ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['bicepsLong',4],['lunge',f?6:4],['core',4]]],
+  ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['tricepsLat',4],['calvesSeat',5],['core',4]]],
+  ['Full Body D',[['deadlift',4],[G2(f),f?6:4],['quadIso',4],['ohp',3],['rearDelt',4],['bicepsShort',4],['hamIso',4]]]]},
 
 'PPL / Upper / Lower 5x': { days:f=>[
-  ['Push',[['benchFlat',4],['benchInc',4],['ohp',3],['sideDelt',5],['triceps',4]]],
-  ['Pull',[['pullV',4],['rowH',4],['rearDelt',4],['biceps',4],['core',4]]],
+  ['Push',[['benchFlat',4],['benchInc',4],['ohp',3],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
+  ['Pull',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',4]]],
   ['Legs',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',5],['core',4]]],
-  ['Upper',[['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['triceps',4],['biceps',4]]],
-  ['Lower',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calves',5],['core',2]]]]},
+  ['Upper',[['benchDec',4],['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['bicepsShort',4]]],
+  ['Lower',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',2]]]]},
 
 'Full Body 5x': { days:f=>[
-  ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['triceps',4]]],
-  ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['biceps',4]]],
-  ['Full Body C',[['legpress',4],['chestIso',4],['rowInner',4],['sideDelt',5],['calves',5],['core',4]]],
-  ['Full Body D',[['deadlift',4],['lunge',f?6:4],['ohp',3],['rearDelt',4],['triceps',4],['core',4]]],
-  ['Full Body E',[['quadIso',4],['hamIso',4],[G2(f),f?6:4],['pullV',4],['biceps',4],['calves',5],['core',2]]]]},
+  ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['calves',5]]],
+  ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['bicepsLong',4],['core',4]]],
+  ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['calvesSeat',5],['core',4]]],
+  ['Full Body D',[['deadlift',4],['lunge',f?6:4],['ohp',3],['rearDelt',4],['tricepsLat',4],['core',4]]],
+  ['Full Body E',[['quadIso',4],['hamIso',4],[G2(f),f?6:4],['latIso',3],['bicepsShort',4],['calves',5]]]]},
 
 'Push / Pull / Legs 6x': { days:f=>[
-  ['Push A',[['benchFlat',4],['ohp',3],['chestIso',4],['sideDelt',5],['triceps',4]]],
-  ['Pull A',[['pullV',4],['rowH',4],['rearDelt',4],['biceps',4],['core',3]]],
+  ['Push A',[['benchFlat',4],['ohp',3],['chestIso',4],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
+  ['Pull A',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',3]]],
   ['Legs A',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',5]]],
-  ['Push B',[['benchInc',4],['ohp',3],['sideDelt',5],['triceps',4],['core',4]]],
-  ['Pull B',[['pullV',4],['rowInner',4],['rearDelt',4],['biceps',4],['core',3]]],
-  ['Legs B',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calves',5]]]]},
+  ['Push B',[['benchInc',4],['benchDec',4],['ohp',3],['sideDelt',5],['tricepsLat',4],['core',3]]],
+  ['Pull B',[['rowInner',4],['latIso',3],['rearDelt',4],['bicepsShort',4],['core',3]]],
+  ['Legs B',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',3]]]]},
 
 'Upper / Lower 6x': { days:f=>[
-  ['Upper A',[['benchFlat',4],['ohp',3],['rowH',4],['sideDelt',5],['triceps',4]]],
-  ['Lower A',[['squat',4],['hinge',4],['lunge',f?6:4],['calves',5],['core',4]]],
-  ['Upper B',[['benchInc',4],['pullV',4],['rearDelt',4],['biceps',4],['triceps',4]]],
-  ['Lower B',[['legpress',4],['deadlift',4],['quadIso',4],['calves',5],['core',3]]],
-  ['Upper C',[['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['biceps',4]]],
-  ['Lower C',[[G2(f),f?6:4],['hamIso',4],['quadIso',3],['calves',2],['core',3]]]]},
+  ['Upper A',[['benchFlat',4],['ohp',3],['rowH',4],['sideDelt',5],['tricepsLong',4],['bicepsLong',4]]],
+  ['Lower A',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',5],['core',4]]],
+  ['Upper B',[['benchInc',4],['pullV',4],['rearDelt',4],['bicepsShort',4],['tricepsLat',4],['core',3]]],
+  ['Lower B',[['legpress',4],['deadlift',4],['hamIso',4],['calvesSeat',5],['core',3]]],
+  ['Upper C',[['benchDec',4],['rowInner',4],['latIso',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4]]],
+  ['Lower C',[[G2(f),f?6:4],['lunge',f?6:4],['quadIso',4],['hamIso',4],['calves',5],['core',3]]]]},
 };
 
 
@@ -328,9 +342,13 @@ if (process.argv[2] === 'emit') {
         const lit = sex => {
           const row = TIERS.map(t => A[t][sex][d][1][i]);
           if (row.some(r => !r)) return null;
-          const k = row[0][0], [pat, pref] = SLOT[k];
+          const k = row[0][0], [pat, pref, , load] = SLOT[k];
           const sets = row.map(r => r[1]);
-          return `['${pat}', [${sets.join(', ')}]${pref ? `, '${pref}'` : ''}]`;
+          // 3rd element is a pinned exercise, 4th is the head filter; a slot that
+          // needs only the head passes null so `load` lands in the right place.
+          const tail = load ? `, ${pref ? `'${pref}'` : 'null'}, '${load}'`
+                            : (pref ? `, '${pref}'` : '');
+          return `['${pat}', [${sets.join(', ')}]${tail}]`;
         };
         const m = lit('m'), w = lit('f');
         if (!m) { parts.push(`...(f ? [${w}] : [])`); continue; }
