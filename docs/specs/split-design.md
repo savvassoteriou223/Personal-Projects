@@ -135,6 +135,39 @@ The size of the shift is read off the goal profile's own
 `compoundSets`/`isolationSets` gap, and an isolation slot is never stripped below
 2 working sets.
 
+### What each goal actually changes
+
+`GOAL_PROFILES` claimed in its header comment to be "what makes the program
+actually different per goal — not just labels." Five of its eleven fields were
+never read by anything: `restCompound`, `restIsolation`, `lastSetRPE`,
+`volumeMultiplier` and `prioritiseIsolation`. Rest fell back to the exercise's own
+default and last-set RPE was hardcoded to 9, so a powerlifter and an endurance
+athlete were handed identical rest and identical effort.
+
+Rest and last-set RPE are now wired, with values corrected against the evidence:
+
+| | reps | RPE | rest (compound) | sets |
+|---|---|---|---|---|
+| Build muscle | 6–10 | 7 → 9 | 2–3 min | 4 compound / 4 isolation |
+| Build strength | 3–6 | 8 → 9 | 3–5 min | 5 compound / 3 isolation |
+| Lose fat | 6–10 | 7 → 9 | 2–3 min | 4 / 4 |
+| Endurance | 12–20 | 6 → 8 | 60 sec | 4 / 4 |
+
+Two corrections came out of the research:
+
+- **Strength no longer grinds to RPE 10.** Strength gains are insensitive to
+  proximity to failure across a wide RIR range, so taking a heavy compound to
+  failure buys fatigue rather than strength. Hypertrophy is the goal that
+  benefits from training close to failure, not strength.
+- **Fat-loss rest went back up** from 90/60 sec to 2–3 min / 90 sec. Resting
+  under 60 seconds cuts the reps completed on later sets, and training quality is
+  precisely what a deficit puts at risk.
+
+`volumeMultiplier` and `prioritiseIsolation` were deleted rather than wired.
+`volumeMultiplier` in particular was a hazard: weekly volume is now solved per
+muscle, so anyone "fixing" the dead field by connecting it would silently push
+muscles out of their verified ranges.
+
 ## Equipment fallback
 
 If a slot's pattern has nothing for the user's equipment, `be()` substitutes a

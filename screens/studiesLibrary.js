@@ -28,13 +28,61 @@ export const STUDIES = {
     cite: 'Remmert & Pelland 2025',
     tags: ['volume', 'programming'],
   },
+  // The strength/hypertrophy split matters for programming: both respond to
+  // volume, but strength flattens out far earlier, which is why goals change
+  // where a muscle's sets sit rather than how many it gets.
+  volume_strength_dose: {
+    insight: 'Volume raises strength too, but with far steeper diminishing returns than growth — strength plateaus on volume long before size does.',
+    cite: 'Pelland et al. 2025 · meta-regression',
+    tags: ['volume', 'strength', 'programming'],
+  },
+  volume_strength_minimum: {
+    insight: 'A single hard set of 6–12 at 70–85% 1RM, 2–3x per week, still adds meaningful 1RM strength — useful as a floor on busy weeks.',
+    cite: 'Androulakis-Korakakis 2020 · systematic review',
+    tags: ['volume', 'strength', 'maintain', 'programming'],
+  },
+  volume_in_deficit: {
+    insight: 'Keep volume UP while cutting — lifters holding ≥10 sets per muscle per week lost little to no lean mass, and those who cut volume lost more.',
+    cite: 'Roth et al. 2022 · systematic review',
+    tags: ['volume', 'lose', 'cut', 'recomp', 'programming'],
+  },
+
   volume_by_experience: {
     insight: 'Weekly sets per muscle scale with training age: beginners 10–12, intermediate 12–16, advanced 16–20.',
     cite: 'Baz-Valle 2022',
     tags: ['volume', 'programming', 'beginner', 'intermediate', 'advanced'],
   },
 
+  // ── REST ──────────────────────────────────────────────────────────────────
+  rest_strength_vs_size: {
+    insight: 'Longer rest clearly helps STRENGTH but barely moves growth — so rest long on heavy compounds, and keep it short only if time is the constraint.',
+    cite: 'Singer et al. 2024 · Bayesian meta-analysis',
+    tags: ['rest', 'strength', 'programming'],
+  },
+  rest_short_cost: {
+    insight: 'Resting under 60 seconds cuts the reps you complete on later sets, quietly costing you volume at the same effort.',
+    cite: 'Singer et al. 2024',
+    tags: ['rest', 'volume', 'programming'],
+  },
+
+  // ── CONCURRENT TRAINING ───────────────────────────────────────────────────
+  concurrent_interference: {
+    insight: 'Cardio does not meaningfully blunt muscle growth — across 43 studies the interference effect on hypertrophy was essentially zero.',
+    cite: 'Schumann et al. 2022 · 43 studies',
+    tags: ['cardio', 'concurrent', 'endurance', 'programming'],
+  },
+  concurrent_modality: {
+    insight: 'If you are protecting leg gains, cycle rather than run — running is the modality that shows interference, cycling largely does not.',
+    cite: 'Schumann et al. 2022',
+    tags: ['cardio', 'concurrent', 'endurance', 'quads', 'programming'],
+  },
+
   // ── EFFORT / PROXIMITY TO FAILURE ─────────────────────────────────────────
+  effort_strength_insensitive: {
+    insight: 'Strength gains do not depend on training to failure — so leave a rep in the tank on heavy compounds; the fatigue costs more than it buys.',
+    cite: 'Robinson et al. 2024 · 67 strength studies',
+    tags: ['effort', 'failure', 'strength', 'programming'],
+  },
   effort_dose: {
     insight: 'Training closer to failure drives more growth — it is a continuous dose-response, not a threshold.',
     cite: 'Robinson et al. 2024',

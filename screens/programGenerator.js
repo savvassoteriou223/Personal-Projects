@@ -1154,7 +1154,10 @@ function buildExercise(patternKey, equipment, overrides = {}) {
     category: pattern.label.split(' — ')[1] || pattern.label,
     sets: overrides.sets || ex.sets,
     reps: overrides.reps || ex.reps,
-    rest: ex.rest,
+    // Goal-driven rest wins over the exercise's own default; the exercise value
+    // is the fallback for callers that do not prescribe one (coach swaps, manual
+    // substitutions).
+    rest: overrides.rest || ex.rest,
     early_rpe: overrides.early_rpe || 7,
     last_rpe: overrides.last_rpe || 9,
     stretch_position: ex.stretch_position,
@@ -1192,8 +1195,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '1–2 min',
-    volumeMultiplier: 1.0,
-    prioritiseIsolation: true,
     cardioNote: null,
   },
   strength: {
@@ -1204,11 +1205,9 @@ export const GOAL_PROFILES = {
     compoundSets: 5,
     isolationSets: 2,
     compoundRPE: 8,
-    lastSetRPE: 10,
+    lastSetRPE: 9,
     restCompound: '3–5 min',
     restIsolation: '2 min',
-    volumeMultiplier: 0.85,
-    prioritiseIsolation: false,
     cardioNote: null,
   },
   lose: {
@@ -1220,10 +1219,8 @@ export const GOAL_PROFILES = {
     isolationSets: 2,
     compoundRPE: 7,
     lastSetRPE: 9,
-    restCompound: '90 sec',
-    restIsolation: '60 sec',
-    volumeMultiplier: 0.8,
-    prioritiseIsolation: false,
+    restCompound: '2–3 min',
+    restIsolation: '90 sec',
     cardioNote: 'Add 2–3 cardio sessions/week (20–30 min moderate intensity). Keep them separate from lifting if possible.',
   },
   aesthetics: {
@@ -1237,8 +1234,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2 min',
     restIsolation: '60–90 sec',
-    volumeMultiplier: 1.0,
-    prioritiseIsolation: true,
     cardioNote: '1–2 low-intensity cardio sessions/week supports conditioning without compromising recovery.',
   },
   endurance: {
@@ -1252,8 +1247,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '60 sec',
     restIsolation: '30–45 sec',
-    volumeMultiplier: 0.9,
-    prioritiseIsolation: false,
     cardioNote: '3–5 cardio sessions/week is the primary driver. Resistance training supports it.',
   },
   maintain: {
@@ -1267,8 +1260,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '90 sec',
     restIsolation: '60 sec',
-    volumeMultiplier: 0.75,
-    prioritiseIsolation: false,
     cardioNote: '2–3 moderate cardio sessions/week supports cardiovascular health alongside lifting.',
   },
 
@@ -1284,8 +1275,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2 min',
     restIsolation: '90 sec',
-    volumeMultiplier: 0.9,
-    prioritiseIsolation: true,
     cardioNote: '1–2 cardio sessions/week. Keep intensity moderate — high-intensity cardio in a deficit increases muscle loss risk.',
   },
   cut_strength: {
@@ -1296,11 +1285,9 @@ export const GOAL_PROFILES = {
     compoundSets: 4,
     isolationSets: 2,
     compoundRPE: 8,
-    lastSetRPE: 10,
+    lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    volumeMultiplier: 0.80,
-    prioritiseIsolation: false,
     cardioNote: '2–3 cardio sessions/week. Separate from lifting by at least 6 hours to protect strength performance.',
   },
   cut_endurance: {
@@ -1314,8 +1301,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '45–60 sec',
     restIsolation: '30–45 sec',
-    volumeMultiplier: 0.85,
-    prioritiseIsolation: false,
     cardioNote: '4–5 cardio sessions/week is the primary driver. Resistance training preserves muscle during the deficit.',
   },
   powerbuilding: {
@@ -1329,8 +1314,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '3–4 min',
     restIsolation: '90 sec–2 min',
-    volumeMultiplier: 1.05,
-    prioritiseIsolation: true,
     cardioNote: '1–2 low-intensity cardio sessions/week (GPP). Avoid high-intensity cardio — it compromises recovery for heavy compound work.',
   },
   hybrid_muscle: {
@@ -1344,8 +1327,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '90 sec–2 min',
     restIsolation: '60–90 sec',
-    volumeMultiplier: 0.95,
-    prioritiseIsolation: true,
     cardioNote: '2–3 cardio sessions/week. Separate lifting and cardio by 6+ hours. Prioritise sleep and protein to offset the interference effect (Wilson et al., 2012).',
   },
   hybrid_strength: {
@@ -1356,11 +1337,9 @@ export const GOAL_PROFILES = {
     compoundSets: 4,
     isolationSets: 2,
     compoundRPE: 8,
-    lastSetRPE: 10,
+    lastSetRPE: 9,
     restCompound: '2–4 min',
     restIsolation: '90 sec',
-    volumeMultiplier: 0.85,
-    prioritiseIsolation: false,
     cardioNote: '2–3 cardio sessions/week strictly separate from lifting (6+ hours). High-intensity cardio on the same day as heavy lifting acutely reduces strength output.',
   },
   powerbuilding_cut: {
@@ -1374,8 +1353,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 10,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    volumeMultiplier: 0.85,
-    prioritiseIsolation: false,
     cardioNote: '2–3 cardio sessions/week at low-to-moderate intensity. High-intensity cardio combined with heavy lifting in a deficit accelerates overtraining.',
   },
   athletic_recomp: {
@@ -1389,8 +1366,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 8,
     restCompound: '90 sec',
     restIsolation: '60 sec',
-    volumeMultiplier: 0.9,
-    prioritiseIsolation: false,
     cardioNote: '3–4 conditioning sessions/week. Prioritise sleep, high protein, and session quality over quantity — this is a complex concurrent training goal.',
   },
   athletic_cut: {
@@ -1404,8 +1379,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2 min',
     restIsolation: '60–90 sec',
-    volumeMultiplier: 0.82,
-    prioritiseIsolation: false,
     cardioNote: '3–4 cardio sessions/week. Alternate high and low intensity to balance fat loss with athletic performance retention.',
   },
   athletic_bulk: {
@@ -1419,8 +1392,6 @@ export const GOAL_PROFILES = {
     lastSetRPE: 9,
     restCompound: '2–3 min',
     restIsolation: '90 sec',
-    volumeMultiplier: 0.95,
-    prioritiseIsolation: true,
     cardioNote: '2–3 cardio sessions/week. Keep them aerobic-dominant — high-intensity cardio competes with resistance training recovery and limits the surplus benefit.',
   },
 };
@@ -2858,6 +2829,24 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
 
   let days = [];
 
+  // Rest and last-set effort come from the GOAL, not the exercise. Both fields
+  // existed on GOAL_PROFILES and neither was ever read — rest fell back to the
+  // exercise's own default and last_rpe was hardcoded to 9 for everyone — so a
+  // strength user and an endurance user got identical rest and identical effort.
+  //
+  // Both are worth honouring, and the evidence points in opposite directions for
+  // the two goals:
+  //   • Rest: longer inter-set rest meaningfully helps STRENGTH (SMD ~-0.74) and
+  //     is close to irrelevant for hypertrophy (SMD ~0.08). Short rest (<=60s)
+  //     also cuts the reps completed across a set sequence, which is exactly the
+  //     training quality a cutter needs to protect.
+  //   • Proximity to failure: hypertrophy improves the closer a set is taken to
+  //     failure, while strength is insensitive to it across a wide RIR range
+  //     (Robinson et al. 2024, 55 hypertrophy + 67 strength studies). So the
+  //     heavy compound does NOT want to be ground out to RPE 10.
+  const goalRest = pattern =>
+    (COMPOUND_PATTERNS.has(pattern) ? gp.restCompound : gp.restIsolation) || undefined;
+
   // Rep and RPE prescription by slot role, so the tables carry only set counts.
   const SLOT_REPS = {
     squat_pattern: [compoundReps, compoundRPE],
@@ -2935,6 +2924,8 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
         sets: setsByTier[tierIndex],
         reps,
         avoidPatterns: usedToday,
+        rest: goalRest(pattern),
+        ...(gp.lastSetRPE ? { last_rpe: gp.lastSetRPE } : {}),
         ...(rpe ? { early_rpe: rpe } : {}),
         ...(prefer ? { prefer } : {}),
         ...(extra || {}),
