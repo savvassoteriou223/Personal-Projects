@@ -23,11 +23,16 @@ const STATUS_COLOR = {
   fresh: colors.accent,
 };
 
-const BODY_FILL = '#141419';
-const BODY_STROKE = '#2A2A34';
+// The silhouette has to read as a body before any colour lands on it. These sat
+// close enough to the card behind them that the figure was barely visible until
+// a muscle lit up, which made the whole map look empty on a rest week. Raised
+// just far enough to see the shape — still monochrome, so recovery colour is the
+// only thing on the map that draws the eye.
+const BODY_FILL = '#1C1C24';
+const BODY_STROKE = '#3A3A47';
 // A muscle with no logged history at all reads as untrained rather than "primed
 // green" — on a body, lighting up a never-trained muscle is actively misleading.
-const UNTRAINED_FILL = '#1E1E26';
+const UNTRAINED_FILL = '#26262F';
 
 export default function BodyHeatMap({ recovery = {}, sex = 'male', side = 'front', height = 300, style }) {
   const key = `${sex === 'female' ? 'female' : 'male'}${side === 'back' ? 'Back' : 'Front'}`;

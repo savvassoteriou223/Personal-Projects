@@ -124,13 +124,6 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryTab, setRecoveryTab] = useState('body');
 
-  // buildVolumeView walks every working set from the last 7 days and rebuilds
-  // the per-head tree. It used to run inline in JSX, so it recomputed on every
-  // render — including unrelated state changes like opening a modal.
-  const volumeView = useMemo(
-    () => buildVolumeView(weekVolumeSets, profile?.trainingExperience || 'beginner'),
-    [weekVolumeSets, profile?.trainingExperience],
-  );
   const [lastSession, setLastSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -138,6 +131,21 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   const [deloadSuggestion, setDeloadSuggestion] = useState(null);
   const [showSessionDetail, setShowSessionDetail] = useState(false);
   const [sessionMuscles, setSessionMuscles] = useState([]);
+
+  // buildVolumeView walks every working set from the last 7 days and rebuilds
+  // the per-head tree. It used to run inline in JSX, so it recomputed on every
+  // render — including unrelated state changes like opening a modal.
+  //
+  // This MUST stay below the useState calls it reads. It was hoisted above
+  // them, which put `profile` in the temporal dead zone: the dependency array is
+  // evaluated the moment useMemo is called, so every logged-in render threw
+  // "Cannot access 'profile' before initialization" and the whole Today screen
+  // died. It is only reachable once a profile loads, which is why the logged-out
+  // launch screen looked fine.
+  const volumeView = useMemo(
+    () => buildVolumeView(weekVolumeSets, profile?.trainingExperience || 'beginner'),
+    [weekVolumeSets, profile?.trainingExperience],
+  );
   const [blockData, setBlockData] = useState(null);
   const [blockJustRotated, setBlockJustRotated] = useState(false);
   const [showCardioLog, setShowCardioLog] = useState(false);
@@ -832,42 +840,48 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
           const keys = Object.keys(MUSCLE_DISPLAY);
           const counts = keys.reduce((acc, m) => {
             const status = muscleRecovery[m]?.status || 'fresh';
-            if (status === 'trained_today' || status === 'recovering') acc.recovering += 1;
-            else acc.ready += 1;
+            if (status === 'trained_today' || status === 'recovering') {
+              acc.recoveringNames.push(t(`today.muscles.${m}`, { defaultValue: MUSCLE_DISPLAY[m] || m }));
+            } else acc.ready += 1;
             return acc;
-          }, { ready: 0, recovering: 0 });
+          }, { ready: 0, recoveringNames: [] });
           return (
             <Tappable
               style={styles.recoveryCard}
               onPress={() => { setRecoveryTab('body'); setShowRecovery(true); }}
               accessibilityLabel={t('today.recovery.title')}
             >
-              {/* Front and back — showing only the front hid every posterior
-                  muscle (back, glutes, hamstrings), which is most of the body. */}
-              <View style={styles.recoveryBodiesCompact}>
-                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="front" height={124} />
-                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="back" height={124} />
+              <View style={styles.recoveryTopRow}>
+                <Text style={styles.recoveryTitle}>{t('today.recovery.title')}</Text>
+                <Text style={styles.recoveryMore}>{t('today.recovery.details')} ›</Text>
               </View>
-              <View style={styles.recoveryInfo}>
-                <View style={styles.recoveryTopRow}>
-                  <Text style={styles.recoveryTitle}>{t('today.recovery.title')}</Text>
-                  <Text style={styles.recoveryMore}>{t('today.recovery.details')} ›</Text>
+
+              {/* The map is the content, not a thumbnail beside the content. It
+                  used to sit at 124px in a side column, which made the shading
+                  too small to read — so the card said nothing until you opened
+                  the sheet. Front AND back, because showing only the front hides
+                  back, glutes and hamstrings, which is most of the body. */}
+              <View style={styles.recoveryBodiesCompact}>
+                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="front" height={210} />
+                <BodyHeatMap recovery={muscleRecovery} sex={profile?.sex} side="back" height={210} />
+              </View>
+
+              {/* Naming what is still recovering answers the question the card
+                  exists to answer. A count alone ("3 recovering") sends you into
+                  the sheet to find out which three. */}
+              <View style={styles.recoveryPills}>
+                <View style={[styles.recoveryPill, { backgroundColor: colors.accentSoft, borderColor: colors.accentHair }]}>
+                  <Text style={[styles.recoveryPillText, { color: colors.accent }]}>
+                    {t('today.recovery.readyCount', { count: counts.ready })}
+                  </Text>
                 </View>
-                <Text style={styles.recoverySub}>{t('today.recovery.sub')}</Text>
-                <View style={styles.recoveryPills}>
-                  <View style={[styles.recoveryPill, { backgroundColor: colors.accentSoft, borderColor: colors.accentHair }]}>
-                    <Text style={[styles.recoveryPillText, { color: colors.accent }]}>
-                      {t('today.recovery.readyCount', { count: counts.ready })}
+                {counts.recoveringNames.length > 0 && (
+                  <View style={[styles.recoveryPill, { backgroundColor: colors.warningSoft, borderColor: colors.warningHair }]}>
+                    <Text style={[styles.recoveryPillText, { color: colors.warning }]} numberOfLines={1}>
+                      {counts.recoveringNames.join(' · ')}
                     </Text>
                   </View>
-                  {counts.recovering > 0 && (
-                    <View style={[styles.recoveryPill, { backgroundColor: colors.warningSoft, borderColor: colors.warningHair }]}>
-                      <Text style={[styles.recoveryPillText, { color: colors.warning }]}>
-                        {t('today.recovery.recoveringCount', { count: counts.recovering })}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                )}
               </View>
             </Tappable>
           );
@@ -1364,17 +1378,16 @@ const styles = StyleSheet.create({
   // Muscle recovery grid
   // ── Recovery: compact Today card + detail sheet ──
   recoveryCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
     backgroundColor: colors.surface, borderRadius: 16, padding: 14,
     borderWidth: 0.5, borderColor: colors.border,
   },
-  recoveryBodiesCompact: { flexDirection: 'row', gap: 2, flexShrink: 0 },
-  recoveryInfo: { flex: 1, minWidth: 0 },
+  recoveryBodiesCompact: {
+    flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 12,
+  },
   recoveryTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   recoveryTitle: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
   recoveryMore: { fontSize: 11.5, color: colors.textSubtle, fontWeight: '600' },
-  recoverySub: { fontSize: 12, color: colors.textMuted, lineHeight: 17, marginTop: 6 },
-  recoveryPills: { flexDirection: 'row', gap: 6, marginTop: 12, flexWrap: 'wrap' },
+  recoveryPills: { flexDirection: 'row', gap: 6, marginTop: 12, flexWrap: 'wrap', justifyContent: 'center' },
   recoveryPill: { borderRadius: 20, paddingHorizontal: 9, paddingVertical: 3, borderWidth: 0.5 },
   recoveryPillText: { fontSize: 10.5, fontWeight: '700' },
   recoveryHeader: {
