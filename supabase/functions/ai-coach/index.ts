@@ -36,7 +36,7 @@ NUTRITION:
 - Fat-loss deficit 300–500 kcal/day (>500 risks muscle). Lean bulk ~5–10% surplus.
 
 RECOVERY & CARDIO:
-- Sleep 7–9h. Low HRV + poor sleep = train lighter.
+- Sleep 7–9h. Poor sleep + high soreness on the readiness check-in = train lighter.
 - ~80% of cardio easy (Zone 2); heavy cardio same day as legs blunts strength (separate 6h+).
 - Abs visible ~10–12% BF men / ~18–20% women — diet reveals them, not ab exercises.
 `;
@@ -72,7 +72,7 @@ ${SCIENCE_REFERENCE}`;
 // Appended as an extra (uncached) system block only for the weekly review, so the
 // main cached SYSTEM_PROMPT prefix still hits. Overrides the 120-word limit and
 // tools for this one reply.
-const WEEKLY_SUMMARY_DIRECTIVE = `This request is the user's WEEKLY REVIEW. For THIS reply only, ignore rule 5's 120-word limit and do NOT call any tool. Write a 150–220 word narrative review of the user's PAST TRAINING WEEK from their data: open with the single most important takeaway, then what they did well, the biggest gap versus the research volume targets, a note on recovery if that data is present, and end with one concrete focus for next week. Plain text, second person ("you"), no markdown, no headers, no bullet lists. Be specific with their real numbers and never invent data that isn't provided.`;
+const WEEKLY_SUMMARY_DIRECTIVE = `This request is the user's WEEKLY REVIEW. Do NOT call any tool. The app renders their volume, sessions and week-over-week numbers as CHARTS directly above your text, so do not list or restate numbers — they are already on screen. Write 50-80 words, plain text, second person (\"you\"), no markdown, no headers, no bullets. Two things only: WHY the week looked the way it did, and the ONE thing to change next week. Never mention sleep, HRV, heart rate or any wearable metric \u2014 the app does not collect them, and referring to them invents data. You may refer to their self-reported readiness check-ins if those are present. Never invent data that isn't provided.`;
 
 // Maps a stored language code to its English name for the model directive.
 // English (and any unknown code) returns null → no directive, default behaviour.

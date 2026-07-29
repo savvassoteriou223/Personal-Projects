@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
+import VolumeBar from '../components/VolumeBar';
 import { step as areStep, acceptExperiment, abandonExperiment } from '../lib/areStore';
 import { MOVEMENT_PATTERNS, getAllExercisesForPattern } from './movementLibrary';
 import { formatEvidenceBase } from './studiesLibrary';
@@ -818,7 +819,14 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
           }).join('\n');
           return baseline ? `${lines}\n  HRV baseline (recent avg): ${baseline}ms` : lines;
         })()
-      : '  No health data connected';
+      : null;
+
+    // Send the heading only when there is something under it. Android Health
+    // Connect was removed outright after the Play policy rejection, so on the
+    // only shipped platform healthLines is ALWAYS null — and a section headed
+    // "Recovery data" containing "no data connected" still invites the model to
+    // discuss sleep and HRV, which is exactly what it did. Absent beats empty.
+    const healthBlock = healthLines ? `Recovery data (last 7 days):\n${healthLines}\n\n` : '';
 
     const checkInLines = recoveryCheckIns.length
       ? recoveryCheckIns
@@ -1000,10 +1008,7 @@ ${sessionLines}
 Recent cardio sessions:
 ${cardioLines}
 
-Recovery data (last 7 days):
-${healthLines}
-
-Self-reported readiness (last 7 days):
+${healthBlock}Self-reported readiness (last 7 days):
 ${checkInLines}
 
 Nutrition — targets vs recent intake:
@@ -2120,9 +2125,41 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
             )}
           </View>
           {weeklySummary ? (
-            <View style={[styles.insightBox, { marginTop: 12, marginBottom: 0 }]}>
-              <Text style={styles.insightText}>{weeklySummary}</Text>
-            </View>
+            <>
+              {/* The week, as bars against each muscle's own research target.
+                  Reading "you hit 12 of 15 chest sets" in a sentence is slower
+                  than seeing the bar, and the app already computed the number. */}
+              {(() => {
+                const targets = getVolumeTargets(userData?.profile?.trainingExperience);
+                const rows = Object.entries(userData?.weeklyVolume || {})
+                  .map(([muscle, done]) => ({
+                    muscle, done,
+                    target: targets?.[muscle] || null,
+                    label: t(`today.muscles.${muscle}`, { defaultValue: muscle }),
+                  }))
+                  .filter(r => r.target)
+                  // Worst first: the point of the review is what to fix.
+                  .sort((a, b) => (a.done / a.target.min) - (b.done / b.target.min))
+                  .slice(0, 6);
+                if (!rows.length) return null;
+                return (
+                  <View style={styles.weekChart}>
+                    {rows.map(r => (
+                      <View key={r.muscle} style={styles.weekRow}>
+                        <Text style={styles.weekRowName} numberOfLines={1}>{r.label}</Text>
+                        <VolumeBar done={r.done} target={r.target} height={7} />
+                        <Text style={[styles.weekRowVal, r.done < r.target.min && styles.weekRowValLow]}>
+                          {r.done}/{r.target.min}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })()}
+              <View style={[styles.insightBox, { marginTop: 14, marginBottom: 0 }]}>
+                <Text style={styles.insightText}>{weeklySummary}</Text>
+              </View>
+            </>
           ) : weeklyLoading ? (
             <Text style={[styles.cardSub, { marginTop: 6, marginBottom: 0 }]}>{t('coach.weeklyReviewLoading')}</Text>
           ) : (
@@ -2247,6 +2284,11 @@ const styles = StyleSheet.create({
     paddingLeft: 18, paddingRight: 8, paddingVertical: 11, marginBottom: 12,
   },
   questionInput: { flex: 1, color: colors.textPrimary, fontSize: 15, maxHeight: 100, paddingVertical: 8 },
+  weekChart: { marginTop: 12, gap: 8 },
+  weekRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  weekRowName: { width: 74, fontSize: 11, color: colors.textMuted },
+  weekRowVal: { width: 46, fontSize: 11, color: colors.textMuted, textAlign: 'right', fontVariant: ['tabular-nums'] },
+  weekRowValLow: { color: colors.warning, fontWeight: '700' },
   weeklyReviewCard: { borderColor: colors.accentHair, backgroundColor: colors.surfaceElevated },
   weeklyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   weeklyDismiss: { fontSize: 15, color: colors.textSubtle, fontWeight: '600' },
