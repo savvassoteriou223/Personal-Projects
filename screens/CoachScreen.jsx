@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import { MOVEMENT_PATTERNS, getAllExercisesForPattern } from './movementLibrary';
 import { formatEvidenceBase } from './studiesLibrary';
-import { VOLUME_TARGETS, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getPatternContraindication, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS, detectPlateaus, detectDeloadNeeded, getProactiveCoachPrompt, getEligibleGoalMilestones, checkReadyToProgress, detectRotationTrigger, getBlockLength, generateDeloadWeek } from './programGenerator';
+import { VOLUME_TARGETS, getVolumeTargets, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getPatternContraindication, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS, detectPlateaus, detectDeloadNeeded, getProactiveCoachPrompt, getEligibleGoalMilestones, checkReadyToProgress, detectRotationTrigger, getBlockLength, generateDeloadWeek } from './programGenerator';
 import { expandAllConditions } from '../lib/conditionsDb';
 import { computeHeadVolume } from './volumeEngine';
 import { computeInsights } from './insightsEngine';
@@ -1538,9 +1538,175 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         );
       })()}
 
-      {/* Ask a question — the primary action on this screen, so it renders
-          first; the proof-of-work/insight cards below are supporting
-          context, not the thing the user came here to do. */}
+      {/* ── Proof of work — costs zero AI messages. recentChanges is real
+          (program_template_overrides), proactivePrompt is the same
+          recovery→deload→plateau→missed-session→milestone chain the
+          home-screen notification uses, insights come from computeInsights.
+          Nothing here is model-generated. */}
+      {!isMidWorkout && !focusDismissed && (() => {
+        const recentChanges = userData?.recentChanges || [];
+        const proactivePrompt = userData?.proactivePrompt || null;
+        const insights = userData?.insights || [];
+        const changeEffectiveness = userData?.changeEffectiveness || null;
+        const readyToProgress = userData?.readyToProgress || [];
+        const neglectedMuscle = userData?.neglectedMuscle || null;
+        // Focus card fallback chain — most time-sensitive first. proactivePrompt
+        // is a trigger (deload/plateau/missed/recovery/milestone); below it come
+        // the always-checkable data reads so the card is populated far more often
+        // than the old proactive-or-correlation-only path (which was usually
+        // empty). Each read is factual — a real gap, a real correlation, a real
+        // progression — never a manufactured "insight".
+        // Furthest below its weekly minimum, measured the same way the volume
+        // rows are: primary mover only, against this lifter's tier.
+        const targets = getVolumeTargets(userData?.profile?.trainingExperience);
+        const biggestGap = (() => {
+          let worst = null;
+          for (const [muscle, tgt] of Object.entries(targets || {})) {
+            if (!tgt?.min) continue;
+            const done = userData?.weeklyVolume?.[muscle] || 0;
+            const short = tgt.min - done;
+            if (short <= 1) continue;
+            if (!worst || short > worst.short) {
+              worst = { muscle, short, done, min: tgt.min, label: t(`today.muscles.${muscle}`, { defaultValue: muscle }) };
+            }
+          }
+          return worst;
+        })();
+
+        // Last resort: name the next session and what it actually trains, so the
+        // card still carries a read on a week with nothing logged at all.
+        const nextUp = (() => {
+          const day = userData?.program?.days?.[0];
+          if (!day?.exercises?.length) return null;
+          const sets = day.exercises.reduce((n, ex) => n + (ex.sets || 0), 0);
+          const seen = [];
+          for (const ex of day.exercises) {
+            const m = _PRIMARY_MUSCLE_MAP[String(ex.name || '').toLowerCase()];
+            const label = m && t(`today.muscles.${m}`, { defaultValue: m });
+            if (label && !seen.includes(label)) seen.push(label);
+          }
+          if (!seen.length) return null;
+          return { name: day.name.split('\u2014')[0].trim(), muscles: seen.slice(0, 3).join(', ').toLowerCase(), sets };
+        })();
+
+        const focusItem = proactivePrompt
+          ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
+          : neglectedMuscle
+            ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning, title: t('coach.neglectTitle', { muscle: neglectedMuscle.label, days: neglectedMuscle.gapDays }), body: t('coach.neglectBody', { muscle: neglectedMuscle.label.toLowerCase() }) }
+            : insights.length > 0
+              ? { eyebrow: t('coach.focusEyebrowWeek'), title: insights[0], body: null }
+              : readyToProgress.length > 0
+                ? { eyebrow: t('coach.focusEyebrowProgress'), eyebrowColor: colors.accent, title: readyToProgress[0], body: null, promotedProgress: true }
+                // Every link above needs training history. Without one the chain
+                // ended at null and the whole block returned nothing, so a new or
+                // returning lifter opened Coach to an input box and a one-word
+                // recovery chip — a screen that waits to be asked instead of
+                // saying anything. These two read the data that exists from day
+                // one: the week's volume against target, and failing that, the
+                // session that is next.
+                : (biggestGap
+                  ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning,
+                      title: t('coach.gapTitle', { muscle: biggestGap.label, n: biggestGap.short }),
+                      body: t('coach.gapBody', { muscle: biggestGap.label.toLowerCase(), done: biggestGap.done, min: biggestGap.min }) }
+                  : nextUp
+                    ? { eyebrow: t('coach.focusEyebrowNext'),
+                        title: t('coach.nextTitle', { day: nextUp.name }),
+                        body: t('coach.nextBody', { muscles: nextUp.muscles, sets: nextUp.sets }) }
+                    : null);
+        // Structured signal tiles for the bento grid — each a real detector,
+        // rendered as a short label + value. Only the ones with data appear.
+        const recovery = (userData?.recoveryCheckIns || []).find(c => !c.skipped)?.label || null;
+        const weeklySets = Object.values(userData?.weeklyVolume || {}).reduce((a, b) => a + (b || 0), 0);
+        const plateauEx = userData?.plateaus?.[0]?.exercise || null;
+        const signals = [];
+        if (readyToProgress.length) signals.push({ k: t('coach.sigProgression'), v: t('coach.sigReady', { n: readyToProgress.length }) });
+        if (plateauEx) signals.push({ k: t('coach.sigPlateau'), v: plateauEx, amber: true });
+        if (recovery) signals.push({ k: t('coach.sigRecovery'), v: recovery });
+        if (weeklySets > 0) signals.push({ k: t('coach.sigWeek'), v: t('coach.sigSets', { n: weeklySets }) });
+        if (!recentChanges.length && !focusItem && !signals.length) return null;
+
+        return (
+          <View style={styles.bentoWrap}>
+            {/* Priority-read hero tile — the single most important read, from the
+                same fallback chain as before (proactive → gap → correlation →
+                progression). White is reserved for the one action. */}
+            {focusItem && (() => {
+              const plateauTrend = proactivePrompt?.key === 'plateau' ? (userData?.plateauTrend || []) : [];
+              const trendChange = plateauTrend.length >= 2 ? plateauTrend[plateauTrend.length - 1].est1rm - plateauTrend[0].est1rm : null;
+              return (
+              <View style={styles.heroTile}>
+                <View style={styles.tileKRow}>
+                  <View style={[styles.tileDot, focusItem.eyebrowColor === colors.warning && { backgroundColor: colors.warning }]} />
+                  <Text style={styles.tileK}>{focusItem.eyebrow}</Text>
+                </View>
+                <Text style={styles.heroTitle}>{focusItem.title}</Text>
+                <PlateauChart points={plateauTrend} />
+                {trendChange !== null && (
+                  <Text style={styles.focusChartLabel}>{trendChange > 0 ? '+' : ''}{trendChange}kg over {plateauTrend.length} sessions</Text>
+                )}
+                {focusItem.body ? <Text style={styles.heroBody}>{focusItem.body}</Text> : null}
+                <View style={styles.heroActions}>
+                  {proactivePrompt?.key === 'deload' && (
+                    <Tappable style={styles.heroBtnPrimary} onPress={applyDeloadProposals}>
+                      <Text style={styles.heroBtnPrimaryText}>{t('coach.applyDeload')}</Text>
+                    </Tappable>
+                  )}
+                  <Tappable style={styles.heroBtnGhost} onPress={() => setFocusDismissed(true)}>
+                    <Text style={styles.heroBtnGhostText}>{t('coach.dismissToday')}</Text>
+                  </Tappable>
+                </View>
+              </View>
+              );
+            })()}
+
+            {/* Signal tiles — a 2-up grid of the structured detector reads. */}
+            {signals.length > 0 && (
+              <View style={styles.bentoGrid}>
+                {signals.map((s, i) => (
+                  <View key={i} style={styles.tile}>
+                    <Text style={styles.tileK}>{s.k}</Text>
+                    <Text style={[styles.tileV, s.amber && { color: colors.warning }]} numberOfLines={1}>{s.v}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Recent changes — the retrospective changelog, demoted to the bottom. */}
+            {recentChanges.length > 0 && (
+              <View style={styles.doneStrip}>
+                <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
+                {recentChanges.slice(0, 3).map((c, i) => {
+                  // Split "changed Squat to 4 sets (Lower A)" into a bold main
+                  // clause and a muted trailing day-name — real string, just
+                  // formatted in two tones instead of one flat sentence.
+                  const match = c.text.match(/^(.*)\s(\([^)]+\))$/);
+                  return (
+                    <View key={c.id ?? i} style={[styles.doneRow, i > 0 && styles.doneRowBorder]}>
+                      <View style={styles.doneCheck}><Text style={styles.doneCheckMark}>✓</Text></View>
+                      <Text style={styles.doneText}>
+                        {match ? match[1] : c.text}
+                        {match ? <Text style={styles.doneTextMuted}>  {match[2]}</Text> : null}
+                      </Text>
+                    </View>
+                  );
+                })}
+                {recentChanges[0]?.id && (
+                  <Tappable onPress={undoLastChange} disabled={undoing} hitSlop={8} style={{ marginTop: 8 }}>
+                    <Text style={styles.undoBtnText}>{undoing ? t('coach.undoing') : t('coach.undo')}</Text>
+                  </Tappable>
+                )}
+              </View>
+            )}
+          </View>
+        );
+      })()}
+
+      {/* Ask a question. This used to render FIRST, on the reasoning that asking
+          is the primary action. That is what made the tab read as a search box:
+          the screen opened with an empty field and a list of canned prompts, so
+          the coach appeared to know nothing until you interrogated it. The read
+          above now leads — it is derived from this lifter's own data and costs no
+          AI message — and the input follows as the way to act on it. */}
       <View style={styles.card} onLayout={(e) => { askCardY.current = e.nativeEvent.layout.y; }}>
         <View style={styles.askHeader}>
           <View style={{ flex: 1 }}>
@@ -1748,120 +1914,6 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         )}
       </View>
 
-      {/* ── Proof of work — costs zero AI messages. recentChanges is real
-          (program_template_overrides), proactivePrompt is the same
-          recovery→deload→plateau→missed-session→milestone chain the
-          home-screen notification uses, insights come from computeInsights.
-          Nothing here is model-generated. */}
-      {!isMidWorkout && !focusDismissed && (() => {
-        const recentChanges = userData?.recentChanges || [];
-        const proactivePrompt = userData?.proactivePrompt || null;
-        const insights = userData?.insights || [];
-        const changeEffectiveness = userData?.changeEffectiveness || null;
-        const readyToProgress = userData?.readyToProgress || [];
-        const neglectedMuscle = userData?.neglectedMuscle || null;
-        // Focus card fallback chain — most time-sensitive first. proactivePrompt
-        // is a trigger (deload/plateau/missed/recovery/milestone); below it come
-        // the always-checkable data reads so the card is populated far more often
-        // than the old proactive-or-correlation-only path (which was usually
-        // empty). Each read is factual — a real gap, a real correlation, a real
-        // progression — never a manufactured "insight".
-        const focusItem = proactivePrompt
-          ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
-          : neglectedMuscle
-            ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning, title: t('coach.neglectTitle', { muscle: neglectedMuscle.label, days: neglectedMuscle.gapDays }), body: t('coach.neglectBody', { muscle: neglectedMuscle.label.toLowerCase() }) }
-            : insights.length > 0
-              ? { eyebrow: t('coach.focusEyebrowWeek'), title: insights[0], body: null }
-              : readyToProgress.length > 0
-                ? { eyebrow: t('coach.focusEyebrowProgress'), eyebrowColor: colors.accent, title: readyToProgress[0], body: null, promotedProgress: true }
-                : null;
-        // Structured signal tiles for the bento grid — each a real detector,
-        // rendered as a short label + value. Only the ones with data appear.
-        const recovery = (userData?.recoveryCheckIns || []).find(c => !c.skipped)?.label || null;
-        const weeklySets = Object.values(userData?.weeklyVolume || {}).reduce((a, b) => a + (b || 0), 0);
-        const plateauEx = userData?.plateaus?.[0]?.exercise || null;
-        const signals = [];
-        if (readyToProgress.length) signals.push({ k: t('coach.sigProgression'), v: t('coach.sigReady', { n: readyToProgress.length }) });
-        if (plateauEx) signals.push({ k: t('coach.sigPlateau'), v: plateauEx, amber: true });
-        if (recovery) signals.push({ k: t('coach.sigRecovery'), v: recovery });
-        if (weeklySets > 0) signals.push({ k: t('coach.sigWeek'), v: t('coach.sigSets', { n: weeklySets }) });
-        if (!recentChanges.length && !focusItem && !signals.length) return null;
-
-        return (
-          <View style={styles.bentoWrap}>
-            {/* Priority-read hero tile — the single most important read, from the
-                same fallback chain as before (proactive → gap → correlation →
-                progression). White is reserved for the one action. */}
-            {focusItem && (() => {
-              const plateauTrend = proactivePrompt?.key === 'plateau' ? (userData?.plateauTrend || []) : [];
-              const trendChange = plateauTrend.length >= 2 ? plateauTrend[plateauTrend.length - 1].est1rm - plateauTrend[0].est1rm : null;
-              return (
-              <View style={styles.heroTile}>
-                <View style={styles.tileKRow}>
-                  <View style={[styles.tileDot, focusItem.eyebrowColor === colors.warning && { backgroundColor: colors.warning }]} />
-                  <Text style={styles.tileK}>{focusItem.eyebrow}</Text>
-                </View>
-                <Text style={styles.heroTitle}>{focusItem.title}</Text>
-                <PlateauChart points={plateauTrend} />
-                {trendChange !== null && (
-                  <Text style={styles.focusChartLabel}>{trendChange > 0 ? '+' : ''}{trendChange}kg over {plateauTrend.length} sessions</Text>
-                )}
-                {focusItem.body ? <Text style={styles.heroBody}>{focusItem.body}</Text> : null}
-                <View style={styles.heroActions}>
-                  {proactivePrompt?.key === 'deload' && (
-                    <Tappable style={styles.heroBtnPrimary} onPress={applyDeloadProposals}>
-                      <Text style={styles.heroBtnPrimaryText}>{t('coach.applyDeload')}</Text>
-                    </Tappable>
-                  )}
-                  <Tappable style={styles.heroBtnGhost} onPress={() => setFocusDismissed(true)}>
-                    <Text style={styles.heroBtnGhostText}>{t('coach.dismissToday')}</Text>
-                  </Tappable>
-                </View>
-              </View>
-              );
-            })()}
-
-            {/* Signal tiles — a 2-up grid of the structured detector reads. */}
-            {signals.length > 0 && (
-              <View style={styles.bentoGrid}>
-                {signals.map((s, i) => (
-                  <View key={i} style={styles.tile}>
-                    <Text style={styles.tileK}>{s.k}</Text>
-                    <Text style={[styles.tileV, s.amber && { color: colors.warning }]} numberOfLines={1}>{s.v}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Recent changes — the retrospective changelog, demoted to the bottom. */}
-            {recentChanges.length > 0 && (
-              <View style={styles.doneStrip}>
-                <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
-                {recentChanges.slice(0, 3).map((c, i) => {
-                  // Split "changed Squat to 4 sets (Lower A)" into a bold main
-                  // clause and a muted trailing day-name — real string, just
-                  // formatted in two tones instead of one flat sentence.
-                  const match = c.text.match(/^(.*)\s(\([^)]+\))$/);
-                  return (
-                    <View key={c.id ?? i} style={[styles.doneRow, i > 0 && styles.doneRowBorder]}>
-                      <View style={styles.doneCheck}><Text style={styles.doneCheckMark}>✓</Text></View>
-                      <Text style={styles.doneText}>
-                        {match ? match[1] : c.text}
-                        {match ? <Text style={styles.doneTextMuted}>  {match[2]}</Text> : null}
-                      </Text>
-                    </View>
-                  );
-                })}
-                {recentChanges[0]?.id && (
-                  <Tappable onPress={undoLastChange} disabled={undoing} hitSlop={8} style={{ marginTop: 8 }}>
-                    <Text style={styles.undoBtnText}>{undoing ? t('coach.undoing') : t('coach.undo')}</Text>
-                  </Tappable>
-                )}
-              </View>
-            )}
-          </View>
-        );
-      })()}
 
       {/* Weekly narrative review — auto-generated once per week, hidden mid-workout.
           Full accent-hair border (not a side-stripe), same restrained technique

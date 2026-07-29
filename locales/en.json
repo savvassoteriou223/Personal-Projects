@@ -669,7 +669,12 @@
     "recentChanges": "Recent changes",
     "undo": "Undo",
     "undoing": "Undoing…",
-    "undoFailedMsg": "Couldn't undo that change. Try again."
+    "undoFailedMsg": "Couldn't undo that change. Try again.",
+    "focusEyebrowNext": "Next session",
+    "gapTitle": "{{muscle}} is {{n}} sets short this week",
+    "gapBody": "{{done}} of {{min}} sets logged. Ask me to add a set, or to fit it into your next session.",
+    "nextTitle": "{{day}} is next",
+    "nextBody": "{{sets}} sets across {{muscles}}. Ask me anything about it before you start."
   },
   "profile": {
     "admin": "Admin",
