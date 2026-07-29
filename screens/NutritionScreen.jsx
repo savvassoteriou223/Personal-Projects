@@ -258,7 +258,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
               <View style={styles.mealHeader}>
                 <View style={styles.mealHeaderLeft}>
                   <View style={styles.mealIconWrap}>
-                    <Ionicons name={MEAL_ICONS[mealKey]} size={15} color={colors.accent} accessibilityElementsHidden importantForAccessibility="no" />
+                    <Ionicons name={MEAL_ICONS[mealKey]} size={15} color={colors.textMuted} accessibilityElementsHidden importantForAccessibility="no" />
                   </View>
                   <View>
                     <Text style={styles.mealName}>{t(`nutrition.meals.${mealKey}`)}</Text>
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   mealCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 0.5, borderColor: colors.border },
   mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   mealHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  mealIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  mealIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   mealName: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
   mealSub: { fontSize: 13, color: colors.textSubtle },
   addBtn: { borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },

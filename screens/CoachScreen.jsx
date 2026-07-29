@@ -1544,7 +1544,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
       <View style={styles.card} onLayout={(e) => { askCardY.current = e.nativeEvent.layout.y; }}>
         <View style={styles.askHeader}>
           <View style={styles.askIconWrap}>
-            <Ionicons name="chatbubble-ellipses-outline" size={15} color={colors.accent} />
+            <Ionicons name="chatbubble-ellipses-outline" size={15} color={colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.ask')}</Text>
@@ -1988,7 +1988,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
   cardSub: { fontSize: 11, color: colors.textSubtle, marginBottom: 14, lineHeight: 16 },
   askHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
-  askIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  askIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   insightBox: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: colors.border },
   insightText: { fontSize: 13, color: colors.textPrimary, lineHeight: 21 },
 
@@ -2066,5 +2066,5 @@ const styles = StyleSheet.create({
   quickRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
   quickRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
   quickRowText: { flex: 1, fontSize: 13, color: colors.textSecondary },
-  quickRowArrow: { fontSize: 13, color: colors.accent, fontWeight: '600', marginLeft: 8 },
+  quickRowArrow: { fontSize: 13, color: colors.textSubtle, fontWeight: '600', marginLeft: 8 },
 });

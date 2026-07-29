@@ -415,7 +415,7 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
 
         <Tappable style={styles.dataRow} onPress={() => setShowData(true)}>
           <View style={styles.dataRowIconWrap}>
-            <Ionicons name="server-outline" size={16} color={colors.accent} />
+            <Ionicons name="server-outline" size={16} color={colors.textMuted} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.dataRowLabel}>{t('data.rowTitle')}</Text>
@@ -814,7 +814,7 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
                 ].map((row, i, arr) => (
                   <View key={row.label} style={[styles.profileRow, i > 0 && styles.profileRowBorder]}>
                     <View style={styles.profileRowIconWrap}>
-                      <Ionicons name={row.icon} size={14} color={colors.accent} />
+                      <Ionicons name={row.icon} size={14} color={colors.textMuted} />
                     </View>
                     <Text style={styles.profileRowLabel}>{row.label}</Text>
                     <Text style={styles.profileRowValue} numberOfLines={1}>{row.value}</Text>
@@ -943,7 +943,7 @@ const styles = StyleSheet.create({
   insightText: { flex: 1, fontSize: 13, color: colors.textMuted, lineHeight: 19 },
 
   dataRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginBottom: 16, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border },
-  dataRowIconWrap: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  dataRowIconWrap: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   dataRowLabel: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   dataRowSub: { fontSize: 11.5, color: colors.textFaint, marginTop: 2 },
   dataRowLock: { width: 15, height: 15, borderRadius: 8, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
@@ -977,7 +977,7 @@ const styles = StyleSheet.create({
   profileFieldVal: { color: colors.textPrimary, fontWeight: '500' },
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
   profileRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
-  profileRowIconWrap: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  profileRowIconWrap: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   profileRowLabel: { flex: 1, fontSize: 13, color: colors.textSubtle },
   profileRowValue: { fontSize: 13, color: colors.textPrimary, fontWeight: '600', maxWidth: '50%' },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
