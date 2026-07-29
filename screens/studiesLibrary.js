@@ -277,6 +277,7 @@ export const STUDIES = {
     insight: 'A drop in HRV plus poor sleep signals under-recovery — train lighter or rest rather than pushing heavy.',
     cite: 'Autonomic recovery research',
     tags: ['recovery', 'hrv', 'readiness'],
+    needsWearable: true,
   },
 
   // ── CARDIO / LONGEVITY ────────────────────────────────────────────────────
@@ -294,6 +295,7 @@ export const STUDIES = {
     insight: '~7,000 steps/day is linked to roughly 47% lower mortality vs sedentary — most of the benefit lands before 10k.',
     cite: 'Ding 2025 · 57 studies',
     tags: ['steps', 'cardio', 'health', 'longevity'],
+    needsWearable: true,
   },
   rt_mortality: {
     insight: 'Just ~60 min of resistance training per week cuts all-cause mortality ~15% — the minimum effective dose is small.',
@@ -433,13 +435,25 @@ export const STUDIES = {
     insight: 'The calorie deficit drives fat loss; ~7,000–8,500 steps a day mainly helps you keep it off, adding ~1% better maintenance per extra 1,000 steps.',
     cite: 'Step-count & weight meta 2025',
     tags: ['steps', 'fat_loss', 'neat'],
+    needsWearable: true,
   },
 };
 
 // Compact evidence base for the AI coach context — every insight + citation,
 // grouped, so the coach grounds answers in THIS instead of its own knowledge.
+// Findings that depend on a sensor the app does not have are withheld from the
+// coach. The whole library is handed to the model as "your source of truth", so
+// an HRV or step-count rule in here makes it reason about numbers it cannot see
+// — which is how the weekly review ended up discussing sleep and HRV for users
+// with no recovery data at all. Android Health Connect was removed after the
+// Play rejection, and HRV and Steps were the two permissions that caused it.
+//
+// They stay in STUDIES. As general advice to a reader they are true and useful,
+// and the why-layer can still show them; it is only the coach's reasoning
+// context they are kept out of.
 export function formatEvidenceBase() {
   return Object.values(STUDIES)
+    .filter(s => !s.needsWearable)
     .map(s => `  - ${s.insight} (${s.cite})`)
     .join('\n');
 }
