@@ -219,9 +219,9 @@ there, not in the app, and this document will not guess.**
 
 - **Live on Google Play**, package `com.helixfit.app`, since 11 July 2026
 - **iOS is configured but not shipped.** Plan Android-only for the 90 days.
-- **8 languages** — English, German, Spanish, French, Italian, Portuguese,
-  Russian, Chinese. English is the most complete; the others fall back to English
-  for the newest strings.
+- **8 languages, all at 100%** — English, German, Spanish, French, Italian,
+  Portuguese, Russian, Chinese. Every user-facing string is translated in every
+  language, verified by a test that fails the build on drift.
 - **Health Connect** on Android reads **sleep and resting heart rate only**. HRV
   and step count were deliberately removed after a Play review rejection — do not
   advertise them.

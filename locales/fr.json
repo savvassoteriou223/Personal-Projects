@@ -343,7 +343,9 @@
       "highCalSnack": "Collation très calorique — envisagez de la partager ou de choisir quelque chose de moins dense si vous êtes en déficit.",
       "lightMeal": "Repas léger — assurez-vous que le reste de la journée complète votre objectif calorique quotidien.",
       "goodProtein": "Bonnes protéines. Associez-les à des glucides complexes comme l'avoine ou le pain complet pour une énergie durable."
-    }
+    },
+    "proteinHistoryTitle": "Protéines — 7 derniers jours",
+    "proteinHistoryCaption": "{{count}} jours sur 7 dans la cible."
   },
   "nutritionLog": {
     "title": "Enregistrer un repas",
@@ -551,7 +553,8 @@
       "searchPlaceholder": "Rechercher des exercices…",
       "all": "Tous",
       "noResults": "Aucun exercice ne correspond à votre recherche."
-    }
+    },
+    "minimize": "Réduire la séance"
   },
   "coach": {
     "title": "Coach",
@@ -635,7 +638,61 @@
       "goal": "Objectif",
       "note": "Note"
     },
-    "recentChanges": "Modifications récentes"
+    "recentChanges": "Modifications récentes",
+    "weeklyReviewOffer": "Ta semaine est terminée. Obtiens un bilan de ce que tu as entraîné, où tu as atteint tes objectifs de volume et sur quoi te concentrer ensuite.",
+    "weeklyReviewCta": "Rédiger mon bilan hebdo",
+    "weekStat": "{{count}} séances cette semaine · série de {{streak}} semaines",
+    "goalChip": "Objectif : {{goal}}",
+    "focusEyebrowToday": "AUJOURD’HUI",
+    "focusEyebrowWeek": "TENDANCE DE LA SEMAINE",
+    "focusEyebrowGap": "Manque d’entraînement",
+    "focusEyebrowProgress": "Prêt à progresser",
+    "neglectTitle": "{{muscle}} n’a pas été travaillé depuis {{days}} jours",
+    "neglectBody": "Tu as continué à t’entraîner, mais {{muscle}} a été laissé de côté. Intègre-le à ta prochaine séance pour garder un volume équilibré.",
+    "sigProgression": "Progression",
+    "sigReady": "{{n}} prêts",
+    "sigPlateau": "Plateau",
+    "sigRecovery": "Récupération",
+    "sigWeek": "Cette semaine",
+    "sigSets": "{{n}} séries",
+    "askAboutThis": "Demander au Coach",
+    "dismissToday": "Pas maintenant",
+    "whatToDo": "Que dois-je faire ?",
+    "blockLabel": "Bloc {{n}}",
+    "blockWeek": "Semaine {{week}} sur {{total}}",
+    "bodyweightAbove": "{{n}} kg au-dessus",
+    "bodyweightBelow": "{{n}} kg en dessous",
+    "bodyweightLine": "Poids : {{weight}} kg · objectif {{target}} kg ({{direction}})",
+    "applyDeload": "Appliquer la décharge",
+    "deloadRationale": "Fait partie de la {{label}} de cette semaine — moins de volume, même charge.",
+    "deloadNothingTitle": "Rien à changer",
+    "deloadNothingMsg": "Ton programme correspond déjà aux objectifs de décharge de la semaine.",
+    "undo": "Annuler",
+    "undoing": "Annulation…",
+    "undoFailedMsg": "Impossible d’annuler ce changement. Réessaie.",
+    "focusEyebrowNext": "Prochaine séance",
+    "gapTitle": "Il manque {{n}} séries de {{muscle}} cette semaine",
+    "gapBody": "{{done}} séries sur {{min}} enregistrées. Demande-moi d’ajouter une série ou de l’intégrer à ta prochaine séance.",
+    "nextTitle": "Prochainement : {{day}}",
+    "nextBody": "{{sets}} séries pour {{muscles}}. Pose-moi toutes tes questions avant de commencer.",
+    "areEyebrowProposed": "Expérience disponible",
+    "areEyebrowRunning": "Expérience en cours",
+    "areEyebrowResult": "Ton résultat",
+    "areProposeTitle": "Teste {{variable}} sur toi-même",
+    "areProposeBody": "Un essai contrôlé de {{weeks}} semaines, évalué sur {{metric}}. Les règles sont fixées avant le début : la réponse te concerne toi, pas la moyenne.",
+    "areRunningTitle": "Test de {{variable}}",
+    "areRunningBody": "Continue à enregistrer normalement. Tu peux arrêter à tout moment.",
+    "areVerdict": {
+      "keep": "{{variable}} fonctionne pour toi — on le garde",
+      "revert": "{{variable}} n’a rien changé pour toi — annulé",
+      "inconclusive": "Signal insuffisant pour trancher sur {{variable}}"
+    },
+    "areVerdictBody": "Enregistré dans ton profil : ce ne sera pas retesté.",
+    "areStart": "Lancer",
+    "areStop": "Arrêter l’essai",
+    "areRationale": "Fait partie de ton expérience : {{variable}}. Annulé automatiquement à la fin.",
+    "areCannotRunTitle": "Impossible pour l’instant",
+    "areCannotRunMsg": "Ton programme actuel n’a pas de place pour le changement requis. On te le reproposera si cela change."
   },
   "profile": {
     "admin": "Admin",
@@ -789,7 +846,11 @@
       "deletePermanently": "Supprimer définitivement",
       "errorTitle": "Erreur",
       "deleteError": "Impossible de supprimer le compte. Veuillez réessayer ou contacter le support."
-    }
+    },
+    "conditionsCount_one": "{{count}} enregistrée",
+    "conditionsCount_other": "{{count}} enregistrées",
+    "volumeTrendTitle": "Volume d’entraînement — 6 dernières semaines",
+    "volumeTrendCaption": "Séries totales par semaine, de la plus ancienne à la plus récente."
   },
   "settings": {
     "title": "Réglages"
@@ -1026,7 +1087,12 @@
       "title": "Récupération musculaire",
       "sub": "D'après votre entraînement récent",
       "daysAgo": "il y a {{count}}j",
-      "never": "Jamais"
+      "never": "Jamais",
+      "details": "Détails",
+      "tabBody": "Corps",
+      "tabMuscles": "Muscles",
+      "readyCount": "{{count}} prêts",
+      "recoveringCount": "{{count}} en récupération"
     },
     "volume": {
       "title": "Volume de cette semaine",
@@ -1037,7 +1103,11 @@
       "target": "Min {{min}} · Opt {{low}}–{{high}}",
       "junkTitle": "Volume inutile",
       "junkText": "{{muscles}} — au-delà du plafond où les séries supplémentaires cessent de construire du muscle et augmentent le risque de blessure. Reportez cet effort sur les muscles en retard.",
-      "junkMuscle": "{{label}} ({{count}} séries)"
+      "junkMuscle": "{{label}} ({{count}} séries)",
+      "showDetail": "Détail par faisceau",
+      "hideDetail": "Masquer le détail",
+      "indirect": "+{{n}} indirectes",
+      "fromCompounds": "via exercices polyarticulaires"
     },
     "deload": {
       "fatigueDetected": "Fatigue détectée",
@@ -1089,6 +1159,24 @@
       "calves": "Mollets",
       "forearms": "Avant-bras",
       "abs": "Abdominaux"
+    },
+    "heads": {
+      "upper_chest": "Haut des pectoraux",
+      "chest": "Milieu / bas des pectoraux",
+      "lower_chest": "Bas des pectoraux",
+      "lats": "Dorsaux",
+      "traps": "Trapèzes / rhomboïdes",
+      "lower_back": "Bas du dos",
+      "front_delts": "Deltoïdes antérieurs",
+      "side_delts": "Deltoïdes latéraux",
+      "rear_delts": "Deltoïdes postérieurs",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "quads": "Quadriceps",
+      "hamstrings": "Ischio-jambiers",
+      "glutes": "Fessiers",
+      "calves": "Mollets",
+      "abs": "Abdominaux"
     }
   },
   "data": {
@@ -1115,5 +1203,35 @@
     "emptyHealth": "Aucune donnée de santé synchronisée pour le moment.",
     "weightTitle": "Poids corporel",
     "emptyWeight": "Aucun poids enregistré pour le moment."
+  },
+  "readiness": {
+    "title": "Comment te sens-tu aujourd’hui ?",
+    "skip": "Passer",
+    "continue": "Continuer",
+    "q": {
+      "sleep": "Sommeil",
+      "soreness": "Courbatures",
+      "energy": "Énergie"
+    },
+    "opt": {
+      "good": "Bon",
+      "ok": "Correct",
+      "poor": "Mauvais",
+      "fresh": "Frais",
+      "normal": "Normal",
+      "sore": "Courbaturé",
+      "high": "Élevée",
+      "low": "Faible"
+    },
+    "label": {
+      "Ready": "Prêt",
+      "Moderate": "Modéré",
+      "Low": "Faible"
+    },
+    "adviceModerate": "Vas-y un peu plus doucement sur les séries de travail — arrête-toi environ 3 répétitions avant l’échec au lieu d’une.",
+    "adviceLow": "Journée difficile. Arrête-toi environ 3 répétitions avant l’échec et supprime la dernière série de chaque exercice.",
+    "apply": "Ajuster aujourd’hui",
+    "asPlanned": "S’entraîner comme prévu",
+    "adjusted": "AJUSTÉ SELON LA RÉCUPÉRATION"
   }
 }

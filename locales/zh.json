@@ -343,7 +343,9 @@
       "highCalSnack": "高热量加餐 — 若你处于热量缺口，考虑分成两份或选择能量密度更低的食物。",
       "lightMeal": "清淡的一餐 — 确保一天的其余部分能补足你的每日卡路里目标。",
       "goodProtein": "蛋白质不错。搭配燕麦或全麦面包等复合碳水以获得持久能量。"
-    }
+    },
+    "proteinHistoryTitle": "蛋白质 — 最近 7 天",
+    "proteinHistoryCaption": "7 天中有 {{count}} 天达标。"
   },
   "nutritionLog": {
     "title": "记录食物",
@@ -551,7 +553,8 @@
       "searchPlaceholder": "搜索动作…",
       "all": "全部",
       "noResults": "没有符合搜索的动作。"
-    }
+    },
+    "minimize": "最小化训练"
   },
   "coach": {
     "title": "教练",
@@ -635,7 +638,61 @@
       "goal": "目标",
       "note": "备注"
     },
-    "recentChanges": "最近的更改"
+    "recentChanges": "最近的更改",
+    "weeklyReviewOffer": "本周已结束。获取一份总结：你练了什么、哪些容量目标已达成，以及接下来该关注什么。",
+    "weeklyReviewCta": "生成我的每周回顾",
+    "weekStat": "本周 {{count}} 次训练 · 连续 {{streak}} 周",
+    "goalChip": "目标：{{goal}}",
+    "focusEyebrowToday": "今天",
+    "focusEyebrowWeek": "本周规律",
+    "focusEyebrowGap": "训练缺口",
+    "focusEyebrowProgress": "可以进阶",
+    "neglectTitle": "{{muscle}} 已 {{days}} 天未训练",
+    "neglectBody": "你一直在训练，但 {{muscle}} 落下了。把它加进下次训练，保持容量均衡。",
+    "sigProgression": "进阶",
+    "sigReady": "{{n}} 项就绪",
+    "sigPlateau": "平台期",
+    "sigRecovery": "恢复",
+    "sigWeek": "本周",
+    "sigSets": "{{n}} 组",
+    "askAboutThis": "向教练提问",
+    "dismissToday": "暂不",
+    "whatToDo": "我该怎么做？",
+    "blockLabel": "第 {{n}} 阶段",
+    "blockWeek": "第 {{week}} 周 / 共 {{total}} 周",
+    "bodyweightAbove": "高 {{n}} 公斤",
+    "bodyweightBelow": "低 {{n}} 公斤",
+    "bodyweightLine": "体重：{{weight}} 公斤 · 目标 {{target}} 公斤（{{direction}}）",
+    "applyDeload": "应用减量",
+    "deloadRationale": "本周{{label}}的一部分 — 减少容量，重量不变。",
+    "deloadNothingTitle": "无需更改",
+    "deloadNothingMsg": "你的计划已经符合本周的减量目标。",
+    "undo": "撤销",
+    "undoing": "正在撤销…",
+    "undoFailedMsg": "无法撤销该更改，请重试。",
+    "focusEyebrowNext": "下次训练",
+    "gapTitle": "{{muscle}} 本周还差 {{n}} 组",
+    "gapBody": "已完成 {{done}} / {{min}} 组。可以让我加一组，或安排进下次训练。",
+    "nextTitle": "下一个：{{day}}",
+    "nextBody": "{{muscles}} 共 {{sets}} 组。开始前有任何问题都可以问我。",
+    "areEyebrowProposed": "可进行实验",
+    "areEyebrowRunning": "实验进行中",
+    "areEyebrowResult": "你的结果",
+    "areProposeTitle": "在你自己身上测试{{variable}}",
+    "areProposeBody": "为期 {{weeks}} 周的对照试验，以 {{metric}} 判定。规则在开始前就已确定，所以结论只关于你，而不是平均值。",
+    "areRunningTitle": "正在测试{{variable}}",
+    "areRunningBody": "照常记录即可。你可以随时结束。",
+    "areVerdict": {
+      "keep": "{{variable}} 对你有效 — 予以保留",
+      "revert": "{{variable}} 对你没有差别 — 已还原",
+      "inconclusive": "信号不足，无法判定{{variable}}"
+    },
+    "areVerdictBody": "已记录在你的档案中，不会再次测试。",
+    "areStart": "开始",
+    "areStop": "结束试验",
+    "areRationale": "这是你实验的一部分：{{variable}}。试验结束后会自动还原。",
+    "areCannotRunTitle": "暂时无法进行",
+    "areCannotRunMsg": "你当前的计划没有位置容纳该实验所需的改动。情况变化后会再次提供。"
   },
   "profile": {
     "admin": "管理员",
@@ -789,7 +846,11 @@
       "deletePermanently": "永久删除",
       "errorTitle": "错误",
       "deleteError": "无法删除账户。请重试或联系支持。"
-    }
+    },
+    "conditionsCount_one": "已记录 {{count}} 项",
+    "conditionsCount_other": "已记录 {{count}} 项",
+    "volumeTrendTitle": "训练容量 — 最近 6 周",
+    "volumeTrendCaption": "每周总组数，由早到近。"
   },
   "settings": {
     "title": "设置"
@@ -1026,7 +1087,12 @@
       "title": "肌肉恢复",
       "sub": "基于你近期的训练历史",
       "daysAgo": "{{count}}天前",
-      "never": "从未"
+      "never": "从未",
+      "details": "详情",
+      "tabBody": "身体",
+      "tabMuscles": "肌肉",
+      "readyCount": "{{count}} 处就绪",
+      "recoveringCount": "{{count}} 处恢复中"
     },
     "volume": {
       "title": "本周训练量",
@@ -1037,7 +1103,11 @@
       "target": "最低 {{min}} · 最佳 {{low}}–{{high}}",
       "junkTitle": "无效训练量",
       "junkText": "{{muscles}} — 已超过上限，额外的组数不再增肌反而增加受伤风险。把这份努力转给落后的肌肉。",
-      "junkMuscle": "{{label}}（{{count}} 组）"
+      "junkMuscle": "{{label}}（{{count}} 组）",
+      "showDetail": "显示各肌头明细",
+      "hideDetail": "隐藏明细",
+      "indirect": "+{{n}} 间接",
+      "fromCompounds": "来自复合动作"
     },
     "deload": {
       "fatigueDetected": "检测到疲劳",
@@ -1089,6 +1159,24 @@
       "calves": "小腿",
       "forearms": "前臂",
       "abs": "腹"
+    },
+    "heads": {
+      "upper_chest": "上胸",
+      "chest": "中下胸",
+      "lower_chest": "下胸",
+      "lats": "背阔肌",
+      "traps": "斜方肌 / 菱形肌",
+      "lower_back": "下背",
+      "front_delts": "前束",
+      "side_delts": "中束",
+      "rear_delts": "后束",
+      "biceps": "肱二头肌",
+      "triceps": "肱三头肌",
+      "quads": "股四头肌",
+      "hamstrings": "腘绳肌",
+      "glutes": "臀肌",
+      "calves": "小腿",
+      "abs": "腹肌"
     }
   },
   "data": {
@@ -1115,5 +1203,35 @@
     "emptyHealth": "尚无同步的健康数据。",
     "weightTitle": "体重",
     "emptyWeight": "尚无体重记录。"
+  },
+  "readiness": {
+    "title": "你今天状态如何？",
+    "skip": "跳过",
+    "continue": "继续",
+    "q": {
+      "sleep": "睡眠",
+      "soreness": "酸痛",
+      "energy": "精力"
+    },
+    "opt": {
+      "good": "好",
+      "ok": "一般",
+      "poor": "差",
+      "fresh": "轻松",
+      "normal": "正常",
+      "sore": "酸痛",
+      "high": "高",
+      "low": "低"
+    },
+    "label": {
+      "Ready": "就绪",
+      "Moderate": "中等",
+      "Low": "偏低"
+    },
+    "adviceModerate": "今天的正式组放轻一点 — 距离力竭约留 3 次而不是 1 次。",
+    "adviceLow": "状态不佳。距离力竭留 3 次，并去掉每个动作的最后一组。",
+    "apply": "调整今天",
+    "asPlanned": "按计划训练",
+    "adjusted": "已按恢复情况调整"
   }
 }

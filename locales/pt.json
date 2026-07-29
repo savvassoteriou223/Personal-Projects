@@ -343,7 +343,9 @@
       "highCalSnack": "Lanche muito calórico — considere dividi-lo ou escolher algo menos denso se estiver em déficit.",
       "lightMeal": "Refeição leve — garanta que o resto do dia complete sua meta calórica diária.",
       "goodProtein": "Boa proteína. Combine com carboidratos complexos como aveia ou pão integral para energia duradoura."
-    }
+    },
+    "proteinHistoryTitle": "Proteína — últimos 7 dias",
+    "proteinHistoryCaption": "{{count}} de 7 dias na meta."
   },
   "nutritionLog": {
     "title": "Registrar alimento",
@@ -551,7 +553,8 @@
       "searchPlaceholder": "Pesquisar exercícios…",
       "all": "Todos",
       "noResults": "Nenhum exercício corresponde à sua pesquisa."
-    }
+    },
+    "minimize": "Minimizar treino"
   },
   "coach": {
     "title": "Coach",
@@ -635,7 +638,61 @@
       "goal": "Objetivo",
       "note": "Nota"
     },
-    "recentChanges": "Alterações recentes"
+    "recentChanges": "Alterações recentes",
+    "weeklyReviewOffer": "A tua semana terminou. Recebe um resumo do que treinaste, onde atingiste os teus objetivos de volume e no que focar a seguir.",
+    "weeklyReviewCta": "Escrever o meu resumo semanal",
+    "weekStat": "{{count}} sessões esta semana · sequência de {{streak}} semanas",
+    "goalChip": "Objetivo: {{goal}}",
+    "focusEyebrowToday": "HOJE",
+    "focusEyebrowWeek": "PADRÃO DESTA SEMANA",
+    "focusEyebrowGap": "Lacuna de treino",
+    "focusEyebrowProgress": "Pronto para progredir",
+    "neglectTitle": "{{muscle}} não é treinado há {{days}} dias",
+    "neglectBody": "Continuaste a treinar, mas {{muscle}} ficou para trás. Inclui-o na próxima sessão para manteres o volume equilibrado.",
+    "sigProgression": "Progressão",
+    "sigReady": "{{n}} prontos",
+    "sigPlateau": "Estagnação",
+    "sigRecovery": "Recuperação",
+    "sigWeek": "Esta semana",
+    "sigSets": "{{n}} séries",
+    "askAboutThis": "Perguntar ao Coach",
+    "dismissToday": "Agora não",
+    "whatToDo": "O que devo fazer?",
+    "blockLabel": "Bloco {{n}}",
+    "blockWeek": "Semana {{week}} de {{total}}",
+    "bodyweightAbove": "{{n}} kg acima",
+    "bodyweightBelow": "{{n}} kg abaixo",
+    "bodyweightLine": "Peso: {{weight}} kg · objetivo {{target}} kg ({{direction}})",
+    "applyDeload": "Aplicar descarga",
+    "deloadRationale": "Parte da {{label}} desta semana — menos volume, o mesmo peso.",
+    "deloadNothingTitle": "Nada a alterar",
+    "deloadNothingMsg": "O teu plano já corresponde aos objetivos de descarga desta semana.",
+    "undo": "Anular",
+    "undoing": "A anular…",
+    "undoFailedMsg": "Não foi possível anular essa alteração. Tenta de novo.",
+    "focusEyebrowNext": "Próxima sessão",
+    "gapTitle": "Faltam {{n}} séries de {{muscle}} esta semana",
+    "gapBody": "{{done}} de {{min}} séries registadas. Pede-me para acrescentar uma série ou encaixá-la na próxima sessão.",
+    "nextTitle": "A seguir: {{day}}",
+    "nextBody": "{{sets}} séries para {{muscles}}. Pergunta-me o que quiseres antes de começares.",
+    "areEyebrowProposed": "Experiência disponível",
+    "areEyebrowRunning": "Experiência a decorrer",
+    "areEyebrowResult": "O teu resultado",
+    "areProposeTitle": "Testa {{variable}} em ti próprio",
+    "areProposeBody": "Um teste controlado de {{weeks}} semanas, avaliado por {{metric}}. As regras são fixadas antes de começar, por isso a resposta é sobre ti, não sobre a média.",
+    "areRunningTitle": "A testar {{variable}}",
+    "areRunningBody": "Continua a registar normalmente. Podes terminar quando quiseres.",
+    "areVerdict": {
+      "keep": "{{variable}} funciona contigo — vamos manter",
+      "revert": "{{variable}} não fez diferença contigo — revertido",
+      "inconclusive": "Sinal insuficiente para avaliar {{variable}}"
+    },
+    "areVerdictBody": "Guardado no teu perfil, por isso não será testado de novo.",
+    "areStart": "Começar",
+    "areStop": "Terminar teste",
+    "areRationale": "Faz parte da tua experiência: {{variable}}. Reverte sozinho no fim.",
+    "areCannotRunTitle": "Não dá para já",
+    "areCannotRunMsg": "O teu plano atual não tem onde encaixar a alteração necessária. Voltamos a propor se isso mudar."
   },
   "profile": {
     "admin": "Admin",
@@ -789,7 +846,11 @@
       "deletePermanently": "Excluir permanentemente",
       "errorTitle": "Erro",
       "deleteError": "Não foi possível excluir a conta. Tente de novo ou contate o suporte."
-    }
+    },
+    "conditionsCount_one": "{{count}} registada",
+    "conditionsCount_other": "{{count}} registadas",
+    "volumeTrendTitle": "Volume de treino — últimas 6 semanas",
+    "volumeTrendCaption": "Séries totais por semana, da mais antiga à mais recente."
   },
   "settings": {
     "title": "Definições"
@@ -1026,7 +1087,12 @@
       "title": "Recuperação muscular",
       "sub": "Com base no seu treino recente",
       "daysAgo": "há {{count}}d",
-      "never": "Nunca"
+      "never": "Nunca",
+      "details": "Detalhes",
+      "tabBody": "Corpo",
+      "tabMuscles": "Músculos",
+      "readyCount": "{{count}} prontos",
+      "recoveringCount": "{{count}} em recuperação"
     },
     "volume": {
       "title": "Volume desta semana",
@@ -1037,7 +1103,11 @@
       "target": "Mín {{min}} · Ideal {{low}}–{{high}}",
       "junkTitle": "Volume inútil",
       "junkText": "{{muscles}} — acima do teto onde séries extras param de construir músculo e aumentam o risco de lesão. Direcione esse esforço aos músculos atrasados.",
-      "junkMuscle": "{{label}} ({{count}} séries)"
+      "junkMuscle": "{{label}} ({{count}} séries)",
+      "showDetail": "Detalhe por porção",
+      "hideDetail": "Ocultar detalhe",
+      "indirect": "+{{n}} indiretas",
+      "fromCompounds": "de exercícios compostos"
     },
     "deload": {
       "fatigueDetected": "Fadiga detectada",
@@ -1089,6 +1159,24 @@
       "calves": "Panturrilhas",
       "forearms": "Antebraços",
       "abs": "Abdômen"
+    },
+    "heads": {
+      "upper_chest": "Peito superior",
+      "chest": "Peito médio / inferior",
+      "lower_chest": "Peito inferior",
+      "lats": "Dorsais",
+      "traps": "Trapézio / romboides",
+      "lower_back": "Zona lombar",
+      "front_delts": "Deltoides anterior",
+      "side_delts": "Deltoides lateral",
+      "rear_delts": "Deltoides posterior",
+      "biceps": "Bíceps",
+      "triceps": "Tríceps",
+      "quads": "Quadríceps",
+      "hamstrings": "Isquiotibiais",
+      "glutes": "Glúteos",
+      "calves": "Panturrilhas",
+      "abs": "Abdominais"
     }
   },
   "data": {
@@ -1115,5 +1203,35 @@
     "emptyHealth": "Nenhum dado de saúde sincronizado ainda.",
     "weightTitle": "Peso corporal",
     "emptyWeight": "Nenhum peso registrado ainda."
+  },
+  "readiness": {
+    "title": "Como estás hoje?",
+    "skip": "Ignorar",
+    "continue": "Continuar",
+    "q": {
+      "sleep": "Sono",
+      "soreness": "Dores musculares",
+      "energy": "Energia"
+    },
+    "opt": {
+      "good": "Bom",
+      "ok": "Razoável",
+      "poor": "Mau",
+      "fresh": "Fresco",
+      "normal": "Normal",
+      "sore": "Dorido",
+      "high": "Alta",
+      "low": "Baixa"
+    },
+    "label": {
+      "Ready": "Pronto",
+      "Moderate": "Moderado",
+      "Low": "Baixo"
+    },
+    "adviceModerate": "Hoje leva as séries de trabalho com mais calma — para cerca de 3 repetições antes da falha em vez de 1.",
+    "adviceLow": "Dia difícil. Para cerca de 3 repetições antes da falha e tira a última série de cada exercício.",
+    "apply": "Ajustar hoje",
+    "asPlanned": "Treinar como planeado",
+    "adjusted": "AJUSTADO À RECUPERAÇÃO"
   }
 }
