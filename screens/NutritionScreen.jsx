@@ -3,7 +3,6 @@ import {
 import { View, Text, StyleSheet, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
@@ -15,7 +14,6 @@ import Tappable from '../components/Tappable';
 const MEAL_KEYS = ['breakfast', 'lunch', 'dinner', 'snack'];
 // One icon per meal for identity/scanability — same single accent color for
 // all of them (not a rainbow per meal), the icon itself carries the distinction.
-const MEAL_ICONS = { breakfast: 'sunny-outline', lunch: 'restaurant-outline', dinner: 'moon-outline', snack: 'nutrition-outline' };
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const MEAL_PROTEIN_SHARE = { breakfast: 0.25, lunch: 0.35, dinner: 0.30, snack: 0.10 };
@@ -257,9 +255,6 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
             <View key={mealKey} style={styles.mealCard}>
               <View style={styles.mealHeader}>
                 <View style={styles.mealHeaderLeft}>
-                  <View style={styles.mealIconWrap}>
-                    <Ionicons name={MEAL_ICONS[mealKey]} size={15} color={colors.textMuted} accessibilityElementsHidden importantForAccessibility="no" />
-                  </View>
                   <View>
                     <Text style={styles.mealName}>{t(`nutrition.meals.${mealKey}`)}</Text>
                     <Text style={styles.mealSub}>{mealEntries.length === 0 ? t('nutrition.nothingLogged') : t('nutrition.kcal', { value: Math.round(mealMacros.calories) })}</Text>
@@ -341,7 +336,6 @@ const styles = StyleSheet.create({
   mealCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 0.5, borderColor: colors.border },
   mealHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   mealHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  mealIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   mealName: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 },
   mealSub: { fontSize: 13, color: colors.textSubtle },
   addBtn: { borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },

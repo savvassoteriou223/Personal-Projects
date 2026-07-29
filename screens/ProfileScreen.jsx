@@ -414,9 +414,6 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
         </View>
 
         <Tappable style={styles.dataRow} onPress={() => setShowData(true)}>
-          <View style={styles.dataRowIconWrap}>
-            <Ionicons name="server-outline" size={16} color={colors.textMuted} />
-          </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.dataRowLabel}>{t('data.rowTitle')}</Text>
             <Text style={styles.dataRowSub}>{t('data.rowSub')}</Text>
@@ -802,20 +799,17 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
             ) : (
               <>
                 {[
-                  { icon: 'barbell-outline', label: t('profile.fieldWeight'), value: profile?.weight_kg ? `${profile.weight_kg} kg` : '—' },
-                  { icon: 'resize-outline', label: t('profile.fieldHeight'), value: profile?.height_cm ? `${profile.height_cm} cm` : '—' },
-                  { icon: 'flag-outline', label: t('profile.fieldTarget'), value: profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : '—' },
-                  { icon: 'calendar-outline', label: t('profile.fieldTraining'), value: t('profile.trainingVal', { days: profile?.weekly_workouts, min: profile?.session_length }) },
-                  { icon: 'trending-up-outline', label: t('profile.fieldExperience'), value: t(`levels.${profile?.trainingExperience || 'beginner'}`) },
-                  { icon: 'nutrition-outline', label: t('profile.fieldNutrition'), value: `${profile?.nutrition_focus ? t(`profile.focus.${profile.nutrition_focus}`) : t('profile.nutritionNotSet')}${profile?.caloric_target ? t('profile.nutritionSuffix', { cal: profile.caloric_target, protein: profile.protein_target }) : ''}` },
+                  { label: t('profile.fieldWeight'), value: profile?.weight_kg ? `${profile.weight_kg} kg` : '—' },
+                  { label: t('profile.fieldHeight'), value: profile?.height_cm ? `${profile.height_cm} cm` : '—' },
+                  { label: t('profile.fieldTarget'), value: profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : '—' },
+                  { label: t('profile.fieldTraining'), value: t('profile.trainingVal', { days: profile?.weekly_workouts, min: profile?.session_length }) },
+                  { label: t('profile.fieldExperience'), value: t(`levels.${profile?.trainingExperience || 'beginner'}`) },
+                  { label: t('profile.fieldNutrition'), value: `${profile?.nutrition_focus ? t(`profile.focus.${profile.nutrition_focus}`) : t('profile.nutritionNotSet')}${profile?.caloric_target ? t('profile.nutritionSuffix', { cal: profile.caloric_target, protein: profile.protein_target }) : ''}` },
                   ...((profile?.sports || []).length > 0
-                    ? [{ icon: 'fitness-outline', label: t('profile.fieldSports'), value: profile.sports.map(s => t(`onboarding.sports.${s.key}`, { defaultValue: s.label || s.key })).join(', ') }]
+                    ? [{ label: t('profile.fieldSports'), value: profile.sports.map(s => t(`onboarding.sports.${s.key}`, { defaultValue: s.label || s.key })).join(', ') }]
                     : []),
                 ].map((row, i, arr) => (
                   <View key={row.label} style={[styles.profileRow, i > 0 && styles.profileRowBorder]}>
-                    <View style={styles.profileRowIconWrap}>
-                      <Ionicons name={row.icon} size={14} color={colors.textMuted} />
-                    </View>
                     <Text style={styles.profileRowLabel}>{row.label}</Text>
                     <Text style={styles.profileRowValue} numberOfLines={1}>{row.value}</Text>
                   </View>
@@ -943,7 +937,6 @@ const styles = StyleSheet.create({
   insightText: { flex: 1, fontSize: 13, color: colors.textMuted, lineHeight: 19 },
 
   dataRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginBottom: 16, backgroundColor: colors.surface, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border },
-  dataRowIconWrap: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   dataRowLabel: { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
   dataRowSub: { fontSize: 11.5, color: colors.textFaint, marginTop: 2 },
   dataRowLock: { width: 15, height: 15, borderRadius: 8, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center' },
@@ -977,7 +970,6 @@ const styles = StyleSheet.create({
   profileFieldVal: { color: colors.textPrimary, fontWeight: '500' },
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
   profileRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
-  profileRowIconWrap: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.control, alignItems: 'center', justifyContent: 'center' },
   profileRowLabel: { flex: 1, fontSize: 13, color: colors.textSubtle },
   profileRowValue: { fontSize: 13, color: colors.textPrimary, fontWeight: '600', maxWidth: '50%' },
   goalsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
