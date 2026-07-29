@@ -1,140 +1,106 @@
-# Design brief — Coach tab
+# Coach tab — prompt
 
-Paste this whole file as your prompt.
-
----
-
-## What you're designing
-
-The **Coach tab** of Helix, a science-based strength-training app for iOS and
-Android (React Native / Expo). It's live on Google Play. Users pay for premium,
-and the Coach is the headline premium feature — so this screen has to justify a
-subscription on sight.
-
-Redesign it. I want a **visual and structural** redesign, not a spacing pass.
-Assume the current layout is wrong and start from what the screen is for.
+Paste everything below the line. The output is a single HTML file you open in a
+browser to see the screen rendered.
 
 ---
 
-## What the Coach actually does
+Design and **render** the Coach tab for Helix, a science-based strength-training
+app (React Native, live on Google Play, dark theme, premium feature).
 
-It is **not** a general chatbot. It's a programme editor with the user's full
-training history open. It can:
+**Output exactly one self-contained HTML file and nothing else.** No explanation
+before it, no external CSS, no fonts, no images, no JS libraries — it must render
+correctly opened straight from disk. Inline everything. Draw any icons as inline
+SVG or unicode.
 
-- **Change the user's training programme** — replace an exercise, adjust sets,
-  reps or effort, add or remove an exercise. Permanently, or for one session.
-  Changes are reviewed by the user before applying, and are revertible.
-- **Rank replacements** — asked to change an exercise, it returns 3 ranked
-  options with a research rationale each.
-- **Remember the user** — dislikes, injuries, preferences, goals. Persists across
-  conversations. A disliked exercise stops being programmed. The user can see and
-  delete anything it remembers.
-- **Work mid-workout** — it can swap the exercise the user is currently doing.
-- **Write a weekly review** — a narrative summary, offered once a week.
-- **Run controlled n-of-1 experiments** — it can propose a multi-week trial on the
-  user (e.g. "train chest twice a week instead of once"), execute it by modifying
-  the programme, and report a verdict — including "this made no difference for
-  you." Requires explicit opt-in and can be ended any time.
+Render the screen inside a **390 × 844** phone frame, centred on a neutral page.
+Show **three frames side by side**, all in the same HTML:
 
-Every answer must cite from a curated 74-study research library.
+1. **Normal** — a user four weeks into a programme with one problem
+2. **Empty** — brand-new user, nothing logged yet
+3. **Mid-conversation** — the user has asked something and been answered
 
-**Hard limit: 100 AI messages per month.** This matters — the UI should never
-make a user feel they wasted one.
+Under the frames, add a short list of your design decisions — 6 or so, one line
+each, saying what you did and why. Nothing else.
 
-## What it knows without being asked (costs no message, no latency)
+## What this screen is
 
-All of this is already computed on device and available to render:
+Not a chatbot. It is a **coach that can edit your training programme.** It can
+replace exercises, change sets and reps, add or remove work — permanently or for
+one session — and every change is reviewable and revertible. It remembers your
+injuries, dislikes and goals. It can swap an exercise while you're mid-workout.
+It runs multi-week controlled experiments on you and reports the result, including
+when the result is "this made no difference for you."
 
-| Data | Example |
-|---|---|
-| Weekly volume per muscle vs the user's target | "Back: 4 of 12 sets" |
-| Muscle not trained recently | "Lats, 9 days" |
-| Plateau detection | "Bench press, 4 weeks flat" |
-| Deload due | with the research behind it |
-| Lift ready to progress | "Squat — add 2.5kg" |
-| Recovery check-in | Ready / Moderate / Low |
-| Streak, sessions this week, bodyweight vs target | |
-| The next scheduled session | name, exercises, set count, duration |
-| Recent changes the coach made | so they can be undone |
-| Facts it remembers about the user | |
+Every claim it makes cites from a 74-study research library.
 
-**A pre-computed read is free. A message costs 1 of 100.** Design accordingly.
+## Use this exact content — don't invent placeholder text
 
----
+**Normal state:**
+- Header: `Coach`
+- Context: goal `Lose fat` · `3-week streak` · `2 sessions this week` · recovery `Moderate`
+- The coach's read: **"Your back is 8 sets short this week"** — 4 of 12 sets logged
+- It has already acted: added `2 × Cable row` to Thursday, with an undo
+- Next session: `Push A` · 52 min · 6 exercises · 24 sets · chest, shoulders, triceps
+- Weekly volume: Chest 12/15 · Back 4/12 (behind) · Legs 16/15 · Arms 7/10
+- Suggested asks: `What am I neglecting?` · `Is my frequency right?` · `Am I recovering enough?`
+- Quota: `94 of 100 messages left this month`
 
-## What's wrong with it now
+**Empty state:** no training history, no volume data, no reads. Programme exists;
+first session is `Full Body A`. Decide what a coach says to someone on day one —
+this state currently looks broken and that's the thing to fix.
 
-1. **It reads as a dashboard with a text field**, not a coach. It reports; it
-   doesn't act. It says "your back is 8 sets short" and then waits for the user to
-   ask it to fix that — an extra step that makes it feel inert.
-2. **Everything is the same bordered card** on near-black, stacked vertically, so
-   nothing has rank and the screen reads as filler.
-3. **The conversation isn't visible.** History is kept in state and sent to the
-   model, but the UI throws it away on reload — on a tab whose subtitle is
-   "Remembers your training."
-4. **It's mostly empty** for anyone without much logged history.
+**Mid-conversation:** user asked *"Why rows and not pulldowns?"* and the coach
+answered *"You already pull vertically twice a week. Rows load the mid-back —
+rhomboids and mid-traps — which nothing else in your week trains directly."*
 
----
-
-## Constraints — these are real, don't design around them
-
-**React Native, not the web.**
-- Flexbox only. **No CSS Grid, no floats, no `position: sticky`.**
-- No hover states. Touch targets ≥ 44px.
-- Shadows are expensive and render differently per platform; prefer borders and
-  contrast for elevation.
-- Gradients need `react-native-svg` (available, already used).
-- A pinned bottom bar means a flex column with the scroll view flexing inside it,
-  plus `KeyboardAvoidingView`. Doable, but say so if you rely on it.
-
-**Design system.** `lib/theme.js` is the single source of truth. Use these tokens,
-don't invent hex:
+## Design system — use these, don't invent hex
 
 ```
 bg #0F0F13   surface #1A1A20   surfaceInset #12121A   surfaceElevated #1C1C22
-surfaceInverse #FFFFFF   control #2C2C35
+control #2C2C35   white #FFFFFF
 borderSoft #1E1E28   border #2C2C35   borderStrong #3D3D4A
-accent #1D9E75 (+Soft 13% / +Hair 25%)   info #7C9CFF   warning #BA7517   danger #E85D5C
-textPrimary #FFFFFF   textSecondary #E4E4E8   textMuted #A1A1AA
-textSubtle #9494A0   textFaint #8A8A94   textOnLight #111114
+accent #1D9E75   info #7C9CFF   warning #BA7517   danger #E85D5C
+text #FFFFFF / #E4E4E8 / #A1A1AA / #9494A0 / #8A8A94   textOnLight #111114
 ```
 
-You may propose changing the palette, but say so explicitly and give the reason.
+System font stack only. Tabular numerals wherever figures align.
 
-**Other constraints:**
-- Ships in **8 languages** — German and Russian run ~30% longer than English.
-  Nothing may depend on a string being short.
-- Dark theme only today.
-- Screen is `screens/CoachScreen.jsx` (~2,300 lines) — a redesign that requires
-  rewriting all of it is fine, but say so.
-- **Accessibility:** text contrast ≥ 4.5:1, real touch targets, no meaning
-  carried by colour alone.
+If you want to change the palette, do it — but say so in your decisions list and
+give the reason.
 
----
+## Constraints that make a design buildable
+
+It ships in React Native, so the layout must survive translation:
+
+- **Flexbox only.** No CSS Grid, no floats, no `position: sticky`. A pinned bottom
+  bar is fine (flex column, scroll view flexing inside) — just know you're asking
+  for it.
+- No hover states. Touch targets ≥ 44px.
+- Shadows are expensive and inconsistent across platforms — prefer borders and
+  contrast for elevation.
+- Ships in 8 languages; **German and Russian run ~30% longer than English**, so
+  nothing may depend on a string staying short.
+- Text contrast ≥ 4.5:1. No meaning carried by colour alone.
+
+## What's wrong with the current version
+
+1. It **reports instead of acting.** It says "your back is 8 sets short" and waits
+   for you to ask it to fix that.
+2. Every element is **the same bordered card** stacked vertically, so nothing has
+   rank and the screen reads as filler.
+3. The **conversation isn't visible** — history is kept in memory but thrown away
+   on reload, on a tab that claims to remember you.
+4. It's **nearly empty** for a new user.
 
 ## What I'm judging
 
-- **Does it look like a coach or a dashboard?** The single most important thing.
-- **Would someone pay for this screen?**
-- **Is the hierarchy obvious in half a second** — is there one clear thing to do?
-- **Does it hold up when empty** (new user, no history) and when full?
-- **Does it feel designed**, rather than assembled from cards?
+Does it look like a coach or a dashboard. Would someone pay for this screen. Is
+there one obvious thing to do within half a second. Does the empty state hold up.
+Does it feel designed rather than assembled from cards.
 
-I've rejected roughly twenty designs on this app already. The ones that failed
-were flashy mockups that ignored the constraints, or restyles that changed
-padding and called it a redesign. Take a position and justify it.
+Roughly twenty designs have already been rejected on this app. The failures were
+flashy mockups that ignored the constraints, and restyles that changed padding and
+were presented as redesigns. Take a position.
 
----
-
-## Deliverable
-
-1. **A rendered mockup** — self-contained HTML at 390×844, dark, using the tokens
-   above. Show the realistic state (a user mid-programme with one gap), and the
-   empty state for a brand-new user.
-2. **The reasoning** — 5–8 decisions, each stating what you did and why, in one
-   sentence. Name what you deliberately left out.
-3. **Anything that changes the data model or needs new capability**, flagged
-   separately so I can cost it.
-
-Don't ask clarifying questions. Make the calls, state your assumptions, and show
-me something.
+Don't ask clarifying questions. Make the calls and give me the file.
