@@ -689,7 +689,10 @@
     },
     "areVerdictBody": "Recorded against your profile, so this will not be tested again.",
     "areStart": "Run it",
-    "areStop": "End trial"
+    "areStop": "End trial",
+    "areRationale": "Running your experiment: {{variable}}. Reverts automatically when the trial ends.",
+    "areCannotRunTitle": "Can’t run this one",
+    "areCannotRunMsg": "Your current program has nowhere to put the change this experiment needs. It’ll be offered again if that changes."
   },
   "profile": {
     "admin": "Admin",

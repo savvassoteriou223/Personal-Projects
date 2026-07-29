@@ -1293,6 +1293,77 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     return built;
   };
 
+  // ── Executing an experiment (spec §6) ──────────────────────────────────────
+  // Accepting a trial has to actually change training, or the arms are
+  // identical and the verdict is meaningless. Arm B is expressed as ordinary
+  // program proposals and routed through the same review-and-apply pipeline as
+  // every other coach edit, so the user sees exactly what the experiment will
+  // do before it does it, and can revert it like anything else.
+  const buildExperimentProposals = (protocol) => {
+    const program = userData?.program;
+    if (!program?.days || !protocol) return [];
+    const built = [];
+    const rationale = t('coach.areRationale', { variable: protocol.variable });
+
+    if (protocol.type === 'frequency') {
+      // Arm B trains the lift one more day per week. Put it on a day that does
+      // not already contain it — adding a second copy to the same session is a
+      // volume change, not a frequency change, and would confound the trial.
+      const lift = protocol.target;
+      const host = program.days.find(d => !(d.exercises || []).some(e => e.name === lift));
+      if (!host) return [];
+      const template = program.days
+        .flatMap(d => d.exercises || [])
+        .find(e => e.name === lift);
+      built.push({
+        type: 'add_exercise', edit_type: 'add_exercise',
+        day_id: host.id, day_name: host.name?.split('\u2014')[0].trim(),
+        exercise_index: (host.exercises || []).length,
+        exercise_name: lift,
+        pattern_key: template?.pattern,
+        sets: template?.sets || 3,
+        reps: template?.reps,
+        rationale,
+      });
+      return built;
+    }
+
+    if (protocol.type === 'volume') {
+      // Arm B adds roughly six weekly sets to the muscle, spread over the days
+      // that already train it rather than piled onto one session — past about
+      // ten hard sets for a muscle in a single session the extra adds almost
+      // nothing (volume_session_cap in the studies library).
+      const muscle = protocol.muscle;
+      const slots = [];
+      program.days.forEach((day) => {
+        (day.exercises || []).forEach((ex, idx) => {
+          const primary = _PRIMARY_MUSCLE_MAP[String(ex.name || '').toLowerCase()];
+          if (primary === muscle) slots.push({ day, ex, idx });
+        });
+      });
+      if (!slots.length) return [];
+      let remaining = 6;
+      for (let i = 0; remaining > 0 && i < slots.length * 3; i++) {
+        const slot = slots[i % slots.length];
+        slot.added = (slot.added || 0) + 1;
+        remaining--;
+      }
+      for (const slot of slots) {
+        if (!slot.added) continue;
+        built.push({
+          type: 'permanent_edit', edit_type: 'adjust_sets',
+          day_id: slot.day.id, day_name: slot.day.name?.split('\u2014')[0].trim(),
+          exercise_index: slot.idx,
+          current_exercise: slot.ex.name, exercise_name: slot.ex.name,
+          sets: (slot.ex.sets || 3) + slot.added,
+          rationale,
+        });
+      }
+      return built;
+    }
+    return [];
+  };
+
   const applyDeloadProposals = () => {
     const built = buildDeloadProposals();
     if (!built.length) {
@@ -1743,8 +1814,19 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                       half-run comparison is not evidence about this person. */}
                   {focusItem.are === 'propose' && are?.experimentRow?.id && (
                     <Tappable style={styles.heroBtnPrimary} onPress={async () => {
+                      const protocol = are.experiment || are.experimentRow?.protocol_json;
+                      const built = buildExperimentProposals(protocol);
+                      if (!built.length) {
+                        // Nothing in the current program can carry arm B, so the
+                        // trial cannot run. Better to say so than to start a
+                        // trial whose arms are identical.
+                        Alert.alert(t('coach.areCannotRunTitle'), t('coach.areCannotRunMsg'));
+                        return;
+                      }
                       await acceptExperiment(are.experimentRow.id);
                       setAre(a => (a ? { ...a, action: 'continue' } : a));
+                      setProposals(built);
+                      scrollRef.current?.scrollTo({ y: Math.max(0, askCardY.current - 16), animated: true });
                     }}>
                       <Text style={styles.heroBtnPrimaryText}>{t('coach.areStart')}</Text>
                     </Tappable>
