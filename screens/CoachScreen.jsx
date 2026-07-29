@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
+import { step as areStep, acceptExperiment, abandonExperiment } from '../lib/areStore';
 import { MOVEMENT_PATTERNS, getAllExercisesForPattern } from './movementLibrary';
 import { formatEvidenceBase } from './studiesLibrary';
 import { VOLUME_TARGETS, getVolumeTargets, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getPatternContraindication, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS, detectPlateaus, detectDeloadNeeded, getProactiveCoachPrompt, getEligibleGoalMilestones, checkReadyToProgress, detectRotationTrigger, getBlockLength, generateDeloadWeek } from './programGenerator';
@@ -125,6 +126,9 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]);
   const [weeklySummary, setWeeklySummary] = useState(null);
+  // Adaptive Response Engine — one step of the closed loop, run on load.
+  // Holds { action, experiment, experimentRow, evaluation, blocked }.
+  const [are, setAre] = useState(null);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
   const [weeklyOffered, setWeeklyOffered] = useState(false); // review is due, not yet generated
   const weeklyReviewChecked = useRef(false);
@@ -365,6 +369,10 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     let plateauTrend = [];
     let deloadSuggestion = null;
     let recentSetsForProgress = []; // hoisted out of the block below — needed later for readyToProgress
+    // Every logged set with its session date attached — the shape the Individual
+    // Response Model reads. completed_sets carries no date of its own, so the
+    // session's completed_at is joined on here rather than in a second query.
+    let modelSets = [];
 
     if (sessions?.length) {
       const ids = sessions.map(s => s.id);
@@ -375,6 +383,15 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         const sevenDaysAgo = subDays(new Date(), 7);
         const sessionDateMap = {};
         sessions.forEach(s => { sessionDateMap[s.id] = new Date(s.completed_at); });
+
+        modelSets = sets
+          .filter(x => sessionDateMap[x.session_id])
+          .map(x => ({
+            exercise_name: x.exercise_name,
+            weight_kg: x.weight_kg,
+            reps: x.reps,
+            completed_at: sessionDateMap[x.session_id].toISOString(),
+          }));
 
         const weekSets = [];
         sets.forEach(s => {
@@ -673,6 +690,34 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
 
     const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, dislikedIds, streak, insights, proactivePrompt, neglectedMuscle };
     setUserData(data);
+
+    // ── Adaptive Response Engine ────────────────────────────────────────────
+    // One step of the closed loop, off the critical path: it must never block
+    // or break the Coach screen, so it runs detached and swallows its own
+    // errors. The engine decides whether there is anything worth testing; the
+    // guardrail inside areStore keeps it silent until there is enough history
+    // to model this person honestly, rather than inventing a finding.
+    (async () => {
+      try {
+        const weeksOfHistory = recentSessions.length
+          ? Math.max(1, Math.round((Date.now() - new Date(recentSessions[recentSessions.length - 1].completed_at)) / 6048e5))
+          : 0;
+        const result = await areStep(user.id, {
+          sets: modelSets,
+          program,
+          profile,
+          weeklyVolume,
+          weeksOfHistory,
+        });
+        setAre(result);
+      } catch (e) {
+        // A missing table (migration not applied yet) lands here and stays
+        // invisible to the user, which is the correct failure mode for an
+        // opt-in research loop.
+        setAre(null);
+      }
+    })();
+
     return data;
   };
 
@@ -1589,7 +1634,48 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           return { name: day.name.split('\u2014')[0].trim(), muscles: seen.slice(0, 3).join(', ').toLowerCase(), sets };
         })();
 
-        const focusItem = proactivePrompt
+        // ── Adaptive Response Engine ──────────────────────────────────────
+        // Ranked above every other read: the links below are population rules
+        // applied to this user, whereas a concluded trial is evidence about
+        // this user. When the loop has nothing to say it returns idle and the
+        // existing chain runs unchanged.
+        const areItem = (() => {
+          if (!are || are.blocked) return null;
+          const p = are.experiment || are.experimentRow?.protocol_json;
+          if (are.action === 'propose' && p) {
+            return {
+              eyebrow: t('coach.areEyebrowProposed'),
+              eyebrowColor: colors.info,
+              title: t('coach.areProposeTitle', { variable: p.variable }),
+              body: t('coach.areProposeBody', { metric: p.metric, weeks: (p.weeksPerArm || 3) * 2 }),
+              are: 'propose',
+            };
+          }
+          if (are.action === 'continue' && p) {
+            return {
+              eyebrow: t('coach.areEyebrowRunning'),
+              eyebrowColor: colors.info,
+              title: t('coach.areRunningTitle', { variable: p.variable }),
+              body: t('coach.areRunningBody'),
+              are: 'running',
+            };
+          }
+          if (are.action === 'conclude' && are.evaluation) {
+            const v = are.evaluation.verdict;
+            return {
+              eyebrow: t('coach.areEyebrowResult'),
+              eyebrowColor: v === 'keep' ? colors.accent : colors.textMuted,
+              title: t(`coach.areVerdict.${v}`, { variable: p?.variable || '' }),
+              // "No detectable effect" is a real finding, not a failure — it
+              // rules a variable out for this person permanently.
+              body: t('coach.areVerdictBody'),
+              are: 'conclude',
+            };
+          }
+          return null;
+        })();
+
+        const focusItem = areItem || (proactivePrompt
           ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
           : neglectedMuscle
             ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning, title: t('coach.neglectTitle', { muscle: neglectedMuscle.label, days: neglectedMuscle.gapDays }), body: t('coach.neglectBody', { muscle: neglectedMuscle.label.toLowerCase() }) }
@@ -1612,7 +1698,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                     ? { eyebrow: t('coach.focusEyebrowNext'),
                         title: t('coach.nextTitle', { day: nextUp.name }),
                         body: t('coach.nextBody', { muscles: nextUp.muscles, sets: nextUp.sets }) }
-                    : null);
+                    : null));
         // Structured signal tiles for the bento grid — each a real detector,
         // rendered as a short label + value. Only the ones with data appear.
         const recovery = (userData?.recoveryCheckIns || []).find(c => !c.skipped)?.label || null;
@@ -1649,6 +1735,26 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                   {proactivePrompt?.key === 'deload' && (
                     <Tappable style={styles.heroBtnPrimary} onPress={applyDeloadProposals}>
                       <Text style={styles.heroBtnPrimaryText}>{t('coach.applyDeload')}</Text>
+                    </Tappable>
+                  )}
+                  {/* An experiment never starts on its own — §11 of the spec makes
+                      opt-in explicit, and the escape hatch permanent. Ending a
+                      trial abandons it rather than concluding it, because a
+                      half-run comparison is not evidence about this person. */}
+                  {focusItem.are === 'propose' && are?.experimentRow?.id && (
+                    <Tappable style={styles.heroBtnPrimary} onPress={async () => {
+                      await acceptExperiment(are.experimentRow.id);
+                      setAre(a => (a ? { ...a, action: 'continue' } : a));
+                    }}>
+                      <Text style={styles.heroBtnPrimaryText}>{t('coach.areStart')}</Text>
+                    </Tappable>
+                  )}
+                  {focusItem.are === 'running' && are?.experimentRow?.id && (
+                    <Tappable style={styles.heroBtnGhost} onPress={async () => {
+                      await abandonExperiment(are.experimentRow.id);
+                      setAre(null);
+                    }}>
+                      <Text style={styles.heroBtnGhostText}>{t('coach.areStop')}</Text>
                     </Tappable>
                   )}
                   <Tappable style={styles.heroBtnGhost} onPress={() => setFocusDismissed(true)}>

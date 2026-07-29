@@ -4,7 +4,11 @@
 > learns how *your* body responds and runs controlled n-of-1 experiments to optimize
 > your training. This is the invention Helix is built around; everything else is a feature.
 
-Status: **design / R&D.** Post-launch. Not a launch blocker.
+Status: **integrated.** The engine was pure and unreferenced until 2026-07-29;
+`lib/areStore.js` now drives it from real training data, `supabase/migrations/
+add_adaptive_response_engine.sql` gives it memory, and Coach surfaces its read at
+the top of the focus chain. The migration must be applied in the dashboard before
+the loop can persist anything — until then it fails closed and stays invisible.
 
 ---
 
@@ -220,8 +224,8 @@ wiring, real-data validation), which needs the live app + DB + a device.
 | 5 | Evaluation statistics (keep/revert/inconclusive) | `lib/adaptiveResponseEngine.js` | ✅ built + tested |
 | 6 | Model write-back | `lib/adaptiveResponseEngine.js` | ✅ built + tested |
 | — | The loop orchestrator | `lib/adaptiveResponseEngine.js` `nextAction` | ✅ built + tested |
-| — | Supabase schema (`are_individual_model`, `are_experiments`) | dashboard migration | ⬜ needs live DB |
-| — | Service: load sets → run engine → persist → drive UI | new `lib/areStore.js` | ⬜ needs DB |
+| — | Supabase schema (`are_individual_model`, `are_experiments`) | `supabase/migrations/add_adaptive_response_engine.sql` | 🟡 written, apply in dashboard |
+| — | Service: load sets → run engine → persist → drive UI | `lib/areStore.js` | ✅ done |
 | — | Opt-in + "what I've learned about you" UI | screens | ⬜ needs app + device |
 | — | Execute arms via `propose_program_change`; collect metric points | wiring | ⬜ needs app |
 | — | Real-data statistical validation & threshold tuning | — | ⬜ needs real users |

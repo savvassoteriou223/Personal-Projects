@@ -674,7 +674,22 @@
     "gapTitle": "{{muscle}} is {{n}} sets short this week",
     "gapBody": "{{done}} of {{min}} sets logged. Ask me to add a set, or to fit it into your next session.",
     "nextTitle": "{{day}} is next",
-    "nextBody": "{{sets}} sets across {{muscles}}. Ask me anything about it before you start."
+    "nextBody": "{{sets}} sets across {{muscles}}. Ask me anything about it before you start.",
+    "areEyebrowProposed": "Experiment available",
+    "areEyebrowRunning": "Experiment running",
+    "areEyebrowResult": "Your result",
+    "areProposeTitle": "Test {{variable}} on yourself",
+    "areProposeBody": "A controlled {{weeks}}-week trial, judged on {{metric}}. The rules are fixed before it starts, so the answer is about you, not the average.",
+    "areRunningTitle": "Testing {{variable}}",
+    "areRunningBody": "Keep logging as normal. You can end this any time.",
+    "areVerdict": {
+      "keep": "{{variable}} works for you — keeping it",
+      "revert": "{{variable}} made no difference for you — reverted",
+      "inconclusive": "Not enough signal to call {{variable}} either way"
+    },
+    "areVerdictBody": "Recorded against your profile, so this will not be tested again.",
+    "areStart": "Run it",
+    "areStop": "End trial"
   },
   "profile": {
     "admin": "Admin",
