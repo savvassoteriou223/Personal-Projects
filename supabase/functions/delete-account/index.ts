@@ -43,8 +43,38 @@ Deno.serve(async (req: Request) => {
     // 3. Delete workout sessions
     await supabaseAdmin.from('workout_sessions').delete().eq('user_id', uid);
 
-    // 4. Delete weight logs
-    await supabaseAdmin.from('weight_logs').delete().eq('user_id', uid);
+    // 4. Delete every remaining table keyed to this user.
+    //
+    // This used to delete a single 'weight_logs' table, which does not exist —
+    // supabase-js returns an error object rather than throwing, so the call
+    // silently no-opped and the rest of the user's data was left to whatever
+    // ON DELETE CASCADE each table happened to declare. Several of these tables
+    // were created directly in the dashboard and their cascade behaviour is not
+    // recorded in this repo, so relying on it was an unverifiable assumption
+    // about a deletion request.
+    //
+    // Listing them explicitly makes the guarantee independent of the schema.
+    // A name that does not exist is harmless for the same reason the old bug was
+    // invisible: the error is returned, not thrown.
+    const USER_TABLES = [
+      'body_metrics',
+      'daily_health_logs',
+      'recovery_checkins',
+      'exercise_skips',
+      'coach_memory',
+      'weekly_summaries',
+      'program_blocks',
+      'program_template_overrides',
+      'program_additions',
+      'are_experiments',
+      'are_individual_model',
+    ];
+    for (const table of USER_TABLES) {
+      const { error } = await supabaseAdmin.from(table).delete().eq('user_id', uid);
+      // Log and continue: one missing or renamed table must not abort the
+      // deletion and strand the rest of the user's data.
+      if (error) console.error(`delete-account: ${table}:`, error.message);
+    }
 
     // 5. Delete profile
     await supabaseAdmin.from('profiles').delete().eq('id', uid);

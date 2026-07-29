@@ -74,7 +74,8 @@ before/after if you want one.
   meal logging, 7-day protein history
 - **Body composition** — weight trend, 7-day moving average, progress to target
 - **Cardio logging** alongside lifting
-- **Recovery check-ins** — daily readiness that adjusts the session's effort
+- **Recovery check-ins** — a daily self-reported readiness score (sleep, soreness,
+  energy) that adjusts the session's effort
 - **Plateau and deload detection** — flagged automatically, with the research
   behind it
 - **Personal records**
@@ -222,10 +223,16 @@ there, not in the app, and this document will not guess.**
 - **8 languages, all at 100%** — English, German, Spanish, French, Italian,
   Portuguese, Russian, Chinese. Every user-facing string is translated in every
   language, verified by a test that fails the build on drift.
-- **Health Connect** on Android reads **sleep and resting heart rate only**. HRV
-  and step count were deliberately removed after a Play review rejection — do not
-  advertise them.
-- **No wearable required.** Everything the engine does works from logged sets.
+- **No health or wearable integration is live.** Android Health Connect was
+  removed outright in July after a Play policy rejection — the plugin is gone and
+  all four health permissions are blocked from the manifest. Apple HealthKit is
+  configured but iOS has not shipped. **Do not advertise sleep, heart-rate, HRV or
+  step tracking in any form.**
+- **Recovery data is self-reported** — the daily check-in asks about sleep,
+  soreness and energy, and the session adjusts from that. It is not read from a
+  device.
+- **No wearable required** is therefore a genuine strength, not a workaround:
+  everything the engine does works from logged sets alone.
 
 ---
 
@@ -239,8 +246,9 @@ Marketing that oversells these will produce refunds and one-star reviews.
   anything.
 - **The coach cannot start conversations.** No notifications, no check-ins. It
   waits to be opened.
-- **No video demonstrations.** Exercises have written cues and a 3D figure;
-  animated demonstrations are planned, not shipped.
+- **No video or animated demonstrations.** Exercises carry written coaching cues
+  and a research note. A 3D exercise figure exists in the codebase but is not
+  reachable from any screen — treat it as unshipped.
 - **No social, no sharing, no leaderboards.**
 - **Not device-tested at scale.** The app is verified by automated harnesses and
   a signed-in smoke test, not by a large beta.
