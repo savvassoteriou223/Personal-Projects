@@ -153,7 +153,7 @@ export default function NutritionScreen({ onOpenNutrition, onOpenNutritionMeal, 
 
       {/* Morning nutrition card */}
       {targets.calories > 0 && (
-        <View style={styles.morningCard}>
+        <View style={[styles.morningCard, isTrainingDay && styles.morningCardTraining]}>
           <View style={styles.morningRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.morningTitle}>
@@ -297,7 +297,10 @@ const styles = StyleSheet.create({
 
   // Accent-tinted, not the same flat gray as the meal cards below it — this
   // is today's target, the one thing on the screen worth glancing at first.
-  morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: colors.surfaceElevated, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.accentHair },
+  morningCard: { marginHorizontal: 24, marginBottom: 12, backgroundColor: colors.surfaceElevated, borderRadius: 14, padding: 14, borderWidth: 0.5, borderColor: colors.border },
+  // The accent marks a TRAINING day. It used to be on every day, which
+  // made it decoration rather than a signal.
+  morningCardTraining: { borderColor: colors.accentHair },
   morningRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   morningTitle: { fontSize: 13, fontWeight: '600', color: colors.textPrimary, marginBottom: 3 },
   morningTarget: { fontSize: 11, color: colors.textSubtle, lineHeight: 16 },

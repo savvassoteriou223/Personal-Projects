@@ -96,7 +96,7 @@ export default function RecoveryCheckIn({ visible, onSkip, onDone }) {
 const s = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: colors.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
+    backgroundColor: colors.surface, borderTopLeftRadius: radius.card, borderTopRightRadius: radius.card,
     borderTopWidth: 1, borderTopColor: colors.border,
     paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing['3xl'],
   },
@@ -107,7 +107,7 @@ const s = StyleSheet.create({
   opts: { flexDirection: 'row', gap: spacing.sm },
   opt: {
     flex: 1, alignItems: 'center', paddingVertical: 10,
-    backgroundColor: colors.surfaceAlt, borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt, borderRadius: radius.control,
     borderWidth: 1, borderColor: colors.border,
   },
   optOn: { backgroundColor: colors.accent, borderColor: colors.accent },
@@ -115,7 +115,7 @@ const s = StyleSheet.create({
   optTextOn: { color: colors.textOnAccent, fontWeight: '700' },
   advice: { fontSize: 14, lineHeight: 21, color: colors.textSecondary, marginBottom: spacing.md },
   row: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-  btn: { flex: 1, paddingVertical: 14, borderRadius: radius.lg, alignItems: 'center' },
+  btn: { flex: 1, paddingVertical: 14, borderRadius: radius.control, alignItems: 'center' },
   btnGhost: { borderWidth: 1, borderColor: colors.border },
   btnGhostText: { color: colors.textMuted, fontSize: 14, fontWeight: '600' },
   btnPrimary: { backgroundColor: colors.textPrimary },

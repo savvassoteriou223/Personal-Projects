@@ -804,7 +804,23 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
                   { label: t('profile.fieldTarget'), value: profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : '—' },
                   { label: t('profile.fieldTraining'), value: t('profile.trainingVal', { days: profile?.weekly_workouts, min: profile?.session_length }) },
                   { label: t('profile.fieldExperience'), value: t(`levels.${profile?.trainingExperience || 'beginner'}`) },
-                  { label: t('profile.fieldNutrition'), value: `${profile?.nutrition_focus ? t(`profile.focus.${profile.nutrition_focus}`) : t('profile.nutritionNotSet')}${profile?.caloric_target ? t('profile.nutritionSuffix', { cal: profile.caloric_target, protein: profile.protein_target }) : ''}` },
+                  // Calories differ on training and rest days, and the Nutrition
+                  // tab shows whichever applies today. Showing the base
+                  // caloric_target here put a third number on screen that the
+                  // user never actually eats to, so the two tabs contradicted
+                  // each other one tap apart. Show the real range instead.
+                  { label: t('profile.fieldNutrition'), value: (() => {
+                    const focus = profile?.nutrition_focus
+                      ? t(`profile.focus.${profile.nutrition_focus}`)
+                      : t('profile.nutritionNotSet');
+                    const rest = profile?.rest_caloric_target;
+                    const train = profile?.training_caloric_target;
+                    const cal = (rest && train && rest !== train)
+                      ? `${Math.min(rest, train)}–${Math.max(rest, train)}`
+                      : (profile?.caloric_target || null);
+                    if (!cal) return focus;
+                    return focus + t('profile.nutritionSuffix', { cal, protein: profile.protein_target });
+                  })() },
                   ...((profile?.sports || []).length > 0
                     ? [{ label: t('profile.fieldSports'), value: profile.sports.map(s => t(`onboarding.sports.${s.key}`, { defaultValue: s.label || s.key })).join(', ') }]
                     : []),
