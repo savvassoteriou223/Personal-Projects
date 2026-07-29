@@ -1706,10 +1706,11 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         })();
 
         // ── Adaptive Response Engine ──────────────────────────────────────
-        // Ranked above every other read: the links below are population rules
-        // applied to this user, whereas a concluded trial is evidence about
-        // this user. When the loop has nothing to say it returns idle and the
-        // existing chain runs unchanged.
+        // Ranked LAST, not first. A concluded trial is stronger evidence than a
+        // population rule, but "would you like to run a six-week experiment" is
+        // not what someone opening this tab needs above a deload they are due, a
+        // plateau they are in, or a muscle they are eight sets short on. Those
+        // are about today; an experiment offer can wait for a quiet screen.
         const areItem = (() => {
           if (!are || are.blocked) return null;
           const p = are.experiment || are.experimentRow?.protocol_json;
@@ -1746,7 +1747,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           return null;
         })();
 
-        const focusItem = areItem || (proactivePrompt
+        const focusItem = (proactivePrompt
           ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
           : neglectedMuscle
             ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning, title: t('coach.neglectTitle', { muscle: neglectedMuscle.label, days: neglectedMuscle.gapDays }), body: t('coach.neglectBody', { muscle: neglectedMuscle.label.toLowerCase() }) }
@@ -1769,7 +1770,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                     ? { eyebrow: t('coach.focusEyebrowNext'),
                         title: t('coach.nextTitle', { day: nextUp.name }),
                         body: t('coach.nextBody', { muscles: nextUp.muscles, sets: nextUp.sets }) }
-                    : null));
+                    : areItem));
         // Structured signal tiles for the bento grid — each a real detector,
         // rendered as a short label + value. Only the ones with data appear.
         const recovery = (userData?.recoveryCheckIns || []).find(c => !c.skipped)?.label || null;
@@ -1839,21 +1840,25 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                       <Text style={styles.heroBtnGhostText}>{t('coach.areStop')}</Text>
                     </Tappable>
                   )}
-                  <Tappable style={styles.heroBtnGhost} onPress={() => setFocusDismissed(true)}>
-                    <Text style={styles.heroBtnGhostText}>{t('coach.dismissToday')}</Text>
+                  <Tappable onPress={() => setFocusDismissed(true)} hitSlop={10}>
+                    <Text style={styles.heroDismissLink}>{t('coach.dismissToday')}</Text>
                   </Tappable>
                 </View>
               </View>
               );
             })()}
 
-            {/* Signal tiles — a 2-up grid of the structured detector reads. */}
+            {/* Signal tiles. Rendered as a chip row rather than a grid of cards:
+                a single signal ("Recovery · Moderate") took a full-width card for
+                two words, and everything it pushed down was the ask box — the
+                primary control of the screen, which was landing more than half a
+                fold from the top. */}
             {signals.length > 0 && (
-              <View style={styles.bentoGrid}>
+              <View style={styles.signalRow}>
                 {signals.map((s, i) => (
-                  <View key={i} style={styles.tile}>
-                    <Text style={styles.tileK}>{s.k}</Text>
-                    <Text style={[styles.tileV, s.amber && { color: colors.warning }]} numberOfLines={1}>{s.v}</Text>
+                  <View key={i} style={styles.signalChip}>
+                    <Text style={styles.signalK}>{s.k}</Text>
+                    <Text style={[styles.signalV, s.amber && { color: colors.warning }]} numberOfLines={1}>{s.v}</Text>
                   </View>
                 ))}
               </View>
@@ -2165,17 +2170,17 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  header: { padding: 24, paddingTop: 24 },
-  title: { fontSize: 28, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5 },
-  subtitle: { fontSize: 12, color: colors.textSubtle, marginTop: 4 },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10 },
+  title: { fontSize: 24, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5 },
+  subtitle: { fontSize: 11.5, color: colors.textSubtle, marginTop: 2 },
 
-  memoryStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginHorizontal: 20, marginTop: 14, marginBottom: 2 },
+  memoryStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginHorizontal: 20, marginTop: 4, marginBottom: 2 },
   memoryChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.surfaceInset, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 11, borderWidth: 0.5, borderColor: colors.border },
   memoryChipDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent },
   memoryChipText: { fontSize: 11, color: colors.textSecondary },
 
-  vitalsRow: { marginHorizontal: 20, marginTop: 14, marginBottom: 2 },
-  vitalsText: { fontSize: 13.5, fontWeight: '600', color: colors.textSecondary, lineHeight: 19 },
+  vitalsRow: { marginHorizontal: 20, marginTop: 8, marginBottom: 2 },
+  vitalsText: { fontSize: 12.5, fontWeight: '600', color: colors.textSecondary, lineHeight: 17 },
 
   doneStrip: { marginHorizontal: 20, marginTop: 12, backgroundColor: colors.surfaceElevated, borderRadius: 14, padding: 12, borderWidth: 0.5, borderColor: colors.accentHair, marginBottom: 12 },
   doneStripEyebrow: { fontSize: 10, fontWeight: '700', color: colors.accent, letterSpacing: 0.6, marginBottom: 6, textTransform: 'uppercase' },
@@ -2205,21 +2210,31 @@ const styles = StyleSheet.create({
   fragmentText: { fontSize: 12.5, color: colors.textMuted, lineHeight: 18, flex: 1 },
 
   // ── Bento reads: a priority-read hero tile + a 2-up grid of signal tiles ──
-  bentoWrap: { marginHorizontal: 20, marginBottom: 4 },
-  heroTile: { backgroundColor: colors.surface, borderRadius: 18, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 9 },
-  tileKRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  bentoWrap: { marginHorizontal: 20, marginBottom: 2 },
+  heroTile: { backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 14, paddingTop: 11, paddingBottom: 12, borderWidth: 0.5, borderColor: colors.border, marginBottom: 8 },
+  tileKRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 5 },
   tileDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent },
   tileK: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.textSubtle },
-  heroTitle: { fontSize: 17, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.2, marginBottom: 8 },
-  heroBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19, marginBottom: 14 },
-  heroActions: { flexDirection: 'row', gap: 8 },
+  heroTitle: { fontSize: 15.5, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.2, marginBottom: 5 },
+  heroBody: { fontSize: 12.5, color: colors.textMuted, lineHeight: 17, marginBottom: 10 },
+  heroActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  heroDismissLink: { fontSize: 12.5, fontWeight: '600', color: colors.textSubtle, paddingVertical: 2 },
   heroBtnPrimary: { backgroundColor: colors.surfaceInverse, borderRadius: 11, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center' },
   heroBtnPrimaryText: { fontSize: 12.5, fontWeight: '700', color: colors.textOnLight },
   heroBtnGhost: { borderWidth: 0.5, borderColor: colors.borderStrong, borderRadius: 11, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center' },
   heroBtnGhostText: { fontSize: 12.5, fontWeight: '600', color: colors.textPrimary },
-  bentoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginBottom: 9 },
-  tile: { backgroundColor: colors.surface, borderRadius: 16, padding: 14, borderWidth: 0.5, borderColor: colors.border, flexGrow: 1, flexBasis: '47%', minWidth: 0 },
-  tileV: { fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginTop: 6, letterSpacing: -0.2 },
+  bentoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+  signalRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  signalChip: {
+    flexDirection: 'row', alignItems: 'baseline', gap: 6,
+    backgroundColor: colors.surface, borderRadius: 20,
+    paddingVertical: 6, paddingHorizontal: 11,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  signalK: { fontSize: 10, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', color: colors.textSubtle },
+  signalV: { fontSize: 12.5, fontWeight: '700', color: colors.textPrimary },
+  tile: { backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 0.5, borderColor: colors.border, flexGrow: 1, flexBasis: '47%', minWidth: 0 },
+  tileV: { fontSize: 14.5, fontWeight: '700', color: colors.textPrimary, marginTop: 3, letterSpacing: -0.2 },
 
   card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
   cardTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
