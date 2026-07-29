@@ -1901,11 +1901,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           above now leads — it is derived from this lifter's own data and costs no
           AI message — and the input follows as the way to act on it. */}
       <View style={styles.card} onLayout={(e) => { askCardY.current = e.nativeEvent.layout.y; }}>
-        <View style={styles.askHeader}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.ask')}</Text>
-          </View>
-        </View>
+
 
         {/* ── Latest answer ──────────────────────────────────────────────────
             conversationHistory is still kept in full in state and sent to the
@@ -2086,23 +2082,23 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
             redundancy, not the color. */}
         {!isMidWorkout && (
           <View style={styles.quickSection}>
-            <Text style={styles.quickSectionTitle}>{t('coach.quickQuestions')}</Text>
-            {[
-              t('coach.quick.neglecting'),
-              t('coach.quick.frequency'),
-              t('coach.quick.prioritise'),
-              t('coach.quick.recovering'),
-            ].map((q, i) => (
-              <Tappable
-                key={i}
-                style={[styles.quickRow, i > 0 && styles.quickRowBorder, (quotaExceeded || asking) && styles.quickChipDisabled]}
-                disabled={quotaExceeded || asking}
-                onPress={() => askQuestion(q)}
-              >
-                <Text style={styles.quickRowText}>{q}</Text>
-                <Text style={styles.quickRowArrow}>→</Text>
-              </Tappable>
-            ))}
+            <View style={styles.quickChips}>
+              {[
+                t('coach.quick.neglecting'),
+                t('coach.quick.frequency'),
+                t('coach.quick.prioritise'),
+                t('coach.quick.recovering'),
+              ].map((q, i) => (
+                <Tappable
+                  key={i}
+                  style={[styles.quickChip2, (quotaExceeded || asking) && styles.quickChipDisabled]}
+                  disabled={quotaExceeded || asking}
+                  onPress={() => askQuestion(q)}
+                >
+                  <Text style={styles.quickChip2Text}>{q}</Text>
+                </Tappable>
+              ))}
+            </View>
           </View>
         )}
       </View>
@@ -2113,7 +2109,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           as everywhere else accent shows up on this screen — marks this as the
           week's real payoff moment, distinct from the plain utility cards below. */}
       {!isMidWorkout && (
-        <View style={[styles.card, styles.weeklyReviewCard]}>
+        <View style={[styles.card, styles.cardBoxed, styles.weeklyReviewCard]}>
           <View style={styles.weeklyHeader}>
             <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
             {/* Dismissable — it otherwise re-renders on every Coach open all week. */}
@@ -2147,7 +2143,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
 
       {/* Coach memory — durable facts the user can review and forget */}
       {!isMidWorkout && coachNotes.length > 0 && (
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardBoxed]}>
         <Text style={styles.cardTitle}>{t('coach.memoryTitle')}</Text>
         <Text style={styles.cardSub}>{t('coach.memorySub')}</Text>
         {coachNotes.map((f, i) => (
@@ -2211,13 +2207,13 @@ const styles = StyleSheet.create({
 
   // ── Bento reads: a priority-read hero tile + a 2-up grid of signal tiles ──
   bentoWrap: { marginHorizontal: 20, marginBottom: 2 },
-  heroTile: { backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 14, paddingTop: 11, paddingBottom: 12, borderWidth: 0.5, borderColor: colors.border, marginBottom: 8 },
+  heroTile: { paddingHorizontal: 0, paddingTop: 2, paddingBottom: 16, marginBottom: 0 },
   tileKRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 5 },
   tileDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent },
   tileK: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', color: colors.textSubtle },
-  heroTitle: { fontSize: 15.5, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.2, marginBottom: 5 },
-  heroBody: { fontSize: 12.5, color: colors.textMuted, lineHeight: 17, marginBottom: 10 },
-  heroActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  heroTitle: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5, lineHeight: 27, marginBottom: 7 },
+  heroBody: { fontSize: 13.5, color: colors.textMuted, lineHeight: 20, marginBottom: 10 },
+  heroActions: { flexDirection: 'row', gap: 12, alignItems: 'center', marginTop: 2 },
   heroDismissLink: { fontSize: 12.5, fontWeight: '600', color: colors.textSubtle, paddingVertical: 2 },
   heroBtnPrimary: { backgroundColor: colors.surfaceInverse, borderRadius: 11, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center' },
   heroBtnPrimaryText: { fontSize: 12.5, fontWeight: '700', color: colors.textOnLight },
@@ -2236,14 +2232,20 @@ const styles = StyleSheet.create({
   tile: { backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 0.5, borderColor: colors.border, flexGrow: 1, flexBasis: '47%', minWidth: 0 },
   tileV: { fontSize: 14.5, fontWeight: '700', color: colors.textPrimary, marginTop: 3, letterSpacing: -0.2 },
 
-  card: { marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border, marginBottom: 14 },
+  card: { marginHorizontal: 20, marginBottom: 18 },
+  cardBoxed: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, borderWidth: 0.5, borderColor: colors.border },
   cardTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
   cardSub: { fontSize: 11, color: colors.textSubtle, marginBottom: 14, lineHeight: 16 },
   askHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
   insightBox: { backgroundColor: colors.surfaceInset, borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 0.5, borderColor: colors.border },
   insightText: { fontSize: 13, color: colors.textPrimary, lineHeight: 21 },
 
-  askInputRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surfaceInset, borderRadius: 16, borderWidth: 0.5, borderColor: colors.border, paddingLeft: 16, paddingRight: 8, paddingVertical: 8, marginBottom: 14 },
+  askInputRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: colors.surfaceElevated, borderRadius: 18,
+    borderWidth: 1, borderColor: colors.borderStrong,
+    paddingLeft: 18, paddingRight: 8, paddingVertical: 11, marginBottom: 12,
+  },
   questionInput: { flex: 1, color: colors.textPrimary, fontSize: 15, maxHeight: 100, paddingVertical: 8 },
   weeklyReviewCard: { borderColor: colors.accentHair, backgroundColor: colors.surfaceElevated },
   weeklyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -2312,8 +2314,15 @@ const styles = StyleSheet.create({
   memoryForgetText: { color: colors.danger, fontSize: 12, fontWeight: '600' },
 
   quickChipDisabled: { opacity: 0.4 },
-  quickSection: { marginTop: 16, paddingTop: 14, borderTopWidth: 0.5, borderTopColor: colors.border },
+  quickSection: { marginTop: 2 },
   quickSectionTitle: { fontSize: 11, fontWeight: '600', color: colors.textSubtle, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 },
+  quickChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  quickChip2: {
+    backgroundColor: colors.surfaceInset, borderRadius: 20,
+    paddingVertical: 8, paddingHorizontal: 13,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  quickChip2Text: { fontSize: 12.5, color: colors.textSecondary, fontWeight: '500' },
   quickRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
   quickRowBorder: { borderTopWidth: 0.5, borderTopColor: colors.border },
   quickRowText: { flex: 1, fontSize: 13, color: colors.textSecondary },
