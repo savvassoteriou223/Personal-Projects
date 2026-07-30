@@ -505,7 +505,12 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             const sessionDate = sessionDateMap[sessionId];
             if (!sessionDate) return;
             Object.entries(muscles).forEach(([muscle, entry]) => {
-              if (entry.exercises.size < 2 && entry.count < 5) return;
+              // Two sets of direct work is training a muscle. This used to
+              // demand two different exercises OR five sets, so three hard sets
+              // of calves left the map showing them fresh. The gate exists to
+              // stop incidental work registering, but attribution is already
+              // primary-mover only, so it was filtering real training.
+              if (entry.count < 2) return;
               if (!lastTrainedPerMuscle[muscle] || sessionDate > lastTrainedPerMuscle[muscle]) {
                 lastTrainedPerMuscle[muscle] = sessionDate;
               }
@@ -540,7 +545,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
           });
           setWeeklyVolume(volume);
           // Raw sets feed the head-level engine (direct + indirect per muscle head).
-          setWeekVolumeSets(weekSets.map(s => ({ exercise_name: s.exercise_name })));
+          setWeekVolumeSets(weekSets.map(s => ({ exercise_name: s.exercise_name, pattern_key: s.pattern_key })));
 
           // ── Plateau and deload detection ─────────────────────────────────
           // Pull last 30 days of sets for plateau analysis

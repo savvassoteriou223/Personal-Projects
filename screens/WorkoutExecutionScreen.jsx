@@ -28,9 +28,12 @@ const SCREEN_W = Dimensions.get('window').width;  // fallback; overridden by onL
 // ─── Find exercise by name across all patterns ────────────────────────────────
 function findExerciseByName(name) {
   const normalised = name.toLowerCase().trim();
-  for (const pattern of Object.values(MOVEMENT_PATTERNS)) {
+  // patternKey, not just the pattern object: every swap has to write the new
+  // exercise's key onto the slot, or the set is saved under the movement it
+  // replaced and attributes to the wrong muscle everywhere downstream.
+  for (const [patternKey, pattern] of Object.entries(MOVEMENT_PATTERNS)) {
     const found = pattern.exercises.find(e => e.name.toLowerCase() === normalised);
-    if (found) return { exercise: found, pattern };
+    if (found) return { exercise: found, pattern, patternKey };
   }
   return null;
 }
@@ -218,10 +221,11 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
           if (savedName && savedName !== ex.name) {
             const result = findExerciseByName(savedName);
             if (result) {
-              const { exercise: newEx, pattern } = result;
+              const { exercise: newEx, pattern, patternKey } = result;
               base = {
                 ...ex,
                 name: newEx.name,
+                pattern: patternKey,
                 primaryMuscles: pattern?.muscles ?? [],
                 secondaryMuscles: [],
                 target_sets: newEx.sets ?? ex.target_sets,
@@ -395,7 +399,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
   const doSwap = (exIdx, altName, subIdx) => {
     const result = findExerciseByName(altName);
     if (!result) return;
-    const { exercise: newEx, pattern } = result;
+    const { exercise: newEx, pattern, patternKey } = result;
 
     setSets(prev => prev.map((ex, i) => {
       if (i !== exIdx) return ex;
@@ -411,6 +415,9 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
       return {
         ...ex,
         name: newEx.name,
+        // The slot now IS the new movement. Without this the old pattern rides
+        // along into completed_sets and the work counts toward the wrong muscle.
+        pattern: patternKey,
         primaryMuscles: pattern.muscles ?? [],
         secondaryMuscles: [],
         target_sets: keepSets,

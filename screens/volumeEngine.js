@@ -55,7 +55,7 @@ export function muscleToHead(raw) {
   return null;
 }
 
-// sets: [{ exercise_name }] — one entry per completed working set.
+// sets: [{ exercise_name, pattern_key }] — one entry per completed working set.
 // Returns { head: { direct, indirect } } with fractional set credit.
 export function computeHeadVolume(sets = []) {
   const vol = {};
@@ -65,7 +65,13 @@ export function computeHeadVolume(sets = []) {
     vol[head][key] += amt;
   };
   sets.forEach(s => {
-    const muscles = EXERCISE_MUSCLES[s.exercise_name?.toLowerCase()] || [];
+    // pattern_key first. It is the durable link to MOVEMENT_PATTERNS: it
+    // survives coach swaps, mid-workout replacements and display-name changes.
+    // Matching on the name alone meant any set whose stored name was not an
+    // exact library key registered under NO muscle and vanished from the chart
+    // without a trace — the user logged five sets of calves and saw four.
+    const byPattern = s.pattern_key ? MOVEMENT_PATTERNS[s.pattern_key]?.muscles : null;
+    const muscles = byPattern || EXERCISE_MUSCLES[s.exercise_name?.toLowerCase()] || [];
     if (!muscles.length) return;
     add(muscleToHead(muscles[0]), 'direct', 1);
     muscles.slice(1).forEach(m => add(muscleToHead(m), 'indirect', SECONDARY_WEIGHT));
