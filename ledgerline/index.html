@@ -456,6 +456,57 @@ footer{
   </div>
 </section>
 
+<!-- ══════════ REBALANCE ══════════ -->
+<section class="view" data-view="rebalance" role="tabpanel">
+  <div class="grid">
+    <div class="c12"><div class="note">
+      <strong>Drift is not a reason to trade on its own.</strong> Selling to correct an overweight realises gains and
+      costs spread, so the policy here is a tolerance band: nothing is actioned until a class sits more than five
+      percentage points from its target. Where drift can be corrected with new contributions instead of sales, that
+      route is costed separately below, because it fixes the weights without a taxable event.
+    </div></div>
+
+    <div class="c12"><div class="tiles" id="rebTiles"></div></div>
+
+    <div class="c7"><div class="card">
+      <div class="card-h">
+        <div><div class="card-t">Drift from target</div>
+          <div class="card-s">Actual weight minus policy target, in percentage points. The shaded band is the
+            ±5pp tolerance; only bars crossing it need action.</div></div>
+        <button class="ghost" data-table="drift" aria-pressed="false">Table</button>
+      </div>
+      <div class="chart" id="drift"></div>
+      <div id="driftTable" hidden></div>
+      <div class="legend" id="driftLegend"></div>
+    </div></div>
+
+    <div class="c5"><div class="card">
+      <div class="card-h"><div><div class="card-t">Two ways to correct it</div>
+        <div class="card-s">Same end weights, very different consequences.</div></div></div>
+      <div id="twoRoutes"></div>
+    </div></div>
+
+    <div class="c12"><div class="card">
+      <div class="card-h"><div><div class="card-t">Policy vs actual</div>
+        <div class="card-s">The trade column is what a full rebalance to target would require.</div></div></div>
+      <div class="tw"><table id="rebTbl">
+        <thead><tr><th class="l">Asset class</th><th>Target</th><th>Actual</th><th>Drift</th>
+          <th>Value</th><th>Trade to target</th><th class="l">Status</th></tr></thead>
+        <tbody></tbody><tfoot></tfoot></table></div>
+    </div></div>
+
+    <div class="c12"><div class="card">
+      <div class="card-h"><div><div class="card-t" id="breachTitle">Largest breach</div>
+        <div class="card-s">Which positions drive it, largest first, so the trade list is actionable rather than
+          just a class-level number.</div></div></div>
+      <div class="tw"><table id="breachTbl">
+        <thead><tr><th class="l">Position</th><th>Value</th><th>Share of class</th>
+          <th>Weight of book</th><th>Day</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div></div>
+  </div>
+</section>
+
 <!-- ══════════ PIPELINE ══════════ -->
 <section class="view" data-view="pipeline" role="tabpanel">
   <div class="grid">
@@ -948,7 +999,13 @@ function colChart(node, items, opts={}){
       fill="${up?CSS('--s1'):CSS('--r400')}" data-i="${i}" style="cursor:pointer"/>
       <text class="axl" x="${(x+bw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${esc(d.k)}</text>`;
   }).join('');
+  // Optional tolerance band: a shaded region either side of the baseline, drawn behind
+  // the bars so a bar crossing out of it reads as "action required" without a label.
+  const bandH = opts.band ? opts.band/maxA*half : 0;
+  const band = opts.band ? `<rect x="0" y="${(zero-bandH).toFixed(1)}" width="${W}"
+      height="${(bandH*2).toFixed(1)}" fill="${CSS('--ink-muted')}" fill-opacity=".10"/>` : '';
   node.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.aria||'')}">
+    ${band}
     <line x1="0" x2="${W}" y1="${zero}" y2="${zero}" stroke="${CSS('--axis')}" stroke-width="1"/>${cols}</svg>`;
   $$('path[data-i]', node).forEach(p=>{
     const d = items[+p.dataset.i];
@@ -1346,6 +1403,111 @@ function renderFactors(){
     .map(h=>`<span class="pill"><i class="key sq" style="background:${CSS(CLASS_C[h.cls])}"></i>${h.ticker} · ${esc(h.name)}</span>`).join('');
 }
 
+/* ── Rebalance ───────────────────────────────────────────
+   A policy target plus a tolerance band. Everything here is derived from the live
+   weights: drift, the trade list, the turnover a full rebalance would cost, and the
+   contribution that would fix the weights without selling anything. */
+const TARGETS = { Stock:0.55, ETF:0.30, Crypto:0.05, Cash:0.10 };
+const BAND = 0.05;   // ±5 percentage points before a class is actioned
+
+function rebalanceModel(){
+  const rows = CLASSES.map(c => {
+    const value  = HOLDINGS.filter(h=>h.cls===c).reduce((a,h)=>a+h.value,0);
+    const actual = value/TOTAL, target = TARGETS[c] ?? 0;
+    const drift  = actual - target;
+    return { c, value, actual, target, drift,
+             trade: (target-actual)*TOTAL, out: Math.abs(drift) > BAND };
+  });
+  // Turnover for a full rebalance: buys and sells net to zero, so halve the gross.
+  const turnover = rows.reduce((a,r)=>a+Math.abs(r.trade),0)/2/TOTAL;
+  // Contribution-only route: add new cash X, spend it on the underweights only, and
+  // never sell. An overweight class falls to its target purely by dilution once
+  // TOTAL+X >= value/target, so the binding constraint is the worst overweight.
+  const need = Math.max(0, ...rows.map(r => r.target>0 ? r.value/r.target - TOTAL : 0));
+  return { rows, turnover, need };
+}
+
+function renderRebalance(){
+  const { rows, turnover, need } = rebalanceModel();
+  const absDrift = rows.reduce((a,r)=>a+Math.abs(r.drift),0);
+  const outCount = rows.filter(r=>r.out).length;
+
+  $('#rebTiles').innerHTML = [
+    ['Total drift', (absDrift*100).toFixed(1)+'pp', 'sum of absolute deviations', null],
+    ['Classes out of band', String(outCount), `of ${rows.length} · ±${(BAND*100).toFixed(0)}pp tolerance`,
+      outCount===0 ? true : false],
+    ['Turnover to rebalance', pc0(turnover), 'of book value, if corrected by trading', null],
+    ['Contribution instead', money(need), 'new cash that fixes it with no sales', null],
+  ].map(([l,v,d,good])=>`<div class="tile"><div class="tile-l">${l}</div>
+    <div class="tile-v ${good===null?'':good?'up':'dn'}">${v}</div>
+    <div class="tile-d">${d}</div></div>`).join('');
+
+  colChart($('#drift'), rows.map(r=>({ k:r.c, v:r.drift*100, lab:(r.drift>=0?'+':'−')+Math.abs(r.drift*100).toFixed(1)+'pp' })),
+    { h:200, band:BAND*100, vLabel:'Drift', aria:'Drift from target weight by asset class' });
+  $('#driftLegend').innerHTML =
+    `<span><i class="key sq" style="background:${CSS('--s1')}"></i>Overweight</span>
+     <span><i class="key sq" style="background:${CSS('--r400')}"></i>Underweight</span>
+     <span><i class="key sq" style="background:${CSS('--ink-muted')};opacity:.35"></i>Within tolerance</span>`;
+  $('#driftTable').innerHTML = `<div class="tw"><table><thead><tr><th class="l">Asset class</th>
+    <th>Target</th><th>Actual</th><th>Drift</th><th class="l">Status</th></tr></thead><tbody>` +
+    rows.map(r=>`<tr><td class="l">${r.c}</td><td class="num">${pc0(r.target)}</td>
+      <td class="num">${pc0(r.actual)}</td>
+      <td class="num ${r.drift>=0?'up':'dn'}">${(r.drift>=0?'+':'−')+Math.abs(r.drift*100).toFixed(1)}pp</td>
+      <td class="l"><span class="pill ${r.out?'c':'g'}">${r.out?'out of band':'in band'}</span></td></tr>`).join('') +
+    `</tbody></table></div>`;
+
+  $('#twoRoutes').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div><div class="tile-l">Rebalance by trading</div>
+        <div class="tile-v">${pc0(turnover)}</div>
+        <div class="tile-d">turnover · realises gains on every overweight sold</div></div>
+      <div><div class="tile-l">Rebalance by contributing</div>
+        <div class="tile-v">${money(need)}</div>
+        <div class="tile-d">new cash into underweights · no sales, no tax event</div></div>
+      <div style="border-top:1px solid var(--grid);padding-top:12px">
+        <div class="tile-l">Which to use</div>
+        <div class="tile-d" style="font-size:12.5px;line-height:1.5">
+          ${outCount===0
+            ? 'Every class is inside the band, so the answer is neither. Leave it alone.'
+            : need > TOTAL*0.25
+              ? `Contributing is the cheaper route in principle, but ${money(need)} is
+                 ${(need/TOTAL*100).toFixed(0)}% of the book. Diluting an overweight this large is not realistic,
+                 so selling is the only practical way back inside the band.`
+              : `${money(need)} of new money reaches the same weights as ${pc0(turnover)} turnover, and
+                 realises nothing. At that size the contribution is the cheaper route.`}
+        </div></div>
+    </div>`;
+
+  const tb = $('#rebTbl tbody');
+  tb.innerHTML = rows.map(r=>`<tr>
+    <td class="l"><span class="pill"><i class="key sq" style="background:${CSS(CLASS_C[r.c])}"></i>${r.c}</span></td>
+    <td class="num">${pc0(r.target)}</td><td class="num">${pc0(r.actual)}</td>
+    <td class="num ${r.drift>=0?'up':'dn'}">${(r.drift>=0?'+':'−')+Math.abs(r.drift*100).toFixed(1)}pp</td>
+    <td class="num">${money(r.value)}</td>
+    <td class="num ${r.trade>=0?'up':'dn'}">${Math.abs(r.trade)<1?'—':(r.trade>=0?'buy ':'sell ')+money(Math.abs(r.trade))}</td>
+    <td class="l"><span class="pill ${r.out?'c':'g'}">${r.out?'out of band':'in band'}</span></td></tr>`).join('');
+  $('#rebTbl tfoot').innerHTML = `<tr><td class="l">Total</td>
+    <td class="num">${pc0(rows.reduce((a,r)=>a+r.target,0))}</td>
+    <td class="num">${pc0(rows.reduce((a,r)=>a+r.actual,0))}</td>
+    <td class="num">${(absDrift*100).toFixed(1)}pp</td>
+    <td class="num">${money(TOTAL)}</td>
+    <td class="num">${pc0(turnover)} turnover</td><td></td></tr>`;
+
+  // Drill into whichever class is furthest from target, so the class-level number
+  // turns into an actual list of positions to trade.
+  const worst = rows.slice().sort((a,b)=>Math.abs(b.drift)-Math.abs(a.drift))[0];
+  $('#breachTitle').textContent =
+    `${worst.out ? 'Largest breach' : 'Largest deviation'} · ${worst.c} ` +
+    `${worst.drift>=0?'overweight':'underweight'} by ${Math.abs(worst.drift*100).toFixed(1)}pp`;
+  const pos = HOLDINGS.filter(h=>h.cls===worst.c).sort((a,b)=>b.value-a.value);
+  $('#breachTbl tbody').innerHTML = pos.map(h=>`<tr>
+    <td class="l"><div style="font-weight:600">${h.ticker}</div><div class="tick">${esc(h.name)}</div></td>
+    <td class="num">${money(h.value)}</td>
+    <td class="num">${pc0(h.value/worst.value)}</td>
+    <td class="num">${pc0(h.w)}</td>
+    <td class="num ${h.dayPL>=0?'up':'dn'}">${h.dayPL?moneySigned(h.dayPL):'—'}</td></tr>`).join('');
+}
+
 function renderPipeline(){
   const STAGES = [
     ['Market data API','Quotes and daily bars pulled per symbol, batched to stay inside the rate limit.'],
@@ -1391,6 +1553,7 @@ const VIEWS = [
   ['performance','Performance',renderPerformance],
   ['risk','Risk',renderRisk],
   ['factors','Factors',renderFactors],
+  ['rebalance','Rebalance',renderRebalance],
   ['pipeline','Pipeline',renderPipeline],
 ];
 let view = 'overview';

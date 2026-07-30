@@ -48,13 +48,16 @@ plausible when the logic is broken:
   share price is flat. Each position's day P&L splits into an asset leg and an FX leg that sum to the total.
 - **Blending ranks, not raw values.** A factor composite that averages a P/E with a gross margin is meaningless. Every
   metric is converted to a percentile rank within the universe first, then blended.
+- **Drift is not automatically a reason to trade.** Rebalancing on every deviation realises gains and pays spread, so
+  the policy is a tolerance band. The Rebalance tab also prices the alternative: the contribution that reaches the same
+  weights with no sales, and it says plainly when that number is too large to be realistic.
 - **One source of truth.** Each holding has a single generated price history; its sparkline, its 12-1 momentum and its
   realised volatility are all derived from that one array, so they cannot disagree. The same applies at the portfolio
   level: the equity curve, the monthly heatmap and the drawdown chart are three views of one series.
 
 ## What's in it
 
-Six tabs:
+Seven tabs:
 
 - **Overview** — portfolio value, six stat tiles, growth-of-100 against a 60/40 benchmark, allocation, currency
   exposure, movers
@@ -65,6 +68,8 @@ Six tabs:
 - **Risk** — concentration and Herfindahl, a measured correlation matrix, variance contribution by position, five
   scenarios
 - **Factors** — five-factor percentile model, value-vs-quality scatter, ranked table with tercile signals
+- **Rebalance** — drift from policy targets against a tolerance band, the trade list to correct it, and the
+  contribution that would fix the weights without selling anything
 - **Pipeline** — target architecture, job cadence, data-quality gates
 
 Interactions: date-range filter that genuinely re-slices and recomputes every statistic, base-currency switch
