@@ -799,8 +799,36 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       return block ? `  ${pat.label} [caution — condition on file]: ${exs.join(', ')}` : `  ${pat.label}: ${exs.join(', ')}`;
     }).filter(Boolean).join('\n');
 
-    const healthLines = healthLogs?.length
+    // Physiologically possible ranges. A live probe of the coach produced the
+    // reply "your sleep data has logging errors (91h and 16h entries aren't
+    // usable)" — the model was being handed a 91-hour night and spending its
+    // answer explaining that the app's own data was broken. Nothing outside
+    // these bounds is a measurement; it is a sync artefact or a bad write, and
+    // it should never reach the model at all.
+    const SANE = {
+      sleep_hours: [2, 14],
+      hrv_ms: [10, 200],
+      resting_hr: [30, 120],
+      steps: [0, 100000],
+    };
+    const sane = (field, v) => {
+      const r = SANE[field];
+      return typeof v === 'number' && Number.isFinite(v) && v >= r[0] && v <= r[1] ? v : null;
+    };
+    const cleanLogs = (healthLogs || [])
+      .map(l => ({
+        date: l.date,
+        sleep_hours: sane('sleep_hours', l.sleep_hours),
+        hrv_ms: sane('hrv_ms', l.hrv_ms),
+        resting_hr: sane('resting_hr', l.resting_hr),
+        steps: sane('steps', l.steps),
+      }))
+      // A row whose every value was rejected carries nothing but a date.
+      .filter(l => l.sleep_hours || l.hrv_ms || l.resting_hr || l.steps);
+
+    const healthLines = cleanLogs.length
       ? (() => {
+          const healthLogs = cleanLogs;
           const logsWithHrv = healthLogs.filter(l => l.hrv_ms);
           // Exclude the latest day's log explicitly — slice(1) dropped the wrong
           // row whenever the latest log had no HRV value.
