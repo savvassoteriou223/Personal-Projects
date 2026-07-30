@@ -65,6 +65,21 @@ export function computeHeadVolume(sets = []) {
     vol[head][key] += amt;
   };
   sets.forEach(s => {
+    // Warm-ups are not working volume. The workout screen lets a lifter tag a
+    // set warmup / drop / failure and saves it, but this engine ignored the tag
+    // and counted all four the same — so two warm-ups before a working set
+    // reported three sets of chest, and every volume target was measured against
+    // an inflated number. Drop sets and sets taken to failure ARE working sets
+    // and still count; only the warm-up is excluded.
+    if (s.set_type === 'warmup') return;
+
+    // A set marked done with nothing entered is not a performed set. Weight
+    // alone may legitimately be absent — that is every bodyweight exercise — so
+    // the test is that BOTH are missing.
+    const noReps = s.reps === null || s.reps === undefined || s.reps === 0;
+    const noWeight = s.weight_kg === null || s.weight_kg === undefined;
+    if (noReps && noWeight) return;
+
     // pattern_key first. It is the durable link to MOVEMENT_PATTERNS: it
     // survives coach swaps, mid-workout replacements and display-name changes.
     // Matching on the name alone meant any set whose stored name was not an

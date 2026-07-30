@@ -42,7 +42,12 @@ export function auditProgram(profile) {
       slot[ex.pattern] = (slot[ex.pattern] || 0) + 1;
       byName[ex.name] = (byName[ex.name] || 0) + 1;
       patternsToday.add(ex.pattern);
-      for (let i = 0; i < ex.sets; i++) weekSets.push({ exercise_name: ex.name });
+      // Shaped like a real saved row: the volume engine now discards warm-ups
+      // and sets logged with neither reps nor weight, so a bare { exercise_name }
+      // is no longer a set as far as it is concerned.
+      for (let i = 0; i < ex.sets; i++) {
+        weekSets.push({ exercise_name: ex.name, pattern_key: ex.pattern, reps: 10, weight_kg: 50, set_type: 'working' });
+      }
     }
     // Redundancy means the same JOB twice, not the same pattern twice. A squat
     // plus a leg press, or a walking lunge plus a hip abduction, are two
