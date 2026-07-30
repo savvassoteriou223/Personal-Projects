@@ -130,7 +130,7 @@ const SPLITS = {
 
 'Upper / Lower 4x': { days:f=>[
   ['Upper A',[['benchFlat',4],['rowH',4],['ohp',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4],['bicepsLong',4]]],
-  ['Lower A',[['squat',4],['hinge',4],['lunge',4],['quadIso',4],['calves',5],['core',4]]],
+  ['Lower A',[['squat',4],['hinge',4],['lunge',4],['quadIso',4],['calves',4],['calvesSeat',3],['core',4]]],
   ['Upper B',[['benchInc',4],['benchDec',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['tricepsLat',4],['bicepsShort',4]]],
   ['Lower B',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['hamIso',4],['calvesSeat',5],['core',4]]]]},
 
@@ -149,7 +149,7 @@ const SPLITS = {
 'PPL / Upper / Lower 5x': { days:f=>[
   ['Push',[['benchFlat',4],['benchInc',4],['ohp',3],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
   ['Pull',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',4]]],
-  ['Legs',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',5],['core',4]]],
+  ['Legs',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',4],['calvesSeat',3],['core',4]]],
   ['Upper',[['benchDec',4],['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['bicepsShort',4]]],
   ['Lower',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',2]]]]},
 
@@ -163,7 +163,7 @@ const SPLITS = {
 'Push / Pull / Legs 6x': { days:f=>[
   ['Push A',[['benchFlat',4],['ohp',3],['chestIso',4],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
   ['Pull A',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',3]]],
-  ['Legs A',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',5]]],
+  ['Legs A',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',4],['calvesSeat',3]]],
   ['Push B',[['benchInc',4],['benchDec',4],['ohp',3],['sideDelt',5],['tricepsLat',4],['core',3]]],
   ['Pull B',[['rowInner',4],['latIso',3],['rearDelt',4],['bicepsShort',4],['core',3]]],
   ['Legs B',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',3]]]]},
