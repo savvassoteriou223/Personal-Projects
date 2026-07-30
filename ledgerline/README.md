@@ -51,16 +51,22 @@ plausible when the logic is broken:
 - **Drift is not automatically a reason to trade.** Rebalancing on every deviation realises gains and pays spread, so
   the policy is a tolerance band. The Rebalance tab also prices the alternative: the contribution that reaches the same
   weights with no sales, and it says plainly when that number is too large to be realistic.
+- **A finding is only useful if it is actionable.** The Decisions board deliberately does not raise a position that
+  has fallen from its high but is still profitable: it is not a harvest candidate, and a board full of items reading
+  "no action" teaches people to stop reading it.
 - **One source of truth.** Each holding has a single generated price history; its sparkline, its 12-1 momentum and its
   realised volatility are all derived from that one array, so they cannot disagree. The same applies at the portfolio
   level: the equity curve, the monthly heatmap and the drawdown chart are three views of one series.
 
 ## What's in it
 
-Seven tabs:
+Nine tabs:
 
 - **Overview** — portfolio value, six stat tiles, growth-of-100 against a 60/40 benchmark, allocation, currency
   exposure, movers
+- **Decisions** — a rule engine over the current book: policy drift, position and currency concentration, factor rank
+  on something already owned, and loss-harvest candidates. Items are raised only when a threshold breaches, and the
+  table of every rule that ran is shown alongside, so a quiet board is visibly quiet rather than possibly broken
 - **Holdings** — 20 positions across stocks, ETFs, crypto and cash; every column sortable; asset/FX day attribution;
   30-day sparklines; totals that tie out
 - **Performance** — TWRR against IRR, the quarterly flow ledger, a monthly return heatmap, drawdown, benchmark
@@ -68,6 +74,9 @@ Seven tabs:
 - **Risk** — concentration and Herfindahl, a measured correlation matrix, variance contribution by position, five
   scenarios
 - **Factors** — five-factor percentile model, value-vs-quality scatter, ranked table with tercile signals
+- **Watchlist** — candidates not held, scored inside the same universe as the holdings so a composite is directly
+  comparable, plus a pre-set entry price. A name has to clear both the quality screen and the price test to reach the
+  buy zone
 - **Rebalance** — drift from policy targets against a tolerance band, the trade list to correct it, and the
   contribution that would fix the weights without selling anything
 - **Pipeline** — target architecture, job cadence, data-quality gates

@@ -456,6 +456,78 @@ footer{
   </div>
 </section>
 
+<!-- ══════════ DECISIONS ══════════ -->
+<section class="view" data-view="decisions" role="tabpanel">
+  <div class="grid">
+    <div class="c12"><div class="note">
+      <strong>Everything here is a rule, not an opinion.</strong> Each item below is raised by a threshold applied to
+      the current book: policy drift, position and currency concentration, factor rank on something already owned,
+      and drawdown deep enough to be worth harvesting. Nothing appears unless it breaches, and each item carries the
+      number that triggered it so the reasoning is checkable rather than trusted.
+    </div></div>
+
+    <div class="c12"><div class="tiles" id="decTiles"></div></div>
+
+    <div class="c12"><div class="card">
+      <div class="card-h"><div><div class="card-t">Needs attention</div>
+        <div class="card-s">Ordered by severity. Severity is carried by a labelled pill and a leading stripe, never
+          by colour alone.</div></div></div>
+      <div id="decList"></div>
+    </div></div>
+
+    <div class="c12"><div class="card">
+      <div class="card-h"><div><div class="card-t">Rules checked</div>
+        <div class="card-s">Every rule that ran, including the ones that passed, so a quiet board is visibly quiet
+          rather than possibly broken.</div></div></div>
+      <div class="tw"><table id="ruleTbl">
+        <thead><tr><th class="l">Rule</th><th class="l">Threshold</th><th>Measured</th><th class="l">Result</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ══════════ WATCHLIST ══════════ -->
+<section class="view" data-view="watchlist" role="tabpanel">
+  <div class="grid">
+    <div class="c12"><div class="note">
+      <strong>Candidates are scored against what you already own.</strong> Watchlist names are ranked inside the same
+      universe as the holdings, so a composite here is directly comparable to a composite on the Factors tab. A
+      candidate only earns attention if it scores above the median of the current book: adding something worse than
+      the average of what you hold makes the portfolio worse, however good the story is.
+    </div></div>
+
+    <div class="c12"><div class="tiles" id="watchTiles"></div></div>
+
+    <div class="c7"><div class="card">
+      <div class="card-h">
+        <div><div class="card-t">Composite versus the book</div>
+          <div class="card-s">Each candidate's composite score minus the median composite of the equities already
+            held. Above the line is an improvement on the current average.</div></div>
+        <button class="ghost" data-table="edge" aria-pressed="false">Table</button>
+      </div>
+      <div class="chart" id="edge"></div>
+      <div id="edgeTable" hidden></div>
+      <div class="legend" id="edgeLegend"></div>
+    </div></div>
+
+    <div class="c5"><div class="card">
+      <div class="card-h"><div><div class="card-t">Entry discipline</div>
+        <div class="card-s">A good name at the wrong price is not a buy.</div></div></div>
+      <div id="entryNote"></div>
+    </div></div>
+
+    <div class="c12"><div class="card">
+      <div class="card-h"><div><div class="card-t">Watchlist</div>
+        <div class="card-s">Not held. Target entry is a price discipline set in advance, so the decision is made
+          before the price moves rather than during.</div></div></div>
+      <div class="tw"><table id="watchTbl">
+        <thead><tr><th class="l">Ticker</th><th class="l">Sector</th><th>Price</th><th>Target entry</th>
+          <th>To entry</th><th>Composite</th><th>vs book</th><th>F-score</th><th class="l">Verdict</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div></div>
+  </div>
+</section>
+
 <!-- ══════════ REBALANCE ══════════ -->
 <section class="view" data-view="rebalance" role="tabpanel">
   <div class="grid">
@@ -1403,6 +1475,226 @@ function renderFactors(){
     .map(h=>`<span class="pill"><i class="key sq" style="background:${CSS(CLASS_C[h.cls])}"></i>${h.ticker} · ${esc(h.name)}</span>`).join('');
 }
 
+/* ── Decisions ───────────────────────────────────────────
+   A rule engine over the current book. Each rule returns a threshold, the measured
+   value, and whether it breached — so the board can show what passed as well as what
+   failed. A board that only ever renders failures is indistinguishable from a broken one. */
+const LIMITS = {
+  posWeight:  0.08,   // no single position above 8% of the book
+  top10:      0.70,   // top ten holdings no more than 70% combined
+  fxWeight:   0.30,   // unhedged non-base currency exposure
+  drawdown:  -0.15,   // position this far below its own high is a harvest candidate
+  factorTrim: 0.02,   // only flag a weak factor rank if the position is this big
+};
+function decisionRules(){
+  const { rows, turnover } = rebalanceModel();
+  const items = [], checks = [];
+  const add = (sev, title, detail, action) => items.push({ sev, title, detail, action });
+  const check = (rule, threshold, measured, ok) => checks.push({ rule, threshold, measured, ok });
+
+  // 1. policy drift
+  const breaches = rows.filter(r=>r.out);
+  check('Policy drift', `±${(BAND*100).toFixed(0)}pp per class`,
+        `worst ${(Math.max(...rows.map(r=>Math.abs(r.drift)))*100).toFixed(1)}pp`, breaches.length===0);
+  breaches.forEach(r => add(Math.abs(r.drift) > BAND*1.5 ? 'crit' : 'serious',
+    `${r.c} is ${r.drift>0?'overweight':'underweight'} by ${Math.abs(r.drift*100).toFixed(1)}pp`,
+    `Target ${pc0(r.target)}, currently ${pc0(r.actual)}. Outside the ±${(BAND*100).toFixed(0)}pp band, so the policy calls for action.`,
+    `${r.trade>0?'Buy':'Sell'} ${money(Math.abs(r.trade))} to return to target (${pc0(turnover)} book turnover)`));
+
+  // 2. single-position concentration
+  const fat = HOLDINGS.filter(h=>h.w > LIMITS.posWeight).sort((a,b)=>b.w-a.w);
+  check('Position concentration', `max ${pc0(LIMITS.posWeight)} per holding`,
+        `largest ${pc0(Math.max(...HOLDINGS.map(h=>h.w)))}`, fat.length===0);
+  fat.forEach(h => add('serious', `${h.ticker} is ${pc0(h.w)} of the book`,
+    `Above the ${pc0(LIMITS.posWeight)} single-position limit. Idiosyncratic risk here is no longer diversified away.`,
+    `Trim ${money((h.w-LIMITS.posWeight)*TOTAL)} to bring it back to the limit`));
+
+  // 3. top-ten concentration
+  const top10 = HOLDINGS.slice().sort((a,b)=>b.w-a.w).slice(0,10).reduce((a,h)=>a+h.w,0);
+  check('Top-ten concentration', `max ${pc0(LIMITS.top10)}`, pc0(top10), top10 <= LIMITS.top10);
+  if (top10 > LIMITS.top10) add('warn', `Top ten holdings are ${pc0(top10)} of the book`,
+    `Above the ${pc0(LIMITS.top10)} guideline. The tail is not doing much work.`,
+    'Either add breadth or accept the concentration deliberately');
+
+  // 4. currency exposure
+  const fx = HOLDINGS.filter(h=>h.ccy!=='USD').reduce((a,h)=>a+h.w,0);
+  check('Unhedged currency', `max ${pc0(LIMITS.fxWeight)}`, pc0(fx), fx <= LIMITS.fxWeight);
+  if (fx > LIMITS.fxWeight) add('warn', `${pc0(fx)} of the book is in non-base currency`,
+    'Above the guideline for unhedged exposure. Currency is adding volatility that earns no expected return.',
+    'Consider hedging the largest exposure or reducing it');
+
+  // 5. harvest candidates: deep drawdown AND actually sitting at a loss. A drawdown
+  //    from a peak on a position that is still up is not actionable, so it does not
+  //    earn a row — a board full of "no action" items trains people to ignore it.
+  const harvest = HOLDINGS
+    .filter(h => h.cls!=='Cash' && h.unreal < 0 && (h.price/Math.max(...h.hist) - 1) < LIMITS.drawdown)
+    .map(h => ({ h, dd: h.price/Math.max(...h.hist) - 1 })).sort((a,b)=>a.dd-b.dd);
+  check('Loss-harvest candidates', `at a loss and below ${pc(LIMITS.drawdown,0)} off high`,
+        `${harvest.length} position${harvest.length===1?'':'s'}`, harvest.length===0);
+  harvest.forEach(({h,dd}) => add('warn', `${h.ticker} is ${pc(dd)} off its high and held at a loss`,
+    `Unrealised loss of ${money(Math.abs(h.unreal))}, which can be crystallised to offset gains realised elsewhere.`,
+    `Harvest candidate: realise ${money(Math.abs(h.unreal))} of losses while keeping the exposure via a similar asset`));
+
+  // 6. weak factor rank on something already owned and big enough to matter. Bottom
+  //    fifth rather than bottom third: a third of the book flagged is not a signal.
+  const FAC = buildFactors(HOLDINGS.filter(h=>h.cls==='Stock'));
+  const cut = Math.max(1, Math.round(FAC.length/5));
+  const weak = FAC.slice(FAC.length-cut).filter(f=>f.w > LIMITS.factorTrim);
+  check('Factor rank of holdings', `bottom fifth with weight > ${pc0(LIMITS.factorTrim)}`,
+        `${weak.length} position${weak.length===1?'':'s'}`, weak.length===0);
+  weak.forEach(f => add('warn', `${f.k} ranks in the bottom fifth on the factor model`,
+    `Composite ${f.c} of 100 across value, quality, momentum, growth and volatility, at ${pc0(f.w)} of the book.`,
+    'Review the thesis, or reduce in favour of a higher-ranked name'));
+
+  const order = { crit:0, serious:1, warn:2, good:3 };
+  items.sort((a,b)=>order[a.sev]-order[b.sev]);
+  return { items, checks };
+}
+
+function renderDecisions(){
+  const { items, checks } = decisionRules();
+  const count = s => items.filter(i=>i.sev===s).length;
+  const LABEL = { crit:'Critical', serious:'Action', warn:'Review', good:'Monitor' };
+  const TOKEN = { crit:'--crit', serious:'--serious', warn:'--warn', good:'--good' };
+  const ICON  = { crit:'✕', serious:'!', warn:'~', good:'✓' };
+
+  $('#decTiles').innerHTML = [
+    ['Open items', String(items.length), 'raised by the rules below', items.length===0?true:null],
+    ['Needs action', String(count('crit')+count('serious')), 'breaches policy, not preference',
+      (count('crit')+count('serious'))===0 ? true : false],
+    ['To review', String(count('warn')), 'guideline, judgement required', null],
+    ['Rules passed', `${checks.filter(c=>c.ok).length} of ${checks.length}`, 'all thresholds evaluated', null],
+  ].map(([l,v,d,good])=>`<div class="tile"><div class="tile-l">${l}</div>
+    <div class="tile-v ${good===null?'':good?'up':'dn'}">${v}</div><div class="tile-d">${d}</div></div>`).join('');
+
+  $('#decList').innerHTML = items.length===0
+    ? `<div class="tick" style="padding:14px 0">Nothing breached. Every rule in the table below passed.</div>`
+    : items.map(i=>`
+      <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--grid)">
+        <div style="flex:0 0 3px;border-radius:2px;background:var(--${TOKEN[i.sev].slice(2)})"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:3px">
+            <span style="font-weight:600;font-size:13.5px">${i.title}</span>
+            <span class="pill" style="color:var(--${TOKEN[i.sev].slice(2)})">${ICON[i.sev]} ${LABEL[i.sev]}</span>
+          </div>
+          <div class="tick" style="line-height:1.5;margin-bottom:5px">${i.detail}</div>
+          <div style="font-size:12.5px"><span class="dim" style="color:var(--ink-muted)">Suggested:</span> ${i.action}</div>
+        </div>
+      </div>`).join('');
+
+  $('#ruleTbl tbody').innerHTML = checks.map(c=>`<tr>
+    <td class="l">${c.rule}</td><td class="l tick">${c.threshold}</td>
+    <td class="num">${c.measured}</td>
+    <td class="l"><span class="pill ${c.ok?'g':'c'}">${c.ok?'✓ pass':'✕ breach'}</span></td></tr>`).join('');
+}
+
+/* ── Watchlist ───────────────────────────────────────────
+   Candidates are ranked inside the SAME universe as the holdings, so a composite here
+   means the same thing it means on the Factors tab. Ranking candidates on their own
+   would make every one of them look average by construction. */
+// ticker, name, sector, price, target entry, synthetic fundamentals, daily drift
+// (drift sets the momentum and low-vol inputs, so a candidate can screen badly on
+//  price action as well as on fundamentals — otherwise every candidate looks buyable)
+const WATCH = [
+  ['LUMN','Lumen Instruments','Industrials',   142.60, 128.00, {pe:22.4,pb:4.1,roic:0.19,gm:0.41,mt: 0.014,acc:-0.012,de:1.05,eps:0.112},  0.0009],
+  ['VERD','Verdant Energy','Utilities',         64.20,  58.00, {pe:14.8,pb:1.9,roic:0.11,gm:0.34,mt: 0.006,acc:-0.004,de:2.40,eps:0.048},  0.0002],
+  ['KESTL','Kestrel Logistics','Industrials',   88.90,  92.00, {pe:18.2,pb:3.2,roic:0.16,gm:0.29,mt: 0.011,acc:-0.009,de:1.55,eps:0.083},  0.0006],
+  ['ARBR','Arbor Biosciences','Health care',   211.30, 175.00, {pe:44.1,pb:9.8,roic:0.26,gm:0.72,mt: 0.031,acc: 0.021,de:0.42,eps:0.204},  0.0011],
+  ['NORD','Nordhaven Bank','Financials',         39.75,  36.50, {pe:15.2,pb:1.7,roic:0.08,gm:0.44,mt:-0.006,acc: 0.016,de:2.60,eps:-0.011},-0.0004],
+  ['PLNT','Plinth Materials','Materials',        57.40,  49.00, {pe:19.8,pb:2.4,roic:0.07,gm:0.21,mt:-0.014,acc: 0.028,de:2.95,eps:-0.032},-0.0009],
+];
+function watchModel(){
+  // Rank candidates and holdings together in one universe.
+  const held = HOLDINGS.filter(h=>h.cls==='Stock');
+  const synth = WATCH.map(([ticker,name,sector,price,entry,f,drift]) => {
+    const rnd = mulberry32(ticker.length*911 + (price|0));
+    const r = []; for (let d=0; d<400; d++) r.push(gauss(rnd)*0.0110 + drift);
+    const path=[price]; for (let d=399; d>=0; d--) path.unshift(path[0]/(1+r[d]));
+    return { ticker, name, sector, price, entry, fund:f, w:0,
+             hist:path, rvol:stdev(r)*Math.sqrt(252),
+             mom: path[path.length-22]/path[path.length-274]-1 };
+  });
+  synth.forEach(s => FUND[s.ticker] = s.fund);       // so buildFactors can score them
+  const universe = [...held, ...synth];
+  const ranked = buildFactors(universe);
+  const byT = Object.fromEntries(ranked.map(r=>[r.k,r]));
+  const heldScores = held.map(h=>byT[h.ticker].c).sort((a,b)=>a-b);
+  const median = heldScores.length % 2
+    ? heldScores[(heldScores.length-1)/2]
+    : Math.round((heldScores[heldScores.length/2-1]+heldScores[heldScores.length/2])/2);
+  const rows = synth.map(s => {
+    const f = byT[s.ticker];
+    const toEntry = s.price/s.entry - 1;             // positive = above the entry price
+    const better = f.c - median;
+    const verdict = toEntry <= 0 && better > 0 ? ['g','Buy zone']
+                  : toEntry <= 0 ? ['w','At price, weak factors']
+                  : better > 0 ? ['w','Good name, wait for price']
+                  : ['c','Pass'];
+    return { ...s, ...f, toEntry, better, verdict };
+  }).sort((a,b)=>b.better-a.better);
+  return { rows, median };
+}
+
+function renderWatchlist(){
+  const { rows, median } = watchModel();
+  const buyable = rows.filter(r=>r.verdict[1]==='Buy zone');
+
+  $('#watchTiles').innerHTML = [
+    ['Candidates', String(rows.length), 'ranked in the same universe as holdings', null],
+    ['Better than the book', String(rows.filter(r=>r.better>0).length),
+      `median composite held is ${median}`, null],
+    ['In the buy zone', String(buyable.length), 'above median and at or below target price',
+      buyable.length>0 ? true : null],
+    ['Nearest to entry', rows.length
+      ? rows.slice().sort((a,b)=>Math.abs(a.toEntry)-Math.abs(b.toEntry))[0].k : '—',
+      'smallest gap to its target price', null],
+  ].map(([l,v,d,good])=>`<div class="tile"><div class="tile-l">${l}</div>
+    <div class="tile-v ${good===null?'':good?'up':'dn'}">${v}</div><div class="tile-d">${d}</div></div>`).join('');
+
+  colChart($('#edge'), rows.map(r=>({ k:r.k, v:r.better,
+      lab:(r.better>=0?'+':'−')+Math.abs(r.better) })),
+    { h:200, vLabel:'vs book median', aria:'Candidate composite relative to the median holding' });
+  $('#edgeLegend').innerHTML =
+    `<span><i class="key sq" style="background:${CSS('--s1')}"></i>Better than the median holding</span>
+     <span><i class="key sq" style="background:${CSS('--r400')}"></i>Worse</span>
+     <span style="color:var(--ink-muted)">Zero line = median composite of ${median} across equities held</span>`;
+  $('#edgeTable').innerHTML = `<div class="tw"><table><thead><tr><th class="l">Ticker</th>
+    <th>Composite</th><th>Book median</th><th>Difference</th></tr></thead><tbody>` +
+    rows.map(r=>`<tr><td class="l">${r.k}</td><td class="num">${r.c}</td><td class="num">${median}</td>
+      <td class="num ${r.better>=0?'up':'dn'}">${(r.better>=0?'+':'−')+Math.abs(r.better)}</td></tr>`).join('') +
+    `</tbody></table></div>`;
+
+  const nearest = rows.slice().sort((a,b)=>Math.abs(a.toEntry)-Math.abs(b.toEntry))[0];
+  $('#entryNote').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div><div class="tile-l">In the buy zone now</div>
+        <div class="tile-v ${buyable.length?'up':''}">${buyable.length ? buyable.map(b=>b.k).join(', ') : 'None'}</div>
+        <div class="tile-d">${buyable.length
+          ? 'Above the median of what you hold, and trading at or below the pre-set entry price.'
+          : 'Nothing currently satisfies both the quality test and the price test.'}</div></div>
+      <div style="border-top:1px solid var(--grid);padding-top:12px">
+        <div class="tile-l">Closest to triggering</div>
+        <div class="tile-v">${nearest.k}</div>
+        <div class="tile-d">${money(nearest.price,2)} against a ${money(nearest.entry,2)} target,
+          ${(Math.abs(nearest.toEntry)*100).toFixed(1)}% ${nearest.toEntry>0 ? 'above' : 'below'} it.
+          Composite ${nearest.c} versus a book median of ${median}.</div></div>
+      <div style="border-top:1px solid var(--grid);padding-top:12px">
+        <div class="tile-d" style="font-size:12.5px;line-height:1.5">
+          Both tests have to pass. A name that clears the factor screen but sits above its entry price is a
+          watch, not a buy, and a cheap name that fails the screen is cheap for a reason.</div></div>
+    </div>`;
+
+  $('#watchTbl tbody').innerHTML = rows.map(r=>`<tr>
+    <td class="l"><div style="font-weight:600">${r.k}</div><div class="tick">${esc(r.name)}</div></td>
+    <td class="l tick">${r.sector}</td>
+    <td class="num">${money(r.price,2)}</td><td class="num">${money(r.entry,2)}</td>
+    <td class="num ${r.toEntry<=0?'up':'dn'}">${r.toEntry>0?'+':'−'}${Math.abs(r.toEntry*100).toFixed(1)}%</td>
+    <td class="num" style="font-weight:600">${r.c}</td>
+    <td class="num ${r.better>=0?'up':'dn'}">${(r.better>=0?'+':'−')+Math.abs(r.better)}</td>
+    <td class="num">${r.f}/9</td>
+    <td class="l"><span class="pill ${r.verdict[0]}">${r.verdict[1]}</span></td></tr>`).join('');
+}
+
 /* ── Rebalance ───────────────────────────────────────────
    A policy target plus a tolerance band. Everything here is derived from the live
    weights: drift, the trade list, the turnover a full rebalance would cost, and the
@@ -1549,10 +1841,12 @@ function renderPipeline(){
 /* ═══ shell ═══ */
 const VIEWS = [
   ['overview','Overview',renderOverview],
+  ['decisions','Decisions',renderDecisions],
   ['holdings','Holdings',renderHoldings],
   ['performance','Performance',renderPerformance],
   ['risk','Risk',renderRisk],
   ['factors','Factors',renderFactors],
+  ['watchlist','Watchlist',renderWatchlist],
   ['rebalance','Rebalance',renderRebalance],
   ['pipeline','Pipeline',renderPipeline],
 ];
