@@ -44,7 +44,7 @@
         "android.permission.health.READ_STEPS"
       ],
       "package": "com.helixfit.app",
-      "versionCode": 45
+      "versionCode": 46
     },
     "web": {
       "favicon": "./assets/favicon.png"
