@@ -16,6 +16,9 @@ import BodyHeatMap from './BodyHeatMap';
 import VolumeBar from '../components/VolumeBar';
 import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
 import { getTodayCheckIn } from '../lib/recoveryStore';
+import {
+  normaliseMuscle, primaryMuscleFor, recoveryStatus, MUSCLE_RECOVERY_DAYS,
+} from '../lib/recoveryMap';
 import { Platform } from 'react-native';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
@@ -24,68 +27,8 @@ import Tappable from '../components/Tappable';
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // Normalise raw library muscle names → display group keys used in MUSCLE_DISPLAY
-function normaliseMuscle(raw) {
-  const r = raw.toLowerCase();
-  if (r === 'chest' || r === 'upper chest' || r === 'lower chest') return 'chest';
-  if (r === 'lats' || r === 'traps' || r === 'upper traps' ||
-      r === 'upper trapezius' || r === 'levator scapulae') return 'back';
-  if (r === 'shoulders' || r === 'anterior delts' || r === 'side deltoids' ||
-      r === 'rear delts' || r === 'rear deltoids' || r === 'external rotators') return 'shoulders';
-  if (r === 'biceps' || r === 'brachialis') return 'biceps';
-  if (r === 'triceps') return 'triceps';
-  if (r === 'quads') return 'quads';
-  if (r === 'hamstrings') return 'hamstrings';
-  if (r === 'glutes' || r === 'glute medius' || r === 'glute minimus') return 'glutes';
-  if (r === 'gastrocnemius' || r === 'soleus') return 'calves';
-  if (r === 'rectus abdominis' || r === 'obliques') return 'abs';
-  if (r === 'forearms' || r === 'brachioradialis' || r === 'wrist flexors' || r === 'wrist extensors') return 'forearms';
-  return null; // ignore: external rotators on their own, etc.
-}
 
-// Primary muscle only — for volume counting and recovery so rows don't inflate biceps etc.
-const EXERCISE_PRIMARY_MAP = (() => {
-  const map = {};
-  Object.values(MOVEMENT_PATTERNS).forEach(pattern => {
-    const primary = normaliseMuscle(pattern.muscles[0]);
-    if (primary) pattern.exercises.forEach(ex => { map[ex.name.toLowerCase()] = primary; });
-  });
-  return map;
-})();
 
-function getPrimaryMuscleForExercise(exerciseName, patternKey) {
-  // Prefer the durable pattern_key saved with each set: it survives coach swaps
-  // and display-name variants, so a set whose name isn't an exact library key
-  // still attributes instead of silently registering under no muscle. Falls back
-  // to the exercise name for legacy rows that predate pattern_key.
-  const pattern = patternKey && MOVEMENT_PATTERNS[patternKey];
-  if (pattern) return normaliseMuscle(pattern.muscles[0]);
-  return EXERCISE_PRIMARY_MAP[exerciseName?.toLowerCase()] || null;
-}
-
-// Evidence-based recovery thresholds per muscle (days until ready to retrain)
-// Sources: Schoenfeld et al. 2016, fiber-type composition research
-const MUSCLE_RECOVERY_DAYS = {
-  abs:        1, // high type 1, oxidative — recovers in ~24h
-  calves:     1, // 40–50% type 1, adapted to frequent loading
-  forearms:   1, // high type 1 (brachioradialis, flexors), used daily — ~24h
-  biceps:     2, // ~60% type 2 but small — ~36–48h
-  triceps:    2, // fast-twitch dominant, similar to chest rhythm
-  shoulders:  2, // anterior ~60% type 2, posterior more type 1 — ~48h
-  chest:      2, // ~65% type 2, lower fatigue resistance — ~48h
-  glutes:     2, // large but tolerates frequency well — ~48h
-  quads:      3, // very large, type 2 dominant, notorious DOMS — ~72h
-  hamstrings: 3, // ~50% type 2, larger group, high injury risk if undertested — ~72h
-  back:       3, // mixed fiber, lats/traps large complex — ~72h
-};
-
-function getRecoveryStatus(muscle, daysSince) {
-  if (daysSince === null) return 'fresh';
-  if (daysSince === 0) return 'trained_today';
-  const threshold = MUSCLE_RECOVERY_DAYS[muscle] ?? 2;
-  if (daysSince < threshold) return 'recovering';
-  if (daysSince === threshold) return 'ready';
-  return 'fresh';
-}
 
 const RECOVERY_COLORS = {
   fresh:         { color: colors.accent, label: 'Primed',        bg: '#1D9E7515' },
@@ -169,7 +112,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
     const muscleCounts = {};
     (sets || []).forEach(s => {
-      const primary = getPrimaryMuscleForExercise(s.exercise_name, s.pattern_key);
+      const primary = primaryMuscleFor(s.exercise_name, s.pattern_key);
       if (primary) muscleCounts[primary] = (muscleCounts[primary] || 0) + 1;
     });
     const sorted = Object.entries(muscleCounts)
@@ -493,7 +436,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
           // a muscle only lights up if the session gave it ≥2 exercises or ≥5 sets.
           const perSessionMuscle = {}; // session_id -> muscle -> { count, exercises }
           sets.forEach(set => {
-            const muscle = getPrimaryMuscleForExercise(set.exercise_name, set.pattern_key);
+            const muscle = primaryMuscleFor(set.exercise_name, set.pattern_key);
             if (!muscle) return;
             const muscles = (perSessionMuscle[set.session_id] ??= {});
             const entry = (muscles[muscle] ??= { count: 0, exercises: new Set() });
@@ -525,7 +468,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             const daysSince = lastDate ? differenceInDays(today, lastDate) : null;
             recovery[muscle] = {
               daysSince,
-              status: getRecoveryStatus(muscle, daysSince),
+              status: recoveryStatus(muscle, daysSince),
               lastDate,
             };
           });
@@ -540,7 +483,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
           const volume = {};
           weekSets.forEach(set => {
-            const primary = getPrimaryMuscleForExercise(set.exercise_name);
+            const primary = primaryMuscleFor(set.exercise_name);
             if (primary) volume[primary] = (volume[primary] || 0) + 1;
           });
           setWeeklyVolume(volume);
