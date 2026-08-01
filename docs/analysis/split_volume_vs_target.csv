@@ -1,0 +1,1321 @@
+split_id,split_name,days_per_week,experience_tier,goal_variant,representative_goal,goals_covered,muscle,direct_sets,target_min,target_optimal_low,target_optimal_high,status
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,5,5,5,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,4,4,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,0,3,3,8,ZERO
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,biceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,triceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,hamstrings,5,5,5,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,calves,4,4,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,2 of 4,strength,strength,abs,0,3,3,8,ZERO
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,biceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,triceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,hamstrings,5,5,5,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,calves,4,4,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,3 of 4,lose,lose,abs,0,3,3,8,ZERO
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,biceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,triceps,3,3,3,6,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,hamstrings,5,5,5,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,calves,4,4,4,8,optimal
+full_body_2x,Full Body 2×/week,2,beginner,4 of 4,endurance,endurance,abs,0,3,3,8,ZERO
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,10,10,10,20,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,6,6,8,16,below_optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,6,6,6,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,8,8,8,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,6,6,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,0,6,6,10,ZERO
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,chest,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,back,10,10,10,20,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,side_delts,6,6,8,16,below_optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,rear_delts,6,6,6,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,biceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,triceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,quads,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,hamstrings,8,8,8,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,calves,6,6,6,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,2 of 4,strength,strength,abs,0,6,6,10,ZERO
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,chest,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,back,10,10,10,20,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,side_delts,6,6,8,16,below_optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,rear_delts,6,6,6,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,biceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,triceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,quads,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,hamstrings,8,8,8,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,calves,6,6,6,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,3 of 4,lose,lose,abs,0,6,6,10,ZERO
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,chest,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,back,10,10,10,20,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,side_delts,6,6,8,16,below_optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,rear_delts,6,6,6,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,biceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,triceps,6,6,6,10,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,quads,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,hamstrings,8,8,8,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,calves,6,6,6,12,optimal
+full_body_2x,Full Body 2×/week,2,intermediate,4 of 4,endurance,endurance,abs,0,6,6,10,ZERO
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,6,10,12,22,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,6,8,10,18,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,6,8,8,14,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,6,10,10,16,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+full_body_2x,Full Body 2×/week,2,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,0,8,8,12,ZERO
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,chest,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,side_delts,6,10,12,22,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,rear_delts,6,8,10,18,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,biceps,6,8,8,14,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,triceps,6,10,10,16,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,quads,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+full_body_2x,Full Body 2×/week,2,advanced,2 of 4,strength,strength,abs,0,8,8,12,ZERO
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,chest,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,side_delts,6,10,12,22,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,rear_delts,6,8,10,18,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,biceps,6,8,8,14,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,triceps,6,10,10,16,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,quads,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+full_body_2x,Full Body 2×/week,2,advanced,3 of 4,lose,lose,abs,0,8,8,12,ZERO
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,chest,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,side_delts,6,10,12,22,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,rear_delts,6,8,10,18,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,biceps,6,8,8,14,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,triceps,6,10,10,16,below_minimum
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,quads,12,12,14,20,below_optimal
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+full_body_2x,Full Body 2×/week,2,advanced,4 of 4,endurance,endurance,abs,0,8,8,12,ZERO
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,5,5,5,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,4,4,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,4,3,3,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,hamstrings,5,5,5,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,calves,4,4,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,2 of 4,strength,strength,abs,4,3,3,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,hamstrings,5,5,5,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,calves,4,4,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,3 of 4,lose,lose,abs,4,3,3,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,hamstrings,5,5,5,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,calves,4,4,4,8,optimal
+full_body_3x,Full Body 3×/week,3,beginner,4 of 4,endurance,endurance,abs,4,3,3,8,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,10,10,10,20,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,8,6,8,16,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,6,6,6,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,6,6,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,chest,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,back,10,10,10,20,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,side_delts,8,6,8,16,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,rear_delts,6,6,6,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,biceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,triceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,quads,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,hamstrings,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,calves,6,6,6,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,2 of 4,strength,strength,abs,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,chest,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,back,10,10,10,20,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,side_delts,8,6,8,16,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,rear_delts,6,6,6,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,biceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,triceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,quads,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,hamstrings,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,calves,6,6,6,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,3 of 4,lose,lose,abs,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,chest,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,back,10,10,10,20,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,side_delts,8,6,8,16,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,rear_delts,6,6,6,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,biceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,triceps,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,quads,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,hamstrings,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,calves,6,6,6,12,optimal
+full_body_3x,Full Body 3×/week,3,intermediate,4 of 4,endurance,endurance,abs,6,6,6,10,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+full_body_3x,Full Body 3×/week,3,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,6,5,5,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,4,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,4,3,3,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,hamstrings,6,5,5,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,calves,6,4,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,2 of 4,strength,strength,abs,4,3,3,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,hamstrings,6,5,5,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,calves,6,4,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,3 of 4,lose,lose,abs,4,3,3,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,hamstrings,6,5,5,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,calves,6,4,4,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,beginner,4 of 4,endurance,endurance,abs,4,3,3,8,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+upper_lower_4x,Upper / Lower 4×/week,4,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,8,6,6,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,5,5,5,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,4,4,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,4,3,3,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,chest,8,6,6,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,hamstrings,5,5,5,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,calves,4,4,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,2 of 4,strength,strength,abs,4,3,3,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,chest,8,6,6,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,hamstrings,5,5,5,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,calves,4,4,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,3 of 4,lose,lose,abs,4,3,3,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,chest,8,6,6,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,hamstrings,5,5,5,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,calves,4,4,4,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,beginner,4 of 4,endurance,endurance,abs,4,3,3,8,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+chest_back_shoulders_legs_4x,Chest+Tri / Back+Bi / Shoulders / Legs,4,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,8,6,6,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,6,5,5,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,4,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,6,3,3,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,chest,8,6,6,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,hamstrings,6,5,5,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,calves,6,4,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,2 of 4,strength,strength,abs,6,3,3,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,chest,8,6,6,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,hamstrings,6,5,5,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,calves,6,4,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,3 of 4,lose,lose,abs,6,3,3,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,chest,8,6,6,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,hamstrings,6,5,5,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,calves,6,4,4,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,beginner,4 of 4,endurance,endurance,abs,6,3,3,8,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+ul_ppl_hybrid_5x,PPL / Upper / Lower 5×/week,5,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,8,6,6,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,10,8,8,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,6,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,6,5,5,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,4,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,3,3,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,chest,8,6,6,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,back,10,8,8,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,triceps,6,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,hamstrings,6,5,5,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,calves,6,4,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,2 of 4,strength,strength,abs,8,3,3,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,chest,8,6,6,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,back,10,8,8,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,triceps,6,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,hamstrings,6,5,5,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,calves,6,4,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,3 of 4,lose,lose,abs,8,3,3,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,chest,8,6,6,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,back,10,8,8,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,triceps,6,3,3,6,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,hamstrings,6,5,5,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,calves,6,4,4,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,beginner,4 of 4,endurance,endurance,abs,8,3,3,8,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+ppl_6x,Push / Pull / Legs 6×/week,6,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,5,5,5,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,4,4,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,4,3,3,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,hamstrings,5,5,5,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,calves,4,4,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,2 of 4,strength,strength,abs,4,3,3,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,hamstrings,5,5,5,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,calves,4,4,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,3 of 4,lose,lose,abs,4,3,3,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,hamstrings,5,5,5,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,calves,4,4,4,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,beginner,4 of 4,endurance,endurance,abs,4,3,3,8,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,10,10,10,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,8,6,8,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,6,6,6,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,6,6,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,chest,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,back,10,10,10,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,side_delts,8,6,8,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,rear_delts,6,6,6,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,biceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,triceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,quads,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,hamstrings,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,calves,6,6,6,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,2 of 4,strength,strength,abs,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,chest,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,back,10,10,10,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,side_delts,8,6,8,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,rear_delts,6,6,6,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,biceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,triceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,quads,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,hamstrings,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,calves,6,6,6,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,3 of 4,lose,lose,abs,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,chest,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,back,10,10,10,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,side_delts,8,6,8,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,rear_delts,6,6,6,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,biceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,triceps,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,quads,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,hamstrings,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,calves,6,6,6,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,intermediate,4 of 4,endurance,endurance,abs,6,6,6,10,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+hybrid_3x,Full Body / Upper / Lower 3×/week,3,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,6,5,5,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,4,4,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,6,3,3,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,hamstrings,6,5,5,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,calves,4,4,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,2 of 4,strength,strength,abs,6,3,3,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,hamstrings,6,5,5,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,calves,4,4,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,3 of 4,lose,lose,abs,6,3,3,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,hamstrings,6,5,5,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,calves,4,4,4,8,optimal
+full_body_4x,Full Body 4×/week,4,beginner,4 of 4,endurance,endurance,abs,6,3,3,8,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+full_body_4x,Full Body 4×/week,4,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+full_body_4x,Full Body 4×/week,4,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,6,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,8,5,5,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,4,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,3,3,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,triceps,6,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,quads,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,hamstrings,8,5,5,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,calves,6,4,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,2 of 4,strength,strength,abs,8,3,3,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,triceps,6,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,quads,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,hamstrings,8,5,5,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,calves,6,4,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,3 of 4,lose,lose,abs,8,3,3,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,triceps,6,3,3,6,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,quads,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,hamstrings,8,5,5,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,calves,6,4,4,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,beginner,4 of 4,endurance,endurance,abs,8,3,3,8,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+upper_lower_6x,Upper / Lower 6×/week,6,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,6,6,6,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,8,8,8,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,5,4,5,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,4,3,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,6,5,5,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,6,4,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,6,3,3,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,chest,6,6,6,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,back,8,8,8,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,side_delts,5,4,5,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,rear_delts,4,3,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,biceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,triceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,quads,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,hamstrings,6,5,5,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,glutes,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,calves,6,4,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,2 of 4,strength,strength,abs,6,3,3,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,chest,6,6,6,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,back,8,8,8,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,side_delts,5,4,5,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,rear_delts,4,3,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,biceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,triceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,quads,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,hamstrings,6,5,5,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,glutes,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,calves,6,4,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,3 of 4,lose,lose,abs,6,3,3,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,chest,6,6,6,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,back,8,8,8,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,side_delts,5,4,5,9,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,rear_delts,4,3,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,biceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,triceps,4,3,3,6,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,quads,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,hamstrings,6,5,5,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,glutes,6,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,calves,6,4,4,8,optimal
+full_body_5x,Full Body 5×/week,5,beginner,4 of 4,endurance,endurance,abs,6,3,3,8,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,12,10,10,20,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,10,6,8,16,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,8,6,6,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,6,6,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,chest,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,back,12,10,10,20,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,side_delts,10,6,8,16,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,rear_delts,8,6,6,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,biceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,triceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,quads,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,hamstrings,10,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,glutes,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,calves,10,6,6,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,2 of 4,strength,strength,abs,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,chest,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,back,12,10,10,20,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,side_delts,10,6,8,16,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,rear_delts,8,6,6,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,biceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,triceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,quads,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,hamstrings,10,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,glutes,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,calves,10,6,6,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,3 of 4,lose,lose,abs,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,chest,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,back,12,10,10,20,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,side_delts,10,6,8,16,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,rear_delts,8,6,6,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,biceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,triceps,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,quads,12,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,hamstrings,10,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,glutes,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,calves,10,6,6,12,optimal
+full_body_5x,Full Body 5×/week,5,intermediate,4 of 4,endurance,endurance,abs,8,6,6,10,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,chest,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,back,16,14,16,25,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,side_delts,12,10,12,22,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,rear_delts,10,8,10,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,biceps,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,triceps,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,quads,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,hamstrings,10,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,glutes,12,10,12,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,calves,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,1 of 4,muscle,muscle | maintain | default | recomp | cut_strength | cut_endurance | powerbuilding | hybrid_muscle | hybrid_strength | powerbuilding_cut | athletic_recomp | athletic_cut | athletic_bulk,abs,8,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,chest,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,back,16,14,16,25,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,side_delts,12,10,12,22,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,rear_delts,10,8,10,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,biceps,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,triceps,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,quads,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,hamstrings,10,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,glutes,12,10,12,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,calves,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,2 of 4,strength,strength,abs,8,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,chest,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,back,16,14,16,25,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,side_delts,12,10,12,22,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,rear_delts,10,8,10,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,biceps,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,triceps,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,quads,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,hamstrings,10,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,glutes,12,10,12,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,calves,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,3 of 4,lose,lose,abs,8,8,8,12,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,chest,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,back,16,14,16,25,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,side_delts,12,10,12,22,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,rear_delts,10,8,10,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,biceps,8,8,8,14,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,triceps,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,quads,14,12,14,20,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,hamstrings,10,10,10,15,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,glutes,12,10,12,18,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,calves,10,10,10,16,optimal
+full_body_5x,Full Body 5×/week,5,advanced,4 of 4,endurance,endurance,abs,8,8,8,12,optimal
