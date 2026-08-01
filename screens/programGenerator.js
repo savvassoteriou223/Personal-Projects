@@ -946,148 +946,148 @@ export function selectSplit(profile) {
 const SPLIT_DAYS = {
   full_body_2x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [3, 5, 6]], ['chest_horizontal_push', [3, 5, 6]], ['back_horizontal_pull', [3, 4, 5]], ['back_inner', [3, 3, 5]], ['shoulders_side_delt', [4, 6, 6]], ['triceps', [3, 6, 6], null, 'stretch'], ['calves', [2, 3, 5]], ['glute_focused', [3, 4, 5], 'walking_lunge'], ['hip_hinge', [3, 4, 5], 'romanian_deadlift']
+      ['squat_pattern', [3, 5, 6]], ['chest_horizontal_push', [3, 5, 6]], ['back_horizontal_pull', [3, 4, 6]], ['back_inner', [3, 3, 5]], ['shoulders_side_delt', [5, 6, 6]], ['triceps', [3, 6, 6], null, 'stretch'], ['calves', [2, 3, 5]], ['glute_focused', [3, 4, 6], 'walking_lunge'], ['hip_hinge', [3, 4, 5], 'romanian_deadlift']
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['squat_pattern', [3, 5, 6], 'leg_press'], ['hip_hinge', [2, 4, 5], 'conventional_deadlift'], ['chest_incline_push', [3, 5, 6]], ['back_vertical_pull', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [3, 6, 6]], ['biceps', [3, 6, 6], null, 'stretch'], ['calves', [2, 3, 5], 'seated_calf_raise'], (f ? ['glute_focused', [3, 4, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through'])
+      ['squat_pattern', [3, 5, 6], 'leg_press'], ['hip_hinge', [2, 4, 5], 'conventional_deadlift'], ['chest_incline_push', [3, 5, 6]], ['back_vertical_pull', [2, 3, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [4, 6, 6]], ['biceps', [3, 6, 6], null, 'stretch'], ['calves', [2, 3, 5], 'seated_calf_raise'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through'])
     ] },
   ],
   full_body_3x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 3, 5]], ['rear_delt', [2, 3, 4]], ['triceps', [2, 3, 5], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
+      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [3, 4, 6]], ['shoulders_side_delt', [3, 4, 6]], ['rear_delt', [2, 3, 5]], ['triceps', [2, 3, 5], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['hip_hinge', [3, 4, 5], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 4]], ['back_vertical_pull', [3, 3, 5]], ['rear_delt', [2, 3, 4]], ['glute_focused', [3, 4, 5], 'walking_lunge'], ['quad_isolation', [2, 3, 4]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
+      ['hip_hinge', [3, 4, 5], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 5]], ['back_vertical_pull', [3, 3, 5]], ['rear_delt', [2, 3, 5]], ['glute_focused', [3, 4, 6], 'walking_lunge'], ['quad_isolation', [2, 3, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
     ] },
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
-      ['squat_pattern', [2, 3, 4], 'leg_press'], ['chest_decline', [2, 3, 4]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 3, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['triceps', [2, 3, 5], null, 'contracted'], ['biceps', [2, 3, 4], null, 'contracted'], (f ? ['glute_focused', [3, 4, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 4, 5]]
+      ['squat_pattern', [2, 3, 4], 'leg_press'], ['chest_decline', [2, 3, 4]], ['back_inner', [2, 3, 5]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['triceps', [2, 3, 5], null, 'contracted'], ['biceps', [2, 3, 4], null, 'contracted'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 4, 5]]
     ] },
   ],
   hybrid_3x: f => [
     { id: 'full_body', name: 'Full Body', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 3, 5]], ['rear_delt', [2, 3, 4]], ['triceps', [2, 3, 5], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
+      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [3, 4, 6]], ['shoulders_side_delt', [3, 4, 6]], ['rear_delt', [2, 3, 5]], ['triceps', [2, 3, 5], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
     ] },
     { id: 'upper', name: 'Upper', focus: 'Full upper body', slots: [
-      ['chest_incline_push', [2, 3, 4]], ['chest_decline', [2, 3, 4]], ['back_vertical_pull', [3, 3, 5]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 3, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 3, 4]], ['biceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 5], null, 'contracted']
+      ['chest_incline_push', [2, 3, 5]], ['chest_decline', [2, 3, 4]], ['back_vertical_pull', [3, 3, 5]], ['back_inner', [2, 3, 5]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 3, 5]], ['biceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 5], null, 'contracted']
     ] },
     { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 3, 4], 'leg_press'], ['hip_hinge', [3, 4, 5], 'conventional_deadlift'], ['glute_focused', [3, 4, 5], 'walking_lunge'], (f ? ['glute_focused', [3, 4, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['quad_isolation', [2, 3, 4]], ['hamstring_isolation', [2, 4, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
+      ['squat_pattern', [2, 3, 5], 'leg_press'], ['hip_hinge', [3, 4, 5], 'conventional_deadlift'], ['glute_focused', [3, 4, 6], 'walking_lunge'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 3, 4]], ['hamstring_isolation', [2, 4, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
     ] },
   ],
   upper_lower_4x: f => [
     { id: 'upper_a', name: 'Upper A', focus: 'Heavy push + pull', slots: [
-      ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5], null, 'stretch'], ['biceps', [2, 4, 4], null, 'stretch']
+      ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [3, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 5], null, 'stretch'], ['biceps', [2, 4, 4], null, 'stretch']
     ] },
     { id: 'lower_a', name: 'Lower A', focus: 'Squat + glutes', slots: [
-      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), ['quad_isolation', [2, 4, 4]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
+      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), ['quad_isolation', [2, 4, 5]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
     ] },
     { id: 'upper_b', name: 'Upper B', focus: 'Incline + arms', slots: [
-      ['chest_incline_push', [2, 4, 4]], ['chest_decline', [2, 4, 4]], ['back_vertical_pull', [3, 4, 5]], ['back_inner', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5], null, 'contracted'], ['biceps', [2, 4, 4], null, 'contracted']
+      ['chest_incline_push', [2, 4, 5]], ['chest_decline', [2, 4, 4]], ['back_vertical_pull', [3, 4, 5]], ['back_inner', [2, 4, 5]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 5], null, 'contracted'], ['biceps', [2, 4, 4], null, 'contracted']
     ] },
     { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [2, 4, 3], 'walking_lunge'] : ['glute_focused', [2, 3, 3], 'walking_lunge']), (f ? ['glute_focused', [2, 4, 3], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 3], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), (f ? ['glute_focused', [2, 4, 4], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 4], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
     ] },
   ],
   chest_back_shoulders_legs_4x: f => [
     { id: 'chest_triceps', name: 'Chest + Triceps', focus: 'Chest · triceps', slots: [
-      ['chest_horizontal_push', [2, 3, 3]], ['chest_incline_push', [2, 3, 3]], ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['triceps', [2, 4, 5], null, 'stretch'], ['triceps', [2, 4, 5], null, 'contracted'], ['core', [2, 4, 4]]
+      ['chest_horizontal_push', [2, 3, 4]], ['chest_incline_push', [2, 3, 4]], ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['triceps', [2, 4, 5], null, 'stretch'], ['triceps', [2, 4, 5], null, 'contracted'], ['core', [2, 4, 4]]
     ] },
     { id: 'back_biceps', name: 'Back + Biceps', focus: 'Back · biceps', slots: [
-      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['back_inner', [2, 3, 3]], ['back_isolation', [2, 3, 3]], ['biceps', [2, 4, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 4, 4]]
+      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['back_inner', [2, 3, 4]], ['back_isolation', [2, 3, 4]], ['biceps', [2, 4, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 4, 4]]
     ] },
     { id: 'shoulders', name: 'Shoulders', focus: 'Delts · calves', slots: [
-      ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['rear_delt', [2, 4, 4]], ['calves', [2, 5, 5]], ['calves', [2, 5, 5], 'seated_calf_raise']
+      ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['rear_delt', [2, 4, 5]], ['calves', [2, 5, 5]], ['calves', [2, 5, 5], 'seated_calf_raise']
     ] },
     { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [3, 5, 5], 'romanian_deadlift'], ['squat_pattern', [2, 4, 4], 'leg_press'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 5, 5]]
+      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [3, 5, 5], 'romanian_deadlift'], ['squat_pattern', [2, 4, 5], 'leg_press'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 5, 5]]
     ] },
   ],
   full_body_4x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [3, 4, 5]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5], null, 'stretch'], ['calves', [2, 5, 5]], ['core', [2, 3, 3]]
+      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [3, 4, 6]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 5], null, 'stretch'], ['calves', [2, 5, 5]], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 4, 4]], ['back_vertical_pull', [3, 4, 5]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'stretch'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['core', [2, 3, 3]]
+      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 4, 5]], ['back_vertical_pull', [3, 4, 5]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['chest_decline', [2, 4, 4]], ['back_inner', [2, 4, 4]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5], null, 'contracted'], ['calves', [2, 5, 5], 'seated_calf_raise'], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 4, 5], 'leg_press'], ['chest_decline', [2, 4, 4]], ['back_inner', [2, 4, 5]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 4, 5], null, 'contracted'], ['calves', [2, 5, 5], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
     { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
-      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'contracted'], ['hamstring_isolation', [2, 3, 3]]
+      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['hamstring_isolation', [2, 3, 3]]
     ] },
   ],
   ul_ppl_hybrid_5x: f => [
     { id: 'push', name: 'Push', focus: 'Chest · shoulders · triceps', slots: [
-      ['chest_horizontal_push', [2, 3, 3]], ['chest_incline_push', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5], null, 'stretch'], ['triceps', [2, 4, 5], null, 'contracted']
+      ['chest_horizontal_push', [2, 3, 4]], ['chest_incline_push', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 5], null, 'stretch'], ['triceps', [2, 4, 5], null, 'contracted']
     ] },
     { id: 'pull', name: 'Pull', focus: 'Back · rear delts · biceps', slots: [
-      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [2, 3, 3]], ['core', [2, 3, 3]]
+      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [2, 3, 4]], ['core', [2, 3, 3]]
     ] },
     { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['quad_isolation', [2, 4, 4]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
+      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['quad_isolation', [2, 4, 5]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
     ] },
     { id: 'upper', name: 'Upper', focus: 'Full upper body', slots: [
-      ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['back_inner', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'contracted']
+      ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted']
     ] },
     { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
   ],
   full_body_5x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 4]], ['chest_horizontal_push', [2, 4, 4]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 4, 5], null, 'stretch'], ['calves', [2, 4, 4]]
+      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 5], null, 'stretch'], ['calves', [2, 4, 4]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 4, 4]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'stretch'], ['core', [2, 3, 3]]
+      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 4, 5]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['chest_decline', [2, 4, 4]], ['back_inner', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
+      ['squat_pattern', [2, 4, 5], 'leg_press'], ['chest_decline', [2, 4, 4]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 6]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
-      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 4, 5], null, 'contracted'], ['core', [2, 2, 2]]
+      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 5], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'full_body_e', name: 'Full Body E', focus: 'Isolation · weak points', slots: [
-      ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['back_isolation', [2, 3, 3]], ['biceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 3, 3]]
+      ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['back_isolation', [2, 3, 4]], ['biceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 3, 3]]
     ] },
   ],
   ppl_6x: f => [
     { id: 'push_a', name: 'Push A', focus: 'Flat press focus', slots: [
-      ['chest_horizontal_push', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['chest_isolation', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 3], null, 'contracted']
+      ['chest_horizontal_push', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['chest_isolation', [2, 3, 4]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 3], null, 'contracted']
     ] },
     { id: 'pull_a', name: 'Pull A', focus: 'Vertical pull focus', slots: [
-      ['back_vertical_pull', [2, 3, 3]], ['back_horizontal_pull', [2, 3, 3]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [2, 2, 3]], ['core', [2, 2, 2]]
+      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [2, 2, 3]], ['core', [2, 2, 2]]
     ] },
     { id: 'legs_a', name: 'Legs A', focus: 'Squat focus', slots: [
-      ['squat_pattern', [2, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'walking_lunge'] : ['glute_focused', [3, 4, 5], 'walking_lunge']), ['quad_isolation', [2, 4, 4]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise']
+      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['quad_isolation', [2, 4, 5]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise']
     ] },
     { id: 'push_b', name: 'Push B', focus: 'Incline focus', slots: [
-      ['chest_incline_push', [2, 3, 3]], ['chest_decline', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 2, 3], null, 'contracted'], ['core', [2, 2, 2]]
+      ['chest_incline_push', [2, 3, 3]], ['chest_decline', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 2, 3], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'pull_b', name: 'Pull B', focus: 'Horizontal pull focus', slots: [
-      ['back_inner', [2, 2, 3]], ['back_isolation', [2, 2, 2]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 2, 2]]
+      ['back_inner', [2, 2, 3]], ['back_isolation', [2, 2, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'legs_b', name: 'Legs B', focus: 'Posterior chain', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 5], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 5], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
   ],
   upper_lower_6x: f => [
     { id: 'upper_a', name: 'Upper A', focus: 'Heavy push + pull', slots: [
-      ['chest_horizontal_push', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 5]], ['triceps', [2, 3, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'stretch']
+      ['chest_horizontal_push', [2, 4, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'stretch']
     ] },
     { id: 'lower_a', name: 'Lower A', focus: 'Squat + glutes', slots: [
-      ['squat_pattern', [2, 3, 3]], ['hip_hinge', [2, 3, 3], 'romanian_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), ['quad_isolation', [2, 3, 3]], ['calves', [2, 4, 4]], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 3, 4]], ['hip_hinge', [2, 3, 3], 'romanian_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), ['quad_isolation', [2, 3, 4]], ['calves', [2, 4, 4]], ['core', [2, 2, 2]]
     ] },
     { id: 'upper_b', name: 'Upper B', focus: 'Incline + arms', slots: [
-      ['chest_incline_push', [2, 4, 4]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [2, 4, 4]], ['biceps', [2, 4, 4], null, 'contracted'], ['triceps', [2, 3, 3], null, 'contracted'], ['core', [2, 2, 2]]
+      ['chest_incline_push', [2, 4, 5]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['triceps', [2, 3, 3], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
       ['squat_pattern', [2, 3, 3], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], ['hamstring_isolation', [2, 2, 2]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
     { id: 'upper_c', name: 'Upper C', focus: 'Isolation + delts', slots: [
-      ['chest_decline', [2, 4, 4]], ['back_inner', [2, 3, 3]], ['back_isolation', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 5]], ['rear_delt', [2, 4, 4]], ['triceps', [2, 2, 3], null, 'stretch']
+      ['chest_decline', [2, 4, 4]], ['back_inner', [2, 3, 4]], ['back_isolation', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 2, 3], null, 'stretch']
     ] },
     { id: 'lower_c', name: 'Lower C', focus: 'Glutes + hamstrings', slots: [
-      (f ? ['glute_focused', [2, 4, 3], 'hip_abduction_machine'] : ['glute_focused', [2, 3, 3], 'cable_pull_through']), (f ? ['glute_focused', [2, 4, 3], 'walking_lunge'] : ['glute_focused', [2, 2, 3], 'walking_lunge']), ['quad_isolation', [2, 3, 3]], ['hamstring_isolation', [2, 2, 2]], ['calves', [2, 3, 3]], ['core', [2, 2, 2]]
+      (f ? ['glute_focused', [2, 4, 4], 'hip_abduction_machine'] : ['glute_focused', [2, 3, 4], 'cable_pull_through']), (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 2, 4], 'walking_lunge']), ['quad_isolation', [2, 3, 3]], ['hamstring_isolation', [2, 2, 2]], ['calves', [2, 3, 3]], ['core', [2, 2, 2]]
     ] },
   ],
 };

@@ -98,9 +98,15 @@ function ranges(tier, f, mev) {
   const strict = tier === 'intermediate' && !mev;
   const both = (k, [ulo, uhi]) => {
     const a = app[k]; if (!a) return;
+    // PROTOTYPE: floor was a.min. allocate() deliberately aims at the FLOOR of
+    // this window, so a floor of `min` built every non-intermediate program to
+    // exactly minimum effective volume — and the Today heat map grades against
+    // optimal_low, so a freshly generated advanced program rendered amber on
+    // six muscles before the user trained once. optimal_low is the bar the app
+    // itself judges by, so it is the bar the solver should design to.
     out[k] = strict
       ? [Math.max(ulo, a.min), Math.min(uhi, a.optimal_high)]
-      : [a.min, a.optimal_high];
+      : [a.optimal_low, a.optimal_high];
   };
   for (const [k, r] of Object.entries(USER)) both(k, r);
   both('glutes', USER_GLUTES(f));
