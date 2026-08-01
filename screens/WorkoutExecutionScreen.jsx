@@ -15,7 +15,8 @@ import PremiumPaywall from './PremiumPaywall';
 import RecoveryCheckIn from './RecoveryCheckIn';
 import { adjustSessionForReadiness } from '../lib/readiness';
 import { getTodayCheckIn, saveCheckIn } from '../lib/recoveryStore';
-import { MOVEMENT_PATTERNS } from './movementLibrary';
+import { MOVEMENT_PATTERNS, getPatternLabelForExercise } from './movementLibrary';
+import { isAddProposal } from '../lib/proposalRouting';
 import { checkReadyToProgress } from './programGenerator';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
@@ -291,14 +292,19 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
     (async () => {
       const user = await getCurrentUser();
       if (!user) return;
+      // Day ids are reused across DIFFERENT splits ('upper_a' exists on both
+      // Upper/Lower 4x and 6x) — without the split check below, an addition made
+      // on one split would still show up on a same-named day after switching.
+      const { data: prof } = await supabase.from('profiles').select('selected_split').eq('id', user.id).single();
       const { data: additions } = await supabase
         .from('program_additions')
         .select('*')
         .eq('user_id', user.id)
         .eq('day_id', workout.id)
         .order('created_at', { ascending: true });
-      if (!additions?.length) return;
-      const extra = additions.map(a => {
+      const scoped = (additions || []).filter(a => a.split_id == null || a.split_id === (prof?.selected_split ?? null));
+      if (!scoped.length) return;
+      const extra = scoped.map(a => {
         const found = findExerciseByName(a.exercise_name);
         const ex = found?.exercise || {};
         const pattern = found?.pattern;
@@ -443,7 +449,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
     if (!p || p.day_id !== workout.id) return;
     const editType = p.edit_type || 'replace_exercise';
 
-    if (editType === 'add_exercise' || p.type === 'add_exercise') {
+    if (isAddProposal(p)) {
       const found = findExerciseByName(p.exercise_name || '');
       const ex = found?.exercise || {};
       const pattern = found?.pattern;
@@ -1472,11 +1478,18 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
             onProposalApplied={applyCoachEdit}
             workoutContext={(() => {
               const ex = sets[currentExIdx];
+              // Each slot carries its movement-pattern label so a swap requested
+              // mid-workout stays in the right group — without it the coach only
+              // saw a bare name and offered flat-bench options for a decline slot.
+              const patternTag = (name) => {
+                const label = getPatternLabelForExercise(name);
+                return label ? ` [${label}]` : '';
+              };
               return [
                 `Session: ${workout.name} (day_id: ${workout.id})`,
                 `Exercises in this live session — use THESE [index] numbers and this day_id for any change to this session:`,
-                ...sets.map((e, i) => `  [${i}] ${e.name} (${e.target_sets}×${e.target_reps})`),
-                `Current exercise: ${ex?.name} (${ex?.target_sets}×${ex?.target_reps}, rest ${ex?.rest})`,
+                ...sets.map((e, i) => `  [${i}] ${e.name}${patternTag(e.name)} (${e.target_sets}×${e.target_reps})`),
+                `Current exercise: ${ex?.name}${patternTag(ex?.name)} (${ex?.target_sets}×${ex?.target_reps}, rest ${ex?.rest})`,
                 `Sets done on this exercise: ${ex?.completedSets?.filter(s => s.done).length}/${ex?.completedSets?.length}`,
                 `Session progress: ${totalSetsCompleted}/${totalSets} total sets`,
               ].join('\n');

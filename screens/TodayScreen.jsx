@@ -288,7 +288,16 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
         if (overrides?.length) {
           const equipment = normalizeEquipment(prof.equipment || []);
+          const currentSplit = prof.selected_split ?? null;
           overrides.forEach(o => {
+            // Day ids are reused across DIFFERENT splits ('upper_a' exists on
+            // both Upper/Lower 4x and 6x, with different exercises on it). A row
+            // whose split_id doesn't match the split the user is on now belongs
+            // to a different program shape — applying it would land on whatever
+            // exercise happens to share the old slot signature, not the one the
+            // user actually edited. Skip it outright.
+            if (o.split_id != null && o.split_id !== currentSplit) return;
+
             // Legacy rows (written before slot ids) have no slot_id and still
             // resolve by position. Resolve the slot BEFORE applying the edit so we
             // can heal the row: the pre-edit array is the one its index refers to.
@@ -313,6 +322,14 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             if (!o.slot_id && healSlotId) {
               supabase.from('program_template_overrides')
                 .update({ slot_id: healSlotId })
+                .eq('id', o.id)
+                .then(() => {}, () => {});
+            }
+            // Legacy row, no split recorded: it resolved against the CURRENT
+            // program above, so stamp it with the current split.
+            if (o.split_id == null && currentSplit) {
+              supabase.from('program_template_overrides')
+                .update({ split_id: currentSplit })
                 .eq('id', o.id)
                 .then(() => {}, () => {});
             }

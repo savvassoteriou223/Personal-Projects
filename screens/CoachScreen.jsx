@@ -9,7 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import VolumeBar from '../components/VolumeBar';
 import { step as areStep, acceptExperiment, abandonExperiment } from '../lib/areStore';
-import { MOVEMENT_PATTERNS, getAllExercisesForPattern } from './movementLibrary';
+import { computeFatigueSignature } from '../lib/individualModel';
+import { MOVEMENT_PATTERNS, getAllExercisesForPattern, getPatternLabelForExercise } from './movementLibrary';
+import { keepInPatternAlternatives } from '../lib/exerciseAlternatives';
+import { replacementPatternCheck, soleSlotPatterns } from '../lib/proposalPreflight';
+import { isAddProposal } from '../lib/proposalRouting';
+import { sanitizeProposals } from '../lib/proposalValidation';
 import { formatEvidenceBase } from './studiesLibrary';
 import { VOLUME_TARGETS, getVolumeTargets, generateProgram, resolveExerciseByName, normalizeEquipment, applyPermanentEdit, applyContraindicationFilters, getPatternContraindication, getConditionsFromInjuryProfile, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS, detectPlateaus, detectDeloadNeeded, getProactiveCoachPrompt, getEligibleGoalMilestones, checkReadyToProgress, detectRotationTrigger, getBlockLength, generateDeloadWeek } from './programGenerator';
 import { expandAllConditions } from '../lib/conditionsDb';
@@ -103,6 +108,12 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const insets = useSafeAreaInsets();
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
+  // Seconds the current question has been in flight. Most replies land in
+  // 2-8s, but a multi-day sweep ("no barbell for two weeks") legitimately
+  // takes ~35s because the coach rewrites every affected slot on every day.
+  // A single frozen "Thinking..." for that long reads as a hang, so the label
+  // below advances through what is actually happening.
+  const [askElapsed, setAskElapsed] = useState(0);
   // `answer` is now ERROR-ONLY. Successful replies live in conversationHistory and
   // are rendered as the thread — previously only the newest answer was ever drawn,
   // so asking a follow-up silently erased the conversation the coach still
@@ -147,6 +158,15 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const id = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
     return () => clearTimeout(id);
   }, [conversationHistory.length, pendingQuestion, asking, hasAskedThisSession]);
+
+  // Drives the staged "thinking" label. Resets to 0 whenever a request ends so
+  // the next question starts from the first stage rather than the last one.
+  useEffect(() => {
+    if (!asking) { setAskElapsed(0); return; }
+    const startedAt = Date.now();
+    const id = setInterval(() => setAskElapsed(Math.round((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [asking]);
 
   // useEffect (not useFocusEffect) so this also works when embedded in the
   // workout modal, which renders outside the navigation container.
@@ -369,6 +389,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     let plateaus = [];
     let plateauTrend = [];
     let deloadSuggestion = null;
+    let fatigueSignature = null;
     let recentSetsForProgress = []; // hoisted out of the block below — needed later for readyToProgress
     // Every logged set with its session date attached — the shape the Individual
     // Response Model reads. completed_sets carries no date of its own, so the
@@ -426,6 +447,15 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         deloadSuggestion = detectDeloadNeeded(sessions30d, setsWithDates, profile);
         recentSetsForProgress = setsWithDates;
 
+        // Objective, wearable-free readiness: fits each lift's trend on its
+        // OLDER sessions, predicts the recent ones, and measures how far actual
+        // performance fell below that prediction. This is complementary to
+        // deloadSuggestion's RPE-based signal above (self-reported effort) —
+        // this one needs no self-report at all, just logged weight×reps, and it
+        // was computed by individualModel.js for the Adaptive Response Engine
+        // but never actually read by anything until now.
+        fatigueSignature = computeFatigueSignature(modelSets);
+
         // Real per-session trend for the plateaued exercise — same Epley 1RM
         // estimate and per-session max that detectPlateaus computes internally,
         // just exposed as a series instead of only the final stall verdict.
@@ -482,7 +512,16 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
         .order('created_at', { ascending: true });
       if (overrides?.length) {
         const equipment = normalizeEquipment(profile.equipment || []);
+        const currentSplit = profile.selected_split ?? null;
         overrides.forEach(o => {
+          // Day ids are reused across DIFFERENT splits ('upper_a' exists on both
+          // Upper/Lower 4x and 6x, with different exercises on it). A row with a
+          // split_id that doesn't match the split the user is on NOW belongs to a
+          // different program shape entirely — applying it here would land on
+          // whatever exercise happens to share the old slot signature, not the
+          // one the user actually edited. Skip it outright.
+          if (o.split_id != null && o.split_id !== currentSplit) return;
+
           // Mirror TodayScreen exactly: resolve by slot_id so the program the coach
           // reasons about is the SAME one the user sees. Applying by raw
           // exercise_index here would mis-target once a slot has shifted position
@@ -508,6 +547,16 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
           if (!o.slot_id && healSlotId) {
             supabase.from('program_template_overrides')
               .update({ slot_id: healSlotId })
+              .eq('id', o.id)
+              .then(() => {}, () => {});
+          }
+          // Legacy row, no split recorded at all: it resolved against a slot in
+          // the CURRENT program above, so stamp it with the current split — the
+          // closest honest guess available, and it stops this row from being an
+          // open question on every future read.
+          if (o.split_id == null && currentSplit) {
+            supabase.from('program_template_overrides')
+              .update({ split_id: currentSplit })
               .eq('id', o.id)
               .then(() => {}, () => {});
           }
@@ -689,7 +738,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       if (worst) neglectedMuscle = worst;
     }
 
-    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, dislikedIds, streak, insights, proactivePrompt, neglectedMuscle };
+    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, fatigueSignature, dislikedIds, streak, insights, proactivePrompt, neglectedMuscle };
     setUserData(data);
 
     // ── Adaptive Response Engine ────────────────────────────────────────────
@@ -723,7 +772,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   };
 
   const buildContext = (data) => {
-    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], bodyMetrics = [], recoveryCheckIns = [], recentChanges = [], activeConditions = [], plateaus = [], deloadSuggestion = null, dislikedIds = [], streak = 0, insights = [], proactivePrompt = null, rotationDue = null } = data;
+    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], bodyMetrics = [], recoveryCheckIns = [], recentChanges = [], activeConditions = [], plateaus = [], deloadSuggestion = null, fatigueSignature = null, dislikedIds = [], streak = 0, insights = [], proactivePrompt = null, rotationDue = null } = data;
     const exp = profile?.trainingExperience || 'intermediate';
     // Volume judged on DIRECT sets against the (direct-isolation) targets; indirect
     // work from compounds is reported separately so the coach can see it without
@@ -755,15 +804,55 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       `  ${format(new Date(s.completed_at), 'EEE MMM d')}: ${s.name} (${s.duration_min || '?'}min, RPE ${s.perceived_exertion || '?'})`
     ).join('\n');
 
+    // Patterns with exactly one slot in the whole program: replacing that slot
+    // out-of-group (or removing it) deletes the region's training entirely.
+    // The model must see that stake on the exact line it is about to touch.
+    const solePatterns = program ? soleSlotPatterns(program.days) : new Set();
     const programLines = program
       ? program.days.map(day =>
           `  ${day.id} — ${day.name}${day.optional ? ' (optional day — only done when the user chooses to)' : ''}:\n${day.exercises.map((ex, idx) => {
+            // Pattern label, not muscles: the muscle tag collapsed regions
+            // (lower/upper/mid chest all read as plain "chest"), which is how a
+            // decline slot ended up being offered flat-bench replacements. The
+            // label names the AVAILABLE EXERCISES group the slot belongs to.
+            // Muscles remain the fallback for names that aren't in the library.
+            const patternLabel = getPatternLabelForExercise(ex.name);
             const muscles = getMuscles(ex.name);
-            const muscleTag = muscles.length ? ` [${muscles.join('/')}]` : '';
-            return `    [${idx}] ${ex.name}${muscleTag} (${ex.sets ?? 3}×${ex.reps || '8–12'}, rest ${ex.rest || '2 min'})`;
+            const tag = patternLabel
+              ? ` [${patternLabel}]`
+              : muscles.length ? ` [${muscles.join('/')}]` : '';
+            const patternKey = resolveExerciseByName(ex.name)?.patternKey;
+            const sole = patternKey && solePatterns.has(patternKey)
+              ? ' — SOLE slot for this group in the program' : '';
+            // Equipment the slot actually needs, machine-readable. Exercise
+            // names don't reliably encode it ("Incline bench row (wide grip)"
+            // is a barbell movement and reads like it isn't), and an
+            // equipment sweep that misses a slot leaves the user with an
+            // exercise they can't perform. With this tag the edge function
+            // can compute the affected set from the program itself instead of
+            // trusting the model to spot every one by name.
+            const equip = (ex.equipment_required || []).join('+');
+            const equipTag = equip ? ` {equip:${equip}}` : '';
+            // Same idea as the equipment tag, for the other two things a
+            // multi-slot sweep is ever keyed on: the movement pattern (an
+            // injury rules out a pattern, not an exercise) and the exercise
+            // itself (a dislike). With all three machine-readable, the edge
+            // function can derive the full affected set for any sweep rather
+            // than trusting the model to have spotted every instance.
+            const patKey = ex.pattern || patternKey;
+            const patTag = patKey ? ` {pat:${patKey}}` : '';
+            return `    [${idx}] ${ex.name}${tag} (${ex.sets ?? 3}×${ex.reps || '8–12'}, rest ${ex.rest || '2 min'})${equipTag}${patTag}${sole}`;
           }).join('\n')}`
         ).join('\n')
       : '  Program not available';
+
+    // Same day[0] simplification the "Next Up" card uses elsewhere — without
+    // an explicit anchor, "the workout" / "today's workout" with no day named
+    // is ambiguous to the model and it addresses the whole program instead of
+    // one session (caught via live scenario testing).
+    const nextSessionLine = program?.days?.[0]
+      ? `Next scheduled session: ${program.days[0].name.split('—')[0].trim()} (day_id: ${program.days[0].id}) — this is what "the workout" / "today's workout" means when the user names no specific day.`
+      : 'Next scheduled session: not available';
 
     // How the days are actually spaced — without this, Coach can't reason
     // about fatigue relative to the program's own built-in recovery structure
@@ -979,8 +1068,11 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
 - Active conditions (already filtered out of the program below): ${conditionsLine}
 ${memoryBlock}
 Current program: ${program?.name || 'unknown'} (split ID: ${profile?.selected_split || 'unknown'})
-Days and exercises:
+Days and exercises ("SOLE slot" = the program's only work for that group; losing
+that slot means the user stops training that region at all):
 ${programLines}
+
+${nextSessionLine}
 
 Rest days between sessions (the program's own built-in spacing):
   ${restBetweenLine}
@@ -995,7 +1087,16 @@ they are not in this list). When you propose adding or replacing an exercise,
 the exercise_name MUST be copied EXACTLY from this list — never invent, rename,
 or paraphrase an exercise. The name already encodes the target region (e.g.
 "Cable crossover (lower chest)"), so pick the one that matches the user's
-request. If nothing here fits, say so instead of proposing:
+request. If nothing here fits, say so instead of proposing.
+
+The list is grouped by movement pattern, and each exercise in the program above
+is tagged with the group it belongs to. A REPLACEMENT MUST COME FROM THE SAME
+GROUP as the exercise being replaced — that group is the training slot, and
+leaving it silently deletes the region the program allocated sets to. "Chest —
+Decline / Lower Chest", "Chest — Incline Push (Upper Chest)" and "Chest —
+Horizontal Push" are three DIFFERENT slots, not interchangeable bench variants.
+Only cross groups if the user explicitly asks for a different movement (or
+every option in the group is excluded), and say so in your reply when you do:
 ${libraryLines}
 ${excludedPatternLines.length ? `\nPatterns removed from the list above (contraindicated, no safe substitute to mention):\n${excludedPatternLines.join('\n')}\n` : ''}
 SAFETY — some patterns above are marked "[caution — condition on file]": they are
@@ -1025,6 +1126,13 @@ Deload status (same detector Today shows):
 ${deloadSuggestion
   ? `  Recommended — ${deloadSuggestion.headline} (${deloadSuggestion.trigger === 'autoreg' ? 'fatigue-triggered' : `${deloadSuggestion.weeksTraining} weeks of consistent training`}). ${Math.round(deloadSuggestion.volumeReduction * 100)}% fewer sets suggested this week.`
   : '  Not currently suggested'}
+
+Objective readiness (fits each lift's own trend on older sessions, compares recent
+sessions against that prediction — needs no self-report, just logged weight×reps.
+Different signal from deload status above, which is RPE-based):
+${fatigueSignature?.label
+  ? `  ${fatigueSignature.label === 'fatigued' ? 'Fatigued' : fatigueSignature.label === 'moderate' ? 'Moderately fatigued' : 'Fresh'} — recent performance is ${fatigueSignature.deviationPct}% ${fatigueSignature.deviationPct < 0 ? 'below' : 'above'} this user's own trajectory across ${fatigueSignature.lifts} lift(s).`
+  : '  Not enough history yet to call this'}
 
 Performance correlations (same engine ProfileScreen's insights card uses —
 sleep/nutrition patterns found against actual session RPE, not generic advice):
@@ -1153,7 +1261,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     if (programDays?.length && !day) {
       return false;
     }
-    const isAdd = p.type === 'add_exercise' || p.edit_type === 'add_exercise';
+    const isAdd = isAddProposal(p);
     // Resolve the model's exercise_index — an index into the list buildContext
     // just sent it — to the durable slot id, here, while that array is still the
     // one it refers to. `current_exercise` stays a sanity check ONLY: relocating
@@ -1166,6 +1274,16 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
       if (p.current_exercise) {
         const wantLc = p.current_exercise.trim().toLowerCase();
         if ((target.name || '').trim().toLowerCase() !== wantLc) return false;
+      }
+      // The coach must know what it is replacing. A replacement that leaves
+      // the slot's movement pattern is either the model misreading the slot —
+      // the decline-press bug — or a deliberate, stated decision. Rule 7b makes
+      // the model declare deliberate crossings in pattern_change_reason; an
+      // undeclared crossing is rejected here rather than trusted. Names outside
+      // the library return known:false and are not judged.
+      if ((p.edit_type || 'replace_exercise') === 'replace_exercise' && p.exercise_name) {
+        const check = replacementPatternCheck(target.name, p.exercise_name);
+        if (check.known && check.crosses && !p.pattern_change_reason) return false;
       }
       p = { ...p, slot_id: target.slotId ?? null };
     }
@@ -1189,7 +1307,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
       if (dup) return false;
     }
     let err;
-    if (p.type === 'add_exercise') {
+    if (isAdd) {
       // Reject an invented exercise name — additions aren't name-resolved on the
       // way in, so without this an unreal name would be inserted and shown as a
       // real added exercise.
@@ -1201,6 +1319,8 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         sets: p.sets || 3,
         reps: p.reps || '10–15',
         rest: p.rest || '90 sec',
+        // Same day-id-reuse-across-splits issue as program_template_overrides.
+        split_id: userData?.profile?.selected_split ?? null,
       }));
     } else {
       // Resolve the proposed exercise NAME → its real id + pattern, so a replace
@@ -1231,6 +1351,13 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         reps: p.reps || null,
         rpe: p.rpe || null,
         is_session_swap: sessionOnly,
+        // Different splits reuse the same day ids ('upper_a' exists in both
+        // Upper/Lower 4x and 6x, with different exercises on it) — without this,
+        // an edit made on one split silently reapplies on a same-named day after
+        // switching splits, landing on whatever exercise happens to share the
+        // old slot signature. Scoping to the split it was actually made on is
+        // what makes that no longer possible.
+        split_id: userData?.profile?.selected_split ?? null,
       }));
     }
     // Return the ENRICHED proposal on success (it carries the resolved slot_id),
@@ -1271,7 +1398,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     if (confirmingIndex !== null) return;
     const p = proposals[index];
     // Additions are always permanent (they create a new slot) — no scope choice.
-    if (p.type === 'add_exercise' || p.edit_type === 'add_exercise') {
+    if (isAddProposal(p)) {
       doApply(index, false);
       return;
     }
@@ -1409,6 +1536,44 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     scrollRef.current?.scrollTo({ y: Math.max(0, askCardY.current - 16), animated: true });
   };
 
+  // computeFatigueSignature flags one thing: recent performance sitting below
+  // this user's own trajectory. Unlike a deload (a full week, every day, RPE
+  // triggered), this is lighter-touch and scoped to a single session — the
+  // next one up — since the signal itself is about right now, not an
+  // accumulated 6-week block. Trims toward the low end of DELOAD_RESEARCH's
+  // "low recovery need" bracket (25–45%) rather than reusing the deload's own
+  // 50%, since a single off session warrants less than a full deload does.
+  const buildFatigueProposals = () => {
+    const program = userData?.program;
+    const day = program?.days?.[0]; // same simplification nextUp already uses
+    if (!day?.exercises?.length) return [];
+    const dayName = day.name?.split('—')[0].trim();
+    const pct = Math.abs(userData?.fatigueSignature?.deviationPct || 0);
+    const rationale = t('coach.fatigueRationale', { pct });
+    const built = [];
+    day.exercises.forEach((ex, exIdx) => {
+      if (!ex?.name || !ex.sets || ex.sets < 2) return;
+      const reduced = Math.max(1, Math.round(ex.sets * 0.7));
+      if (reduced === ex.sets) return;
+      built.push({
+        type: 'adjust_sets', edit_type: 'adjust_sets', day_id: day.id, day_name: dayName,
+        exercise_index: exIdx, current_exercise: ex.name, exercise_name: ex.name,
+        sets: reduced, rationale,
+      });
+    });
+    return built;
+  };
+
+  const applyFatigueProposals = () => {
+    const built = buildFatigueProposals();
+    if (!built.length) {
+      Alert.alert(t('coach.fatigueNothingTitle'), t('coach.fatigueNothingMsg'));
+      return;
+    }
+    setProposals(built);
+    scrollRef.current?.scrollTo({ y: Math.max(0, askCardY.current - 16), animated: true });
+  };
+
   // Real delete of the exact override row shown as the top done-strip item —
   // not a re-word, not a local-only toggle. Refetches afterward so the
   // program, done-strip, and AI context all immediately reflect the reversal.
@@ -1461,7 +1626,13 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     };
     const saved = await saveProposal(p, sessionOnly);
     if (!saved) { Alert.alert(t('coach.alerts.cantApplyTitle'), t('coach.alerts.cantApplyMsg')); return; }
-    setAlternatives(null);
+    // Remove just the applied slot, not the whole list — a multi-slot reply
+    // ("change both my curls") shows one card per slot, and applying one
+    // shouldn't dismiss the other still-pending one.
+    setAlternatives(prev => {
+      const rest = (prev || []).filter(a => !(a.day_id === slot.day_id && a.exercise_index === slot.exercise_index));
+      return rest.length ? rest : null;
+    });
     setProposalSaved(true);
     loadUserData();
     if (onProposalApplied) {
@@ -1502,6 +1673,18 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     setPendingQuestion(currentQuestion); // show the user's turn immediately
     const data = userData || await loadUserData();
 
+    // loadUserData() returns undefined on an auth hiccup (session refresh mid-use,
+    // a dropped fetch). Sending the question anyway used to fall back to an empty
+    // context string — the coach would answer with zero knowledge of the user's
+    // program while its edit tools stayed active, able to apply a change to a
+    // hallucinated exercise slot. Fail the turn instead and let the user retry.
+    if (!data) {
+      setPendingQuestion(null);
+      setAnswer(t('coach.failedConnect'));
+      setAsking(false);
+      return;
+    }
+
     const newHistory = [
       ...conversationHistory,
       { role: 'user', content: currentQuestion },
@@ -1510,14 +1693,27 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     try {
       // Cap the history sent to the model to bound token cost — memory can grow
       // long over weeks. The full thread still lives in state/DB.
-      const result = await callCoach(newHistory.slice(-20), data ? buildContext(data) : '');
+      const result = await callCoach(newHistory.slice(-20), buildContext(data));
       const answerText = result?.text || t('coach.noAnswer');
       if (result?.proposals?.length) {
-        setProposals(result.proposals);
+        // Malformed or duplicate proposals must never become an "Apply" card —
+        // see lib/proposalValidation.js for why (and its tests for the exact
+        // shapes the live model has produced). The edge function filters these
+        // too; keeping the client check independent means a version skew
+        // between the two can't reopen the hole.
+        const validProposals = sanitizeProposals(result.proposals);
+        if (validProposals.length) setProposals(validProposals);
       }
-      if (result?.alternatives?.alternatives?.length) {
-        setAlternatives(result.alternatives);
-      }
+      // alternatives is a LIST now, one entry per slot — rule 12 explicitly
+      // allows multiple slots changing in one reply ("change both my curls,
+      // you pick"), and the server used to keep only the first one. Filter
+      // each entry through keepInPatternAlternatives independently; a slot
+      // with no offered alternatives left after filtering is dropped rather
+      // than shown as an empty card.
+      const altList = (result?.alternatives || [])
+        .map(a => keepInPatternAlternatives(a, data?.profile?.equipment))
+        .filter(a => a?.alternatives?.length);
+      if (altList.length) setAlternatives(altList);
       setConversationHistory([
         ...newHistory,
         { role: 'assistant', content: answerText },
@@ -1544,8 +1740,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     setConfirmingIndex(-1); // -1 = apply-all in progress
     let hadError = false;
     for (const p of proposals) {
-      const isAdd = p.type === 'add_exercise' || p.edit_type === 'add_exercise';
-      const ok = await saveProposal(p, isAdd ? false : sessionOnly);
+      const ok = await saveProposal(p, isAddProposal(p) ? false : sessionOnly);
       if (!ok) hadError = true;
     }
     setConfirmingIndex(null);
@@ -1575,7 +1770,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
   const coachNotes = userData?.profile?.coach_notes || [];
 
   const editKindLabel = (p) => {
-    if (p.type === 'add_exercise' || p.edit_type === 'add_exercise') return t('coach.addExercise');
+    if (isAddProposal(p)) return t('coach.addExercise');
     if (p.type === 'session_swap') return t('coach.sessionOnly');
     return t('coach.permanent');
   };
@@ -1780,10 +1975,25 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           return null;
         })();
 
+        // Objective, wearable-free readiness (individualModel.computeFatigueSignature):
+        // fits each lift's own trend on OLDER sessions, predicts the recent ones, and
+        // flags when actual performance has fallen meaningfully below that prediction.
+        // Ranked below an explicit proactive prompt and a concrete volume gap (those are
+        // more actionable), but above generic weekly insights — "you're underperforming
+        // your own trajectory" is a stronger, more specific signal than a correlation.
+        const fatigueItem = (userData?.fatigueSignature?.label === 'fatigued')
+          ? { eyebrow: t('coach.focusEyebrowFatigue'), eyebrowColor: colors.warning,
+              title: t('coach.fatigueTitle'),
+              body: t('coach.fatigueBody', { pct: Math.abs(userData.fatigueSignature.deviationPct) }),
+              fatigueAction: true }
+          : null;
+
         const focusItem = (proactivePrompt
           ? { eyebrow: t('coach.focusEyebrowToday'), title: proactivePrompt.title, body: proactivePrompt.body }
           : neglectedMuscle
             ? { eyebrow: t('coach.focusEyebrowGap'), eyebrowColor: colors.warning, title: t('coach.neglectTitle', { muscle: neglectedMuscle.label, days: neglectedMuscle.gapDays }), body: t('coach.neglectBody', { muscle: neglectedMuscle.label.toLowerCase() }) }
+            : fatigueItem
+            ? fatigueItem
             : insights.length > 0
               ? { eyebrow: t('coach.focusEyebrowWeek'), title: insights[0], body: null }
               : readyToProgress.length > 0
@@ -1840,6 +2050,14 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                   {proactivePrompt?.key === 'deload' && (
                     <Tappable style={styles.heroBtnPrimary} onPress={applyDeloadProposals}>
                       <Text style={styles.heroBtnPrimaryText}>{t('coach.applyDeload')}</Text>
+                    </Tappable>
+                  )}
+                  {/* Objective readiness, not a deload — one session, not a full week,
+                      and it's a review-and-apply proposal like every other edit, never
+                      automatic. Only offered when there's a real next-up day to lighten. */}
+                  {focusItem?.fatigueAction && nextUp && (
+                    <Tappable style={styles.heroBtnPrimary} onPress={applyFatigueProposals}>
+                      <Text style={styles.heroBtnPrimaryText}>{t('coach.applyFatigue')}</Text>
                     </Tappable>
                   )}
                   {/* An experiment never starts on its own — §11 of the spec makes
@@ -1953,7 +2171,11 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
             <View style={styles.answerPanel}>
               {lastUserTurn && <Text style={styles.answerQuestion}>{lastUserTurn.content}</Text>}
               {asking ? (
-                <Text style={styles.turnThinking}>{t('coach.thinking')}</Text>
+                <Text style={styles.turnThinking}>
+                  {askElapsed >= 15 ? t('coach.thinkingDays')
+                    : askElapsed >= 6 ? t('coach.thinkingProgram')
+                    : t('coach.thinking')}
+                </Text>
               ) : answer ? (
                 <Text style={styles.turnErrorText}>{answer}</Text>
               ) : lastAssistantTurn ? (
@@ -1990,7 +2212,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           <View style={styles.proposalCard}>
             <Text style={styles.proposalLabel}>
               {proposals.length === 1
-                ? (proposals[0].type === 'add_exercise' ? t('coach.proposesAdding') : t('coach.proposesChanging'))
+                ? (isAddProposal(proposals[0]) ? t('coach.proposesAdding') : t('coach.proposesChanging'))
                 : t('coach.proposesN', { count: proposals.length })}
             </Text>
             {proposals.map((p, i) => (
@@ -2075,13 +2297,17 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           </View>
         )}
 
-        {/* Ranked, research-backed replacement options — tap to apply (no extra message) */}
-        {alternatives?.alternatives?.length > 0 && (
-          <View style={styles.proposalCard}>
+        {/* Ranked, research-backed replacement options — tap to apply (no extra
+            message). alternatives is a LIST: rule 12 allows the coach to change
+            multiple slots in one reply ("change both my curls, you pick"), so
+            this renders one card per slot rather than assuming there's only
+            ever one. */}
+        {alternatives?.map((alt, gi) => alt?.alternatives?.length > 0 && (
+          <View key={`${alt.day_id}-${alt.exercise_index}-${gi}`} style={styles.proposalCard}>
             <Text style={styles.proposalLabel}>
-              {t('coach.alternativesFor', { name: alternatives.current_exercise || t('coach.thisExercise') })}
+              {t('coach.alternativesFor', { name: alt.current_exercise || t('coach.thisExercise') })}
             </Text>
-            {alternatives.alternatives.map((opt, i) => (
+            {alt.alternatives.map((opt, i) => (
               <View key={i} style={[styles.altItem, i > 0 && styles.proposalItemBorder]}>
                 <View style={styles.altHeader}>
                   <View style={styles.altRank}><Text style={styles.altRankText}>{i + 1}</Text></View>
@@ -2090,18 +2316,24 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                 {opt.rationale ? <Text style={styles.proposalRationale}>{opt.rationale}</Text> : null}
                 <Tappable
                   style={[styles.altUseBtn, confirmingIndex !== null && styles.btnDisabled]}
-                  onPress={() => chooseAlternative(alternatives, opt)}
+                  onPress={() => chooseAlternative(alt, opt)}
                   disabled={confirmingIndex !== null}
                 >
                   <Text style={styles.altUseText}>{t('coach.useThis')}</Text>
                 </Tappable>
               </View>
             ))}
-            <Tappable style={[styles.dismissBtn, { marginTop: 4 }]} onPress={() => setAlternatives(null)}>
-              <Text style={styles.dismissBtnText}>{t('coach.dismissAll')}</Text>
+            <Tappable
+              style={[styles.dismissBtn, { marginTop: 4 }]}
+              onPress={() => setAlternatives(prev => {
+                const rest = (prev || []).filter(a => !(a.day_id === alt.day_id && a.exercise_index === alt.exercise_index));
+                return rest.length ? rest : null;
+              })}
+            >
+              <Text style={styles.dismissBtnText}>{t(alternatives.length > 1 ? 'coach.dismissThese' : 'coach.dismissAll')}</Text>
             </Tappable>
           </View>
-        )}
+        ))}
 
         {proposalSaved && (
           <View style={styles.savedBanner}>
