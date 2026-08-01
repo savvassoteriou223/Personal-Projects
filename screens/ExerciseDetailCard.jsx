@@ -21,7 +21,7 @@
  *   <ExerciseDetailCard exercise={exercise} pattern={pattern} onClose={() => {}} />
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -29,9 +29,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { Image } from 'expo-image';
 import MuscleMap from './MuscleMap';
 import { useTranslation } from 'react-i18next';
 import { getExerciseInsight } from './studiesLibrary';
+import { getExerciseGif } from './exerciseDBService';
 import { colors } from '../lib/theme';
 
 // ─── Local aliases onto the shared design tokens (lib/theme.js is the source of
@@ -98,6 +100,17 @@ function CueRow({ index, text }) {
 export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
   const { t } = useTranslation();
   const [researchOpen, setResearchOpen] = useState(false);
+  // getExerciseGif already existed (with its own cache) but nothing called it —
+  // this card showed which muscles an exercise works, never what it looks like.
+  const [gifUrl, setGifUrl] = useState(null);
+  useEffect(() => {
+    let live = true;
+    setGifUrl(null);
+    if (exercise?.name) {
+      getExerciseGif(exercise.name).then(url => { if (live) setGifUrl(url); });
+    }
+    return () => { live = false; };
+  }, [exercise?.name]);
 
   if (!exercise || !pattern) return null;
 
@@ -146,6 +159,13 @@ export default function ExerciseDetailCard({ exercise, pattern, onClose }) {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* ── Demonstration gif ── */}
+      {gifUrl && (
+        <View style={styles.gifSection}>
+          <Image source={{ uri: gifUrl }} style={styles.gif} contentFit="contain" autoplay />
+        </View>
+      )}
 
       {/* ── Muscle map ── */}
       <View style={styles.muscleSection}>
@@ -281,6 +301,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
+
+  // Demonstration gif
+  gifSection: {
+    marginBottom: 20,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  gif: { width: '100%', aspectRatio: 1 },
 
   // Muscle map
   muscleSection: {

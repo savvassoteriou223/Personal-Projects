@@ -35,13 +35,22 @@ const ID_MAP = {
   // ── Chest horizontal ──────────────────────────────────────────────────────
   'barbell bench press':                         '0025',
   'dumbbell bench press':                        '0289',
+  'smith machine bench press':                   '0748', // Smith Bench Press
   'machine chest press':                         '0576',
-  'push up':                                     '1274', // Deep Push Up
+  'push-up':                                     '1274', // Deep Push Up — key must keep the hyphen: norm() strips "-" without adding a space, so "Push-up" normalizes to "pushup", not "push up"
+  'deficit push-up':                             '1274', // closest available
 
   // ── Chest incline ─────────────────────────────────────────────────────────
   'incline barbell press':                       '0047',
   'incline dumbbell press':                      '0314',
+  'decline push-up (feet elevated)':             '0279', // Decline Push-up
+  'incline smith machine press':                 '0757', // Smith Incline Bench Press
   'incline machine chest press':                 '0577', // Lever Chest Press v2
+
+  // ── Chest decline ─────────────────────────────────────────────────────────
+  'decline barbell press':                       '0033', // Barbell Decline Bench Press
+  'decline dumbbell press':                      '0301', // Dumbbell Decline Bench Press
+  'decline machine press':                       '1300', // Lever Decline Chest Press
 
   // ── Chest fly / isolation ─────────────────────────────────────────────────
   'cable fly seated or standing':                '0155', // Cable Cross-over Variation
@@ -49,6 +58,7 @@ const ID_MAP = {
   'cable crossover lower chest':                 '0155',
   'pec deck chest fly machine':                  '0596', // Lever Seated Fly
   'pec deck':                                    '0596',
+  'dumbbell fly':                                '0308', // Dumbbell Fly
   'dips chest focus lean forward':               '0139', // Assisted Chest Dip
 
   // ── Shoulders vertical push ───────────────────────────────────────────────
@@ -56,8 +66,9 @@ const ID_MAP = {
   'dumbbell shoulder press':                     '0426', // Dumbbell Standing Overhead Press
   'arnold press':                                '2137', // Dumbbell Arnold Press
   'machine shoulder press':                      '0603', // Lever Shoulder Press
-  'pike push up':                                '1296',
+  'pike push-up':                                '1296',
   'kettlebell overhead press':                   '0523', // Kettlebell Arnold Press variant
+  'band overhead press':                         '0997', // Band Shoulder Press
 
   // ── Shoulders side delt ───────────────────────────────────────────────────
   'dumbbell lateral raise':                      '0334',
@@ -81,6 +92,8 @@ const ID_MAP = {
   'barbell shrug':                               '0095',
   'dumbbell shrug':                              '0406',
   'incline dumbbell shrug':                      '0406', // closest available
+  'band shrug':                                  '1018', // Band Shrug
+  'cable shrug':                                 '0220', // Cable Shrug
 
   // ── Triceps ───────────────────────────────────────────────────────────────
   'overhead tricep extension':                   '0194', // Cable Overhead Triceps Extension (rope)
@@ -108,6 +121,7 @@ const ID_MAP = {
   'machine lat pulldown':                        '0197', // Cable Pulldown (pro Lat Bar)
   'cable lat pullover rope or bar':              '0073', // Barbell Pullover
   'pullover machine':                            '2285', // Lever Pullover
+  'barbell pullover':                            '0073', // Barbell Pullover
   'kneeling cable pullover':                     '0073',
 
   // ── Back horizontal pull ─────────────────────────────────────────────────
@@ -118,9 +132,14 @@ const ID_MAP = {
   'dumbbell row':                                '0292', // Dumbbell One Arm Bent-over Row
   'seated cable row close grip':                 '0213', // Cable Seated High Row (v-bar)
   'cable row wide grip  flared elbows':          '0218', // Cable Seated Wide-grip Row
-  'chest-supported dumbbell row':                '0049', // Barbell Incline Row
+  'chest-supported dumbbell row':                '0327', // Dumbbell Incline Row — was '0049' (Barbell Incline Row), wrong equipment for a dumbbell exercise
+  'chest-supported dumbbell row wide grip  flared elbows': '0327', // Dumbbell Incline Row
+  'chest-supported row wide grip  flared elbows': '0581', // Lever High Row
+  'incline bench row wide grip  flared elbows':  '0049', // Barbell Incline Row
+  'towel row around a door frame':               '3165', // Bodyweight Standing Row (with Towel)
   'machine row chest-supported':                 '0213',
   'inverted row australian pull-up':             '0499', // Inverted Row
+  'inverted row under a table':                  '0499', // Inverted Row
   'single-arm kettlebell row':                   '0292',
 
   // ── Biceps ────────────────────────────────────────────────────────────────
@@ -139,10 +158,12 @@ const ID_MAP = {
   // ── Squats ────────────────────────────────────────────────────────────────
   'barbell back squat':                          '0043', // Barbell Full Squat
   'barbell front squat':                         '0042', // Barbell Front Squat
+  'smith machine squat':                         '0770', // Smith Squat
   'hack squat':                                  '0743', // Sled Hack Squat
   'pendulum squat':                              '0743', // closest available
   '45 leg press':                                '0739', // Sled 45° Leg Press
   'bulgarian split squat':                       '0410', // Dumbbell Single Leg Split Squat
+  'bulgarian split squat bodyweight':            '2368', // Split Squats (Body Weight)
   'goblet squat':                                '1760', // Dumbbell Goblet Squat
   'lunge barbell or dumbbell':                   '0336', // Dumbbell Lunge
   'step-up dumbbell or barbell':                 '0431', // Dumbbell Step-up
@@ -151,6 +172,8 @@ const ID_MAP = {
   'goblet squat kettlebell':                     '1760',
   'leg extension lean back':                     '0585', // Lever Leg Extension
   'leg extensions':                              '0585',
+  'sissy squat':                                 '1489', // Sissy Squat
+  'resistance band squat':                       '1004', // Band Squat
 
   // ── Hip hinge ─────────────────────────────────────────────────────────────
   'romanian deadlift barbell':                   '0085', // Barbell Romanian Deadlift
@@ -165,6 +188,7 @@ const ID_MAP = {
   'single-leg romanian deadlift bodyweight':     '1459',
   'kettlebell swing':                            '0549', // Kettlebell Swing
   'kettlebell romanian deadlift':                '1459',
+  'resistance band romanian deadlift':           '1009', // Band Stiff Leg Deadlift — closest available; RDL and stiff-leg deadlift are near-identical movements
 
   // ── Hamstrings ────────────────────────────────────────────────────────────
   'seated leg curl':                             '0599', // Lever Seated Leg Curl
@@ -174,6 +198,7 @@ const ID_MAP = {
   // ── Glutes ────────────────────────────────────────────────────────────────
   'walking lunge long stride':                   '1460', // Walking Lunge
   'hip abduction machine':                       '0597', // Lever Seated Hip Abduction
+  'cable pull-through':                          '0196', // Cable Pull Through (with Rope)
   'glute bridge bodyweight':                     '1409', // Barbell Glute Bridge
   'single-leg glute bridge':                     '1409',
 
@@ -181,10 +206,15 @@ const ID_MAP = {
   'standing calf raise':                         '0605', // Lever Standing Calf Raise
   'seated calf raise':                           '0594', // Lever Seated Calf Raise
   'single-leg calf raise':                       '0409', // Dumbbell Single Leg Calf Raise
+  'dumbbell standing calf raise':                '0417', // Dumbbell Standing Calf Raise
+  'cable standing calf raise':                   '1375', // Cable Standing Calf Raise
+  'leg press calf raise':                        '1391', // Sled Calf Press On Leg Press
 
   // ── Forearms ─────────────────────────────────────────────────────────────
   'reverse curl ez bar or barbell':              '0080', // Barbell Reverse Curl
+  'dumbbell reverse curl':                       '0429', // Dumbbell Standing Reverse Curl
   'wrist curl dumbbell or cable':                '0125', // Barbell Wrist Curl V. 2
+  'dumbbell wrist curl':                         '0369', // Dumbbell Over Bench Wrist Curl
   'reverse wrist curl dumbbell or cable':        '0079', // Barbell Reverse Wrist Curl V. 2
   'farmers walk  carry':                         '2133', // Farmers Walk
 
@@ -194,7 +224,22 @@ const ID_MAP = {
   'hanging leg raise':                           '0010', // Assisted Hanging Knee Raise With Throw Down
   'hanging knee raise':                          '0011', // Assisted Hanging Knee Raise
   'plank isometric hold':                        '2135', // Weighted Front Plank
+  'dumbbell side bend':                          '0407', // Dumbbell Side Bend
 };
+
+// Deliberately NOT mapped (decided 2026-07-31): band/kettlebell/bodyweight-only
+// exercises where WorkoutX has no real match. A same-muscle substitute was
+// tried and reverted — showing "Barbell Bent Over Row" under a banded-only
+// exercise tells a bands-only user to grab a barbell they don't have, which is
+// worse than no gif at all. These exercises keep their real name, equipment,
+// and instructions with no visual: Band chest fly, Band tricep pushdown,
+// Standing band pulldown, Meadows row, Resistance band row, Prone Y-T-W raise,
+// Band lateral raise, Lying lateral raise, Band pull-apart, Band face pull,
+// Prone Y-raise, Prone T-raise, Self-resisted towel curl, Resistance band curl,
+// Resistance band hammer curl, Smith machine lunge, Single-leg extension,
+// Wall sit, Step-up (bodyweight), Standing leg curl, Slider leg curl,
+// Band leg curl (lying), Cable hip abduction (standing), Cable glute kickback,
+// Kettlebell hip thrust.
 
 async function main() {
   const { data: existing } = await supabase.from('exercise_gifs').select('name, gif_url');

@@ -1,7 +1,8 @@
 import {
-  useState, useCallback } from 'react';
+  useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ import { generateProgram, getRankedSplits, SPLITS } from './programGenerator';
 import { GOAL_PARAMETERS } from './scienceEngine';
 import StudyChart from './StudyChart';
 import { getExerciseInsight } from './studiesLibrary';
+import { getExerciseGif } from './exerciseDBService';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
@@ -463,6 +465,16 @@ function getMuscleColor(muscles) {
 function ExerciseCard({ ex, isSimple = false }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  // This screen lists every exercise in the whole program at once — fetch the
+  // gif only once a row is actually opened, not for all of them up front.
+  const [gifUrl, setGifUrl] = useState(null);
+  useEffect(() => {
+    let live = true;
+    if (expanded && ex.name) {
+      getExerciseGif(ex.name).then(url => { if (live) setGifUrl(url); });
+    }
+    return () => { live = false; };
+  }, [expanded, ex.name]);
   const borderColor = getMuscleColor(ex.muscles);
   return (
     <View style={styles.exCard}>
@@ -526,6 +538,11 @@ function ExerciseCard({ ex, isSimple = false }) {
       </Tappable>
       {expanded && (
         <View style={styles.expandedSection}>
+          {gifUrl && (
+            <View style={styles.gifSection}>
+              <Image source={{ uri: gifUrl }} style={styles.gif} contentFit="contain" autoplay />
+            </View>
+          )}
           {(() => {
             const insight = getExerciseInsight(ex);
             return insight ? (
@@ -722,6 +739,8 @@ const styles = StyleSheet.create({
   subChipEquip: { fontSize: 11, color: colors.textPrimary, flexShrink: 0 },
   expandHint: { fontSize: 11, color: colors.textFaint, marginTop: 8, textAlign: 'right' },
   expandedSection: { marginTop: 14, borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 14 },
+  gifSection: { borderRadius: 10, overflow: 'hidden', backgroundColor: colors.surfaceRaised, borderWidth: 0.5, borderColor: colors.border, marginBottom: 12 },
+  gif: { width: '100%', aspectRatio: 1 },
   researchNote: { backgroundColor: colors.surfaceRaised, borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: colors.border, marginBottom: 12 },
   researchNoteText: { fontSize: 12, color: colors.textMuted, lineHeight: 18 },
   cuesSection: { marginBottom: 12 },

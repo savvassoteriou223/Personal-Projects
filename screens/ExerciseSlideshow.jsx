@@ -1,15 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, Modal, ScrollView, StyleSheet, StatusBar,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
+import { getExerciseGif } from './exerciseDBService';
 
 export default function ExerciseSlideshow({ exercise, visible, onClose }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  // getExerciseGif already existed with its own cache — nothing in the app
+  // called it, so a beginner reading numbered text cues never saw the movement.
+  const [gifUrl, setGifUrl] = useState(null);
+  useEffect(() => {
+    let live = true;
+    setGifUrl(null);
+    if (exercise?.name) {
+      getExerciseGif(exercise.name).then(url => { if (live) setGifUrl(url); });
+    }
+    return () => { live = false; };
+  }, [exercise?.name]);
+
   if (!exercise) return null;
 
   const sets = exercise.sets ?? exercise.target_sets;
@@ -44,6 +58,19 @@ export default function ExerciseSlideshow({ exercise, visible, onClose }) {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+
+          {/* ── Demonstration gif — the whole point of "How To": watch it, don't
+                 just read numbered steps ── */}
+          {gifUrl && (
+            <View style={styles.gifSection}>
+              <Image
+                source={{ uri: gifUrl }}
+                style={styles.gif}
+                contentFit="contain"
+                autoplay
+              />
+            </View>
+          )}
 
           {/* ── Technique cues ── */}
           {exercise.cues?.length > 0 && (
@@ -100,6 +127,14 @@ const styles = StyleSheet.create({
     borderWidth: 0.5, borderColor: colors.border,
   },
   doneBtnText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
+
+  gifSection: {
+    marginHorizontal: 20, marginTop: 20,
+    borderRadius: 14, overflow: 'hidden',
+    backgroundColor: colors.surfaceInset,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  gif: { width: '100%', aspectRatio: 1 },
 
   cuesSection: { padding: 20, paddingBottom: 4 },
   sectionLabel: {

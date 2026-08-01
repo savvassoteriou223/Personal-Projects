@@ -1067,7 +1067,12 @@ export const MOVEMENT_PATTERNS = {
       {
         id: 'meadows_row',
         name: 'Meadows row',
-        equipment: ['landmine'],
+        // 'landmine' is not a real equipment tag anywhere else in this file and is
+        // never producible by normalizeEquipment() in programGenerator.js — tagged
+        // that way this exercise could never be recommended to anyone. Retagged to
+        // 'barbell': the setup instructions below already describe improvising with
+        // just a barbell wedged in a corner, no attachment required.
+        equipment: ['barbell'],
         difficulty: 'intermediate',
         stretch_position: true,
         progressive_overload: 'high',
@@ -1426,6 +1431,27 @@ export const MOVEMENT_PATTERNS = {
           'Pull pads DOWN in a wide arc — sweep elbows toward your hips',
           'At the bottom: pads should be level with or slightly behind your torso — lats fully contracted. Hold 1 second',
           'Return SLOWLY to the fully overhead position — feel the lat lengthen through the eccentric',
+        ],
+      },
+      {
+        id: 'barbell_pullover',
+        name: 'Barbell pullover',
+        equipment: ['barbell'],
+        difficulty: 'intermediate',
+        stretch_position: true,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'The free-weight version of the lat pullover — same overhead shoulder-extension stretch as the cable and machine variants, but a barbell across the chest lets you load it much heavier once technique is solid. Also recruits the chest and long head of the triceps as secondary movers, so it doubles as light chest/tricep work on a back day. Needs a stable bench and a spotter or light starting weight — the bar travels directly over the face at the bottom of the rep.',
+        reps: '10–12',
+        rest: '2 min',
+        sets: 3,
+        cues: [
+          'SETUP: Lie flat on a bench with only your shoulders/upper back supported, head off the end. Feet flat on the floor for stability',
+          'Hold the bar with a shoulder-width overhand grip, arms extended straight above your chest',
+          'Lower the bar in an arc BEHIND your head, keeping arms nearly straight — feel the stretch load your lats, not your shoulders',
+          'Stop when you feel a strong lat stretch — do not force extra range that turns this into a shoulder-mobility stretch',
+          'Pull the bar back up the same arc to over your chest — squeeze the lats to initiate the movement, not the triceps',
+          'Keep the rep slow and controlled throughout — this is not an exercise to rush or bounce out of the bottom',
         ],
       },
     ],
@@ -2030,6 +2056,26 @@ export const MOVEMENT_PATTERNS = {
           'Shrug STRAIGHT UP — think "touch ears with shoulders." No rolling',
           'Hold 1 second at the top, then lower slowly back to full depression',
           'Use the heaviest band that still allows full range of motion without gripping too hard',
+        ],
+      },
+      {
+        id: 'cable_shrug',
+        name: 'Cable shrug',
+        equipment: ['cables'],
+        difficulty: 'beginner',
+        stretch_position: false,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'Same vertical shrug pattern as a barbell or dumbbell shrug, but constant cable tension keeps the upper traps loaded at the top AND bottom of the rep instead of dropping off — free weights lose tension briefly at full depression. A good option in gyms without a rack free for barbell shrugs.',
+        reps: '10–15',
+        rest: '1–2 min',
+        sets: 3,
+        cues: [
+          'Stand facing the cable stack, low pulley, straight-bar or rope attachment, arms hanging straight down',
+          'Fully depress your shoulders at the start — feel the stretch with the cable still under tension',
+          'Shrug STRAIGHT UP toward your ears — no rolling forward or back',
+          'Hold 1 second at the top, squeezing the traps',
+          'Lower slowly back to full depression, resisting the cable the whole way down',
         ],
       },
     ],
@@ -2790,6 +2836,27 @@ export const MOVEMENT_PATTERNS = {
           'Progress: carry a weighted backpack, hold a loaded bag, or increase step height',
         ],
       },
+      {
+        id: 'sissy_squat',
+        name: 'Sissy squat',
+        equipment: ['bodyweight'],
+        difficulty: 'intermediate',
+        stretch_position: true,
+        progressive_overload: 'low',
+        primary_alternative: false,
+        research_note: 'A near-vertical torso and deep knee bend load the rectus femoris at its longest length — a distal-quad stretch position that leg extensions and squats do not reach the same way (Kassiano et al. 2025 [20]: leg extension biases the distal rectus femoris, squat biases the proximal vastus lateralis). Zero equipment needed, but genuinely demanding on knee flexibility and balance — hold something stable the first few sessions.',
+        reps: '8–12',
+        rest: '90 sec–2 min',
+        sets: 2,
+        cues: [
+          'Stand with feet hip-width, holding a stable object (doorframe, rack upright) lightly for balance',
+          'Rise onto the balls of your feet and keep them there for the whole set',
+          'Lean your torso back and bend your knees together, keeping hips extended — you should feel a strong stretch down the front of the thigh, not a hip-hinge',
+          'Go as low as your knees comfortably allow — thighs near parallel is a good target, do not force extra depth',
+          'Drive back up through the quads to standing — avoid using your hands to pull yourself up once you have some strength here',
+          'This is knee-intensive — stop short of pain, not just discomfort, and build depth gradually over weeks',
+        ],
+      },
     ],
   },
 
@@ -3444,6 +3511,45 @@ export const MOVEMENT_PATTERNS = {
           'Perform all reps on one side, then switch',
         ],
       },
+      {
+        id: 'dumbbell_standing_calf_raise',
+        name: 'Dumbbell standing calf raise',
+        equipment: ['dumbbells'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'Same standing, straight-knee, full-stretch position that Kinoshita et al. (2023) linked to 9–12% gastrocnemius growth — this is the loaded home-gym version for anyone without a calf raise machine. A pair of dumbbells gives real progressive overload without needing plate-loaded equipment.',
+        reps: '12–20',
+        rest: '60–90 sec',
+        sets: 3,
+        cues: [
+          'Hold a dumbbell in each hand at your sides, stand with the balls of your feet on a step or plate for extra range',
+          'Lower your heels as far below the step as possible — full stretch at the bottom, do not skip this',
+          'Rise onto your toes as high as you can — pause and squeeze for 1 second at the top',
+          'Lower slowly — 2 seconds down, resist the urge to just drop',
+          'Keep knees straight (not locked) throughout — a bent knee shifts the work off the gastrocnemius',
+        ],
+      },
+      {
+        id: 'cable_standing_calf_raise',
+        name: 'Cable standing calf raise',
+        equipment: ['cables'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'Standing calf raise with constant cable tension instead of a fixed weight stack — keeps load on the gastrocnemius through the full stretch-to-contraction arc, matching the standing, full-range position the growth research favours over seated/restricted-range variants.',
+        reps: '12–20',
+        rest: '60–90 sec',
+        sets: 3,
+        cues: [
+          'Stand facing the cable machine, low pulley attachment, balls of your feet on a raised platform if available',
+          'Lower your heels for a full stretch at the bottom before every rep',
+          'Rise onto your toes as high as possible, squeezing the calf for 1 second at the top',
+          'Lower under control — do not let the cable yank your heels back down',
+        ],
+      },
     ],
   },
 
@@ -3717,6 +3823,26 @@ export const MOVEMENT_PATTERNS = {
           'Advanced: plank with feet elevated, or RKC plank (maximum full-body tension for 10–20 sec)',
         ],
       },
+      {
+        id: 'dumbbell_side_bend',
+        name: 'Dumbbell side bend',
+        equipment: ['dumbbells'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'medium',
+        primary_alternative: false,
+        research_note: 'Every other exercise in this group trains spinal flexion (crunch, rollout, leg raise) — none train lateral flexion, which is the obliques\' other main job. A dumbbell held at one side loads that movement directly and progressively, unlike bodyweight oblique work which plateaus fast.',
+        reps: '12–15 per side',
+        rest: '60–90 sec',
+        sets: 2,
+        cues: [
+          'Stand upright, dumbbell in one hand hanging at your side, other hand behind your head or resting on your hip',
+          'Keeping your torso facing forward (no twisting, no leaning forward or back), bend sideways at the waist, lowering the dumbbell down your leg',
+          'Lower only as far as feels like a controlled stretch through your side — do not force extra range',
+          'Pull yourself back up to fully upright using your side muscles, not by swinging the weight',
+          'Complete all reps on one side, then switch the dumbbell to the other hand and repeat',
+        ],
+      },
     ],
   },
 };
@@ -3773,6 +3899,30 @@ export function getAlternatives(patternKey, currentExerciseId, availableEquipmen
 
 // Get all movement pattern keys
 export const PATTERN_KEYS = Object.keys(MOVEMENT_PATTERNS);
+
+// Exercise name → the label of the pattern it belongs to. Built once from the
+// library itself, so it can never drift from the AVAILABLE EXERCISES grouping
+// the coach is shown.
+const _PATTERN_LABEL_BY_NAME = (() => {
+  const map = {};
+  Object.values(MOVEMENT_PATTERNS).forEach(pat => {
+    pat.exercises.forEach(ex => { map[ex.name.toLowerCase()] = pat.label; });
+  });
+  return map;
+})();
+
+// The movement-pattern label for an exercise name, or null for a name that
+// isn't in the library (a renamed or hand-entered slot).
+//
+// The coach's program context used to tag each slot with muscles instead, but
+// normaliseMuscle collapses 'lower chest' and 'upper chest' into plain 'chest',
+// so a decline press and a flat bench arrived at the model as the identical
+// tag [chest/triceps] — and it duly offered flat-bench "alternatives" for a
+// lower-chest slot. The pattern label is the grouping the exercise menu already
+// uses, so it names the group a replacement has to come from.
+export function getPatternLabelForExercise(name) {
+  return _PATTERN_LABEL_BY_NAME[name?.toLowerCase()] || null;
+}
 
 // Slot map — used by program generator to assign exercises to training slots
 export const SLOT_PATTERNS = PATTERN_KEYS.reduce((acc, key) => {
