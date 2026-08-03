@@ -129,11 +129,15 @@ const styles = StyleSheet.create({
   doneBtnText: { color: colors.textSecondary, fontSize: 14, fontWeight: '600' },
 
   gifSection: {
-    marginHorizontal: 20, marginTop: 20,
+    // Sits tight under the header so the demonstration is unmistakably the
+    // first thing in the sheet, with the written cues below it.
+    marginHorizontal: 20, marginTop: 12,
     borderRadius: 14, overflow: 'hidden',
     backgroundColor: colors.surfaceInset,
     borderWidth: 0.5, borderColor: colors.border,
   },
+  // Square, matching the source: every gif in the bucket is 360x360, so any
+  // other ratio just letterboxes them and shrinks the demonstration.
   gif: { width: '100%', aspectRatio: 1 },
 
   cuesSection: { padding: 20, paddingBottom: 4 },
