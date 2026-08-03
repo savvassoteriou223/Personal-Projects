@@ -201,7 +201,7 @@ export const SPLITS = {
     optimality: 'suboptimal',
     optimality_score: 5,
     science_basis: 'Each muscle is trained only once per week. Schoenfeld et al. (2016) meta-analysis: 2×/week frequency is superior to 1×/week for hypertrophy when distributing the same volume. A single weekly session per muscle leaves growth on the table versus an upper/lower at the same 4 days.',
-    honest_note: 'The classic "bro split". It works, but it is the least optimal 4-day option — every muscle is trained just once per week. Evidence-based coaches (Nippard, Israetel, Helms) rank it below upper/lower for this reason. At 4 days, Upper/Lower trains everything twice and is the better choice for most lifters. Choose this only if you strongly prefer the one-muscle-per-day feel.',
+    honest_note: 'The classic "bro split". It works, but it is the least optimal 4-day option — every muscle is trained just once per week. The evidence-based consensus ranks it below upper/lower for this reason. At 4 days, Upper/Lower trains everything twice and is the better choice for most lifters. Choose this only if you strongly prefer the one-muscle-per-day feel.',
     session_time_est: '55–75 min',
     day_structure: ['Chest + Triceps', 'Back + Biceps', 'Shoulders + Abs', 'Legs'],
     schedule_template: ['Monday', 'Tuesday', 'Thursday', 'Friday'],
@@ -962,6 +962,9 @@ const SPLIT_DAYS = {
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
       ['squat_pattern', [2, 3, 4], 'leg_press'], ['chest_decline', [2, 3, 4]], ['back_inner', [2, 3, 5]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['triceps', [2, 3, 5], null, 'contracted'], ['biceps', [2, 3, 4], null, 'contracted'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 4, 5]]
     ] },
+    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+    ] },
   ],
   hybrid_3x: f => [
     { id: 'full_body', name: 'Full Body', focus: 'Squat · press · row', slots: [
@@ -972,6 +975,9 @@ const SPLIT_DAYS = {
     ] },
     { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
       ['squat_pattern', [2, 3, 5], 'leg_press'], ['hip_hinge', [3, 4, 5], 'conventional_deadlift'], ['glute_focused', [3, 4, 6], 'walking_lunge'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 3, 4]], ['hamstring_isolation', [2, 4, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
+    ] },
+    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
     ] },
   ],
   upper_lower_4x: f => [
@@ -986,6 +992,9 @@ const SPLIT_DAYS = {
     ] },
     { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
       ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), (f ? ['glute_focused', [2, 4, 4], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 4], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
+    ] },
+    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
     ] },
   ],
   chest_back_shoulders_legs_4x: f => [
@@ -1015,6 +1024,9 @@ const SPLIT_DAYS = {
     { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
       ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['hamstring_isolation', [2, 3, 3]]
     ] },
+    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+    ] },
   ],
   ul_ppl_hybrid_5x: f => [
     { id: 'push', name: 'Push', focus: 'Chest · shoulders · triceps', slots: [
@@ -1032,6 +1044,9 @@ const SPLIT_DAYS = {
     { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
       ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
+    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+    ] },
   ],
   full_body_5x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
@@ -1048,6 +1063,9 @@ const SPLIT_DAYS = {
     ] },
     { id: 'full_body_e', name: 'Full Body E', focus: 'Isolation · weak points', slots: [
       ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['back_isolation', [2, 3, 4]], ['biceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 3, 3]]
+    ] },
+    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
     ] },
   ],
   ppl_6x: f => [
@@ -1091,6 +1109,18 @@ const SPLIT_DAYS = {
     ] },
   ],
 };
+
+// Patterns whose top-ranked exercise is ANCHORED across blocks instead of
+// rotated. These are the lifts a program progresses: you add weight to a squat
+// or a bench for months, and rotating them away throws that progression out.
+// Everything not listed here is assistance/isolation, where rotation is the
+// point — different angles, less repetitive joint stress, no loading to lose.
+const COMPOUND_PATTERNS = new Set([
+  'squat_pattern', 'hip_hinge', 'glute_focused',
+  'chest_horizontal_push', 'chest_incline_push', 'chest_decline',
+  'back_vertical_pull', 'back_horizontal_pull', 'back_inner',
+  'shoulders_vertical_push',
+]);
 
 function buildExercise(patternKey, equipment, overrides = {}) {
   const pattern = MOVEMENT_PATTERNS[patternKey];
@@ -1151,16 +1181,29 @@ function buildExercise(patternKey, equipment, overrides = {}) {
     const preferred = allExercises.find(e => e.id === overrides.prefer);
     ex = (preferred && pool.includes(preferred)) ? preferred : pool[0];
   } else {
-    // Split pool into primary (anchor for block 0) and rotation alternatives
+    // The library is ordered by research support (see its header) and flags its
+    // first choices with primary_alternative. That ranking used to be discarded
+    // after the first block: selection split the pool into primaries and
+    // rotations and then drew ONLY from rotations forever, so the best exercise
+    // for a pattern appeared once and never again. Measured on Upper/Lower 4x,
+    // block 0 gave Barbell bench press and Barbell back squat; by block 4 the
+    // same slots held Machine chest press and Goblet squat, and never recovered.
+    // Rotation is meant to prevent staleness, not to permanently demote the
+    // highest-ranked movement.
     const primaries  = pool.filter(e => e.primary_alternative !== false);
     const rotations  = pool.filter(e => e.primary_alternative === false);
 
-    if (blockIndex === 0 || rotations.length === 0) {
+    if (COMPOUND_PATTERNS.has(patternKey)) {
+      // Anchored. You progressively overload a squat or a bench across blocks;
+      // swapping it out resets the loading and is what "my good exercises keep
+      // disappearing" actually was. Variety belongs in the assistance work.
       ex = primaries[0] || pool[0];
     } else {
-      // Cycle through rotation alternatives; wrap around after exhausting the list
-      const rotIdx = (blockIndex - 1) % rotations.length;
-      ex = rotations[rotIdx] || primaries[0] || pool[0];
+      // Isolation still rotates for variety and joint stress, but through the
+      // FULL ranked pool — best first, wrapping back round — rather than a pool
+      // that excludes the best by construction.
+      const cycle = [...primaries, ...rotations];
+      ex = cycle.length ? cycle[blockIndex % cycle.length] : pool[0];
     }
   }
 
@@ -2945,6 +2988,12 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     // lands on the horizontal pull the day is already running.
     const usedToday = new Set();
     const exercises = d.slots.map(([pattern, setsByTier, prefer, load]) => {
+      // A slot set to 0 for this tier is switched OFF, not defaulted. It has to
+      // be caught here: buildExercise resolves sets as `overrides.sets ||
+      // ex.sets`, and 0 is falsy, so passing it through silently restores the
+      // library's default count — which handed beginners the full 12-set
+      // shoulder specialisation day that the 0s exist to withhold.
+      if (setsByTier[tierIndex] === 0) return null;
       const [reps, rpe] = SLOT_REPS[pattern] || [isolationReps];
       const ex = be(pattern, {
         sets: setsByTier[tierIndex],
@@ -2962,8 +3011,20 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
       if (ex) usedToday.add(ex.pattern);
       return ex;
     }).filter(Boolean);
-    return { id: d.id, name: d.name, focus: d.focus, exercises: tiltTowardCompounds(exercises) };
-  });
+    return {
+      id: d.id, name: d.name, focus: d.focus,
+      // Carried through so ProgramScreen can render it in its own section
+      // instead of as part of the training week.
+      ...(d.optional ? { optional: true } : {}),
+      exercises: tiltTowardCompounds(exercises.filter(e => (e.sets || 0) > 0)),
+    };
+  })
+  // An optional day is switched off for a tier by giving every slot 0 sets —
+  // that is how the shoulder specialisation day is withheld from beginners,
+  // who have 5 side-delt sets in the whole week and need base volume before a
+  // specialisation. Once its slots are empty the day itself must go, or the UI
+  // renders an empty card.
+  .filter(d => !d.optional || d.exercises.length > 0);
 
 
   // ── Dedup pass: no exercise should appear twice in the same day. If it does,

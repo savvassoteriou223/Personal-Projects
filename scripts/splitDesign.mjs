@@ -124,17 +124,17 @@ const SPLITS = {
   ['Full Body A',[['squat',5],['benchFlat',5],['rowH',5],['rowInner',4],['sideDelt',5],['tricepsLong',4],['calves',5],['lunge',5],['hinge',4]]],
   ['Full Body B',[['legpress',5],['deadlift',5],['benchInc',5],['pullV',5],['ohp',3],['rearDelt',4],['bicepsLong',4],['calvesSeat',5],[G2(f),5]]]]},
 
-'Full Body 3x': { mev:true, days:f=>[
+'Full Body 3x': { mev:true, optShoulders:true, days:f=>[
   ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['rearDelt',4],['tricepsLong',3],['bicepsLong',4],['calves',5],['core',3]]],
   ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',3],['lunge',4],['quadIso',4],['calvesSeat',4],['core',3]]],
   ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['ohp',3],['tricepsLat',3],['bicepsShort',3],[G2(f),4],['hamIso',4]]]]},
 
-'Full Body / Upper / Lower 3x': { mev:true, heads:'reduced', days:f=>[
+'Full Body / Upper / Lower 3x': { mev:true, optShoulders:true, heads:'reduced', days:f=>[
   ['Full Body',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['rearDelt',4],['tricepsLong',3],['bicepsLong',4],['calves',4],['core',3]]],
   ['Upper',[['benchInc',4],['benchDec',4],['pullV',4],['rowInner',4],['sideDelt',5],['ohp',3],['rearDelt',4],['bicepsLong',3],['tricepsLat',3]]],
   ['Lower',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['quadIso',4],['hamIso',4],['calvesSeat',4],['core',3]]]]},
 
-'Upper / Lower 4x': { days:f=>[
+'Upper / Lower 4x': { optShoulders:true, days:f=>[
   ['Upper A',[['benchFlat',4],['rowH',4],['ohp',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4],['bicepsLong',4]]],
   ['Lower A',[['squat',4],['hinge',4],['lunge',4],['quadIso',4],['calves',4],['calvesSeat',3],['core',4]]],
   ['Upper B',[['benchInc',4],['benchDec',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['tricepsLat',4],['bicepsShort',4]]],
@@ -146,20 +146,20 @@ const SPLITS = {
   ['Shoulders',[['ohp',3],['sideDelt',5],['sideDelt',5],['rearDelt',4],['rearDelt',4],['calves',5],['calvesSeat',5]]],
   ['Legs',[['squat',4],['hinge',5],['legpress',4],['lunge',f?6:4],[G2(f),f?6:4],['quadIso',4],['hamIso',5]]]]},
 
-'Full Body 4x': { days:f=>[
+'Full Body 4x': { optShoulders:true, days:f=>[
   ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['calves',5],['core',4]]],
   ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['bicepsLong',4],['lunge',f?6:4],['core',4]]],
   ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['tricepsLat',4],['calvesSeat',5],['core',4]]],
   ['Full Body D',[['deadlift',4],[G2(f),f?6:4],['quadIso',4],['ohp',3],['rearDelt',4],['bicepsShort',4],['hamIso',4]]]]},
 
-'PPL / Upper / Lower 5x': { days:f=>[
+'PPL / Upper / Lower 5x': { optShoulders:true, days:f=>[
   ['Push',[['benchFlat',4],['benchInc',4],['ohp',3],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
   ['Pull',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',4]]],
   ['Legs',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',4],['calvesSeat',3],['core',4]]],
   ['Upper',[['benchDec',4],['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['bicepsShort',4]]],
   ['Lower',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',2]]]]},
 
-'Full Body 5x': { days:f=>[
+'Full Body 5x': { optShoulders:true, days:f=>[
   ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['calves',5]]],
   ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['bicepsLong',4],['core',4]]],
   ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['calvesSeat',5],['core',4]]],
@@ -251,6 +251,32 @@ function allocate(cfg, f, tier) {
 // a day dedicated to a muscle may run two variations of it.
 const DEDICATED = { shoulders_side_delt:/shoulder/i, rear_delt:/shoulder/i,
   triceps:/tricep/i, biceps:/bicep/i };
+
+// ── Optional shoulder specialisation day ─────────────────────────────────────
+// An ADD-ON, not part of the weekly budget: it is offered separately in the UI
+// and only counts when the user actually does it, so its sets are fixed here
+// rather than solved by allocate(). Doing so would fold them into the base
+// week and shrink the main days to compensate — the opposite of the intent.
+//
+// Sizing comes from measured headroom. Side delts sit at 8-12 sets against a
+// ceiling of 16 (intermediate) / 22 (advanced), rear delts at 6-10 against
+// 14 / 18, so +6 side and +4 rear lands inside the optimal band at both tiers.
+//
+// Beginner is 0 on every slot, which drops the day entirely. Not an arithmetic
+// call — 11 side-delt sets would exceed their ceiling of 9, but more to the
+// point a beginner has 5 side-delt sets in the whole week and needs base
+// volume, not a specialisation day. Specialising is for a lifter who has
+// exhausted what their split gives them.
+//
+// Two side-delt slots on one day is intentional and legal: DEDICATED above
+// permits the duplicate on a day matching /shoulder/i, and the generator's
+// dedup pass picks a different exercise for the second one.
+const OPTIONAL_SHOULDER_SLOTS = [
+  ['sideDelt', [0, 3, 3]],
+  ['sideDelt', [0, 3, 3]],
+  ['rearDelt', [0, 4, 4]],
+  ['ohp',      [0, 3, 4]],
+];
 
 // Mirrors be(): the experience factor scales every slot and rounds per-slot, so
 // it has to be modelled here rather than applied to the weekly total.
@@ -363,6 +389,17 @@ if (process.argv[2] === 'emit') {
       }
       out.push(`    { id: '${dayId(dname)}', name: '${dname}', focus: '${FOCUS[dname] || dname}', slots: [`);
       out.push('      ' + parts.join(', '));
+      out.push('    ] },');
+    }
+    // Appended AFTER the solved days and marked optional, so the app renders it
+    // in its own section rather than as part of the week. Its id must stay
+    // 'optional_shoulders' — programGenerator keys the volume-trim table off it.
+    if (cfg.optShoulders) {
+      const slots = OPTIONAL_SHOULDER_SLOTS
+        .map(([k, sets]) => `['${SLOT[k][0]}', [${sets.join(', ')}]]`)
+        .join(', ');
+      out.push(`    { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [`);
+      out.push('      ' + slots);
       out.push('    ] },');
     }
     out.push('  ],');
