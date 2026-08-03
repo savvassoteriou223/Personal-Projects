@@ -10,6 +10,7 @@ import StudyChart from './StudyChart';
 import { getExerciseInsight } from './studiesLibrary';
 import MuscleMap from './MuscleMap';
 import ExerciseSlideshow from './ExerciseSlideshow';
+import ExerciseGifThumb from './ExerciseGifThumb';
 import CoachScreen from './CoachScreen';
 import PremiumPaywall from './PremiumPaywall';
 import RecoveryCheckIn from './RecoveryCheckIn';
@@ -1057,9 +1058,14 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                     <Text style={styles.exNumber}>{t('workout.exNumber', { n: exIdx + 1, total: sets.length })}</Text>
                     <Tappable onPress={() => setSlideshowExercise(ex)}>
                       <View style={styles.exNameRow}>
-                        <Text style={styles.exName}>{ex.name}</Text>
-                        <View style={styles.howToChip}>
-                          <Text style={styles.howToTag} numberOfLines={1}>{t('workout.howTo')}</Text>
+                        {/* Renders null when the exercise has no gif, so the
+                            row collapses back to name + chip on its own. */}
+                        <ExerciseGifThumb name={ex.name} />
+                        <View style={styles.exNameCol}>
+                          <Text style={styles.exName}>{ex.name}</Text>
+                          <View style={styles.howToChip}>
+                            <Text style={styles.howToTag} numberOfLines={1}>{t('workout.howTo')}</Text>
+                          </View>
                         </View>
                       </View>
                     </Tappable>
@@ -1573,7 +1579,10 @@ const styles = StyleSheet.create({
   exCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   exCardHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
   exNumber: { fontSize: 11, color: colors.textSubtle, marginBottom: 3 },
-  exNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  exNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // The name and its chip stack together so the thumbnail sits beside the pair
+  // rather than pushing the chip onto its own line on narrow screens.
+  exNameCol: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   exName: { fontSize: 20, fontWeight: '700', color: colors.textPrimary, flexShrink: 1 },
   howToChip: { backgroundColor: colors.surfaceElevated, borderWidth: 0.5, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   howToTag: { fontSize: 13, fontWeight: '600', color: colors.textMuted },

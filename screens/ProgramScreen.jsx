@@ -15,6 +15,7 @@ import { getExerciseGif } from './exerciseDBService';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
+import ExerciseGifThumb from './ExerciseGifThumb';
 
 const DAYS_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -482,6 +483,10 @@ function ExerciseCard({ ex, isSimple = false }) {
         <View style={styles.exHeader}>
           <View style={styles.exTitleWrap}>
             <View style={[styles.muscleDot, { backgroundColor: borderColor }]} />
+            {/* Preview without having to expand the row first. The larger gif
+                still sits inside the expanded section for anyone reading the
+                technique notes; this is so the list is scannable by shape. */}
+            <ExerciseGifThumb name={ex.name} size={38} />
             <Text style={styles.exName}>{ex.name}</Text>
           </View>
           <View style={[styles.catBadge, ex.category?.includes('Isolation') && styles.catBadgeIso]}>
@@ -716,7 +721,7 @@ const styles = StyleSheet.create({
   // Exercise card
   exCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 0.5, borderColor: colors.border },
   exHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-  exTitleWrap: { flexDirection: 'row', alignItems: 'flex-start', flex: 1, marginRight: 8, gap: 8 },
+  exTitleWrap: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8, gap: 8 },
   muscleDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
   exName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, flex: 1 },
   catBadge: { backgroundColor: colors.surfaceElevated, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, flexShrink: 1, maxWidth: '60%' },
