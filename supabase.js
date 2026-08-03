@@ -10,10 +10,19 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 // a refresh causes SIGNED_OUT and wipes the session; aborting login just
 // produces a confusing timeout error with no retry. Only data queries get
 // the 8-second timeout.
+//
+// Edge functions get their own, much longer budget. The AI coach answers a
+// simple question in a few seconds, but a request that rewrites every affected
+// exercise across a whole week fans out into several model calls and measures
+// 30-35s end to end. Under the 15s data-query timeout that ALWAYS failed:
+// the client gave up and showed "Failed to connect" while the server ran to
+// completion and the tokens were billed — the user saw an error for work that
+// had actually succeeded, and no sweep could ever land.
 function fetchWithTimeout(url, options = {}) {
   const urlStr = typeof url === 'string' ? url : (url?.url ?? '');
   const isAuth = urlStr.includes('/auth/v1/');
-  const ms = isAuth ? 45000 : 15000;
+  const isFunction = urlStr.includes('/functions/v1/');
+  const ms = isAuth ? 45000 : isFunction ? 120000 : 15000;
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Network request timed out')), ms);
     fetch(url, options).then(resolve, reject).finally(() => clearTimeout(timer));

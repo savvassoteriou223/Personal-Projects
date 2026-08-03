@@ -153,11 +153,17 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   // scrollToEnd and dump the user at the bottom, past the focus card, onto an empty
   // answer panel. Timeout lets the new turn lay out before we measure — scrolling on
   // the same tick lands short of the actual end.
+  // Scroll to the reply ONCE, when it arrives — keyed on the number of
+  // completed turns only. It used to also depend on `asking` and
+  // `pendingQuestion`, which change at the start AND end of every request, so
+  // the view yanked itself downward the instant you hit send, before there was
+  // anything new to look at. Nothing has been rendered at that point; the jump
+  // just steals the position you were reading from.
   useEffect(() => {
     if (!hasAskedThisSession) return;
     const id = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
     return () => clearTimeout(id);
-  }, [conversationHistory.length, pendingQuestion, asking, hasAskedThisSession]);
+  }, [conversationHistory.length, hasAskedThisSession]);
 
   // Drives the staged "thinking" label. Resets to 0 whenever a request ends so
   // the next question starts from the first stage rather than the last one.
@@ -2119,7 +2125,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
             {recentChanges.length > 0 && (
               <View style={styles.doneStrip}>
                 <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
-                {recentChanges.slice(0, 3).map((c, i) => {
+                {recentChanges.slice(0, 8).map((c, i) => {
                   // Split "changed Squat to 4 sets (Lower A)" into a bold main
                   // clause and a muted trailing day-name — real string, just
                   // formatted in two tones instead of one flat sentence.

@@ -415,6 +415,12 @@ Deno.serve(async (req: Request) => {
     // context-less turn gets a plain, ungrounded text answer instead.
     const anthropicTools = (isSummary || !contextBlock) ? {} : { tools: TOOLS, tool_choice: { type: 'auto' } };
 
+    // Per-REQUEST usage accounting. One user message can fan out into many
+    // model calls while costing the user a single quota unit, so the only
+    // number that reflects real spend is the sum across every call this
+    // request made — not any individual response's usage block.
+    const spend = { calls: 0, input: 0, cacheWrite: 0, cacheRead: 0, output: 0 };
+
     async function callAnthropic(messages: unknown[]) {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -438,7 +444,14 @@ Deno.serve(async (req: Request) => {
         console.error('Anthropic error:', errBody);
         return null;
       }
-      return res.json();
+      const parsed = await res.json();
+      const u = parsed?.usage ?? {};
+      spend.calls += 1;
+      spend.input += u.input_tokens ?? 0;
+      spend.cacheWrite += u.cache_creation_input_tokens ?? 0;
+      spend.cacheRead += u.cache_read_input_tokens ?? 0;
+      spend.output += u.output_tokens ?? 0;
+      return parsed;
     }
 
     const anthropicJson = await callAnthropic(claudeMessages);
@@ -524,6 +537,69 @@ Deno.serve(async (req: Request) => {
     };
     const programSlots = parseProgramSlots(typeof userContext === 'string' ? userContext : '');
 
+    // The newest thing the user actually typed. The current client posts a
+    // `messages` history; `question` is only set by the legacy single-string
+    // format, so reading it alone yields '' in production.
+    const lastUserContent = Array.isArray(msgHistory)
+      ? [...msgHistory].reverse().find((m: { role?: string }) => m?.role === 'user')?.content
+      : null;
+    const askedText = String(
+      typeof lastUserContent === 'string'
+        ? lastUserContent
+        : Array.isArray(lastUserContent)
+          ? lastUserContent.map((b: { text?: string }) => b?.text ?? '').join(' ')
+          : (question ?? '')
+    ).toLowerCase();
+
+    // Equipment the user says they have LOST, read from their own words rather
+    // than from the model remembering to set excluded_equipment. That field is
+    // optional and the model skips it, which left the server trusting a
+    // hand-written slot list — a real sweep reported "4 exercises across 4
+    // days" while a barbell Romanian deadlift stayed in the Legs day.
+    //
+    // Deliberately conservative: only a negation immediately followed by the
+    // equipment word counts. "no barbell" and "without a barbell" derive an
+    // exclusion; "only dumbbells" does NOT (it names what is still available,
+    // and treating it as a loss would swap out the wrong half of the program).
+    const NEGATED_EQUIPMENT = /\b(?:no|without|don'?t have|do not have|haven'?t got|have no|cannot use|can'?t use|lost (?:my|the)?)\s+(?:a|an|any|my|the)?\s*([a-z][a-z-]{2,})/g;
+    const serverExcludedEquipment: string[] = [];
+    for (const m of askedText.matchAll(NEGATED_EQUIPMENT)) {
+      const word = m[1];
+      for (const tag of new Set(programSlots.flatMap(s => s.equip.map(e => e.toLowerCase())))) {
+        const stem = tag.replace(/s$/, '');
+        if (stem.length > 3 && (word === tag || word === stem || word.startsWith(stem))) {
+          serverExcludedEquipment.push(tag);
+        }
+      }
+    }
+
+    // Same treatment for the other two sweep triggers. excluded_exercises and
+    // excluded_patterns are as optional as excluded_equipment was, and the
+    // model omits them just as readily — so an injury or a dislike would
+    // silently fall back to whatever slot list it happened to write by hand.
+    // When the user names an exercise that IS in their program and pairs it
+    // with pain or refusal, every instance of that exercise (and, for pain,
+    // the whole movement pattern) belongs on the checklist.
+    // Vocabulary is deliberately colloquial: people report pain as "kills me",
+    // "wrecks my knee", "plays up", not as "causes discomfort".
+    const RULES_OUT = /\b(hurts?|hurting|pain(?:ful)?|sore|injur\w*|tweak\w*|kill(?:s|ing)?|wreck(?:s|ing)?|aggravat\w*|bother(?:s|ing)?|flar\w*|agony|plays up|hate|hated|can'?t do|cannot do|no more|stop doing|sick of|get rid of|avoid|don'?t want)\b/;
+    const serverExcludedExercises: string[] = [];
+    const serverExcludedPatterns: string[] = [];
+    if (RULES_OUT.test(askedText)) {
+      const painful = /\b(hurts?|hurting|pain(?:ful)?|sore|injur\w*|tweak\w*|kill(?:s|ing)?|wreck(?:s|ing)?|aggravat\w*|flar\w*|agony|plays up|can'?t do|cannot do)\b/.test(askedText);
+      for (const s of programSlots) {
+        const n = s.name.toLowerCase();
+        // Match on the name minus any parenthetical qualifier, so "overhead
+        // press" matches "Barbell overhead press" without needing the brand of
+        // bar, but stay long enough not to collide on a single common word.
+        const core = n.replace(/\([^)]*\)/g, '').trim();
+        if (core.length > 6 && askedText.includes(core)) {
+          serverExcludedExercises.push(s.name);
+          if (painful && s.pattern) serverExcludedPatterns.push(s.pattern);
+        }
+      }
+    }
+
     // Authoritative day_id -> display name, straight from the program listing.
     // day_name is an optional tool field and the parallel workers routinely
     // omit it, which leaked raw ids ("pull_a") into the user-facing summary.
@@ -555,9 +631,11 @@ Deno.serve(async (req: Request) => {
         .flatMap((b: any) => b?.input?.[key] ?? [])
         .map(norm)
         .filter(Boolean);
-      const excludedEquipment = collect('excluded_equipment');
-      const excludedPatterns = collect('excluded_patterns');
-      const excludedExercises = collect('excluded_exercises');
+      // Union with what the user's own message implies, so a missing
+      // excluded_equipment on the model's side cannot shrink the checklist.
+      const excludedEquipment = [...new Set([...collect('excluded_equipment'), ...serverExcludedEquipment])];
+      const excludedPatterns = [...new Set([...collect('excluded_patterns'), ...serverExcludedPatterns.map(p => p.toLowerCase())])];
+      const excludedExercises = [...new Set([...collect('excluded_exercises'), ...serverExcludedExercises.map(e => e.toLowerCase())])];
 
       // Every axis a real sweep is ever keyed on, each checkable against the
       // program itself: equipment lost, a movement pattern ruled out by pain,
@@ -652,9 +730,53 @@ Deno.serve(async (req: Request) => {
     // no text AND no edits is defective under rule 11 regardless of cause, so
     // it costs nothing to reject it and ask once for the real answer. Narrow by
     // construction: any turn that produced either text or an edit skips this.
-    const producedNothingUseful = !textBlock?.text?.trim()
-      && toolBlocks.length === 0 && altBlocks.length === 0 && scopeBlocks.length === 0;
-    if (producedNothingUseful && factBlocks.length > 0) {
+    // Two shapes of the same failure, both seen live:
+    //   (a) remember_fact and literally nothing else — no text at all.
+    //   (b) remember_fact plus a friendly acknowledgement ("Got it, I'll keep
+    //       barbell exercises out of your recommendations") and no program
+    //       change. This one is worse: it READS as success, so the user
+    //       believes their program was fixed and never checks.
+    // The first version of this check only caught (a), because it required the
+    // text to be empty — so (b) shipped to production and did exactly that.
+    // A fact whose category implies a CONSTRAINT (an injury, a dislike, a
+    // preference like losing equipment) is never adequately handled by saving
+    // it alone: the exercises it rules out are still sitting in the program.
+    // A plain 'goal' fact ("I want visible abs") legitimately needs no edit.
+    const changedNothing = toolBlocks.length === 0 && altBlocks.length === 0 && scopeBlocks.length === 0;
+    const savedConstraintFact = factBlocks.some(
+      (b: { input?: { category?: string } }) => ['injury', 'dislike', 'preference'].includes(b.input?.category ?? '')
+    );
+
+    // Third shape of the same failure, and the one that survives the two guards
+    // above: the constraint is ALREADY in memory, so the model calls no tool at
+    // all and simply confirms — "Already noted, your program will avoid barbell
+    // exercises." Nothing was saved and nothing was changed, so both a
+    // fact-based and a text-based trigger miss it, and the exercises the user
+    // cannot perform stay in the program indefinitely. Detected from the data
+    // instead of the model's behaviour: if the user's own words name a piece of
+    // equipment that some slot in their program still requires, and this turn
+    // changed nothing, then the reply is wrong no matter how confident it reads.
+    // Static vocabulary, NOT the {equip:...} tags in the context. Those tags
+    // only exist in clients from v47 on, so keying off them meant every older
+    // install silently lost this backstop — which is exactly how a real test
+    // on v46 produced "your program already has barbell exercises that need
+    // swapping. Want me to replace them now?" with nothing actually changed.
+    // A server-side guard must not depend on the client being up to date.
+    const EQUIPMENT_WORDS = [
+      'barbell', 'dumbbell', 'machine', 'cable', 'kettlebell',
+      'band', 'pull-up bar', 'pullup bar', 'smith', 'rack', 'bench',
+    ];
+    const equipInProgram = new Set(programSlots.flatMap(s => s.equip.map(e => e.toLowerCase())));
+    const namesLostEquipment = [...EQUIPMENT_WORDS, ...equipInProgram].some(e => {
+      // 'dumbbells' should match "no dumbbells" and "no dumbbell" alike.
+      const stem = e.replace(/s$/, '');
+      return stem.length > 3 && askedText.includes(stem);
+    });
+
+    if (changedNothing && (
+      (factBlocks.length > 0 && (!textBlock?.text?.trim() || savedConstraintFact))
+      || namesLostEquipment
+    )) {
       const assistantContent = anthropicJson.content ?? [];
       const salvageMessages = [
         ...loopMessages,
@@ -665,7 +787,7 @@ Deno.serve(async (req: Request) => {
             ...assistantContent
               .filter((b: { type: string }) => b.type === 'tool_use')
               .map((b: { id: string }) => ({ type: 'tool_result', tool_use_id: b.id, content: 'Noted.' })),
-            { type: 'text', text: 'You saved that as a fact but did not answer or act on it. If it makes any exercise currently in the program unusable, call declare_change_scope for every affected slot and then propose_program_change for each one. Otherwise just answer the question normally. Either way, include a text reply.' },
+            { type: 'text', text: 'You did not change the program. Confirming that a constraint is "already noted" or "on file" changes nothing — the affected exercises are still in the program right now and the user will meet them in their next session. Saying you will "keep it in mind" or "leave it out of future recommendations" is not enough — the exercises it rules out are still in the user\'s program right now, and they will attempt them. If any currently programmed exercise is affected, call declare_change_scope listing every affected slot (set excluded_equipment / excluded_patterns / excluded_exercises), then call propose_program_change for each one. If nothing currently programmed is actually affected, say so plainly instead. Include a text reply either way.' },
           ],
         },
       ];
@@ -900,8 +1022,30 @@ Deno.serve(async (req: Request) => {
           : `Updated ${allDayIds.size - finalOutstanding.length} of ${allDayIds.size} days so far (still need: ${finalOutstanding.join(', ')}) — say "do the rest" to continue.`)
       : rolledUpText;
 
+    // Persisted rather than logged: this project's edge-function log view only
+    // surfaces boot/shutdown events, so console.log output was invisible and
+    // spend could not be measured at all. A row per request is queryable from
+    // the SQL editor and aggregates over time. Fire-and-forget — a usage-write
+    // failure must never fail the user's actual coach reply.
+    supabase.from('ai_usage_log').insert({
+      user_id: user.id,
+      mode: isSummary ? 'weekly_summary' : 'chat',
+      calls: spend.calls,
+      input_tokens: spend.input,
+      cache_write_tokens: spend.cacheWrite,
+      cache_read_tokens: spend.cacheRead,
+      output_tokens: spend.output,
+    }).then(
+      ({ error }: { error: unknown }) => { if (error) console.error('ai_usage_log insert failed:', error); },
+      (e: unknown) => console.error('ai_usage_log insert threw:', e),
+    );
+
     // Call already reserved before the Anthropic request — nothing to increment here.
     return json({
+      // Emitted to the function logs so real spend per user message is
+      // measurable in production, not estimated. Billable input is
+      // input + cacheWrite + cacheRead, each charged at a different rate.
+      _usage: spend,
       text: finalText,
       proposals,
       facts,
