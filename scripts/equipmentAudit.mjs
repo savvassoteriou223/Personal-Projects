@@ -70,7 +70,7 @@ for (const [label, equipment] of Object.entries(EQUIP_SCENARIOS))
             }
 
           const tier = TIER[trainingExperience] || 'intermediate';
-          for (const g of buildVolumeView(weekSets, tier)) {
+          for (const g of buildVolumeView(weekSets, tier, sex)) {
             const check = (labelKey, done, t) => {
               if (!t) return;
               if (done === 0 && t.min > 0) {

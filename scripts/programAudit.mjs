@@ -13,7 +13,7 @@
  * Run:  node --loader ./scripts/extres.mjs scripts/programAudit.mjs
  * (the loader resolves the app's extensionless imports for plain Node ESM)
  */
-import { generateProgram } from '../screens/programGenerator.js';
+import { generateProgram, SPLITS } from '../screens/programGenerator.js';
 import { buildVolumeView } from '../screens/volumeEngine.js';
 
 const TIER = { under_6m: 'beginner', '6m_to_2y': 'intermediate', '2y_to_4y': 'intermediate', over_4y: 'advanced' };
@@ -66,7 +66,7 @@ export function auditProgram(profile) {
   }
 
   // the app's own view of weekly volume
-  for (const g of buildVolumeView(weekSets, tier)) {
+  for (const g of buildVolumeView(weekSets, tier, profile.sex)) {
     const check = (label, done, t) => {
       if (!t) return;
       if (done < t.min) issues.push({ type: 'under-volume', detail: `${label} ${done} < min ${t.min}` });
@@ -84,22 +84,30 @@ const EQUIP = {
   'bodyweight': ['Bodyweight only'],
 };
 const EXPS = ['under_6m', '6m_to_2y', '2y_to_4y', 'over_4y'];
-const DAYS = [3, 4, 5, 6];
 const GOALS = [['gain'], ['strength'], ['lose']];
 
-const tally = {}, splitsWith = {};
+// EVERY split, pinned explicitly via selected_split. Sweeping day counts alone
+// only ever built whichever split selectSplit ranked first for that profile —
+// six of the ten splits (full_body_2x among them) were never generated once,
+// so "N programs clean" said nothing about them. The split's own `days` drives
+// weekly_workouts so each is audited at the frequency it is designed for.
+const SPLIT_KEYS = Object.keys(SPLITS);
+
+const tally = {}, splitsWith = {}, perSplit = {};
 let n = 0, clean = 0;
 for (const [, equipment] of Object.entries(EQUIP))
   for (const trainingExperience of EXPS)
-    for (const weekly_workouts of DAYS)
+    for (const selected_split of SPLIT_KEYS)
       for (const goals of GOALS)
        for (const sex of ['male', 'female']) {
         n++;
+        const weekly_workouts = SPLITS[selected_split].days;
+        (perSplit[selected_split] ??= { n: 0, clean: 0 }).n++;
         let r;
-        try { r = auditProgram({ trainingExperience, equipment, weekly_workouts, goals, sex, weight_kg: 80 }); }
+        try { r = auditProgram({ trainingExperience, equipment, weekly_workouts, goals, sex, weight_kg: 80, selected_split }); }
         catch (e) { tally['ERROR ' + e.message.slice(0, 50)] = (tally['ERROR ' + e.message.slice(0, 50)] || 0) + 1; continue; }
-        if (!r.issues.length) clean++;
-        else if (process.env.DETAIL) console.log(`  ${Object.keys(EQUIP).find(k=>EQUIP[k]===equipment)} / ${trainingExperience} / ${weekly_workouts}d / ${goals} / ${sex} -> ${r.split}: ${r.issues.map(i=>i.detail).join(', ')}`);
+        if (!r.issues.length) { clean++; perSplit[selected_split].clean++; }
+        else if (process.env.DETAIL) console.log(`  ${Object.keys(EQUIP).find(k=>EQUIP[k]===equipment)} / ${trainingExperience} / ${selected_split} / ${goals} / ${sex} -> ${r.issues.map(i=>i.detail).join(', ')}`);
         for (const i of r.issues) {
           const k = `${i.type}: ${i.detail}`;
           tally[k] = (tally[k] || 0) + 1;
@@ -108,7 +116,14 @@ for (const [, equipment] of Object.entries(EQUIP))
       }
 
 const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
-console.log(`swept ${n} programs — ${clean} clean, ${n - clean} with issues\n`);
+console.log(`swept ${n} programs across ${SPLIT_KEYS.length} splits — ${clean} clean, ${n - clean} with issues\n`);
+console.log('PER SPLIT');
+for (const k of SPLIT_KEYS) {
+  const p = perSplit[k] || { n: 0, clean: 0 };
+  const bad = p.n - p.clean;
+  console.log('  ', (bad ? 'FAIL' : 'ok  '), String(p.clean).padStart(3) + '/' + String(p.n).padEnd(4), k);
+}
+console.log('');
 const byType = {};
 sorted.forEach(([k, c]) => { const t = k.split(':')[0]; byType[t] = (byType[t] || 0) + c; });
 console.log('BY TYPE'); Object.entries(byType).sort((a,b)=>b[1]-a[1]).forEach(([t,c]) => console.log('  ', String(c).padStart(4), t));
