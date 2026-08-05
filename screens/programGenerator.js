@@ -25,23 +25,36 @@ import { expandAllConditions } from '../lib/conditionsDb';
 // Physique athlete survey data PMC12345604 (upper bound reference)
 // Beginner: < 1 year for this goal. Intermediate: 1–3 years. Advanced: 3+ years.
 
+// Sourced from the reference volume table, with one deliberate departure: the
+// advanced ceiling is the intermediate ceiling + 5, not the table's own upper
+// figure. The table's advanced ranges run to 30 sets for back and glutes and
+// "20+" for arms — those are the outer edge of what research has shown can
+// still be productive, not a number to program against. optimal_high is what
+// drives the heat map's amber and the junk-volume callout (>1.5x), so a
+// ceiling of 30 would mean back never flags as junk until 45 sets a week.
+//
+// The floors ARE taken from the table as-is: optimal_low is what splitDesign
+// solves to, so it is the number that shapes every generated program. The old
+// floors under-trained beginners by ~14 sets a week and over-stated advanced
+// by ~30. `min` stays where it was unless the new floor is lower, in which
+// case it clamps down — min must never exceed optimal_low.
 export const VOLUME_TARGETS = {
   chest: {
-    beginner:     { min: 6,  optimal_low: 6,  optimal_high: 9  },
-    intermediate: { min: 10, optimal_low: 10, optimal_high: 15 },
-    advanced:     { min: 12, optimal_low: 14, optimal_high: 20 },
+    beginner:     { min: 6,  optimal_low: 8,  optimal_high: 10 },
+    intermediate: { min: 8,  optimal_low: 8,  optimal_high: 15 },
+    advanced:     { min: 10, optimal_low: 10, optimal_high: 20 },
     note: 'Include both flat and incline pressing for upper/lower fibre development',
   },
   back: {
-    beginner:     { min: 8,  optimal_low: 8,  optimal_high: 10 },
+    beginner:     { min: 8,  optimal_low: 10, optimal_high: 10 },
     intermediate: { min: 10, optimal_low: 10, optimal_high: 20 },
-    advanced:     { min: 14, optimal_low: 16, optimal_high: 25 },
+    advanced:     { min: 10, optimal_low: 10, optimal_high: 25 },
     note: 'Include vertical pulls (lat width) and horizontal pulls (back thickness)',
   },
   shoulders: {
-    beginner:     { min: 6,  optimal_low: 6,  optimal_high: 10 },
-    intermediate: { min: 10, optimal_low: 10, optimal_high: 18 },
-    advanced:     { min: 12, optimal_low: 14, optimal_high: 22 },
+    beginner:     { min: 6,  optimal_low: 10, optimal_high: 10 },
+    intermediate: { min: 10, optimal_low: 10, optimal_high: 20 },
+    advanced:     { min: 10, optimal_low: 10, optimal_high: 25 },
     note: 'Whole-deltoid total. Track side/rear heads separately (side_delts, rear_delts) — pressing only develops front delts',
   },
   side_delts: {
@@ -59,52 +72,67 @@ export const VOLUME_TARGETS = {
   biceps: {
     beginner:     { min: 3,  optimal_low: 3,  optimal_high: 6  },
     intermediate: { min: 6,  optimal_low: 6,  optimal_high: 10 },
-    advanced:     { min: 8,  optimal_low: 8,  optimal_high: 14 },
+    advanced:     { min: 8,  optimal_low: 8,  optimal_high: 15 },
     note: 'Direct isolation sets only — rows and pull-ups add indirect volume on top',
   },
   triceps: {
     beginner:     { min: 3,  optimal_low: 3,  optimal_high: 6  },
     intermediate: { min: 6,  optimal_low: 6,  optimal_high: 10 },
-    advanced:     { min: 10, optimal_low: 10, optimal_high: 16 },
+    advanced:     { min: 8,  optimal_low: 8,  optimal_high: 15 },
     note: 'Direct isolation sets only — all pressing adds indirect volume on top',
   },
   quads: {
-    beginner:     { min: 6,  optimal_low: 6,  optimal_high: 10 },
+    beginner:     { min: 6,  optimal_low: 8,  optimal_high: 10 },
     intermediate: { min: 10, optimal_low: 10, optimal_high: 15 },
-    advanced:     { min: 12, optimal_low: 14, optimal_high: 20 },
+    advanced:     { min: 10, optimal_low: 10, optimal_high: 20 },
     note: 'Include knee-dominant squatting and knee-extension isolation',
   },
   hamstrings: {
-    beginner:     { min: 5,  optimal_low: 5,  optimal_high: 8  },
+    beginner:     { min: 5,  optimal_low: 6,  optimal_high: 10 },
     intermediate: { min: 8,  optimal_low: 8,  optimal_high: 12 },
-    advanced:     { min: 10, optimal_low: 10, optimal_high: 15 },
+    advanced:     { min: 8,  optimal_low: 8,  optimal_high: 17 },
     note: 'Hip hinge (RDL, deadlift) primary — leg curl targets short head differently',
   },
   glutes: {
-    beginner:     { min: 6,  optimal_low: 6,  optimal_high: 10 },
-    intermediate: { min: 8,  optimal_low: 8,  optimal_high: 14 },
-    advanced:     { min: 10, optimal_low: 12, optimal_high: 18 },
+    beginner:     { min: 6,  optimal_low: 10, optimal_high: 10 },
+    intermediate: { min: 8,  optimal_low: 10, optimal_high: 20 },
+    advanced:     { min: 10, optimal_low: 10, optimal_high: 25 },
     note: 'Compounds provide baseline stimulus — hip thrust and RDL are additive',
   },
   calves: {
-    beginner:     { min: 4,  optimal_low: 4,  optimal_high: 8  },
-    intermediate: { min: 6,  optimal_low: 6,  optimal_high: 12 },
-    advanced:     { min: 10, optimal_low: 10, optimal_high: 16 },
+    beginner:     { min: 3,  optimal_low: 3,  optimal_high: 10 },
+    intermediate: { min: 6,  optimal_low: 6,  optimal_high: 10 },
+    advanced:     { min: 6,  optimal_low: 6,  optimal_high: 15 },
     note: 'Full ROM emphasizing the stretch. Type I fibre dominance — tolerates higher frequency',
   },
   abs: {
-    beginner:     { min: 3,  optimal_low: 3,  optimal_high: 8  },
+    beginner:     { min: 3,  optimal_low: 3,  optimal_high: 10 },
     intermediate: { min: 6,  optimal_low: 6,  optimal_high: 10 },
-    advanced:     { min: 8,  optimal_low: 8,  optimal_high: 12 },
+    advanced:     { min: 6,  optimal_low: 6,  optimal_high: 15 },
     note: 'Compounds provide indirect stimulus — direct work builds on this baseline',
   },
 };
 
-export function getVolumeTargets(level = 'intermediate') {
+// Direct glute volume is a women's priority in this app. Men reach the glutes
+// through squats, leg press, lunges and hinges — work that credits quads and
+// hamstrings, not glutes — so holding them to the same direct-glute floor
+// reported every male program as short and turned the Today heat map amber on
+// a muscle that is being trained perfectly well. The split solver has always
+// carried this tilt (USER_GLUTES in splitDesign.mjs); it just never reached
+// the targets the app grades against.
+const MALE_GLUTES = {
+  beginner:     { min: 6, optimal_low: 6,  optimal_high: 10 },
+  intermediate: { min: 6, optimal_low: 8,  optimal_high: 15 },
+  advanced:     { min: 8, optimal_low: 8,  optimal_high: 20 },
+};
+
+export function getVolumeTargets(level = 'intermediate', sex = null) {
   const tier = ['beginner', 'intermediate', 'advanced'].includes(level) ? level : 'intermediate';
+  const isMale = typeof sex === 'string' && sex.toLowerCase() === 'male';
   const result = {};
   Object.entries(VOLUME_TARGETS).forEach(([muscle, data]) => {
-    result[muscle] = { ...data[tier], note: data.note };
+    const row = muscle === 'glutes' && isMale ? MALE_GLUTES[tier] : data[tier];
+    result[muscle] = { ...row, note: data.note };
   });
   return result;
 }
@@ -249,6 +277,23 @@ export const SPLITS = {
     schedule_template: ['Monday', 'Wednesday', 'Saturday'],
     rest_between: [1, 2, 1],
   },
+  ppl_3x: {
+    id: 'ppl_3x',
+    name: 'Push / Pull / Legs 3×/week',
+    days: 3,
+    // The only split in the app that trains each muscle once a week. That is
+    // the trade-off it exists for, and the honest_note says so rather than the
+    // metadata claiming a frequency it does not deliver.
+    frequency_per_muscle: 1,
+    optimality: 'suboptimal',
+    optimality_score: 5,
+    science_basis: 'Schoenfeld, Ogborn & Krieger (2016, Sports Med 46:1689–1697): at matched weekly volume, training a muscle twice per week produced greater hypertrophy than once. This split trains each muscle once, so it sits below the full-body options at 3 days — but weekly volume is still met in full, and volume is the stronger driver of the two.',
+    honest_note: 'The classic 3-day split, and the one most people ask for by name. Each muscle gets one hard session and a full week to recover, which suits lifters who like training a body part to exhaustion. The cost is frequency: at 3 days, full body trains everything three times a week instead of once. Pick this if the structure keeps you consistent — consistency beats an optimal split you abandon.',
+    session_time_est: '60–75 min',
+    day_structure: ['Push', 'Pull', 'Legs'],
+    schedule_template: ['Monday', 'Wednesday', 'Friday'],
+    rest_between: [1, 1, 2],
+  },
   full_body_4x: {
     id: 'full_body_4x',
     name: 'Full Body 4×/week',
@@ -340,8 +385,23 @@ export function generateWarnings(profile, selectedSplit) {
       type: 'frequency',
       level: 'high',
       title: 'Suboptimal frequency for muscle growth',
-      message: '2 days/week is the research minimum. Each muscle will be trained twice per week but with lower total volume than 3-4 day programs. Expect approximately 60% of the results compared to training 4 days/week.',
+      message: '2 days/week is the research minimum. The big movers — chest, back, quads, hamstrings and glutes — are trained twice per week, but arms, rear delts, calves and abs get one session each, and total volume is lower than a 3-4 day program.',
       source: 'Schoenfeld, Ogborn & Krieger (2016). Effects of resistance training frequency on measures of muscle hypertrophy. Sports Medicine, 46(11):1689–1697.',
+    });
+  }
+
+  // Two sessions cannot physically carry an advanced lifter's volume. The
+  // advanced weekly floors total 124 sets; at 9 exercises per session and 6
+  // sets per exercise, two days cap out at 108. This is arithmetic, not a
+  // tuning problem — so say so rather than shipping a program that silently
+  // misses eight targets.
+  if (wantsMuscle && days === 2 && getLevelFromProfile(profile) === 'advanced') {
+    warnings.push({
+      type: 'volume',
+      level: 'high',
+      title: 'Two days cannot carry advanced volume',
+      message: 'At your training age the research volume for a full week is more than two sessions can hold, even at nine exercises each. This program trains everything, but quads, chest, back, calves, rear delts, arms and abs all land below the advanced range. Three days would clear it.',
+      source: 'Schoenfeld, Ogborn & Krieger (2017). Dose-response relationship between weekly resistance training volume and increases in muscle mass. Journal of Sports Sciences, 35(11):1073–1082.',
     });
   }
 
@@ -457,14 +517,17 @@ export const SPLIT_RANKINGS = {
     muscle: [
       { id: 'full_body_3x', rank: 1, why: 'Hits each muscle 3× per week. Best frequency for hypertrophy at 3 days.' },
       { id: 'hybrid_3x',    rank: 2, why: 'Full Body + Upper/Lower hybrid. Good alternative if you prefer split feel.' },
+      { id: 'ppl_3x',      rank: 3, why: 'The classic Push/Pull/Legs. Each muscle once a week — pick it if the structure keeps you consistent.' },
     ],
     strength: [
       { id: 'full_body_3x', rank: 1, why: 'Heavy compounds 3× weekly. Practice the main lifts most frequently.' },
       { id: 'hybrid_3x',    rank: 2, why: 'Full Body + Upper/Lower. Allows focused heavy days.' },
+      { id: 'ppl_3x',      rank: 3, why: 'Push/Pull/Legs. One heavy session per muscle with a full week to recover.' },
     ],
     lose: [
       { id: 'full_body_3x', rank: 1, why: 'Higher caloric expenditure per session. Preserves muscle in deficit.' },
       { id: 'hybrid_3x',    rank: 2, why: 'Good alternative with slightly more focused sessions.' },
+      { id: 'ppl_3x',      rank: 3, why: 'Push/Pull/Legs. Same weekly volume, trained once per muscle.' },
     ],
     endurance: [
       { id: 'full_body_3x', rank: 1, why: 'High-rep full body 3× per week. Short rest periods maximize metabolic stimulus.' },
@@ -966,166 +1029,177 @@ export function selectSplit(profile) {
 const SPLIT_DAYS = {
   full_body_2x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [3, 5, 6]], ['chest_horizontal_push', [3, 5, 6]], ['back_horizontal_pull', [3, 4, 6]], ['back_inner', [3, 3, 5]], ['shoulders_side_delt', [5, 6, 6]], ['triceps', [3, 6, 6], null, 'stretch'], ['calves', [2, 3, 5]], ['glute_focused', [3, 4, 6], 'walking_lunge'], ['hip_hinge', [3, 4, 5], 'romanian_deadlift']
+      ['squat_pattern', [4, 5, 5]], ['chest_horizontal_push', [4, 4, 5]], ['back_horizontal_pull', [5, 5, 5]], ['shoulders_side_delt', [3, 4, 6]], ['triceps', [3, 6, 6], null, 'stretch'], (f ? ['calves', [3, 6, 6]] : ['biceps', [2, 3, 4], null, 'contracted']), (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [6, 6, 6], 'walking_lunge']), ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['core', [3, 6, 6]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['squat_pattern', [3, 5, 6], 'leg_press'], ['hip_hinge', [2, 4, 5], 'conventional_deadlift'], ['chest_incline_push', [3, 5, 6]], ['back_vertical_pull', [2, 3, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [4, 6, 6]], ['biceps', [3, 6, 6], null, 'stretch'], ['calves', [2, 3, 5], 'seated_calf_raise'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through'])
+      ['squat_pattern', [4, 5, 5], 'leg_press'], ['hip_hinge', [3, 4, 4], 'conventional_deadlift'], ['chest_incline_push', [4, 4, 5]], ['back_vertical_pull', [5, 5, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 4, 6]], ['rear_delt', [4, 6, 6]], (f ? ['biceps', [3, 6, 6], null, 'stretch'] : ['biceps', [2, 3, 4], null, 'stretch']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['calves', [3, 6, 6]])
     ] },
   ],
   full_body_3x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [3, 4, 6]], ['shoulders_side_delt', [3, 4, 6]], ['rear_delt', [2, 3, 5]], ['triceps', [2, 3, 5], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
+      ['squat_pattern', [3, 4, 4]], ['chest_horizontal_push', [3, 3, 4]], ['back_horizontal_pull', [4, 4, 4]], ['shoulders_side_delt', [3, 4, 6]], ['rear_delt', [2, 3, 5]], ['triceps', [2, 3, 4], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 3]], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['hip_hinge', [3, 4, 5], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 5]], ['back_vertical_pull', [3, 3, 5]], ['rear_delt', [2, 3, 5]], ['glute_focused', [3, 4, 6], 'walking_lunge'], ['quad_isolation', [2, 3, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
+      ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [3, 3, 3]], ['back_vertical_pull', [3, 3, 3]], ['rear_delt', [2, 3, 5]], (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), ['quad_isolation', [3, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
-      ['squat_pattern', [2, 3, 4], 'leg_press'], ['chest_decline', [2, 3, 4]], ['back_inner', [2, 3, 5]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['triceps', [2, 3, 5], null, 'contracted'], ['biceps', [2, 3, 4], null, 'contracted'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 4, 5]]
+      ['squat_pattern', [2, 3, 3], 'leg_press'], ['chest_decline', [2, 2, 3]], ['back_inner', [3, 3, 3]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['triceps', [2, 3, 4], null, 'contracted'], ['biceps', [2, 3, 4], null, 'contracted'], (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['hamstring_isolation', [3, 4, 4]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
+      ['shoulders_side_delt', [0, 2, 2]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]], ['upper_traps', [0, 3, 3]]
     ] },
   ],
   hybrid_3x: f => [
     { id: 'full_body', name: 'Full Body', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 4, 5]], ['back_horizontal_pull', [3, 4, 6]], ['shoulders_side_delt', [3, 4, 6]], ['rear_delt', [2, 3, 5]], ['triceps', [2, 3, 5], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 5]], ['core', [2, 3, 4]]
+      ['squat_pattern', [3, 4, 4]], ['chest_horizontal_push', [3, 3, 4]], ['back_horizontal_pull', [4, 4, 4]], ['shoulders_side_delt', [3, 4, 6]], ['rear_delt', [2, 3, 5]], ['triceps', [2, 3, 4], null, 'stretch'], ['biceps', [2, 3, 4], null, 'stretch'], ['calves', [2, 3, 3]], ['core', [2, 3, 3]]
     ] },
     { id: 'upper', name: 'Upper', focus: 'Full upper body', slots: [
-      ['chest_incline_push', [2, 3, 5]], ['chest_decline', [2, 3, 4]], ['back_vertical_pull', [3, 3, 5]], ['back_inner', [2, 3, 5]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 3, 5]], ['biceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 5], null, 'contracted']
+      ['chest_incline_push', [3, 3, 3]], ['chest_decline', [2, 2, 3]], ['back_vertical_pull', [3, 3, 3]], ['back_inner', [3, 3, 3]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 3, 5]], ['biceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 4], null, 'contracted']
     ] },
     { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 3, 5], 'leg_press'], ['hip_hinge', [3, 4, 5], 'conventional_deadlift'], ['glute_focused', [3, 4, 6], 'walking_lunge'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 3, 4]], ['hamstring_isolation', [2, 4, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
+      ['squat_pattern', [3, 3, 3], 'leg_press'], ['hip_hinge', [3, 4, 4], 'conventional_deadlift'], (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['quad_isolation', [2, 3, 3]], ['hamstring_isolation', [3, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
+      ['shoulders_side_delt', [0, 2, 2]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]], ['upper_traps', [0, 3, 3]]
+    ] },
+  ],
+  ppl_3x: f => [
+    { id: 'push', name: 'Push', focus: 'Chest · shoulders · triceps', slots: [
+      ['chest_horizontal_push', [3, 4, 4]], ['chest_incline_push', [3, 4, 4]], ['chest_isolation', [2, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 4, 4], null, 'stretch'], ['triceps', [2, 4, 4], null, 'contracted'], ['core', [2, 4, 4]]
+    ] },
+    { id: 'pull', name: 'Pull', focus: 'Back · rear delts · biceps', slots: [
+      ['back_vertical_pull', [4, 4, 4]], ['back_horizontal_pull', [3, 4, 4]], ['back_inner', [3, 4, 4]], ['rear_delt', [2, 4, 5]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'contracted'], ['upper_traps', [0, 4, 4]]
+    ] },
+    { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
+      ['squat_pattern', [4, 5, 5]], ['squat_pattern', [4, 5, 5], 'leg_press'], ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['hamstring_isolation', [3, 4, 4]], (f ? ['glute_focused', [5, 6, 6], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), (f ? ['glute_focused', [5, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['calves', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
     ] },
   ],
   upper_lower_4x: f => [
     { id: 'upper_a', name: 'Upper A', focus: 'Heavy push + pull', slots: [
-      ['chest_horizontal_push', [2, 4, 5]], ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 5], null, 'stretch'], ['biceps', [2, 4, 4], null, 'stretch']
+      ['chest_horizontal_push', [3, 4, 4]], ['back_vertical_pull', [3, 3, 3]], ['back_horizontal_pull', [3, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'stretch']
     ] },
     { id: 'lower_a', name: 'Lower A', focus: 'Squat + glutes', slots: [
-      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), ['quad_isolation', [2, 4, 5]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
+      ['squat_pattern', [3, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [4, 4, 4], 'walking_lunge'] : ['glute_focused', [3, 3, 3], 'walking_lunge']), ['quad_isolation', [3, 4, 4]], ['calves', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
     ] },
     { id: 'upper_b', name: 'Upper B', focus: 'Incline + arms', slots: [
-      ['chest_incline_push', [2, 4, 5]], ['chest_decline', [2, 4, 4]], ['back_vertical_pull', [2, 3, 4]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 5], null, 'contracted'], ['biceps', [2, 4, 4], null, 'contracted']
+      ['chest_incline_push', [3, 4, 4]], ['chest_decline', [2, 4, 4]], ['back_vertical_pull', [2, 3, 3]], ['back_inner', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 4], null, 'contracted'], ['biceps', [2, 4, 4], null, 'contracted']
     ] },
     { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), (f ? ['glute_focused', [2, 4, 4], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 4], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 4, 4], 'walking_lunge'] : ['glute_focused', [3, 3, 3], 'walking_lunge']), (f ? ['glute_focused', [3, 4, 4], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 2], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 2, 2], 'seated_calf_raise'], ['core', [2, 4, 4]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
+      ['shoulders_side_delt', [0, 2, 2]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]], ['upper_traps', [0, 3, 3]]
     ] },
   ],
   chest_back_shoulders_legs_4x: f => [
     { id: 'chest_triceps', name: 'Chest + Triceps', focus: 'Chest · triceps', slots: [
-      ['chest_horizontal_push', [2, 3, 4]], ['chest_incline_push', [2, 3, 4]], ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['triceps', [2, 4, 5], null, 'stretch'], ['triceps', [2, 4, 5], null, 'contracted'], ['core', [2, 4, 4]]
+      ['chest_horizontal_push', [2, 2, 3]], ['chest_incline_push', [2, 2, 3]], ['chest_decline', [2, 2, 2]], ['chest_isolation', [2, 2, 2]], ['triceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 4], null, 'contracted'], ['core', [2, 3, 3]]
     ] },
     { id: 'back_biceps', name: 'Back + Biceps', focus: 'Back · biceps', slots: [
-      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['back_inner', [2, 3, 4]], ['back_isolation', [2, 3, 4]], ['biceps', [2, 4, 4], null, 'stretch'], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 4, 4]]
+      ['back_vertical_pull', [3, 3, 3]], ['back_horizontal_pull', [3, 3, 3]], ['back_inner', [2, 2, 2]], ['back_isolation', [2, 2, 2]], ['biceps', [2, 3, 4], null, 'stretch'], ['biceps', [2, 3, 4], null, 'contracted'], ['core', [2, 3, 3]]
     ] },
     { id: 'shoulders', name: 'Shoulders', focus: 'Delts · calves', slots: [
-      ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['rear_delt', [2, 4, 5]], ['calves', [2, 5, 5]], ['calves', [2, 5, 5], 'seated_calf_raise']
+      ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 4, 6]], ['shoulders_side_delt', [2, 4, 6]], ['rear_delt', [2, 3, 5]], ['rear_delt', [2, 3, 5]]
     ] },
     { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [3, 5, 5], 'romanian_deadlift'], ['squat_pattern', [2, 4, 5], 'leg_press'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 5, 5]]
+      ['squat_pattern', [3, 4, 4]], ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['squat_pattern', [3, 3, 3], 'leg_press'], (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [6, 6, 6], 'walking_lunge']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['calves', [2, 3, 3]]), (f ? ['calves', [2, 3, 3]] : ['quad_isolation', [2, 3, 3]]), (f ? ['quad_isolation', [2, 3, 3]] : ['hamstring_isolation', [3, 4, 4]]), (f ? ['hamstring_isolation', [3, 4, 4]] : ['calves', [2, 3, 3], 'seated_calf_raise']), ...(f ? [['calves', [2, 3, 3], 'seated_calf_raise']] : [])
     ] },
   ],
   full_body_4x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 5], null, 'stretch'], ['calves', [2, 5, 5]], ['core', [2, 3, 3]]
+      ['squat_pattern', [3, 4, 4]], ['chest_horizontal_push', [2, 3, 3]], ['back_horizontal_pull', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 4], null, 'stretch'], ['calves', [2, 4, 4]], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 4]], ['back_vertical_pull', [2, 3, 4]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['core', [2, 3, 3]]
+      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], (f ? ['glute_focused', [5, 6, 6], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
-      ['squat_pattern', [2, 4, 5], 'leg_press'], ['chest_decline', [2, 3, 3]], ['back_inner', [2, 3, 4]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 4, 5], null, 'contracted'], ['calves', [2, 5, 5], 'seated_calf_raise'], ['core', [2, 2, 2]]
+      ['squat_pattern', [3, 4, 4], 'leg_press'], ['chest_decline', [2, 3, 3]], ['back_inner', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 4, 4], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
     { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
-      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['hamstring_isolation', [2, 3, 3]]
+      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['hamstring_isolation', [2, 3, 3]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
+      ['shoulders_side_delt', [0, 2, 2]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]], ['upper_traps', [0, 3, 3]]
     ] },
   ],
   ul_ppl_hybrid_5x: f => [
     { id: 'push', name: 'Push', focus: 'Chest · shoulders · triceps', slots: [
-      ['chest_horizontal_push', [2, 3, 4]], ['chest_incline_push', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 3], null, 'contracted']
+      ['chest_horizontal_push', [2, 3, 3]], ['chest_incline_push', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 3], null, 'stretch'], ['triceps', [2, 3, 3], null, 'contracted']
     ] },
     { id: 'pull', name: 'Pull', focus: 'Back · rear delts · biceps', slots: [
-      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [2, 2, 3]], ['core', [2, 3, 3]]
+      ['back_vertical_pull', [3, 3, 3]], ['back_horizontal_pull', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [0, 4, 4]], ['core', [2, 3, 3]]
     ] },
     { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['quad_isolation', [2, 4, 5]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
+      ['squat_pattern', [3, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), ['quad_isolation', [3, 4, 4]], ['calves', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
     ] },
     { id: 'upper', name: 'Upper', focus: 'Full upper body', slots: [
-      ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['back_vertical_pull', [2, 2, 3]], ['back_inner', [2, 2, 3]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 2, 3], null, 'contracted'], ['biceps', [2, 4, 4], null, 'contracted']
+      ['chest_decline', [2, 3, 3]], ['chest_isolation', [2, 3, 3]], ['back_vertical_pull', [2, 3, 3]], ['back_inner', [2, 3, 3]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 2, 2], null, 'contracted'], ['biceps', [2, 4, 4], null, 'contracted']
     ] },
     { id: 'lower', name: 'Lower', focus: 'Full lower body', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 2, 2], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
+      ['shoulders_side_delt', [0, 2, 2]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]], ['upper_traps', [0, 3, 3]]
     ] },
   ],
   full_body_5x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [2, 4, 5]], ['chest_horizontal_push', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 4]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 5], null, 'stretch'], ['calves', [2, 4, 4]]
+      ['squat_pattern', [3, 4, 4]], ['chest_horizontal_push', [2, 3, 3]], ['back_horizontal_pull', [2, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 4, 4], null, 'stretch'], ['calves', [2, 3, 3]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 4]], ['back_vertical_pull', [2, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['core', [2, 3, 3]]
+      ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [2, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_c', name: 'Full Body C', focus: 'Leg press · fly · inner back', slots: [
-      ['squat_pattern', [2, 4, 5], 'leg_press'], ['chest_decline', [2, 3, 3]], ['back_inner', [2, 2, 3]], ['shoulders_side_delt', [2, 5, 6]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
+      ['squat_pattern', [3, 4, 4], 'leg_press'], ['chest_decline', [2, 3, 3]], ['back_inner', [2, 2, 2]], ['shoulders_side_delt', [2, 5, 6]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 3, 3]]
     ] },
     { id: 'full_body_d', name: 'Full Body D', focus: 'Deadlift · glutes · shoulders', slots: [
-      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [2, 2, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 5], null, 'contracted'], ['core', [2, 2, 2]]
+      ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [2, 2, 2]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 4, 4], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'full_body_e', name: 'Full Body E', focus: 'Isolation · weak points', slots: [
-      ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['shoulders_vertical_push', [3, 3, 3]], ['back_isolation', [2, 2, 3]], ['biceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 3, 3]]
+      ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [5, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['shoulders_vertical_push', [3, 3, 3]], ['back_isolation', [2, 2, 2]], ['biceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 2, 2]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
+      ['shoulders_side_delt', [0, 2, 2]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]], ['upper_traps', [0, 3, 3]]
     ] },
   ],
   ppl_6x: f => [
     { id: 'push_a', name: 'Push A', focus: 'Flat press focus', slots: [
-      ['chest_horizontal_push', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['chest_isolation', [2, 3, 4]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 4], null, 'stretch'], ['triceps', [2, 3, 3], null, 'contracted']
+      ['chest_horizontal_push', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['chest_isolation', [2, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 3], null, 'stretch'], ['triceps', [2, 3, 3], null, 'contracted']
     ] },
     { id: 'pull_a', name: 'Pull A', focus: 'Vertical pull focus', slots: [
-      ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [2, 2, 3]], ['core', [2, 2, 2]]
+      ['back_vertical_pull', [3, 3, 3]], ['back_horizontal_pull', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'stretch'], ['upper_traps', [0, 4, 4]], ['core', [2, 2, 2]]
     ] },
     { id: 'legs_a', name: 'Legs A', focus: 'Squat focus', slots: [
-      ['squat_pattern', [2, 4, 5]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['quad_isolation', [2, 4, 5]], ['calves', [2, 4, 4]], ['calves', [2, 3, 3], 'seated_calf_raise']
+      ['squat_pattern', [3, 4, 4]], ['hip_hinge', [2, 4, 4], 'romanian_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), ['quad_isolation', [3, 4, 4]], ['calves', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise']
     ] },
     { id: 'push_b', name: 'Push B', focus: 'Incline focus', slots: [
-      ['chest_incline_push', [2, 3, 3]], ['chest_decline', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 2, 3], null, 'contracted'], ['core', [2, 2, 2]]
+      ['chest_incline_push', [2, 3, 3]], ['chest_decline', [2, 3, 3]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 5, 6]], ['triceps', [2, 2, 2], 'dips_tricep'], ['core', [2, 2, 2]]
     ] },
     { id: 'pull_b', name: 'Pull B', focus: 'Horizontal pull focus', slots: [
-      ['back_vertical_pull', [2, 2, 3]], ['back_inner', [2, 2, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 2, 2]]
+      ['back_vertical_pull', [2, 3, 3]], ['back_inner', [2, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'legs_b', name: 'Legs B', focus: 'Posterior chain', slots: [
-      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 2, 2], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
   ],
   upper_lower_6x: f => [
     { id: 'upper_a', name: 'Upper A', focus: 'Heavy push + pull', slots: [
-      ['chest_horizontal_push', [2, 4, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['back_vertical_pull', [2, 3, 4]], ['back_horizontal_pull', [2, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 4], null, 'stretch'], ['biceps', [2, 3, 3], null, 'stretch']
+      ['chest_horizontal_push', [3, 4, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['back_vertical_pull', [2, 3, 3]], ['back_horizontal_pull', [2, 3, 3]], ['shoulders_side_delt', [3, 5, 6]], ['triceps', [2, 3, 3], null, 'stretch'], ['biceps', [2, 3, 3], null, 'stretch']
     ] },
     { id: 'lower_a', name: 'Lower A', focus: 'Squat + glutes', slots: [
-      ['squat_pattern', [2, 3, 4]], ['hip_hinge', [2, 3, 3], 'romanian_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'walking_lunge'] : ['glute_focused', [3, 4, 6], 'walking_lunge']), ['quad_isolation', [2, 3, 4]], ['calves', [2, 4, 4]], ['core', [2, 2, 2]]
+      ['squat_pattern', [2, 3, 3]], ['hip_hinge', [2, 3, 3], 'romanian_deadlift'], (f ? ['glute_focused', [5, 6, 6], 'walking_lunge'] : ['glute_focused', [4, 4, 4], 'walking_lunge']), ['quad_isolation', [2, 3, 3]], ['calves', [2, 3, 3]], ['core', [2, 2, 2]]
     ] },
     { id: 'upper_b', name: 'Upper B', focus: 'Incline + arms', slots: [
-      ['chest_incline_push', [2, 4, 5]], ['back_vertical_pull', [2, 2, 3]], ['back_horizontal_pull', [2, 2, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 3, 3], null, 'contracted'], ['triceps', [2, 3, 3], null, 'contracted'], ['core', [2, 2, 2]]
+      ['chest_incline_push', [3, 4, 4]], ['back_vertical_pull', [2, 2, 2]], ['back_horizontal_pull', [2, 2, 2]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 3, 3], null, 'contracted'], ['triceps', [2, 3, 3], null, 'contracted'], ['core', [2, 2, 2]]
     ] },
     { id: 'lower_b', name: 'Lower B', focus: 'Deadlift + quads', slots: [
       ['squat_pattern', [2, 3, 3], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], ['hamstring_isolation', [2, 2, 2]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
     { id: 'upper_c', name: 'Upper C', focus: 'Isolation + delts', slots: [
-      ['chest_decline', [2, 4, 4]], ['back_inner', [2, 2, 3]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 2, 3], null, 'stretch'], ['biceps', [2, 2, 2], null, 'stretch']
+      ['chest_decline', [2, 4, 4]], ['back_inner', [2, 2, 2]], ['shoulders_side_delt', [2, 5, 6]], ['rear_delt', [2, 4, 5]], ['triceps', [2, 2, 2], null, 'stretch'], ['biceps', [2, 2, 2], null, 'stretch']
     ] },
     { id: 'lower_c', name: 'Lower C', focus: 'Glutes + hamstrings', slots: [
-      (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hip_hinge', [2, 2, 2], 'romanian_deadlift'], ['squat_pattern', [2, 3, 3], 'leg_press'], ['calves', [2, 3, 3]], ['core', [2, 2, 2]]
+      (f ? ['glute_focused', [5, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [4, 4, 4], 'cable_pull_through']), ['hip_hinge', [2, 2, 2], 'romanian_deadlift'], ['squat_pattern', [2, 3, 3], 'leg_press'], ['calves', [2, 2, 2]], ['core', [2, 2, 2]]
     ] },
   ],
 };
@@ -2817,6 +2891,100 @@ function buildDynamicSchedule(strengthDayCount, occupiedDays) {
   return result;
 }
 
+// ─── COMPACT MODE ────────────────────────────────────────────────────────────
+// "I don't have time today" — cut a session to the least volume that still
+// counts, rather than skipping it.
+//
+// The target is each muscle's `min`, its minimum effective volume: below this a
+// session stops maintaining, above it you are buying extra growth with extra
+// time. A typical intermediate week delivers 113 sets against a floor of 78, so
+// there is roughly a third of the session to give back.
+//
+// Compounds are cut proportionally but never below 2 working sets — a single
+// set of bench is not a stimulus. Isolation is capped harder (ISOLATION_CAP),
+// because a lateral raise trains one head and is the cheapest thing to lose,
+// while a row trains most of the back at once. Nothing is dropped entirely: a
+// shorter session everyone finishes beats a full one skipped, and the muscle
+// still gets its minimum.
+const COMPACT_MIN_SETS = 2;
+const ISOLATION_CAP = 2;
+// Exported so callers can price a session the same way the trim does — a
+// compound set costs about 3 minutes with its longer rest, isolation about 2.
+export const COMPACT_COMPOUND_PATTERNS = new Set([
+  'squat_pattern', 'hip_hinge', 'chest_horizontal_push', 'chest_incline_push',
+  'chest_decline', 'back_vertical_pull', 'back_horizontal_pull', 'back_inner',
+  'shoulders_vertical_push',
+]);
+
+/**
+ * Cut one day to minimum effective volume.
+ * `weeklyVolume` maps muscle → { done, min } as the volume view reports it; when
+ * absent each exercise falls back to the isolation cap / compound floor.
+ */
+export function compactWorkout(day, weeklyVolume = null) {
+  if (!day?.exercises?.length) return day;
+  let saved = 0;
+  const exercises = day.exercises.map(ex => {
+    const isCompound = COMPACT_COMPOUND_PATTERNS.has(ex.pattern);
+    let sets;
+    if (weeklyVolume) {
+      const muscle = primaryMuscleForExercise(ex);
+      const v = muscle && weeklyVolume[muscle];
+      // Scale this exercise by how far the WEEK sits above the muscle's floor.
+      // Comparing min against optimal_low instead is meaningless — they are the
+      // same number for most muscles, which makes the cut look like zero.
+      const ratio = v && v.done > 0 ? Math.min(1, v.min / v.done) : 1;
+      sets = Math.round(ex.sets * ratio);
+    } else {
+      sets = isCompound ? ex.sets - 1 : ISOLATION_CAP;
+    }
+    sets = isCompound
+      ? Math.max(COMPACT_MIN_SETS, sets)
+      : Math.max(COMPACT_MIN_SETS, Math.min(ISOLATION_CAP, sets));
+    saved += (ex.sets - sets) * (isCompound ? 3 : 2);
+    return sets === ex.sets ? ex : { ...ex, sets, compacted: true, original_sets: ex.sets };
+  });
+  return {
+    ...day,
+    exercises,
+    isCompact: true,
+    minutesSaved: saved,
+    compactNote: 'Trimmed to the minimum that still counts. Same exercises, fewer sets — keep the weight the same and push the last set.',
+  };
+}
+
+/** Compact every training day in a program. Rest days and optional days pass through. */
+export function compactProgram(program, weeklyVolume = null) {
+  if (!program?.days) return program;
+  return {
+    ...program,
+    isCompact: true,
+    days: program.days.map(d => (d.optional ? d : compactWorkout(d, weeklyVolume))),
+  };
+}
+
+// The muscle an exercise credits, resolved the same way the volume engine does:
+// the exercise's own pattern first, its stored pattern_key as the fallback.
+function primaryMuscleForExercise(ex) {
+  const pat = MOVEMENT_PATTERNS[ex.pattern];
+  const raw = pat?.muscles?.[0];
+  if (!raw) return null;
+  const r = String(raw).toLowerCase();
+  if (['chest', 'upper chest', 'mid chest', 'lower chest'].includes(r)) return 'chest';
+  if (['lats', 'traps', 'upper traps', 'rhomboids', 'lower back', 'teres', 'mid-traps', 'mid traps'].includes(r)) return 'back';
+  if (['side deltoids', 'side delts', 'medial delts'].includes(r)) return 'side_delts';
+  if (['rear delts', 'rear deltoids'].includes(r)) return 'rear_delts';
+  if (['front delts', 'anterior delts', 'shoulders', 'delts', 'deltoids'].includes(r)) return 'shoulders';
+  if (['biceps', 'brachialis'].includes(r)) return 'biceps';
+  if (r === 'triceps') return 'triceps';
+  if (['quads', 'quadriceps'].includes(r)) return 'quads';
+  if (r === 'hamstrings') return 'hamstrings';
+  if (['glutes', 'gluteus maximus', 'glute medius'].includes(r)) return 'glutes';
+  if (['calves', 'gastrocnemius', 'soleus'].includes(r)) return 'calves';
+  if (['abs', 'rectus abdominis', 'obliques', 'core'].includes(r)) return 'abs';
+  return null;
+}
+
 // ─── PROGRAM BUILDER ─────────────────────────────────────────────────────────
 
 // blockIndex: which training block this is (0 = first block, 1 = second, ...).
@@ -2884,11 +3052,16 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
   // exercise selection rotates each time a new block is generated.
   const be = (patternKey, overrides = {}) => {
     const { avoidPatterns, ...opts } = overrides;
-    let ex = buildExercise(patternKey, equipment, { blockIndex, level, excludeIds: dislikedIds, ...opts });
+    // Exclusions MERGE. Spreading opts over a fixed `excludeIds: dislikedIds`
+    // meant any caller passing its own exclusions silently dropped the user's
+    // disliked exercises back into the pool.
+    const { excludeIds: extraExcludes, ...restOpts } = opts;
+    const excludeIds = [...new Set([...(dislikedIds || []), ...(extraExcludes || [])])];
+    let ex = buildExercise(patternKey, equipment, { blockIndex, level, ...restOpts, excludeIds });
     if (!ex) {
       // `prefer` names an exercise in the ORIGINAL pattern, so it cannot carry
       // over to a different one.
-      const { prefer, ...rest } = opts;
+      const { prefer, ...rest } = restOpts;
       const candidates = PATTERN_FALLBACK[patternKey] || [];
       // Prefer a pattern the day is not already running; only double up if every
       // candidate is already used, since a repeat still beats a missing slot.
@@ -2897,7 +3070,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
         ...candidates.filter(p => avoidPatterns?.has(p)),
       ];
       for (const alt of ordered) {
-        ex = buildExercise(alt, equipment, { blockIndex, level, excludeIds: dislikedIds, ...rest });
+        ex = buildExercise(alt, equipment, { blockIndex, level, ...rest, excludeIds });
         if (ex) break;
       }
     }
@@ -3026,11 +3199,44 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
     ];
   }
 
+  // Exercise ids already placed THIS WEEK. When a split gives a muscle more
+  // than one slot, every slot resolved to the pattern's top pick — so a week
+  // with three triceps slots ran the same cable pushdown twice and never
+  // touched dips, and cable crunch turned up on four of six days. Excluding
+  // what the week already contains makes the second slot take the next
+  // exercise in the pool instead.
+  //
+  // Slots pinned with `prefer` are exempt: leg press, RDL, seated calf raise
+  // and the like are chosen deliberately and must not be swapped out. If a
+  // pool runs out, buildExercise falls back to allowing a repeat rather than
+  // dropping the slot.
+  //
+  // The exemption only holds when the preferred exercise is actually REACHABLE.
+  // A dumbbell-only lifter has no leg press, so that slot fell back to the
+  // squat_pattern top pick — the same bodyweight squat the squat slot already
+  // took — and the day's dedup pass then deleted it, leaving one quad exercise
+  // and 4 sets against a floor of 6. When the pin cannot be honoured the slot
+  // is treated as unpinned so it picks a different squat variation instead.
+  const canPrefer = (pattern, prefer) => !prefer ||
+    getAllExercisesForPattern(pattern, equipment).some(e => e.id === prefer);
+  // Ids sharing a base movement already placed today. Picking a different
+  // EXERCISE is not enough — the day's dedup pass groups every bilateral squat
+  // together, so a dumbbell lifter's leg-press slot chose a goblet squat and
+  // then had it deleted as "same movement as the bodyweight squat". Excluding
+  // the whole group up front sends it to a lunge or step-up, which survive.
+  const groupExcludes = (patternKey, usedGroupsToday) => {
+    if (!usedGroupsToday.size) return [];
+    return getAllExercisesForPattern(patternKey, equipment)
+      .filter(e => usedGroupsToday.has(baseMovementGroup({ ...e, pattern: patternKey })))
+      .map(e => e.id);
+  };
+  const usedThisWeek = new Set();
   days = (SPLIT_DAYS[split.id]?.(isFemale) || []).map(d => {
     // Patterns already placed today. A fallback must not land on one of them:
     // a bodyweight user has no vertical pull, and without this the substitute
     // lands on the horizontal pull the day is already running.
     const usedToday = new Set();
+    const usedGroupsToday = new Set();
     const exercises = d.slots.map(([pattern, setsByTier, prefer, load]) => {
       // A slot set to 0 for this tier is switched OFF, not defaulted. It has to
       // be caught here: buildExercise resolves sets as `overrides.sets ||
@@ -3039,11 +3245,15 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
       // shoulder specialisation day that the 0s exist to withhold.
       if (setsByTier[tierIndex] === 0) return null;
       const [reps, rpe] = SLOT_REPS[pattern] || [isolationReps];
-      const ex = be(pattern, {
+      // Try first without anything the week already used; if that empties the
+      // pool, retry unrestricted so the slot is still filled.
+      const build = (excludeUsed) => be(pattern, {
         sets: setsByTier[tierIndex],
         reps,
         avoidPatterns: usedToday,
         rest: goalRest(pattern),
+        ...(excludeUsed && !canPrefer(pattern, prefer)
+          ? { excludeIds: [...usedThisWeek, ...groupExcludes(pattern, usedGroupsToday)] } : {}),
         ...(gp.lastSetRPE ? { last_rpe: gp.lastSetRPE } : {}),
         ...(rpe ? { early_rpe: rpe } : {}),
         ...(prefer ? { prefer } : {}),
@@ -3052,7 +3262,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
         // exercise, so block rotation still varies the movement inside the head.
         ...(load ? { load } : {}),
       });
-      if (ex) usedToday.add(ex.pattern);
+      const ex = build(true) || build(false);
+      if (ex) {
+        usedToday.add(ex.pattern);
+        if (ex.id) usedThisWeek.add(ex.id);
+        const grp = baseMovementGroup(ex);
+        if (grp) usedGroupsToday.add(grp);
+      }
       return ex;
     }).filter(Boolean);
     return {

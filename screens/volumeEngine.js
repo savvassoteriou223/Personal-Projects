@@ -80,13 +80,16 @@ export function computeHeadVolume(sets = []) {
     const noWeight = s.weight_kg === null || s.weight_kg === undefined;
     if (noReps && noWeight) return;
 
-    // pattern_key first. It is the durable link to MOVEMENT_PATTERNS: it
-    // survives coach swaps, mid-workout replacements and display-name changes.
-    // Matching on the name alone meant any set whose stored name was not an
-    // exact library key registered under NO muscle and vanished from the chart
-    // without a trace — the user logged five sets of calves and saw four.
+    // Exact library name first, pattern_key as fallback. The stored pattern_key
+    // goes STALE when a slot's exercise is swapped — the name changes but the
+    // slot keeps the old pattern, and production rows prove it ("Seated leg
+    // curl" saved under squat_pattern credited hamstring work to quads). A name
+    // that matches the library exactly IS the library entry, so its own pattern
+    // is authoritative; pattern_key still catches renamed/custom names, which
+    // is the case it was originally added for.
+    const byName = EXERCISE_MUSCLES[s.exercise_name?.toLowerCase()];
     const byPattern = s.pattern_key ? MOVEMENT_PATTERNS[s.pattern_key]?.muscles : null;
-    const muscles = byPattern || EXERCISE_MUSCLES[s.exercise_name?.toLowerCase()] || [];
+    const muscles = byName || byPattern || [];
     if (!muscles.length) return;
     add(muscleToHead(muscles[0]), 'direct', 1);
     muscles.slice(1).forEach(m => add(muscleToHead(m), 'indirect', SECONDARY_WEIGHT));
@@ -152,9 +155,12 @@ const round1 = (n) => Math.round(n * 2) / 2; // nearest 0.5
 // Builds everything both views need from a week of logged sets.
 // Returns one entry per MUSCLE_GROUP: { key, split, done, target, color, heads }
 // where each head is { key, direct, indirect, target, color }.
-export function buildVolumeView(sets = [], tier = 'intermediate') {
+// `sex` only affects the glute target — men are not held to the direct-glute
+// floor, since their glute work arrives through squats and hinges. Omitting it
+// keeps the previous behaviour for any caller that has no profile to hand.
+export function buildVolumeView(sets = [], tier = 'intermediate', sex = null) {
   const headVol = computeHeadVolume(sets);
-  const targets = getVolumeTargets(tier);
+  const targets = getVolumeTargets(tier, sex);
 
   return MUSCLE_GROUPS.map(group => {
     const heads = group.heads.map(h => {

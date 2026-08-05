@@ -1212,6 +1212,13 @@
       "glutes": "Glutes",
       "calves": "Calves",
       "abs": "Abs"
+    },
+    "compact": {
+      "on": "Trimmed session",
+      "off": "Short on time?",
+      "subOn": "Same exercises, fewer sets. Keep the weight and push the last set of each.",
+      "subOff": "Cut to the minimum that still counts toward your week.",
+      "a11y": "Short on time — trim this session"
     }
   },
   "readiness": {

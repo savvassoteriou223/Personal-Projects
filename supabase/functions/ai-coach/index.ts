@@ -296,6 +296,30 @@ const TOOLS = [
       required: ['reason', 'slots'],
     },
   },
+  {
+    name: 'compact_workout',
+    // Time pressure is the most common reason a session gets skipped entirely,
+    // and the honest answer is a shorter session rather than a missed one. This
+    // is a scale-down of what is already programmed — never a re-selection —
+    // so it does not go through propose_program_change and does not touch the
+    // stored program. It expires on its own: today's trim is today's only.
+    description: 'Trim a session to the minimum volume that still counts, when the user says they are short on time — "I only have 30 minutes", "can we make today quick", "I need to be out in an hour", "no time today". Keeps every exercise and cuts sets: compounds drop by one but never below 2, isolation caps at 2. Use scope "today" for a single session (the default — a busy day is usually one day) and "week" only when they say their whole week is compressed. This does NOT change their program: it is a one-off trim, so do not call propose_program_change for it. Tell them plainly what it costs — it is the minimum that maintains, not the volume that builds fastest. If instead they want a permanently shorter program, that IS a program change and belongs in propose_program_change.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        scope: {
+          type: 'string',
+          enum: ['today', 'week'],
+          description: 'today: trim the next session only. week: trim every training day this week. Default to today unless they clearly mean the whole week.',
+        },
+        reason: {
+          type: 'string',
+          description: 'Short phrase in their own terms, e.g. "only 30 minutes today", "travelling all week".',
+        },
+      },
+      required: ['scope'],
+    },
+  },
 ];
 
 Deno.serve(async (req: Request) => {
@@ -484,6 +508,13 @@ Deno.serve(async (req: Request) => {
 
     let scopeBlocks = (anthropicJson.content ?? []).filter(
       (b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'declare_change_scope'
+    );
+
+    // A trim is not a program edit — the client applies it to the session it is
+    // about to run and forgets it. Passed straight through rather than going
+    // near the proposal validation, which exists to protect the STORED program.
+    let compactBlocks = (anthropicJson.content ?? []).filter(
+      (b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'compact_workout'
     );
 
     // A propose_program_change missing day_id (or a non-add edit missing
@@ -799,6 +830,7 @@ Deno.serve(async (req: Request) => {
         toolBlocks = (salvaged.content ?? []).filter((b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'propose_program_change');
         altBlocks = (salvaged.content ?? []).filter((b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'suggest_exercise_alternatives');
         scopeBlocks = (salvaged.content ?? []).filter((b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'declare_change_scope');
+        if (!compactBlocks.length) compactBlocks = (salvaged.content ?? []).filter((b: { type: string; name?: string }) => b.type === 'tool_use' && b.name === 'compact_workout');
         proposals = toolBlocks.map((b: { input: unknown }) => b.input).filter(isApplicable);
         alternatives = altBlocks.map((b: { input: unknown }) => b.input);
         declaredSlots = computeDeclaredSlots(scopeBlocks);
@@ -1050,6 +1082,11 @@ Deno.serve(async (req: Request) => {
       proposals,
       facts,
       alternatives,
+      // { scope, reason } when the coach trimmed a session for time. Separate
+      // from `proposals` on purpose: proposals edit the stored program and need
+      // the user to Apply, a trim applies to the session about to be run and
+      // expires with it.
+      compact: compactBlocks.length ? compactBlocks[0].input : null,
       remaining: MONTHLY_QUOTA - reservedUsed,
       used: reservedUsed,
       quota: MONTHLY_QUOTA,

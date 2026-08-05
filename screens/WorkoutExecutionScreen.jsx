@@ -16,7 +16,7 @@ import PremiumPaywall from './PremiumPaywall';
 import RecoveryCheckIn from './RecoveryCheckIn';
 import { adjustSessionForReadiness } from '../lib/readiness';
 import { getTodayCheckIn, saveCheckIn } from '../lib/recoveryStore';
-import { MOVEMENT_PATTERNS, getPatternLabelForExercise } from './movementLibrary';
+import { MOVEMENT_PATTERNS, getPatternLabelForExercise, getPatternKeyForExercise } from './movementLibrary';
 import { isAddProposal } from '../lib/proposalRouting';
 import { checkReadyToProgress } from './programGenerator';
 import { colors } from '../lib/theme';
@@ -770,7 +770,10 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
               session_id: session.id,
               user_id: user.id,
               exercise_name: ex.name,
-              pattern_key: ex.pattern || null,
+              // Re-derive from the name: the slot's `pattern` goes stale when an
+              // exercise is swapped in (production rows had "Seated leg curl"
+              // under squat_pattern, crediting hamstring work to quads).
+              pattern_key: getPatternKeyForExercise(ex.name) || ex.pattern || null,
               set_number: setIdx + 1,
               reps: parseInt(s.reps) || null,
               weight_kg: parseFloat(s.weight) || null,
@@ -793,7 +796,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
               user_id: user.id,
               session_id: session.id,
               exercise_name: ex.name,
-              pattern_key: ex.pattern || null,
+              pattern_key: getPatternKeyForExercise(ex.name) || ex.pattern || null,
             }))
           );
         }

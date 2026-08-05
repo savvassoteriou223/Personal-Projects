@@ -1187,6 +1187,13 @@
       "glutes": "Glutei",
       "calves": "Polpacci",
       "abs": "Addominali"
+    },
+    "compact": {
+      "on": "Sessione ridotta",
+      "off": "Poco tempo?",
+      "subOn": "Stessi esercizi, meno serie. Mantieni il carico e spingi sull ultima serie.",
+      "subOff": "Ridotta al minimo che conta ancora per la tua settimana.",
+      "a11y": "Poco tempo — riduci questa sessione"
     }
   },
   "data": {

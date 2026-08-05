@@ -1187,6 +1187,13 @@
       "glutes": "Gesäß",
       "calves": "Waden",
       "abs": "Bauch"
+    },
+    "compact": {
+      "on": "Gekürzte Einheit",
+      "off": "Wenig Zeit?",
+      "subOn": "Gleiche Übungen, weniger Sätze. Gewicht beibehalten und den letzten Satz ausreizen.",
+      "subOff": "Auf das Minimum gekürzt, das für deine Woche noch zählt.",
+      "a11y": "Wenig Zeit — diese Einheit kürzen"
     }
   },
   "data": {

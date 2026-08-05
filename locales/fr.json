@@ -1187,6 +1187,13 @@
       "glutes": "Fessiers",
       "calves": "Mollets",
       "abs": "Abdominaux"
+    },
+    "compact": {
+      "on": "Séance allégée",
+      "off": "Peu de temps ?",
+      "subOn": "Mêmes exercices, moins de séries. Garde la même charge et pousse sur la dernière série.",
+      "subOff": "Réduit au minimum qui compte encore pour ta semaine.",
+      "a11y": "Peu de temps — alléger cette séance"
     }
   },
   "data": {

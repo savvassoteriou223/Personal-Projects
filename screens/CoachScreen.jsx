@@ -1732,6 +1732,18 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
       ]).catch(() => {});
       // Persist any durable facts the coach extracted this turn.
       if (result?.facts?.length) persistCoachFacts(result.facts).catch(() => {});
+      // A time trim. Stored as a flag the Today screen reads, NOT as a proposal:
+      // proposals rewrite the saved program and wait for Apply, whereas this is
+      // one session's worth of "I'm in a rush" and has to expire on its own.
+      // Dated so tomorrow starts from the full program again — a trim left on by
+      // accident would quietly halve someone's training for weeks.
+      if (result?.compact?.scope) {
+        AsyncStorage.setItem('compact_request', JSON.stringify({
+          scope: result.compact.scope,
+          reason: result.compact.reason || null,
+          date: new Date().toISOString().slice(0, 10),
+        })).catch(() => {});
+      }
       setQuestion('');
     } catch {
       // Drop the pending turn and surface the error transiently — the user's text
@@ -1908,7 +1920,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         // progression — never a manufactured "insight".
         // Furthest below its weekly minimum, measured the same way the volume
         // rows are: primary mover only, against this lifter's tier.
-        const targets = getVolumeTargets(userData?.profile?.trainingExperience);
+        const targets = getVolumeTargets(userData?.profile?.trainingExperience, userData?.profile?.sex);
         const biggestGap = (() => {
           let worst = null;
           for (const [muscle, tgt] of Object.entries(targets || {})) {
@@ -2396,7 +2408,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                   Reading "you hit 12 of 15 chest sets" in a sentence is slower
                   than seeing the bar, and the app already computed the number. */}
               {(() => {
-                const targets = getVolumeTargets(userData?.profile?.trainingExperience);
+                const targets = getVolumeTargets(userData?.profile?.trainingExperience, userData?.profile?.sex);
                 const rows = Object.entries(userData?.weeklyVolume || {})
                   .map(([muscle, done]) => ({
                     muscle, done,

@@ -6,7 +6,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { generateProgram, getVolumeTargets, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment, getConditionsFromInjuryProfile, applyContraindicationsToWorkout, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, getProactiveCoachPrompt, getEligibleGoalMilestones, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS } from './programGenerator';
+import { generateProgram, getVolumeTargets, compactWorkout, COMPACT_COMPOUND_PATTERNS, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment, getConditionsFromInjuryProfile, applyContraindicationsToWorkout, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, getProactiveCoachPrompt, getEligibleGoalMilestones, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS } from './programGenerator';
 import { buildVolumeView } from './volumeEngine';
 import { maybeSendProactiveNudge } from '../lib/notificationService';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
@@ -62,6 +62,11 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   const [weeklyVolume, setWeeklyVolume] = useState({});
   const [weekVolumeSets, setWeekVolumeSets] = useState([]); // raw working sets, last 7 days, for the head-level engine
   const [showVolumeDetail, setShowVolumeDetail] = useState(false);
+  // Short-on-time mode. Deliberately NOT persisted as a setting: it is a
+  // decision about today. Left on by accident it would quietly halve someone's
+  // training for weeks, so the only thing that survives a reload is a dated
+  // request from the coach, and only for the day it was made.
+  const [compactMode, setCompactMode] = useState(false);
   // Recovery detail sheet — the Today card stays compact; the body map and the
   // full muscle grid live behind it so recovery doesn't dominate the screen.
   const [showRecovery, setShowRecovery] = useState(false);
@@ -86,9 +91,64 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   // died. It is only reachable once a profile loads, which is why the logged-out
   // launch screen looked fine.
   const volumeView = useMemo(
-    () => buildVolumeView(weekVolumeSets, profile?.trainingExperience || 'beginner'),
-    [weekVolumeSets, profile?.trainingExperience],
+    () => buildVolumeView(weekVolumeSets, profile?.trainingExperience || 'beginner', profile?.sex),
+    [weekVolumeSets, profile?.trainingExperience, profile?.sex],
   );
+
+  // Compact mode. `compactWorkout` scales each exercise by how far the WEEK sits
+  // above that muscle's minimum, so the trim reflects what has actually been
+  // trained rather than a flat percentage. The full program is measured (not
+  // this week's logged sets) because the question is "how much of the planned
+  // week is above the floor", which is a property of the program.
+  const plannedVolume = useMemo(() => {
+    if (!program?.days) return null;
+    const sets = [];
+    program.days.forEach(d => (d.exercises || []).forEach(ex => {
+      for (let i = 0; i < (ex.sets || 0); i++)
+        sets.push({ exercise_name: ex.name, pattern_key: ex.pattern, reps: 10, weight_kg: 40, set_type: 'working' });
+    }));
+    const out = {};
+    buildVolumeView(sets, profile?.trainingExperience || 'beginner', profile?.sex).forEach(g => {
+      const rows = g.split ? g.heads.filter(h => h.target).map(h => [h.key, h.direct, h.target])
+        : (g.target ? [[g.key, g.done, g.target]] : []);
+      rows.forEach(([k, done, tg]) => { out[k] = { done, min: tg.min }; });
+    });
+    return out;
+  }, [program, profile?.trainingExperience, profile?.sex]);
+
+  const compactWorkoutToday = useMemo(
+    () => (todayWorkout ? compactWorkout(todayWorkout, plannedVolume) : null),
+    [todayWorkout, plannedVolume],
+  );
+  // What Start actually launches.
+  const servedWorkout = compactMode ? compactWorkoutToday : todayWorkout;
+  // Minutes the trim would save — shown on the toggle so the trade is a number,
+  // not a promise. Compounds cost ~3 min a set with their longer rests.
+  const compactSavings = useMemo(() => {
+    if (!todayWorkout || !compactWorkoutToday) return 0;
+    const mins = w => (w.exercises || []).reduce(
+      (n, e) => n + e.sets * (COMPACT_COMPOUND_PATTERNS.has(e.pattern) ? 3 : 2), 0);
+    return Math.max(0, mins(todayWorkout) - mins(compactWorkoutToday));
+  }, [todayWorkout, compactWorkoutToday]);
+
+  // The coach can trim a session by tool call ("I've only got 30 minutes"). It
+  // lands here as a dated request rather than a program edit, so the toggle
+  // comes up already on and the user can still switch it back off. A request
+  // scoped to `week` stays on for the week; anything else is today only.
+  useEffect(() => {
+    let cancelled = false;
+    AsyncStorage.getItem('compact_request').then(raw => {
+      if (cancelled || !raw) return;
+      let req; try { req = JSON.parse(raw); } catch { return; }
+      const today = new Date().toISOString().slice(0, 10);
+      const stillValid = req?.scope === 'week'
+        ? (Date.now() - new Date(req.date).getTime()) < 7 * 864e5
+        : req?.date === today;
+      if (stillValid) setCompactMode(true);
+      else AsyncStorage.removeItem('compact_request').catch(() => {});
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const [blockData, setBlockData] = useState(null);
   const [blockJustRotated, setBlockJustRotated] = useState(false);
   const [showCardioLog, setShowCardioLog] = useState(false);
@@ -431,7 +491,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
         const sessionIds = sessions.map(s => s.id);
         const { data: sets } = await supabase
           .from('completed_sets')
-          .select('exercise_name, pattern_key, session_id, created_at, weight_kg, reps')
+          .select('exercise_name, pattern_key, session_id, created_at, weight_kg, reps, set_type')
           .in('session_id', sessionIds);
 
         if (!sets?.length) {
@@ -500,12 +560,22 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
           const volume = {};
           weekSets.forEach(set => {
-            const primary = primaryMuscleFor(set.exercise_name);
+            if (set.set_type === 'warmup') return;
+            const primary = primaryMuscleFor(set.exercise_name, set.pattern_key);
             if (primary) volume[primary] = (volume[primary] || 0) + 1;
           });
           setWeeklyVolume(volume);
-          // Raw sets feed the head-level engine (direct + indirect per muscle head).
-          setWeekVolumeSets(weekSets.map(s => ({ exercise_name: s.exercise_name, pattern_key: s.pattern_key })));
+          // Raw sets feed the head-level engine (direct + indirect per muscle
+          // head). Pass reps/weight/set_type through: the engine drops sets that
+          // look empty and excludes warm-ups, so stripping those fields here
+          // made EVERY set look empty and the weekly volume card read zero.
+          setWeekVolumeSets(weekSets.map(s => ({
+            exercise_name: s.exercise_name,
+            pattern_key: s.pattern_key,
+            reps: s.reps,
+            weight_kg: s.weight_kg,
+            set_type: s.set_type,
+          })));
 
           // ── Plateau and deload detection ─────────────────────────────────
           // Pull last 30 days of sets for plateau analysis
@@ -700,23 +770,23 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
           <Text style={styles.sessionFocus}>{todayWorkout.focus}</Text>
           <View style={styles.sessionMeta}>
             <View style={styles.sessionMetaChip}>
-              <Text style={styles.sessionMetaText}>{t('today.session.exercises', { count: todayWorkout.exercises?.length || 0 })}</Text>
+              <Text style={styles.sessionMetaText}>{t('today.session.exercises', { count: servedWorkout?.exercises?.length || 0 })}</Text>
             </View>
             <View style={styles.sessionMetaChip}>
-              <Text style={styles.sessionMetaText}>{t('today.session.sets', { count: todayWorkout.exercises?.reduce((s,e)=>s+e.sets,0) || 0 })}</Text>
+              <Text style={styles.sessionMetaText}>{t('today.session.sets', { count: servedWorkout?.exercises?.reduce((s,e)=>s+e.sets,0) || 0 })}</Text>
             </View>
           </View>
           {/* Exercise preview */}
           <View style={styles.exercisePreview}>
-            {(todayWorkout.exercises || []).slice(0, 4).map((ex, i) => (
+            {(servedWorkout?.exercises || []).slice(0, 4).map((ex, i) => (
               <View key={i} style={styles.exPreviewRow}>
                 <View style={styles.exPreviewDot} />
                 <Text style={styles.exPreviewName}>{ex.name}</Text>
                 <Text style={styles.exPreviewDetail}>{ex.sets}×{ex.reps}</Text>
               </View>
             ))}
-            {(todayWorkout.exercises?.length || 0) > 4 && (
-              <Text style={styles.moreText}>{t('today.session.more', { count: todayWorkout.exercises.length - 4 })}</Text>
+            {(servedWorkout?.exercises?.length || 0) > 4 && (
+              <Text style={styles.moreText}>{t('today.session.more', { count: servedWorkout.exercises.length - 4 })}</Text>
             )}
           </View>
           {todayCompleted ? (
@@ -731,9 +801,42 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
               )}
             </>
           ) : (
-            <Tappable style={styles.startBtn} onPress={() => beginWorkout(todayWorkout)}>
-              <Text style={styles.startBtnText}>{t('today.session.start')}</Text>
-            </Tappable>
+            <>
+              {/* Short-on-time toggle. Deliberately quiet and above Start: it is a
+                  choice you make before leaving the house, and the default has to
+                  stay the full session. The saving is shown as a real number so
+                  the trade is explicit rather than a vague "quick mode". */}
+              <Tappable
+                style={[styles.compactToggle, compactMode && styles.compactToggleOn]}
+                onPress={() => setCompactMode(v => !v)}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: compactMode }}
+                accessibilityLabel={t('today.compact.a11y', { defaultValue: 'Short on time — trim this session' })}
+              >
+                <View style={styles.compactToggleText}>
+                  <Text style={[styles.compactTitle, compactMode && styles.compactTitleOn]}>
+                    {compactMode
+                      ? t('today.compact.on', { defaultValue: 'Trimmed session' })
+                      : t('today.compact.off', { defaultValue: 'Short on time?' })}
+                  </Text>
+                  <Text style={styles.compactSub}>
+                    {compactMode
+                      ? t('today.compact.subOn', { defaultValue: 'Same exercises, fewer sets. Keep the weight and push the last set of each.' })
+                      : t('today.compact.subOff', { defaultValue: 'Cut to the minimum that still counts toward your week.' })}
+                  </Text>
+                </View>
+                {compactSavings > 0 && (
+                  <View style={[styles.compactBadge, compactMode && styles.compactBadgeOn]}>
+                    <Text style={[styles.compactBadgeText, compactMode && styles.compactBadgeTextOn]}>
+                      −{compactSavings}m
+                    </Text>
+                  </View>
+                )}
+              </Tappable>
+              <Tappable style={styles.startBtn} onPress={() => beginWorkout(servedWorkout)}>
+                <Text style={styles.startBtnText}>{t('today.session.start')}</Text>
+              </Tappable>
+            </>
           )}
         </View>
       ) : (
@@ -1303,6 +1406,25 @@ const styles = StyleSheet.create({
   sessionMetaText: { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
   sessionTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
   sessionCount: { fontSize: 13, color: colors.textSubtle },
+  // Short-on-time toggle. Reads as a quiet option until switched on, then takes
+  // the accent so the session you are about to start is unambiguous.
+  compactToggle: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16,
+    backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  compactToggleOn: { backgroundColor: colors.accentSoft, borderColor: colors.accentHair },
+  compactToggleText: { flex: 1, gap: 2 },
+  compactTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary },
+  compactTitleOn: { color: colors.accent },
+  compactSub: { fontSize: 13, lineHeight: 19, color: colors.textSubtle },
+  compactBadge: {
+    backgroundColor: colors.surfaceRaised, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  compactBadgeOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  compactBadgeText: { fontSize: 13, fontWeight: '700', color: colors.textMuted, fontVariant: ['tabular-nums'] },
+  compactBadgeTextOn: { color: colors.surfaceRaised },
   startBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
   startBtnText: { color: colors.surfaceRaised, fontSize: 15, fontWeight: '700', letterSpacing: 0.3 },
   completedBadge: { backgroundColor: colors.accentSoft, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 16, borderWidth: 1, borderColor: colors.accentHair },

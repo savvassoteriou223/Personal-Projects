@@ -4176,7 +4176,20 @@ export function getAllExercisesForPattern(patternKey, availableEquipment) {
     if (filtered.length >= 2) pool = filtered;
   }
 
-  return pool.sort((a, b) => (a.primary_alternative ? 0 : 1) - (b.primary_alternative ? 0 : 1));
+  // Owning equipment should mean using it. Sorting on primary_alternative alone
+  // is a stable sort, so when a bodyweight and a band exercise are BOTH marked
+  // primary the one written first in the library wins — which handed every
+  // resistance-band user a bodyweight squat and a bodyweight single-leg RDL
+  // while the band squat and band RDL sat unused in the same pattern.
+  //
+  // Bands are not in LOADED_EQUIPMENT because the filter above would strip
+  // bodyweight movements a band owner still needs (push-ups, planks, pull-ups).
+  // They only need to lose the tie, not the pool.
+  const hasBands = (availableEquipment || []).some(eq => String(eq).toLowerCase().includes('band'));
+  const bodyweightOnly = ex => ex.equipment.length === 1 && ex.equipment[0] === 'bodyweight';
+  const rank = ex => (ex.primary_alternative ? 0 : 2) + (hasBands && bodyweightOnly(ex) ? 1 : 0);
+
+  return pool.sort((a, b) => rank(a) - rank(b));
 }
 
 // Get rotation alternatives for an exercise (same pattern, different exercise)
@@ -4210,6 +4223,23 @@ const _PATTERN_LABEL_BY_NAME = (() => {
 // uses, so it names the group a replacement has to come from.
 export function getPatternLabelForExercise(name) {
   return _PATTERN_LABEL_BY_NAME[name?.toLowerCase()] || null;
+}
+
+// Exercise name → its pattern KEY, same construction as the label map above.
+// Used when logging sets: the slot's own `pattern` field goes stale when an
+// exercise is swapped into it (the name changes, the slot keeps the old
+// pattern), so the key must be re-derived from the name whenever the name is
+// an exact library entry.
+const _PATTERN_KEY_BY_NAME = (() => {
+  const map = {};
+  Object.entries(MOVEMENT_PATTERNS).forEach(([key, pat]) => {
+    pat.exercises.forEach(ex => { map[ex.name.toLowerCase()] = key; });
+  });
+  return map;
+})();
+
+export function getPatternKeyForExercise(name) {
+  return _PATTERN_KEY_BY_NAME[name?.toLowerCase()] || null;
 }
 
 // Slot map — used by program generator to assign exercises to training slots
