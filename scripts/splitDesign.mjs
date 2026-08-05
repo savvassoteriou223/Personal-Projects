@@ -135,12 +135,12 @@ const SPLITS = {
   ['Lower',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['quadIso',4],['hamIso',4],['calvesSeat',4],['core',3]]]]},
 
 'Upper / Lower 4x': { optShoulders:true, days:f=>[
-  ['Upper A',[['benchFlat',4],['rowH',4],['ohp',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4],['bicepsLong',4]]],
+  ['Upper A',[['benchFlat',4],['pullV',4],['rowH',4],['ohp',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4],['bicepsLong',4]]],
   ['Lower A',[['squat',4],['hinge',4],['lunge',4],['quadIso',4],['calves',4],['calvesSeat',3],['core',4]]],
   ['Upper B',[['benchInc',4],['benchDec',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['tricepsLat',4],['bicepsShort',4]]],
   ['Lower B',[['legpress',4],['deadlift',4],['lunge',4],[G2(f),4],['hamIso',4],['calvesSeat',5],['core',4]]]]},
 
-'Chest+Tri / Back+Bi / Shoulders / Legs': { days:f=>[
+'Chest+Tri / Back+Bi / Shoulders / Legs': { freq1:true, days:f=>[
   ['Chest + Triceps',[['benchFlat',4],['benchInc',4],['benchDec',4],['chestIso',4],['tricepsLong',4],['tricepsLat',4],['core',5]]],
   ['Back + Biceps',[['pullV',4],['rowH',4],['rowInner',4],['latIso',3],['bicepsLong',4],['bicepsShort',4],['core',5]]],
   ['Shoulders',[['ohp',3],['sideDelt',5],['sideDelt',5],['rearDelt',4],['rearDelt',4],['calves',5],['calvesSeat',5]]],
@@ -150,37 +150,37 @@ const SPLITS = {
   ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['calves',5],['core',4]]],
   ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['bicepsLong',4],['lunge',f?6:4],['core',4]]],
   ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['tricepsLat',4],['calvesSeat',5],['core',4]]],
-  ['Full Body D',[['deadlift',4],[G2(f),f?6:4],['quadIso',4],['ohp',3],['rearDelt',4],['bicepsShort',4],['hamIso',4]]]]},
+  ['Full Body D',[['deadlift',4],[G2(f),f?6:4],['quadIso',4],['benchInc',4],['pullV',4],['ohp',3],['rearDelt',4],['bicepsShort',4],['hamIso',4]]]]},
 
 'PPL / Upper / Lower 5x': { optShoulders:true, days:f=>[
   ['Push',[['benchFlat',4],['benchInc',4],['ohp',3],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
   ['Pull',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',4]]],
   ['Legs',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',4],['calvesSeat',3],['core',4]]],
-  ['Upper',[['benchDec',4],['chestIso',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['bicepsShort',4]]],
+  ['Upper',[['benchDec',4],['chestIso',4],['pullV',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['tricepsLat',4],['bicepsShort',4]]],
   ['Lower',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',2]]]]},
 
 'Full Body 5x': { optShoulders:true, days:f=>[
   ['Full Body A',[['squat',4],['benchFlat',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['calves',5]]],
   ['Full Body B',[['hinge',4],['benchInc',4],['pullV',4],['rearDelt',4],['bicepsLong',4],['core',4]]],
   ['Full Body C',[['legpress',4],['benchDec',4],['rowInner',4],['sideDelt',5],['calvesSeat',5],['core',4]]],
-  ['Full Body D',[['deadlift',4],['lunge',f?6:4],['ohp',3],['rearDelt',4],['tricepsLat',4],['core',4]]],
-  ['Full Body E',[['quadIso',4],['hamIso',4],[G2(f),f?6:4],['latIso',3],['bicepsShort',4],['calves',5]]]]},
+  ['Full Body D',[['deadlift',4],['lunge',f?6:4],['benchInc',4],['pullV',4],['ohp',3],['rearDelt',4],['tricepsLat',4],['core',4]]],
+  ['Full Body E',[['quadIso',4],['hamIso',4],[G2(f),f?6:4],['ohp',3],['latIso',3],['bicepsShort',4],['calves',5]]]]},
 
 'Push / Pull / Legs 6x': { days:f=>[
   ['Push A',[['benchFlat',4],['ohp',3],['chestIso',4],['sideDelt',5],['tricepsLong',4],['tricepsLat',4]]],
   ['Pull A',[['pullV',4],['rowH',4],['rearDelt',4],['bicepsLong',4],['traps',3],['core',3]]],
   ['Legs A',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',4],['calvesSeat',3]]],
   ['Push B',[['benchInc',4],['benchDec',4],['ohp',3],['sideDelt',5],['tricepsLat',4],['core',3]]],
-  ['Pull B',[['rowInner',4],['latIso',3],['rearDelt',4],['bicepsShort',4],['core',3]]],
+  ['Pull B',[['pullV',4],['rowInner',4],['rearDelt',4],['bicepsShort',4],['core',3]]],
   ['Legs B',[['legpress',4],['deadlift',4],[G2(f),f?6:4],['hamIso',4],['calvesSeat',5],['core',3]]]]},
 
 'Upper / Lower 6x': { days:f=>[
-  ['Upper A',[['benchFlat',4],['ohp',3],['rowH',4],['sideDelt',5],['tricepsLong',4],['bicepsLong',4]]],
+  ['Upper A',[['benchFlat',4],['ohp',3],['pullV',4],['rowH',4],['sideDelt',5],['tricepsLong',4],['bicepsLong',4]]],
   ['Lower A',[['squat',4],['hinge',4],['lunge',f?6:4],['quadIso',4],['calves',5],['core',4]]],
-  ['Upper B',[['benchInc',4],['pullV',4],['rearDelt',4],['bicepsShort',4],['tricepsLat',4],['core',3]]],
+  ['Upper B',[['benchInc',4],['pullV',4],['rowH',4],['rearDelt',4],['bicepsShort',4],['tricepsLat',4],['core',3]]],
   ['Lower B',[['legpress',4],['deadlift',4],['hamIso',4],['calvesSeat',5],['core',3]]],
-  ['Upper C',[['benchDec',4],['rowInner',4],['latIso',3],['sideDelt',5],['rearDelt',4],['tricepsLong',4]]],
-  ['Lower C',[[G2(f),f?6:4],['lunge',f?6:4],['quadIso',4],['hamIso',4],['calves',5],['core',3]]]]},
+  ['Upper C',[['benchDec',4],['rowInner',4],['sideDelt',5],['rearDelt',4],['tricepsLong',4],['bicepsLong',4]]],
+  ['Lower C',[[G2(f),f?6:4],['hinge',4],['legpress',4],['calves',5],['core',3]]]]},
 };
 
 
@@ -282,25 +282,103 @@ const OPTIONAL_SHOULDER_SLOTS = [
 // it has to be modelled here rather than applied to the weekly total.
 const LEVEL_VOLUME_FACTOR = { beginner: 0.8, intermediate: 1.0, advanced: 1.2 };
 
+// What a day's NAME commits it to containing. Weekly totals cannot see this:
+// a "Pull" day with no vertical pull, or an "Upper" day with no press and no
+// triceps, hits its weekly numbers perfectly while being incoherent to train.
+// Every entry is a list of alternatives — any one satisfies the requirement.
+const DAY_REQUIRES = [
+  { re: /^push/i, need: {
+    'a chest press': ['chest_horizontal_push', 'chest_incline_push', 'chest_decline'],
+    'a shoulder press': ['shoulders_vertical_push'],
+    'triceps': ['triceps'],
+  } },
+  { re: /^pull/i, need: {
+    'a vertical pull': ['back_vertical_pull'],
+    'a horizontal pull': ['back_horizontal_pull', 'back_inner'],
+    'biceps': ['biceps'],
+  } },
+  // A pull of SOME kind, not both kinds. Demanding vertical AND horizontal on
+  // every Upper day forces six back slots in a 3-upper-day split, and since
+  // SET_MIN is 2 that is 12 sets against a beginner ceiling of 10 — the rule
+  // would be arithmetically unsatisfiable rather than merely unmet. Lat work is
+  // still guaranteed by the week-level vertical-pull rule in check().
+  { re: /^upper/i, need: {
+    'a chest press': ['chest_horizontal_push', 'chest_incline_push', 'chest_decline'],
+    'a pull': ['back_vertical_pull', 'back_horizontal_pull', 'back_inner'],
+    'triceps': ['triceps'],
+    'biceps': ['biceps'],
+  } },
+  { re: /^(lower|legs)/i, need: {
+    'a squat pattern': ['squat_pattern'],
+    'a hip hinge': ['hip_hinge'],
+  } },
+  { re: /^full body/i, need: {
+    // Full-body days complement each other across the week, so demanding a
+    // barbell CHEST press on every one is too strict — and forcing a fourth
+    // chest slot pushed beginners past their ceiling. What each day must have
+    // is legs, an upper push and an upper pull; a shoulder press or a fly is a
+    // legitimate push, a pullover a legitimate pull.
+    'a leg movement': ['squat_pattern', 'hip_hinge', 'quad_isolation', 'glute_focused'],
+    'an upper push': ['chest_horizontal_push', 'chest_incline_push', 'chest_decline', 'chest_isolation', 'shoulders_vertical_push'],
+    'an upper pull': ['back_vertical_pull', 'back_horizontal_pull', 'back_inner', 'back_isolation'],
+  } },
+];
+
 function check(cfg, f, tier) {
   const R = ranges(tier, f, cfg.mev), vol = {}, bad = [], sizes = [];
   const days = allocate(cfg, f, tier);
+  // Which days each muscle group appears on — for the frequency rule below.
+  const daysPerGroup = {};
   for (const [dname, slots] of days) {
     sizes.push(slots.length);
     const seen = {};
+    const patterns = new Set(slots.map(([k]) => SLOT[k][0]));
     for (const [k, sets] of slots) {
       const g = directGroup(k);
-      if (g) vol[g] = (vol[g] || 0) + sets;
+      if (g) {
+        vol[g] = (vol[g] || 0) + sets;
+        (daysPerGroup[g] = daysPerGroup[g] || new Set()).add(dname);
+      }
       if (sets < 2) bad.push(`${k} only ${sets} sets on ${dname}`);
       const pat = SLOT[k][0];
       if (seen[pat] === k && !DEDICATED[pat]?.test(dname)) bad.push(`dup ${k} on ${dname}`);
       seen[pat] = k;
     }
+    // Does the day deliver what its name promises?
+    const req = DAY_REQUIRES.find(x => x.re.test(dname));
+    if (req) for (const [label, alts] of Object.entries(req.need))
+      if (!alts.some(p => patterns.has(p))) bad.push(`${dname}: missing ${label}`);
   }
   for (const [k, [lo, hi]] of Object.entries(R)) {
     if (cfg.only && !cfg.only.includes(k)) continue;
     const v = vol[k] || 0;
     if (v < lo) bad.push(`${k} ${v}<${lo}`); else if (v > hi) bad.push(`${k} ${v}>${hi}`);
+  }
+  // Frequency. The app's own science reference states each muscle should be
+  // trained at least twice a week, and it was the one rule the split design
+  // never enforced — which is how a whole week of triceps ended up on one day
+  // while the weekly total looked perfect.
+  // Applied from 4 days up, and never to a split whose whole premise is
+  // once-a-week frequency. At 2-3 days there are ~27 slots for 14 muscles, so
+  // twice-weekly for everything is arithmetically impossible, not a defect —
+  // the same reason those splits already run on the MEV floor. And the bro
+  // split trains one muscle per day BY DESIGN; its honest_note already tells
+  // the user that is the trade-off, so enforcing frequency there would mean
+  // deleting the split rather than fixing it.
+  if (days.length >= 4 && !cfg.freq1) {
+    for (const [g, ds] of Object.entries(daysPerGroup)) {
+      if (cfg.only && !cfg.only.includes(g)) continue;
+      if (!R[g]) continue;
+      if ((vol[g] || 0) >= 6 && ds.size < 2) bad.push(`${g} ${vol[g]} sets all on ${[...ds][0]} (needs 2+ days)`);
+    }
+  }
+  // Lat width comes from vertical pulling specifically, and rows do not
+  // substitute for it. Enforced across the WEEK rather than per day, so a
+  // split with three upper days is not forced into more back slots than a
+  // beginner's volume ceiling can hold.
+  if (days.length >= 4 && !cfg.freq1) {
+    const vDays = days.filter(([, slots]) => slots.some(([k]) => SLOT[k][0] === 'back_vertical_pull')).length;
+    if (vDays < 2) bad.push(`vertical pull on only ${vDays} day(s) — needs 2`);
   }
   if (sizes.some(s => s < 5 || s > 9)) bad.push(`sessions ${sizes.join('/')}`);
   return { bad, vol, R, days };

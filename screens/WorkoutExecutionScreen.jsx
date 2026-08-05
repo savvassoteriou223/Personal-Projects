@@ -1246,7 +1246,6 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                           placeholder={prevWeights[ex.name]?.weight?.toString() || '—'}
                           placeholderTextColor={colors.textFaint}
                           editable={!set.done}
-                          selectTextOnFocus
                         />
                         <Text style={styles.setUnit}>kg</Text>
                         <Text style={styles.setTimes}>×</Text>
@@ -1258,7 +1257,6 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
                           placeholder={prevWeights[ex.name]?.reps?.toString() || '—'}
                           placeholderTextColor={colors.textFaint}
                           editable={!set.done}
-                          selectTextOnFocus
                         />
                       </View>
 
