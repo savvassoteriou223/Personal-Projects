@@ -1193,7 +1193,8 @@
       "off": "Kompaktmodus",
       "subOn": "Gleiche Übungen, weniger Sätze. Gewicht beibehalten und den letzten Satz ausreizen.",
       "subOff": "Wenig Zeit? Auf das Minimum gekürzt, das für deine Woche noch zählt.",
-      "a11y": "Kompaktmodus — diese Einheit kürzen"
+      "a11y": "Kompaktmodus — diese Einheit kürzen",
+      "duration": "~{{mins}} Min."
     }
   },
   "data": {

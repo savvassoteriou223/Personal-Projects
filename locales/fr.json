@@ -1193,7 +1193,8 @@
       "off": "Mode compact",
       "subOn": "Mêmes exercices, moins de séries. Garde la même charge et pousse sur la dernière série.",
       "subOff": "Peu de temps ? Réduit au minimum qui compte encore pour ta semaine.",
-      "a11y": "Mode compact — alléger cette séance"
+      "a11y": "Mode compact — alléger cette séance",
+      "duration": "~{{mins}} min"
     }
   },
   "data": {

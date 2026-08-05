@@ -122,13 +122,14 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   );
   // What Start actually launches.
   const servedWorkout = compactMode ? compactWorkoutToday : todayWorkout;
-  // Minutes the trim would save — shown on the toggle so the trade is a number,
-  // not a promise. Compounds cost ~3 min a set with their longer rests.
-  const compactSavings = useMemo(() => {
-    if (!todayWorkout || !compactWorkoutToday) return 0;
-    const mins = w => (w.exercises || []).reduce(
+  // The badge shows the DURATION of the session you'd start ("~45 min"), not
+  // the minutes saved — a saving is only meaningful if you already know the
+  // full length, a duration answers the actual question: do I have time for
+  // this? Compounds cost ~3 min a set with their longer rests, isolation ~2.
+  const sessionMins = useMemo(() => {
+    const mins = w => (w?.exercises || []).reduce(
       (n, e) => n + e.sets * (COMPACT_COMPOUND_PATTERNS.has(e.pattern) ? 3 : 2), 0);
-    return Math.max(0, mins(todayWorkout) - mins(compactWorkoutToday));
+    return { full: mins(todayWorkout), compact: mins(compactWorkoutToday) };
   }, [todayWorkout, compactWorkoutToday]);
 
   // The coach can trim a session by tool call ("I've only got 30 minutes"). It
@@ -825,10 +826,13 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                       : t('today.compact.subOff', { defaultValue: 'Short on time? Cut to the minimum that still counts toward your week.' })}
                   </Text>
                 </View>
-                {compactSavings > 0 && (
+                {sessionMins.compact > 0 && (
                   <View style={[styles.compactBadge, compactMode && styles.compactBadgeOn]}>
                     <Text style={[styles.compactBadgeText, compactMode && styles.compactBadgeTextOn]}>
-                      −{compactSavings}m
+                      {t('today.compact.duration', {
+                        mins: compactMode ? sessionMins.compact : sessionMins.full,
+                        defaultValue: '~{{mins}} min',
+                      })}
                     </Text>
                   </View>
                 )}

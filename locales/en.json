@@ -1218,7 +1218,8 @@
       "off": "Compact mode",
       "subOn": "Same exercises, fewer sets. Keep the weight and push the last set of each.",
       "subOff": "Short on time? Cut to the minimum that still counts toward your week.",
-      "a11y": "Compact mode — trim this session"
+      "a11y": "Compact mode — trim this session",
+      "duration": "~{{mins}} min"
     }
   },
   "readiness": {

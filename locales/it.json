@@ -1193,7 +1193,8 @@
       "off": "Modalità compatta",
       "subOn": "Stessi esercizi, meno serie. Mantieni il carico e spingi sull ultima serie.",
       "subOff": "Poco tempo? Ridotta al minimo che conta ancora per la tua settimana.",
-      "a11y": "Modalità compatta — riduci questa sessione"
+      "a11y": "Modalità compatta — riduci questa sessione",
+      "duration": "~{{mins}} min"
     }
   },
   "data": {
