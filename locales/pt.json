@@ -1189,11 +1189,11 @@
       "abs": "Abdominais"
     },
     "compact": {
-      "on": "Sessão reduzida",
-      "off": "Pouco tempo?",
+      "on": "Modo compacto",
+      "off": "Modo compacto",
       "subOn": "Os mesmos exercícios, menos séries. Mantém o peso e força na última série.",
-      "subOff": "Reduzida ao mínimo que ainda conta para a tua semana.",
-      "a11y": "Pouco tempo — reduzir esta sessão"
+      "subOff": "Pouco tempo? Reduzida ao mínimo que ainda conta para a tua semana.",
+      "a11y": "Modo compacto — reduzir esta sessão"
     }
   },
   "data": {

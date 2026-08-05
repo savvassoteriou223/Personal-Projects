@@ -2949,7 +2949,7 @@ export function compactWorkout(day, weeklyVolume = null) {
     exercises,
     isCompact: true,
     minutesSaved: saved,
-    compactNote: 'Trimmed to the minimum that still counts. Same exercises, fewer sets — keep the weight the same and push the last set.',
+    compactNote: 'Compact mode — trimmed to the minimum that still counts. Same exercises, fewer sets — keep the weight the same and push the last set.',
   };
 }
 

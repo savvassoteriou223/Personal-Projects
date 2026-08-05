@@ -62,7 +62,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
   const [weeklyVolume, setWeeklyVolume] = useState({});
   const [weekVolumeSets, setWeekVolumeSets] = useState([]); // raw working sets, last 7 days, for the head-level engine
   const [showVolumeDetail, setShowVolumeDetail] = useState(false);
-  // Short-on-time mode. Deliberately NOT persisted as a setting: it is a
+  // Compact mode. Deliberately NOT persisted as a setting: it is a
   // decision about today. Left on by accident it would quietly halve someone's
   // training for weeks, so the only thing that survives a reload is a dated
   // request from the coach, and only for the day it was made.
@@ -802,7 +802,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             </>
           ) : (
             <>
-              {/* Short-on-time toggle. Deliberately quiet and above Start: it is a
+              {/* Compact mode toggle. Deliberately quiet and above Start: it is a
                   choice you make before leaving the house, and the default has to
                   stay the full session. The saving is shown as a real number so
                   the trade is explicit rather than a vague "quick mode". */}
@@ -811,18 +811,18 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                 onPress={() => setCompactMode(v => !v)}
                 accessibilityRole="switch"
                 accessibilityState={{ checked: compactMode }}
-                accessibilityLabel={t('today.compact.a11y', { defaultValue: 'Short on time — trim this session' })}
+                accessibilityLabel={t('today.compact.a11y', { defaultValue: 'Compact mode — trim this session' })}
               >
                 <View style={styles.compactToggleText}>
                   <Text style={[styles.compactTitle, compactMode && styles.compactTitleOn]}>
                     {compactMode
-                      ? t('today.compact.on', { defaultValue: 'Trimmed session' })
-                      : t('today.compact.off', { defaultValue: 'Short on time?' })}
+                      ? t('today.compact.on', { defaultValue: 'Compact mode' })
+                      : t('today.compact.off', { defaultValue: 'Compact mode' })}
                   </Text>
                   <Text style={styles.compactSub}>
                     {compactMode
                       ? t('today.compact.subOn', { defaultValue: 'Same exercises, fewer sets. Keep the weight and push the last set of each.' })
-                      : t('today.compact.subOff', { defaultValue: 'Cut to the minimum that still counts toward your week.' })}
+                      : t('today.compact.subOff', { defaultValue: 'Short on time? Cut to the minimum that still counts toward your week.' })}
                   </Text>
                 </View>
                 {compactSavings > 0 && (
@@ -1406,7 +1406,7 @@ const styles = StyleSheet.create({
   sessionMetaText: { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
   sessionTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 },
   sessionCount: { fontSize: 13, color: colors.textSubtle },
-  // Short-on-time toggle. Reads as a quiet option until switched on, then takes
+  // Compact mode toggle. Reads as a quiet option until switched on, then takes
   // the accent so the session you are about to start is unambiguous.
   compactToggle: {
     flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16,

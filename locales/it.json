@@ -1189,11 +1189,11 @@
       "abs": "Addominali"
     },
     "compact": {
-      "on": "Sessione ridotta",
-      "off": "Poco tempo?",
+      "on": "Modalità compatta",
+      "off": "Modalità compatta",
       "subOn": "Stessi esercizi, meno serie. Mantieni il carico e spingi sull ultima serie.",
-      "subOff": "Ridotta al minimo che conta ancora per la tua settimana.",
-      "a11y": "Poco tempo — riduci questa sessione"
+      "subOff": "Poco tempo? Ridotta al minimo che conta ancora per la tua settimana.",
+      "a11y": "Modalità compatta — riduci questa sessione"
     }
   },
   "data": {

@@ -1214,11 +1214,11 @@
       "abs": "Abs"
     },
     "compact": {
-      "on": "Trimmed session",
-      "off": "Short on time?",
+      "on": "Compact mode",
+      "off": "Compact mode",
       "subOn": "Same exercises, fewer sets. Keep the weight and push the last set of each.",
-      "subOff": "Cut to the minimum that still counts toward your week.",
-      "a11y": "Short on time — trim this session"
+      "subOff": "Short on time? Cut to the minimum that still counts toward your week.",
+      "a11y": "Compact mode — trim this session"
     }
   },
   "readiness": {
