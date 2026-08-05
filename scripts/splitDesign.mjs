@@ -53,6 +53,9 @@ const SLOT = {
   traps:    ['upper_traps', null, 'Shrug'],
   sideDelt: ['shoulders_side_delt', null, 'Lateral raise'],
   rearDelt: ['rear_delt', null, 'Rear delt'],
+  // Optional only. Pressing already supplies front delt volume, so this slot is
+  // offered on a dedicated shoulder day and never forced onto a push day.
+  frontDelt:['front_delt', null, 'Front raise'],
   // Arms are split by HEAD, not by exercise. `load` filters the pool by where the
   // load sits, which is what distinguishes the heads, while leaving block
   // rotation free to vary the movement inside that head.
@@ -276,6 +279,9 @@ const OPTIONAL_SHOULDER_SLOTS = [
   ['sideDelt', [0, 3, 3]],
   ['rearDelt', [0, 4, 4]],
   ['ohp',      [0, 3, 4]],
+  // Lowest set count on the day: the front delt is the one head that pressing
+  // already covers, so this is a top-up, not a driver.
+  ['frontDelt',[0, 2, 3]],
 ];
 
 // Mirrors be(): the experience factor scales every slot and rounds per-slot, so

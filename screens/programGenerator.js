@@ -983,7 +983,7 @@ const SPLIT_DAYS = {
       ['squat_pattern', [2, 3, 4], 'leg_press'], ['chest_decline', [2, 3, 4]], ['back_inner', [2, 3, 5]], ['shoulders_side_delt', [2, 4, 6]], ['shoulders_vertical_push', [3, 3, 3]], ['triceps', [2, 3, 5], null, 'contracted'], ['biceps', [2, 3, 4], null, 'contracted'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 4, 5]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
     ] },
   ],
   hybrid_3x: f => [
@@ -997,7 +997,7 @@ const SPLIT_DAYS = {
       ['squat_pattern', [2, 3, 5], 'leg_press'], ['hip_hinge', [3, 4, 5], 'conventional_deadlift'], ['glute_focused', [3, 4, 6], 'walking_lunge'], (f ? ['glute_focused', [3, 4, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 3, 4]], ['hamstring_isolation', [2, 4, 5]], ['calves', [2, 3, 5], 'seated_calf_raise'], ['core', [2, 3, 4]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
     ] },
   ],
   upper_lower_4x: f => [
@@ -1014,7 +1014,7 @@ const SPLIT_DAYS = {
       ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [2, 4, 4], 'walking_lunge'] : ['glute_focused', [2, 3, 4], 'walking_lunge']), (f ? ['glute_focused', [2, 4, 4], 'hip_abduction_machine'] : ['glute_focused', [2, 2, 4], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 4, 4]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
     ] },
   ],
   chest_back_shoulders_legs_4x: f => [
@@ -1045,7 +1045,7 @@ const SPLIT_DAYS = {
       ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['quad_isolation', [2, 4, 4]], ['chest_incline_push', [2, 3, 3]], ['back_vertical_pull', [2, 3, 4]], ['shoulders_vertical_push', [3, 3, 3]], ['rear_delt', [2, 4, 5]], ['biceps', [2, 4, 4], null, 'contracted'], ['hamstring_isolation', [2, 3, 3]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
     ] },
   ],
   ul_ppl_hybrid_5x: f => [
@@ -1065,7 +1065,7 @@ const SPLIT_DAYS = {
       ['squat_pattern', [2, 4, 4], 'leg_press'], ['hip_hinge', [2, 3, 3], 'conventional_deadlift'], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['hamstring_isolation', [2, 3, 3]], ['calves', [2, 3, 3], 'seated_calf_raise'], ['core', [2, 2, 2]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
     ] },
   ],
   full_body_5x: f => [
@@ -1085,7 +1085,7 @@ const SPLIT_DAYS = {
       ['quad_isolation', [2, 4, 4]], ['hamstring_isolation', [2, 3, 3]], (f ? ['glute_focused', [3, 6, 6], 'hip_abduction_machine'] : ['glute_focused', [3, 4, 6], 'cable_pull_through']), ['shoulders_vertical_push', [3, 3, 3]], ['back_isolation', [2, 2, 3]], ['biceps', [2, 4, 4], null, 'contracted'], ['calves', [2, 3, 3]]
     ] },
     { id: 'optional_shoulders', name: 'Shoulders', focus: 'Side and rear delts', optional: true, slots: [
-      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]]
+      ['shoulders_side_delt', [0, 3, 3]], ['shoulders_side_delt', [0, 3, 3]], ['rear_delt', [0, 4, 4]], ['shoulders_vertical_push', [0, 3, 4]], ['front_delt', [0, 2, 3]]
     ] },
   ],
   ppl_6x: f => [
