@@ -2974,7 +2974,13 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
   // The size of the shift is read off the goal profile rather than hard-coded:
   // a profile that asks for meaningfully more compound than isolation work
   // (strength: 5 vs 2) tilts; one that does not (muscle: 4 vs 3) leaves it flat.
-  const COMPOUND_PATTERNS = new Set([
+  // NOT the compound classification — this is specifically the set of patterns
+  // that have an isolation counterpart in ISOLATION_OF below, i.e. the ones a
+  // set can be shifted FROM. It was named COMPOUND_PATTERNS, which shadowed the
+  // module-level set of the same name and silently narrowed it: anything asking
+  // "is this a compound?" inside generateProgram got this shorter list instead,
+  // missing glute_focused, chest_decline and back_inner.
+  const TILT_SOURCES = new Set([
     'squat_pattern', 'hip_hinge', 'chest_horizontal_push', 'chest_incline_push',
     'back_horizontal_pull', 'back_vertical_pull', 'shoulders_vertical_push',
   ]);
@@ -2992,7 +2998,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
   function tiltTowardCompounds(exercises) {
     if (!compoundTilt) return exercises;
     for (const ex of exercises) {
-      if (!COMPOUND_PATTERNS.has(ex.pattern)) continue;
+      if (!TILT_SOURCES.has(ex.pattern)) continue;
       const iso = exercises.find(e => e.pattern === ISOLATION_OF[ex.pattern]);
       // Never strip an isolation slot below 2 working sets — a 1-set exercise
       // is not worth the setup, and the slot exists to cover that muscle.
@@ -3000,6 +3006,24 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
       if (iso && move > 0) { iso.sets -= move; ex.sets += move; }
     }
     return exercises;
+  }
+
+  // The most technically demanding and fatiguing work belongs at the start of
+  // a session, while you are fresh — isolation exists to fill the gaps the
+  // compounds leave. Nothing enforced this: days ran in whatever order their
+  // slots happened to be typed in, which left 18 compounds across the splits
+  // scheduled AFTER an isolation (a squat after leg extensions, a press after
+  // lateral raises). tiltTowardCompounds sounds like it covers this but only
+  // moves SETS between slots, never their order.
+  //
+  // A stable partition, so the deliberate sequencing WITHIN each group — the
+  // heavy squat before the leg press, the flat press before the incline — is
+  // preserved exactly as designed.
+  function compoundsFirst(exercises) {
+    return [
+      ...exercises.filter(e => COMPOUND_PATTERNS.has(e.pattern)),
+      ...exercises.filter(e => !COMPOUND_PATTERNS.has(e.pattern)),
+    ];
   }
 
   days = (SPLIT_DAYS[split.id]?.(isFemale) || []).map(d => {
@@ -3036,7 +3060,7 @@ export function generateProgram(profile, blockIndex = 0, blockStartDate = null, 
       // Carried through so ProgramScreen can render it in its own section
       // instead of as part of the training week.
       ...(d.optional ? { optional: true } : {}),
-      exercises: tiltTowardCompounds(exercises.filter(e => (e.sets || 0) > 0)),
+      exercises: compoundsFirst(tiltTowardCompounds(exercises.filter(e => (e.sets || 0) > 0))),
     };
   })
   // An optional day is switched off for a tier by giving every slot 0 sets —
