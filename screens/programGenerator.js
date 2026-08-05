@@ -877,20 +877,40 @@ function getGoalKey(goals = []) {
 }
 
 // Get ranked splits for a given days + goals combination
-export function getRankedSplits(days, goals = []) {
+// Splits that stop working at a given experience level, with the reason. Both
+// are measurable rather than matters of taste:
+//   - the bro split gives an advanced lifter 16 back and 14 chest sets in ONE
+//     session, well past the ~10-12 point where added sets stop contributing.
+//     Its weekly totals are fine; the distribution is the problem.
+//   - full_body_2x cannot reach advanced chest and quad volume at all: two
+//     slots capped at 6 sets each is 12, against a target of 14.
+// Ranked last rather than removed — at 2 days full_body_2x is the only option
+// that exists, so hiding it would leave an empty list.
+const EXPERIENCE_CAUTIONS = {
+  advanced: {
+    chest_back_shoulders_legs_4x: 'At your volume this piles 14–16 sets for one muscle into a single session, past the point where extra sets still count. Upper/Lower spreads the same work across two days.',
+    full_body_2x: 'Two sessions cannot carry the chest and quad volume you need — it tops out around 12 sets where you want 14+. Consider more training days.',
+  },
+};
+
+export function getRankedSplits(days, goals = [], experience = null) {
   const clampedDays = Math.min(Math.max(days, 2), 6);
   const goalKey = getGoalKey(goals);
   const rankings = SPLIT_RANKINGS[clampedDays];
   const ranked = rankings[goalKey] || rankings.default || [];
+  const cautions = EXPERIENCE_CAUTIONS[experience] || {};
 
   // Add the full split object to each ranking entry, skip unknown split ids
   return ranked
     .map(r => {
       const split = SPLITS[r.id];
       if (!split) return null;
-      return { ...split, rank: r.rank, rank_why: r.why };
+      return { ...split, rank: r.rank, rank_why: r.why, caution: cautions[r.id] || null };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    // A split the user's own experience level has outgrown drops below the
+    // ones that still serve them, whatever its generic rank.
+    .sort((a, b) => (a.caution ? 1 : 0) - (b.caution ? 1 : 0) || a.rank - b.rank);
 }
 
 // ─── SPLIT SELECTOR ──────────────────────────────────────────────────────────
@@ -905,7 +925,7 @@ export function selectSplit(profile) {
   }
 
   // Otherwise pick the top ranked split for their days + goals
-  const ranked = getRankedSplits(days, goals);
+  const ranked = getRankedSplits(days, goals, profile.trainingExperience);
   return ranked[0] || SPLITS.full_body_3x;
 }
 

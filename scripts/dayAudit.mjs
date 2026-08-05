@@ -113,7 +113,17 @@ for (const splitId of Object.keys(SPLITS)) {
             findings.push({ sev: 'med', msg: `${dv} of ${wv} weekly ${m.replace(/_/g,' ')} sets on one day` });
         }
 
-        // 3. Isolation out-volumING the day's compounds.
+        // 3. Junk volume. Past roughly 10-12 hard sets for one muscle in a
+        //    single session the extra sets add almost nothing — effort and
+        //    technique have decayed by then. This is the app's own stated
+        //    per-session ceiling (SCIENCE_REFERENCE), it just was not checked
+        //    anywhere, so a bro split could pile 16 back sets into one day
+        //    while every weekly number looked correct.
+        for (const [m, dv] of Object.entries(dayVol)) {
+          if (dv > 12) findings.push({ sev: 'high', msg: `${dv} ${m.replace(/_/g,' ')} sets in one session — past the ~10-12 point where extra sets stop counting` });
+        }
+
+        // 4. Isolation out-volumING the day's compounds.
         const compSets = d.exercises.filter(e => COMPOUND.has(e.pattern)).reduce((n,e)=>n+(e.sets||0),0);
         const isoSets  = d.exercises.filter(e => !COMPOUND.has(e.pattern)).reduce((n,e)=>n+(e.sets||0),0);
         if (compSets > 0 && isoSets > compSets)

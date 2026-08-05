@@ -101,7 +101,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
 
   // ─── SPLIT SELECTOR ────────────────────────────────────────────────────────
   if (selectingDays) {
-    const rankedSplits = getRankedSplits(draftDays, profile?.goals || []);
+    const rankedSplits = getRankedSplits(draftDays, profile?.goals || [], profile?.trainingExperience);
 
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
@@ -184,6 +184,15 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                     <Text style={styles.whyLabel}>{t('program.whyThisSplit')}</Text>
                     <Text style={styles.whyText}>{split.rank_why}</Text>
                   </View>
+
+                  {/* Only set when the user's experience level has outgrown
+                      this split — a measurable limit, not a style preference,
+                      so it sits above the general note rather than inside it. */}
+                  {split.caution && (
+                    <View style={styles.cautionBox}>
+                      <Text style={styles.cautionText}>{split.caution}</Text>
+                    </View>
+                  )}
 
                   <Text style={styles.honestNoteText}>{split.honest_note}</Text>
 
@@ -632,6 +641,12 @@ const styles = StyleSheet.create({
   whyLabel: { fontSize: 10, color: colors.textPrimary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 },
   whyText: { fontSize: 12, color: colors.textMuted, lineHeight: 18 },
   honestNoteText: { fontSize: 12, color: colors.textSubtle, lineHeight: 18, marginBottom: 12, fontStyle: 'italic' },
+  cautionBox: {
+    backgroundColor: colors.warningSoft ?? 'rgba(227,162,61,0.12)',
+    borderWidth: 0.5, borderColor: colors.warning,
+    borderRadius: 10, padding: 10, marginBottom: 10,
+  },
+  cautionText: { fontSize: 12, color: colors.warning, lineHeight: 18 },
   splitDays: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
   splitDayChip: { backgroundColor: colors.control, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
   splitDayChipText: { fontSize: 11, color: colors.textMuted },
