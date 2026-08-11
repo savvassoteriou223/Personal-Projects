@@ -4131,6 +4131,46 @@ export const MOVEMENT_PATTERNS = {
           'Return slowly until your abs are stretched, without letting the stack touch down between reps',
         ],
       },
+      {
+        id: 'rotary_torso_machine',
+        name: 'Rotary torso machine',
+        equipment: ['machines'],
+        difficulty: 'beginner',
+        stretch_position: true,
+        progressive_overload: 'high',
+        primary_alternative: true,
+        research_note: 'The only loaded rotation the pattern offers on a machine. Obliques are listed as a target of this pattern but every other rotational option is unloaded or awkward to progress — the Russian twist has no stack and the cable woodchop combines rotation with a hip hinge. Here the pelvis is pinned by the machine, so the load lands on the obliques rather than being absorbed by the legs, and the stack makes it progressible week to week.',
+        reps: '12–15',
+        rest: '60–90 sec',
+        sets: 3,
+        cues: [
+          'SETUP: Seat height so your chest sits against the pad; lock your thighs under the knee pads — the pelvis must not travel',
+          'Rotate by turning your RIB CAGE against the pad, not by pushing with your arms',
+          'Control the range. Rotate to a comfortable end position — this is not a stretch you force',
+          'Pause a second at the turned position, obliques fully shortened',
+          'Return SLOWLY to the stretched side, resisting the stack the whole way. Complete all reps, then set the machine for the other side',
+        ],
+      },
+      {
+        id: 'captains_chair_knee_raise',
+        name: "Captain's chair knee raise",
+        equipment: ['machines'],
+        difficulty: 'beginner',
+        stretch_position: false,
+        progressive_overload: 'medium',
+        primary_alternative: true,
+        research_note: 'Lower-ab work for anyone without a pull-up bar. The hanging leg and knee raises are the pattern\'s only lower-ab options and both need a bar to hang from, so a machine-only gym had nothing for that region at all. The back pad and forearm supports remove grip and shoulder fatigue as the limiting factor, which is what usually ends a set of hanging raises before the abs are done.',
+        reps: '12–20',
+        rest: '60–90 sec',
+        sets: 3,
+        cues: [
+          'SETUP: Forearms on the pads, back flat against the rest, shoulders down — do not let yourself sag into the shoulder joint',
+          'Raise by CURLING your pelvis toward your ribs — the knees coming up is the result, not the goal. Posterior pelvic tilt is the rep',
+          'If your lower back stays flat against the pad and your hips roll up, you are doing it right',
+          'Lower SLOWLY and under control — no swinging or bouncing out of the bottom',
+          'Once 20 reps is easy, hold a dumbbell between your feet or progress to straight legs',
+        ],
+      },
     ],
   },
 };
@@ -4159,21 +4199,45 @@ export function getBestExercise(patternKey, availableEquipment) {
 // the way loaded movements can.
 const LOADED_EQUIPMENT = ['barbell', 'dumbbells', 'cables', 'machines', 'smith', 'kettlebells'];
 
+// Bodyweight-only movements that stay available to gym users. Both are ab work
+// that a loaded machine does not replace: the rollout is an anti-extension
+// movement with no cable equivalent, and the Russian twist is rotation that
+// needs no stack. Every other bodyweight movement is dropped the moment the
+// pattern has a loaded option — see getAllExercisesForPattern. Add to this list
+// only for an exercise that is genuinely the best available choice IN a gym.
+const GYM_BODYWEIGHT_ALLOWED = new Set(['russian_twist', 'ab_wheel_rollout']);
+
 // Get all exercises for a pattern. primary_alternative: true exercises come first,
 // then the rotation pool in the order they appear in the library.
 export function getAllExercisesForPattern(patternKey, availableEquipment) {
   let pool = getExercisesForEquipment(patternKey, availableEquipment);
 
-  // Gym users: drop bodyweight-only exercises from the selection pool unless
-  // they're a deliberate primary pick (Nordic curl, plank) or removing them
-  // would leave the pattern too thin to rotate through.
+  // If you own loaded equipment, you get loaded exercises. No exemptions.
+  //
+  // This was twice too lenient. First it exempted anything flagged
+  // primary_alternative — but that flag marks BOTH "a deliberate pick" and "the
+  // fallback for someone who owns nothing", and 11 bodyweight fallbacks carry
+  // it, so a full-gym member got a lying lateral raise ahead of six loaded
+  // options and bodyweight squats in a room full of barbells (9.6% of all
+  // filled slots). Gating on progressive_overload !== 'low' cut that to 2.9%,
+  // but still left Nordic curls, sliders and Russian twists landing on people
+  // with a full rack of dumbbells. There is no version of "deliberate pick"
+  // that survives the user seeing a floor exercise programmed at the gym.
+  //
+  // So: any bodyweight-only movement is dropped whenever the pattern has ANY
+  // loaded option left. The guard is >= 1, not >= 2 — one loaded exercise every
+  // block beats a bodyweight fallback, even though it costs rotation variety.
+  // Patterns with no loaded option at all (and bodyweight-only users, who never
+  // reach this branch) are untouched.
+  // The one exception, and it is a hand-written list of exercise ids on purpose.
+  // A flag is what let 11 fallbacks through, and exempting the whole `core`
+  // pattern would drag the plank back with them. Two ab movements earn a place
+  // in a gym on their own merits; nothing else does, in any pattern.
   const hasLoadedGym = (availableEquipment || []).some(eq => LOADED_EQUIPMENT.includes(eq));
+  const bodyweightOnly = ex => ex.equipment.length === 1 && ex.equipment[0] === 'bodyweight';
   if (hasLoadedGym) {
-    const filtered = pool.filter(ex =>
-      ex.primary_alternative ||
-      !(ex.equipment.length === 1 && ex.equipment[0] === 'bodyweight')
-    );
-    if (filtered.length >= 2) pool = filtered;
+    const loaded = pool.filter(ex => !bodyweightOnly(ex) || GYM_BODYWEIGHT_ALLOWED.has(ex.id));
+    if (loaded.length >= 1) pool = loaded;
   }
 
   // Owning equipment should mean using it. Sorting on primary_alternative alone
@@ -4186,8 +4250,11 @@ export function getAllExercisesForPattern(patternKey, availableEquipment) {
   // bodyweight movements a band owner still needs (push-ups, planks, pull-ups).
   // They only need to lose the tie, not the pool.
   const hasBands = (availableEquipment || []).some(eq => String(eq).toLowerCase().includes('band'));
-  const bodyweightOnly = ex => ex.equipment.length === 1 && ex.equipment[0] === 'bodyweight';
-  const rank = ex => (ex.primary_alternative ? 0 : 2) + (hasBands && bodyweightOnly(ex) ? 1 : 0);
+  // A low-overload bodyweight fallback that survived the filter above (thin
+  // pool) must still lose the tie rather than be promoted to the front.
+  const rank = ex => (ex.primary_alternative ? 0 : 2)
+    + (hasBands && bodyweightOnly(ex) ? 1 : 0)
+    + (bodyweightOnly(ex) && ex.progressive_overload === 'low' ? 1 : 0);
 
   return pool.sort((a, b) => rank(a) - rank(b));
 }
