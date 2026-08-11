@@ -19,6 +19,7 @@ import DataScreen from './DataScreen';
 import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
+import { syncWorkoutReminders } from '../lib/notificationService';
 
 const GOALS = [
   { key: 'lose', label: 'Lose fat' },
@@ -320,6 +321,12 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
       await AsyncStorage.removeItem('shownMilestoneIds');
     }
 
+    // Days-per-week drives which weekdays get a reminder — rebuild the schedule.
+    syncWorkoutReminders({
+      weeklyWorkouts: weeklyW,
+      content: { title: t('settings.reminderPushTitle'), body: t('settings.reminderPushBody') },
+    });
+
     setProfile(p => ({
       ...p, name, sex,
       weight_kg: parseFloat(weight), height_cm: parseFloat(height),
@@ -397,7 +404,7 @@ export default function ProfileScreen({ onSignOut, isAdmin, isPremium, onUpgrade
             </View>
           </View>
           <AdminScreen visible={showAdmin} onClose={() => setShowAdmin(false)} />
-          <SettingsScreen visible={showSettings} onClose={() => setShowSettings(false)} onSignOut={onSignOut} />
+          <SettingsScreen visible={showSettings} onClose={() => setShowSettings(false)} onSignOut={onSignOut} weeklyWorkouts={profile?.weekly_workouts} />
           <View style={styles.statsRow}>
             {[
               { val: profile?.weight_kg || '—', label: 'kg' },

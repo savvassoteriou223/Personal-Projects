@@ -888,7 +888,15 @@
     "emptyWeight": "No weight logged yet."
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "reminderTitle": "Workout reminders",
+    "reminderSub": "A nudge on your training days, even when Helix is closed.",
+    "reminderTime": "Time",
+    "reminderPushTitle": "Training day",
+    "reminderPushBody": "Your session is ready when you are.",
+    "reminderDeniedTitle": "Notifications are off",
+    "reminderDeniedMsg": "Helix needs notification permission to send reminders. You can turn it on in your device settings.",
+    "openSettings": "Open Settings"
   },
   "nav": {
     "profile": "Profile",

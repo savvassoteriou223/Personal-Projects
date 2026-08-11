@@ -863,7 +863,15 @@
     "volumeTrendCaption": "Gesamtsätze pro Woche, von alt nach neu."
   },
   "settings": {
-    "title": "Einstellungen"
+    "title": "Einstellungen",
+    "reminderTitle": "Trainingserinnerungen",
+    "reminderSub": "Ein Hinweis an deinen Trainingstagen, auch wenn Helix geschlossen ist.",
+    "reminderTime": "Uhrzeit",
+    "reminderPushTitle": "Trainingstag",
+    "reminderPushBody": "Deine Einheit wartet auf dich.",
+    "reminderDeniedTitle": "Benachrichtigungen sind aus",
+    "reminderDeniedMsg": "Helix braucht die Benachrichtigungserlaubnis für Erinnerungen. Du kannst sie in den Geräteeinstellungen aktivieren.",
+    "openSettings": "Einstellungen öffnen"
   },
   "nav": {
     "profile": "Profil",

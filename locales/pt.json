@@ -863,7 +863,15 @@
     "volumeTrendCaption": "Séries totais por semana, da mais antiga à mais recente."
   },
   "settings": {
-    "title": "Definições"
+    "title": "Definições",
+    "reminderTitle": "Lembretes de treino",
+    "reminderSub": "Um aviso nos teus dias de treino, mesmo com o Helix fechado.",
+    "reminderTime": "Hora",
+    "reminderPushTitle": "Dia de treino",
+    "reminderPushBody": "A tua sessão está pronta quando tu estiveres.",
+    "reminderDeniedTitle": "As notificações estão desativadas",
+    "reminderDeniedMsg": "O Helix precisa de permissão de notificações para enviar lembretes. Podes ativá-la nas definições do dispositivo.",
+    "openSettings": "Abrir definições"
   },
   "nav": {
     "profile": "Perfil",

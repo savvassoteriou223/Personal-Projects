@@ -863,7 +863,15 @@
     "volumeTrendCaption": "每周总组数，由早到近。"
   },
   "settings": {
-    "title": "设置"
+    "title": "设置",
+    "reminderTitle": "训练提醒",
+    "reminderSub": "在训练日提醒你，即使 Helix 未打开。",
+    "reminderTime": "时间",
+    "reminderPushTitle": "训练日",
+    "reminderPushBody": "你的训练已准备就绪。",
+    "reminderDeniedTitle": "通知已关闭",
+    "reminderDeniedMsg": "Helix 需要通知权限才能发送提醒。你可以在设备设置中开启。",
+    "openSettings": "打开设置"
   },
   "nav": {
     "profile": "个人",

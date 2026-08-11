@@ -16,6 +16,7 @@ import { colors } from '../lib/theme';
 import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
 import ExerciseGifThumb from './ExerciseGifThumb';
+import { syncWorkoutReminders } from '../lib/notificationService';
 
 const DAYS_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -68,6 +69,11 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
     const { data: block } = await supabase.from('program_blocks').select('block_index, block_start_date').eq('user_id', user.id).maybeSingle();
     setProgram(generateProgram(newProfile, block?.block_index || 0, block?.block_start_date || null));
     setSelectingDays(false);
+    // Changing the split can change days-per-week, so the reminder weekdays move too.
+    syncWorkoutReminders({
+      weeklyWorkouts: days,
+      content: { title: t('settings.reminderPushTitle'), body: t('settings.reminderPushBody') },
+    });
     onSplitChanged && onSplitChanged();
   };
 

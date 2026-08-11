@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import Purchases, { LOG_LEVEL } from './lib/purchases';
-import { registerForPushNotifications } from './lib/notificationService';
+import { registerForPushNotifications, syncWorkoutReminders } from './lib/notificationService';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import NutritionScreen from './screens/NutritionScreen';
@@ -238,7 +238,7 @@ export default function App() {
       try {
         ({ data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('onboarding_complete, is_admin, is_premium, language')
+          .select('onboarding_complete, is_admin, is_premium, language, weekly_workouts')
           .eq('id', session.user.id)
           .single());
       } catch {
@@ -325,6 +325,14 @@ export default function App() {
         } catch (_) {}
         setScreen('main');
         registerForPushNotifications(supabase, session.user.id).catch(() => {});
+        // Reminder copy is baked in when scheduled, so a language change would
+        // otherwise leave old-language reminders queued. Rebuilding on launch
+        // also restores the schedule after a reinstall. Runs after
+        // syncLanguageFromProfile above, so i18n.t is already in their language.
+        syncWorkoutReminders({
+          weeklyWorkouts: profile.weekly_workouts,
+          content: { title: i18n.t('settings.reminderPushTitle'), body: i18n.t('settings.reminderPushBody') },
+        }).catch(() => {});
         const version = Constants.expoConfig?.version ?? '0.0.0';
         checkForUpdate(version).then(available => { if (available) setUpdateAvailable(true); }).catch(() => {});
       } else {

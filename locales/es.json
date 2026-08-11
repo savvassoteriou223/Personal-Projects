@@ -863,7 +863,15 @@
     "volumeTrendCaption": "Series totales por semana, de la más antigua a la más reciente."
   },
   "settings": {
-    "title": "Ajustes"
+    "title": "Ajustes",
+    "reminderTitle": "Recordatorios de entrenamiento",
+    "reminderSub": "Un aviso en tus días de entrenamiento, incluso con Helix cerrado.",
+    "reminderTime": "Hora",
+    "reminderPushTitle": "Día de entrenamiento",
+    "reminderPushBody": "Tu sesión está lista cuando tú lo estés.",
+    "reminderDeniedTitle": "Las notificaciones están desactivadas",
+    "reminderDeniedMsg": "Helix necesita permiso de notificaciones para enviarte recordatorios. Puedes activarlo en los ajustes de tu dispositivo.",
+    "openSettings": "Abrir ajustes"
   },
   "nav": {
     "profile": "Perfil",
