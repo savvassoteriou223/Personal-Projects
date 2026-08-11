@@ -1,25 +1,26 @@
 /**
- * VolumeBar.jsx — weekly volume, coloured by status rather than by length.
+ * VolumeBar.jsx — weekly volume against the muscle's research target.
  *
- * The gradient stops are anchored to the muscle's real research thresholds and
- * the ramp turns back after the optimal window: red below minimum, warming to
- * green through the target, then back to red once volume becomes junk.
+ * Three parts, each carrying one fact:
+ *   track        how far the scale runs (to 1.7x optimal_high, so overshoot is
+ *                visible instead of pinned to a full bar)
+ *   optimal band where the target window sits on that scale
+ *   fill         how much you have done, in ONE colour: the verdict from
+ *                colorForVolume(), the same one the rest of the app uses
  *
- * That turn-back matters. A plain red→green ramp makes a long bar always end
- * green, so 20 sets against a 6–12 target — junk volume — rendered as the best
- * looking row on the screen. Colour has to agree with colorForVolume(), which
- * is the verdict the rest of the app already uses.
+ * It used to paint the fill with a red→orange→amber→green→amber→orange→red
+ * gradient anchored to the thresholds. The thresholds were right but the
+ * rendering was not: every bar showed four colours at once, so the status had
+ * to be read off the tip while the eye saw a smear, and a gloss overlay on top
+ * made it a bevelled stripe. The window is a property of the TRACK, not of the
+ * fill — marking it there frees the fill to state the verdict plainly.
  *
- *   <VolumeBar done={14} target={{ min: 10, optimal_low: 10, optimal_high: 20 }} />
+ *   <VolumeBar done={14} target={{ min: 10, optimal_low: 10, optimal_high: 20 }} color="#2ECC94" />
  */
 import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Rect } from 'react-native-svg';
 import { colors } from '../lib/theme';
-
-const RED = '#E5484D', ORANGE = '#E2632F', AMBER = '#DDA83F', GREEN = '#2ECC94';
-
-let uid = 0;
 
 // Scale runs past the junk threshold so overshoot is visible instead of pinned
 // to a full bar.
@@ -27,66 +28,33 @@ function scaleMax(t, done) {
   return Math.max((t?.optimal_high || 1) * 1.7, done * 1.05, 1);
 }
 
-function rampStops(t, done) {
-  const max = scaleMax(t, done);
-  const junk = t.optimal_high * 1.5;
-  const at = (v) => Math.max(0, Math.min(1, v / max));
-  const raw = [
-    [0, RED],
-    [at(t.min * 0.55), ORANGE],
-    [at(t.min), AMBER],
-    [at(t.optimal_low), GREEN],
-    [at(t.optimal_high), GREEN],
-    [at((t.optimal_high + junk) / 2), AMBER],
-    [at(junk * 0.92), ORANGE],
-    // Fully red BY the junk threshold — not at the end of the track, or a value
-    // just past junk lands mid-interpolation and still reads amber.
-    [at(junk), RED],
-    [1, RED],
-  ];
-  // SVG requires non-decreasing offsets.
-  let last = -1;
-  return raw.map(([o, c]) => {
-    const v = Math.max(o, last + 0.0001);
-    last = v;
-    return [Math.min(1, v), c];
-  });
-}
-
-export default function VolumeBar({ done = 0, target, height = 9, style }) {
+export default function VolumeBar({ done = 0, target, color, height = 8, style }) {
   const [w, setW] = useState(0);
-  const [gid] = useState(() => `vb${++uid}`);
 
   if (!target?.optimal_high) {
     return <View style={[styles.track, { height, borderRadius: height / 2 }, style]} />;
   }
 
   const max = scaleMax(target, done);
-  const fill = done > 0 ? Math.max(height, w * Math.min(1, done / max)) : 0;
-  const stops = rampStops(target, done);
+  const at = v => Math.max(0, Math.min(1, v / max));
+  const r = height / 2;
+
+  // A sliver of fill still reads as a value; without the floor, 1 set against a
+  // 20-set target rounds to an invisible bar and looks like nothing was logged.
+  const fill = done > 0 ? Math.max(height, w * at(done)) : 0;
+  const bandX = w * at(target.optimal_low);
+  const bandW = Math.max(1, w * at(target.optimal_high) - bandX);
 
   return (
     <View style={[styles.wrap, { height }, style]} onLayout={e => setW(e.nativeEvent.layout.width)}>
       {w > 0 && (
         <Svg width={w} height={height}>
-          <Defs>
-            <LinearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={w} y2="0">
-              {stops.map(([o, c], i) => <Stop key={i} offset={o} stopColor={c} />)}
-            </LinearGradient>
-            <LinearGradient id={`${gid}s`} x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0.26" />
-              <Stop offset="0.55" stopColor="#FFFFFF" stopOpacity="0.05" />
-              <Stop offset="1" stopColor="#000000" stopOpacity="0.16" />
-            </LinearGradient>
-          </Defs>
-          <Rect x="0" y="0" width={w} height={height} rx={height / 2} fill={colors.surfaceInset} />
+          <Rect x={0} y={0} width={w} height={height} rx={r} fill={colors.surfaceInset} />
+          {/* Target window. Square ends on purpose — it marks two exact set
+              counts, and rounding them would blur where the window starts. */}
+          <Rect x={bandX} y={0} width={bandW} height={height} fill={colors.control} />
           {fill > 0 && (
-            <>
-              <Rect x="0" y="0" width={fill} height={height} rx={height / 2} fill={`url(#${gid})`} />
-              {/* light top edge, shadowed bottom — gives the bar form rather than
-                  leaving it a flat stripe */}
-              <Rect x="0" y="0" width={fill} height={height} rx={height / 2} fill={`url(#${gid}s)`} />
-            </>
+            <Rect x={0} y={0} width={fill} height={height} rx={r} fill={color || colors.accent} />
           )}
         </Svg>
       )}

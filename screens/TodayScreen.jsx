@@ -10,7 +10,7 @@ import { generateProgram, getVolumeTargets, compactWorkout, COMPACT_COMPOUND_PAT
 import { buildVolumeView } from './volumeEngine';
 import { maybeSendProactiveNudge } from '../lib/notificationService';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
-import { format, isToday, isYesterday, differenceInDays, startOfWeek, subDays } from 'date-fns';
+import { format, isToday, isYesterday, startOfWeek, subDays } from 'date-fns';
 import CardioLogModal from './CardioLogModal';
 import BodyHeatMap from './BodyHeatMap';
 import VolumeBar from '../components/VolumeBar';
@@ -18,6 +18,7 @@ import { isHealthAuthorized, getRecoveryData } from '../lib/healthService';
 import { getTodayCheckIn } from '../lib/recoveryStore';
 import {
   normaliseMuscle, primaryMuscleFor, recoveryStatus, MUSCLE_RECOVERY_DAYS,
+  buildRecoveryMap,
 } from '../lib/recoveryMap';
 import { Platform } from 'react-native';
 import { colors } from '../lib/theme';
@@ -40,6 +41,7 @@ const RECOVERY_COLORS = {
 const MUSCLE_DISPLAY = {
   chest:      'Chest',
   back:       'Back',
+  traps:      'Traps',
   shoulders:  'Shoulders',
   biceps:     'Biceps',
   triceps:    'Triceps',
@@ -507,50 +509,12 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
           const sessionDateMap = {};
           sessions.forEach(s => { sessionDateMap[s.id] = new Date(s.created_at); });
 
-          // Calculate last trained date per muscle — primary muscle only, so a
-          // shoulders day (OHP secondaries: triceps/upper chest) doesn't reset
-          // the recovery clock for chest and triceps. A single light accessory
-          // (e.g. 3 sets of shrugs → back) isn't enough stimulus to count either:
-          // a muscle only lights up if the session gave it ≥2 exercises or ≥5 sets.
-          const perSessionMuscle = {}; // session_id -> muscle -> { count, exercises }
-          sets.forEach(set => {
-            const muscle = primaryMuscleFor(set.exercise_name, set.pattern_key);
-            if (!muscle) return;
-            const muscles = (perSessionMuscle[set.session_id] ??= {});
-            const entry = (muscles[muscle] ??= { count: 0, exercises: new Set() });
-            entry.count += 1;
-            entry.exercises.add(set.exercise_name.toLowerCase());
-          });
-          const lastTrainedPerMuscle = {};
-          Object.entries(perSessionMuscle).forEach(([sessionId, muscles]) => {
-            const sessionDate = sessionDateMap[sessionId];
-            if (!sessionDate) return;
-            Object.entries(muscles).forEach(([muscle, entry]) => {
-              // Two sets of direct work is training a muscle. This used to
-              // demand two different exercises OR five sets, so three hard sets
-              // of calves left the map showing them fresh. The gate exists to
-              // stop incidental work registering, but attribution is already
-              // primary-mover only, so it was filtering real training.
-              if (entry.count < 2) return;
-              if (!lastTrainedPerMuscle[muscle] || sessionDate > lastTrainedPerMuscle[muscle]) {
-                lastTrainedPerMuscle[muscle] = sessionDate;
-              }
-            });
-          });
-
-          // Calculate recovery status
-          const recovery = {};
-          const today = new Date();
-          Object.keys(MUSCLE_DISPLAY).forEach(muscle => {
-            const lastDate = lastTrainedPerMuscle[muscle];
-            const daysSince = lastDate ? differenceInDays(today, lastDate) : null;
-            recovery[muscle] = {
-              daysSince,
-              status: recoveryStatus(muscle, daysSince),
-              lastDate,
-            };
-          });
-          setMuscleRecovery(recovery);
+          // This screen used to reimplement the whole aggregation inline, so
+          // lib/recoveryMap.js — the tested copy — was not what actually ran,
+          // and fixes landed in one without the other. Call the library.
+          setMuscleRecovery(
+            buildRecoveryMap(sets, sessionDateMap, Object.keys(MUSCLE_DISPLAY))
+          );
 
           // Calculate weekly volume (rolling 7 days from today)
           const sevenDaysAgo = subDays(new Date(), 7);
@@ -1067,10 +1031,10 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
             }
           });
 
-          // Gradient anchored to the research thresholds — see VolumeBar. The
-          // colour prop is no longer needed: the bar derives its own status so
-          // it can also show overshoot turning back toward red.
-          const Bar = ({ done, target }) => <VolumeBar done={done} target={target} />;
+          // One verdict colour per bar, from colorForVolume — the same value the
+          // count next to it uses, so the row never disagrees with itself. The
+          // target window is drawn on the track; see VolumeBar.
+          const Bar = ({ done, target, color }) => <VolumeBar done={done} target={target} color={color} />;
 
           const targetLabel = (tgt) =>
             t('today.volume.target', { min: tgt.min, low: tgt.optimal_low, high: tgt.optimal_high });
@@ -1086,7 +1050,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                         <Text style={styles.volumeMuscleName}>{label}</Text>
                         {!!g.target && <Text style={styles.volumeTargetLabel}>{targetLabel(g.target)}</Text>}
                       </View>
-                      <Bar done={g.done} target={g.target} />
+                      <Bar done={g.done} target={g.target} color={g.color} />
                       <Text style={[styles.volumeCount, { color: g.color }]}>{fmt(g.done)}</Text>
                     </View>
 
@@ -1101,7 +1065,7 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
                             <Text style={styles.volumeHeadName}>{headLabel}</Text>
                             <Text style={styles.volumeTargetLabel}>{subParts.join(' · ')}</Text>
                           </View>
-                          {h.target ? <Bar done={h.direct} target={h.target} /> : <View style={styles.volumeBarTrack} />}
+                          {h.target ? <Bar done={h.direct} target={h.target} color={h.color} /> : <View style={styles.volumeBarTrack} />}
                           <Text style={[styles.volumeCount, { color: h.target ? h.color : colors.textSubtle }]}>{fmt(h.direct)}</Text>
                         </View>
                       );
