@@ -6,25 +6,63 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Purchases from '../lib/purchases';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
+import { trialOf, trialLabel, deniesTrial, yearlySaving } from '../lib/paywallOffer';
 
-// Pro paywall. Rendered by the Coach tab (App.js) and mid-workout when a free
-// user taps the in-workout Coach button (WorkoutExecutionScreen).
+// Pro paywall. Rendered by the Coach tab (App.js), mid-workout when a free user
+// taps the in-workout Coach button (WorkoutExecutionScreen), and from the split
+// picker (ProgramScreen).
 export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
   const [plan, setPlan] = useState('monthly');
   const [upgrading, setUpgrading] = useState(false);
   const [prices, setPrices] = useState({ monthly: null, yearly: null });
+  const [trials, setTrials] = useState({ monthly: null, yearly: null });
+  const [saving, setSaving] = useState(null);
 
   useEffect(() => {
-    Purchases.getOfferings().then(offerings => {
+    let cancelled = false;
+    Purchases.getOfferings().then(async offerings => {
       const pkgs = offerings.current?.availablePackages || [];
       const monthly = pkgs.find(p => p.packageType === 'MONTHLY');
       const yearly = pkgs.find(p => p.packageType === 'ANNUAL');
+      if (cancelled) return;
+
       setPrices({
         monthly: monthly?.product?.priceString ?? null,
         yearly: yearly?.product?.priceString ?? null,
       });
+      setSaving(yearlySaving(monthly?.product?.price, yearly?.product?.price));
+
+      let found = { monthly: trialOf(monthly), yearly: trialOf(yearly) };
+
+      // A trial the store WILL honour, not merely one that exists. Someone who
+      // already used theirs is charged immediately, so they must not be shown a
+      // "Start free trial" button.
+      //
+      // Only a definite no counts. Android answers UNKNOWN for every product,
+      // so treating UNKNOWN as ineligible would hide the trial on Android
+      // entirely — there the store has already filtered ineligible offers out
+      // of the offering, which is what we fall back to.
+      try {
+        const ids = [monthly?.product?.identifier, yearly?.product?.identifier].filter(Boolean);
+        if (ids.length && Purchases.checkTrialOrIntroductoryPriceEligibility) {
+          const elig = await Purchases.checkTrialOrIntroductoryPriceEligibility(ids);
+          if (!cancelled) {
+            if (monthly && deniesTrial(elig?.[monthly.product.identifier])) found.monthly = null;
+            if (yearly && deniesTrial(elig?.[yearly.product.identifier])) found.yearly = null;
+          }
+        }
+      } catch {
+        // Eligibility unavailable or the call failed — fall back to whatever
+        // the offering itself advertises.
+      }
+
+      if (!cancelled) setTrials(found);
     }).catch(() => {});
+    return () => { cancelled = true; };
   }, []);
+
+  const activeTrial = plan === 'yearly' ? trials.yearly : trials.monthly;
+  const activeTrialLabel = trialLabel(activeTrial);
 
   const handleUpgradePress = async () => {
     if (upgrading) return;
@@ -138,17 +176,23 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
             style={[pw.planCard, plan === 'yearly' && pw.planCardActive]}
             onPress={() => setPlan('yearly')}
           >
-            <View style={pw.saveBadge}><Text style={pw.saveBadgeText}>SAVE 50%</Text></View>
+            {saving != null && (
+              <View style={pw.saveBadge}><Text style={pw.saveBadgeText}>SAVE {saving}%</Text></View>
+            )}
             <Text style={[pw.planName, plan === 'yearly' && pw.planNameActive]}>Yearly</Text>
             <Text style={[pw.planPrice, plan === 'yearly' && pw.planPriceActive]}>{prices.yearly ?? '—'}</Text>
             <Text style={pw.planPer}>/ year</Text>
           </Tappable>
         </View>
 
-        <Text style={pw.trialNote}>7-day free trial · Cancel anytime</Text>
+        <Text style={pw.trialNote}>
+          {activeTrialLabel ? `${activeTrialLabel} · Cancel anytime` : 'Cancel anytime'}
+        </Text>
 
         <Tappable style={[pw.upgradeBtn, upgrading && { opacity: 0.6 }]} onPress={handleUpgradePress} disabled={upgrading}>
-          <Text style={pw.upgradeBtnText}>{upgrading ? 'Processing...' : 'Start free trial'}</Text>
+          <Text style={pw.upgradeBtnText}>
+            {upgrading ? 'Processing...' : activeTrialLabel ? 'Start free trial' : 'Subscribe'}
+          </Text>
         </Tappable>
 
         {/* hitSlop: the row is ~33pt tall, under the 44pt minimum — and stores
@@ -157,8 +201,12 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
           <Text style={pw.restoreBtnText}>Restore purchase</Text>
         </Tappable>
 
+        {/* The trial sentence is conditional for the same reason the button is:
+            claiming a trial that is not configured is a misleading-claim
+            rejection, and charges the user immediately. */}
         <Text style={pw.legalText}>
-          Payment will be charged to your Apple ID / Google Play account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. You can manage and cancel your subscription in your account settings. The 7-day free trial automatically converts to a paid subscription if not cancelled before the trial ends.
+          Payment will be charged to your Apple ID / Google Play account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. You can manage and cancel your subscription in your account settings.
+          {activeTrialLabel ? ` The ${activeTrialLabel} automatically converts to a paid subscription if not cancelled before the trial ends.` : ''}
         </Text>
       </ScrollView>
     </View>
