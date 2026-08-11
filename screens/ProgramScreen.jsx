@@ -17,6 +17,8 @@ import { animateLayout } from '../lib/motion';
 import Tappable from '../components/Tappable';
 import ExerciseGifThumb from './ExerciseGifThumb';
 import { syncWorkoutReminders } from '../lib/notificationService';
+import { Ionicons } from '@expo/vector-icons';
+import PremiumPaywall from './PremiumPaywall';
 
 const DAYS_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -28,7 +30,7 @@ const OPTIMALITY_COLORS = {
 
 const RANK_KEYS = ['rankBest', 'rank2', 'rank3'];
 
-export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewDay, onClose }) {
+export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewDay, onClose, isPremium, onUpgrade, onRestore }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState(null);
@@ -38,6 +40,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
   const [draftDays, setDraftDays] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openInfo, setOpenInfo] = useState(null); // 'research' | 'goal' | 'progression'
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useFocusEffect(useCallback(() => { loadProgram(); }, []));
 
@@ -109,6 +112,33 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
   if (selectingDays) {
     const rankedSplits = getRankedSplits(draftDays, profile?.goals || [], profile?.trainingExperience);
 
+    // Free users get the split the generator would have picked for them anyway —
+    // rank 1 for their days and goals — so the program is never wrong, only
+    // un-overridable. Days-per-week stays free for the same reason: it decides
+    // which split FITS, and charging for fit would hand someone a program that
+    // does not match the week they told us they have.
+    //
+    // A split already saved stays selectable whatever its rank. Someone who
+    // picked one before this gate existed keeps it; the gate applies to
+    // changing your mind, not to what you already run.
+    const splitLocked = (split, i) =>
+      !isPremium && i !== 0 && profile?.selected_split !== split.id;
+
+    if (showPaywall) {
+      return (
+        <SafeAreaView style={styles.container} edges={['top']}>
+          <View style={styles.header}>
+            <View style={styles.headerNav}>
+              <Tappable onPress={() => setShowPaywall(false)} style={styles.backBtnWrapper}>
+                <Text style={styles.backBtn}>← {t('common.back')}</Text>
+              </Tappable>
+            </View>
+          </View>
+          <PremiumPaywall feature="Program" onUpgrade={onUpgrade} onRestore={onRestore} />
+        </SafeAreaView>
+      );
+    }
+
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -150,6 +180,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
               const isActive = profile?.selected_split === split.id ||
                 (!profile?.selected_split && i === 0 && draftDays === (parseInt(profile?.weekly_workouts) || 3));
               const optColor = OPTIMALITY_COLORS[split.optimality] || colors.textPrimary;
+              const locked = splitLocked(split, i);
 
               return (
                 <View key={split.id} style={[styles.splitCard, isActive && styles.splitCardActive]}>
@@ -162,11 +193,15 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
                       </View>
                       <Text style={styles.splitName}>{split.name}</Text>
                     </View>
-                    {isActive && (
+                    {isActive ? (
                       <View style={styles.activeCheck}>
                         <Text style={styles.activeCheckText}>{t('common.done')}</Text>
                       </View>
-                    )}
+                    ) : locked ? (
+                      <View style={styles.lockChip}>
+                        <Ionicons name="lock-closed" size={9} color={colors.textOnLight} />
+                      </View>
+                    ) : null}
                   </View>
 
                   <View style={styles.splitMeta}>
@@ -212,11 +247,14 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
 
                   <Tappable
                     style={[styles.selectSplitBtn, isActive && styles.selectSplitBtnActive]}
-                    onPress={() => saveSplitChoice(split.id, draftDays)}
+                    onPress={() => locked ? setShowPaywall(true) : saveSplitChoice(split.id, draftDays)}
                     accessibilityState={{ selected: isActive }}
+                    accessibilityLabel={locked ? t('program.unlockSplit') : undefined}
                   >
                     <Text style={[styles.selectSplitBtnText, isActive && styles.selectSplitBtnTextActive]}>
-                      {isActive ? t('program.currentSplit') : t('program.selectSplit')}
+                      {isActive ? t('program.currentSplit')
+                        : locked ? t('program.unlockSplit')
+                        : t('program.selectSplit')}
                     </Text>
                   </Tappable>
                 </View>
@@ -640,6 +678,9 @@ const styles = StyleSheet.create({
   splitName: { fontSize: 17, fontWeight: '700', color: colors.textPrimary },
   activeCheck: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.surfaceInverse, alignItems: 'center', justifyContent: 'center' },
   activeCheckText: { color: colors.textPrimary, fontSize: 13, fontWeight: '700' },
+  // Same footprint as activeCheck so the card header does not shift between a
+  // selected, locked and plain split.
+  lockChip: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.textMuted, alignItems: 'center', justifyContent: 'center' },
   splitMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   metaChip: { backgroundColor: colors.control, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 0.5, borderColor: colors.borderStrong },
   metaChipText: { fontSize: 12, color: colors.textMuted },

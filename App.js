@@ -608,6 +608,9 @@ export default function App() {
             <ProgramScreen
               onStartWorkout={(workout) => { setWorkoutMinimized(false); setActiveWorkout(workout || true); }}
               onSplitChanged={() => setRefreshToday(prev => prev + 1)}
+              isPremium={isPremium}
+              onUpgrade={handleUpgrade}
+              onRestore={handleRestore}
             />
           )}
         </Tab.Screen>

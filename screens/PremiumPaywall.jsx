@@ -53,6 +53,17 @@ export default function PremiumPaywall({ feature, onUpgrade, onRestore }) {
         'Hands-free voice logging',
       ],
     },
+    Program: {
+      icon: '◎',
+      title: 'Choose Your Split',
+      tagline: 'Your program is already built for your week — this is for running it your way',
+      bullets: [
+        'Every split in the library, not just the top recommendation',
+        'Switch training styles whenever you want — push/pull/legs, upper/lower, full body',
+        'Express variants for the weeks you are short on time',
+        'Your recommended split stays free, always',
+      ],
+    },
     Data: {
       icon: '◫',
       title: 'Your Data',
