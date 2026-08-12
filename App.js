@@ -618,7 +618,11 @@ export default function App() {
         <Tab.Screen name="Coach">
           {() =>
             isPremium
-              ? <CoachScreen prefill={coachPrefill} onPrefillConsumed={() => setCoachPrefill(null)} />
+              // Same remount-on-change key Today uses. Without it the Coach tab
+              // kept whatever it loaded when it first mounted: finish a workout,
+              // come back, and it would answer from a snapshot taken before the
+              // session existed — while the volume bars beside it were current.
+              ? <CoachScreen key={refreshToday} prefill={coachPrefill} onPrefillConsumed={() => setCoachPrefill(null)} />
               : <PremiumPaywall feature="Coach" onUpgrade={handleUpgrade} onRestore={handleRestore} />
           }
         </Tab.Screen>

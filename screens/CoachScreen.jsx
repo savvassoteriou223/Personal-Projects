@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  Keyboard, AppState,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +11,8 @@ import { supabase, getCurrentUser } from '../supabase';
 import VolumeBar from '../components/VolumeBar';
 import { step as areStep, acceptExperiment, abandonExperiment } from '../lib/areStore';
 import { computeFatigueSignature } from '../lib/individualModel';
+import { reviewWindow, reviewWeekKey } from '../lib/reviewWeek';
+import { relDate, daysAgo, todayLine } from '../lib/contextDates';
 import { MOVEMENT_PATTERNS, getAllExercisesForPattern, getPatternLabelForExercise } from './movementLibrary';
 import { keepInPatternAlternatives } from '../lib/exerciseAlternatives';
 import { replacementPatternCheck, soleSlotPatterns } from '../lib/proposalPreflight';
@@ -57,6 +60,7 @@ const MONTHLY_QUOTA = 100;
 // Which week's review the user has dismissed. Local, not a DB column: it's a UI
 // preference, and the summary itself already persists in weekly_summaries.
 const WEEKLY_DISMISSED_KEY = '@helix_weekly_review_dismissed';
+
 
 const _MUSCLE_MAP = (() => {
   const map = {};
@@ -143,27 +147,16 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const [are, setAre] = useState(null);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
   const [weeklyOffered, setWeeklyOffered] = useState(false); // review is due, not yet generated
+  const [weeklyHidden, setWeeklyHidden] = useState(false);   // dismissed for the week being reviewed
   const weeklyReviewChecked = useRef(false);
+  const lastLoadedAt = useRef(0); // throttles the foreground reload
   const scrollRef = useRef(null);
   const askCardY = useRef(0); // captured via onLayout — real scroll target, not a guess
 
-  // Follow the newest turn — but only once the user has actually asked something
-  // this session. conversationHistory is reloaded from coach_memory on open (so the
-  // coach keeps context), and without this guard that cold load would fire a
-  // scrollToEnd and dump the user at the bottom, past the focus card, onto an empty
-  // answer panel. Timeout lets the new turn lay out before we measure — scrolling on
-  // the same tick lands short of the actual end.
-  // Scroll to the reply ONCE, when it arrives — keyed on the number of
-  // completed turns only. It used to also depend on `asking` and
-  // `pendingQuestion`, which change at the start AND end of every request, so
-  // the view yanked itself downward the instant you hit send, before there was
-  // anything new to look at. Nothing has been rendered at that point; the jump
-  // just steals the position you were reading from.
-  useEffect(() => {
-    if (!hasAskedThisSession) return;
-    const id = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
-    return () => clearTimeout(id);
-  }, [conversationHistory.length, hasAskedThisSession]);
+  // No auto-scroll on ask or on reply. The answer panel renders directly above
+  // the input the user is already looking at, so moving the viewport for them
+  // only takes away the position they chose — it fired twice per question (once
+  // on send, once when the reply landed) and both jumps were unwanted.
 
   // Drives the staged "thinking" label. Resets to 0 whenever a request ends so
   // the next question starts from the first stage rather than the last one.
@@ -182,6 +175,22 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       loadCoachMemory();
       if (data) maybeWeeklyReview(data);
     })();
+  }, []);
+
+  // Reload when the app comes back to the foreground. The mount effect above
+  // runs once, so an app left open in the background for a day answered from
+  // data loaded whenever the screen first appeared — the coach would talk about
+  // "today" using yesterday's sessions. AppState (not useFocusEffect) because
+  // the workout-modal instance renders outside the navigation container, where
+  // navigation hooks throw. Throttled the same way Today throttles its focus
+  // reload; a tab switch costs eleven queries otherwise.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      if (Date.now() - lastLoadedAt.current < 30000) return;
+      loadUserData();
+    });
+    return () => sub.remove();
   }, []);
 
   // Deep-link from the home screen's proactive card: auto-send the pre-filled
@@ -284,6 +293,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
   const loadUserData = async () => {
     const user = await getCurrentUser();
     if (!user) return;
+    lastLoadedAt.current = Date.now();
 
     const [{ data: profile }, { data: sessions }, { data: cardioSessions }, { data: healthLogs }, { data: nutritionLogs }, { data: bodyMetrics }, { data: streakSessions }, { data: insightSessions }, { data: insightNutrition }, { data: insightHealth }, recoveryCheckIns] = await Promise.all([
       supabase.from('profiles').select('*, ai_calls_used, ai_calls_reset_at').eq('id', user.id).single(),
@@ -387,6 +397,13 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
 
     let weeklyVolume = {};
     let headVol = {}; // per-head { direct, indirect } from the shared volume engine
+    // The closed week the narrative review talks about. Kept SEPARATE from the
+    // rolling-7-day numbers above rather than replacing them: those feed the
+    // focus card and the signal chips, which must keep matching Today's heat
+    // map. Only the review — a retrospective — uses this window.
+    const reviewWin = reviewWindow();
+    let reviewVolume = {};
+    let reviewHeadSets = [];
     let prs = {};
     let recentSessions = sessions || [];
     // Same detectors TodayScreen runs — reusing them here (not re-deriving
@@ -404,8 +421,11 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
 
     if (sessions?.length) {
       const ids = sessions.map(s => s.id);
+      // pattern_key and set_type are what computeHeadVolume reads to resolve a
+      // renamed exercise and to drop warm-ups. Selecting the same columns
+      // TodayScreen does keeps the coach's volume identical to the heat map's.
       const { data: sets } = await supabase.from('completed_sets')
-        .select('exercise_name, weight_kg, reps, session_id').in('session_id', ids);
+        .select('exercise_name, pattern_key, weight_kg, reps, set_type, session_id').in('session_id', ids);
 
       if (sets?.length) {
         const sevenDaysAgo = subDays(new Date(), 7);
@@ -421,13 +441,30 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
             completed_at: sessionDateMap[x.session_id].toISOString(),
           }));
 
+        // Same two exclusions computeHeadVolume applies, so the bars on this
+        // screen and the numbers in the prompt count the same sets: a warm-up
+        // isn't weekly volume, and a set marked done with neither reps nor
+        // weight was never performed.
+        const wasPerformed = (s) => s.set_type !== 'warmup'
+          && !((s.reps === null || s.reps === undefined || s.reps === 0)
+            && (s.weight_kg === null || s.weight_kg === undefined));
+
         const weekSets = [];
         sets.forEach(s => {
           const sessionDate = sessionDateMap[s.session_id];
           if (sessionDate >= sevenDaysAgo) {
-            weekSets.push({ exercise_name: s.exercise_name });
-            const primary = getPrimaryMuscle(s.exercise_name);
+            // The WHOLE set, not just its name. computeHeadVolume treats a set
+            // with neither reps nor weight as never performed — so passing a
+            // name-only object made it discard every set and hand the model an
+            // all-zero volume table for every muscle, every week, for everyone.
+            weekSets.push(s);
+            const primary = wasPerformed(s) ? getPrimaryMuscle(s.exercise_name) : null;
             if (primary) weeklyVolume[primary] = (weeklyVolume[primary] || 0) + 1;
+          }
+          if (sessionDate >= reviewWin.start && sessionDate < reviewWin.end) {
+            reviewHeadSets.push(s);
+            const primary = wasPerformed(s) ? getPrimaryMuscle(s.exercise_name) : null;
+            if (primary) reviewVolume[primary] = (reviewVolume[primary] || 0) + 1;
           }
           if (s.weight_kg) {
             if (!prs[s.exercise_name] || s.weight_kg > prs[s.exercise_name].weight) {
@@ -744,7 +781,22 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       if (worst) neglectedMuscle = worst;
     }
 
-    const data = { profile, weeklyVolume, headVol, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, fatigueSignature, dislikedIds, streak, insights, proactivePrompt, neglectedMuscle };
+    // Everything the narrative review is allowed to talk about: one closed
+    // week, its sessions, and its volume. Assembled here (not inside the sets
+    // block) so an empty week still produces a well-formed, all-zero window
+    // rather than an undefined one.
+    const reviewWeek = {
+      start: reviewWin.start.toISOString(),
+      end: reviewWin.end.toISOString(),
+      volume: reviewVolume,
+      headVol: computeHeadVolume(reviewHeadSets),
+      sessions: (recentSessions || []).filter(s => {
+        const d = new Date(s.completed_at);
+        return d >= reviewWin.start && d < reviewWin.end;
+      }),
+    };
+
+    const data = { profile, weeklyVolume, headVol, reviewWeek, prs, recentSessions, program, blockIndex, blockStartDate, cardioSessions: cardioSessions || [], healthLogs: healthLogs || [], nutritionLogs: nutritionLogs || [], bodyMetrics: bodyMetrics || [], recoveryCheckIns: recoveryCheckIns || [], recentChanges, changeEffectiveness, readyToProgress, rotationDue, activeConditions, plateaus, plateauTrend, deloadSuggestion, fatigueSignature, dislikedIds, streak, insights, proactivePrompt, neglectedMuscle };
     setUserData(data);
 
     // ── Adaptive Response Engine ────────────────────────────────────────────
@@ -777,8 +829,13 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     return data;
   };
 
-  const buildContext = (data) => {
-    const { profile, headVol = {}, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], bodyMetrics = [], recoveryCheckIns = [], recentChanges = [], activeConditions = [], plateaus = [], deloadSuggestion = null, fatigueSignature = null, dislikedIds = [], streak = 0, insights = [], proactivePrompt = null, rotationDue = null } = data;
+  // `mode` mirrors the mode sent to the edge function. 'weekly_summary' adds the
+  // closed review window — without it the model only ever saw a rolling 7-day
+  // table plus undated-by-window session lines, and had to guess which week the
+  // review was about. It guessed the current one, which is exactly the week the
+  // review is NOT about.
+  const buildContext = (data, mode = 'chat') => {
+    const { profile, headVol = {}, reviewWeek = null, prs, recentSessions, program, cardioSessions, healthLogs, nutritionLogs = [], bodyMetrics = [], recoveryCheckIns = [], recentChanges = [], activeConditions = [], plateaus = [], deloadSuggestion = null, fatigueSignature = null, dislikedIds = [], streak = 0, insights = [], proactivePrompt = null, rotationDue = null } = data;
     const exp = profile?.trainingExperience || 'intermediate';
     // Volume judged on DIRECT sets against the (direct-isolation) targets; indirect
     // work from compounds is reported separately so the coach can see it without
@@ -786,28 +843,55 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const DELT_HEADS = ['front_delts', 'side_delts', 'rear_delts'];
     const CHEST_HEADS = ['chest', 'upper_chest', 'lower_chest'];
     const BACK_HEADS = ['lats', 'traps', 'lower_back'];
-    const sumHeads = (heads, key) => heads.reduce((n, h) => n + (headVol[h]?.[key] || 0), 0);
-    const volFor = (m, key) =>
-      m === 'shoulders' ? sumHeads(DELT_HEADS, key)
-      : m === 'chest' ? sumHeads(CHEST_HEADS, key)
-      : m === 'back' ? sumHeads(BACK_HEADS, key)
-      : (headVol[m]?.[key] || 0);
     const fmtV = (n) => (Number.isInteger(n) ? `${n}` : n.toFixed(1));
-    const volumeLines = Object.entries(VOLUME_TARGETS).map(([m, t]) => {
-      const target = t[exp] || t.intermediate;
-      const direct = volFor(m, 'direct');
-      const indirect = volFor(m, 'indirect');
-      const status = direct < target.min ? 'under minimum' : direct > target.optimal_high ? 'over optimal' : direct >= target.optimal_low ? 'optimal' : 'below optimal';
-      const ind = indirect > 0 ? ` +${fmtV(indirect)} indirect` : '';
-      return `  ${m}: ${fmtV(direct)} direct${ind} sets (${status}, target ${target.optimal_low}–${target.optimal_high})`;
-    }).join('\n');
+    // Parameterised by head-volume map so the same table can be rendered for the
+    // rolling window and for the closed review week, with identical maths.
+    const volumeTable = (hv = {}) => {
+      const sumHeads = (heads, key) => heads.reduce((n, h) => n + (hv[h]?.[key] || 0), 0);
+      const volFor = (m, key) =>
+        m === 'shoulders' ? sumHeads(DELT_HEADS, key)
+        : m === 'chest' ? sumHeads(CHEST_HEADS, key)
+        : m === 'back' ? sumHeads(BACK_HEADS, key)
+        : (hv[m]?.[key] || 0);
+      return Object.entries(VOLUME_TARGETS).map(([m, t]) => {
+        const target = t[exp] || t.intermediate;
+        const direct = volFor(m, 'direct');
+        const indirect = volFor(m, 'indirect');
+        const status = direct < target.min ? 'under minimum' : direct > target.optimal_high ? 'over optimal' : direct >= target.optimal_low ? 'optimal' : 'below optimal';
+        const ind = indirect > 0 ? ` +${fmtV(indirect)} indirect` : '';
+        return `  ${m}: ${fmtV(direct)} direct${ind} sets (${status}, target ${target.optimal_low}–${target.optimal_high})`;
+      }).join('\n');
+    };
+    const volumeLines = volumeTable(headVol);
+
+    // The review's subject, stated as a closed window with its own numbers. Only
+    // built for the weekly review — a chat turn has no business being steered
+    // toward last week.
+    const reviewBlock = (mode === 'weekly_summary' && reviewWeek) ? (() => {
+      const start = new Date(reviewWeek.start);
+      const last = subDays(new Date(reviewWeek.end), 1); // inclusive end, for display
+      const sess = reviewWeek.sessions || [];
+      const sessLines = sess.length
+        ? sess.map(s => `  ${relDate(s.completed_at)}: ${s.name} (${s.duration_min || '?'}min, RPE ${s.perceived_exertion || '?'})`).join('\n')
+        : '  No sessions logged in this window';
+      return `
+THE WEEK YOU ARE REVIEWING — ${format(start, 'EEE MMM d')} to ${format(last, 'EEE MMM d')}, a COMPLETED week that ended ${daysAgo(last)} day${daysAgo(last) === 1 ? '' : 's'} ago.
+Write about this window and nothing else. Anything the user trained since it
+ended belongs to the current week and is NOT part of this review — do not call
+it missed, and do not say they have not trained.
+Sessions completed in the window (${sess.length} total):
+${sessLines}
+Volume in the window (direct sets per muscle):
+${volumeTable(reviewWeek.headVol)}
+`;
+    })() : '';
 
     const prLines = Object.entries(prs).slice(0, 15).map(([ex, p]) =>
       `  ${ex}: ${p.weight}kg × ${p.reps || '?'}`
     ).join('\n');
 
     const sessionLines = recentSessions.slice(0, 5).map(s =>
-      `  ${format(new Date(s.completed_at), 'EEE MMM d')}: ${s.name} (${s.duration_min || '?'}min, RPE ${s.perceived_exertion || '?'})`
+      `  ${relDate(s.completed_at)}: ${s.name} (${s.duration_min || '?'}min, RPE ${s.perceived_exertion || '?'})`
     ).join('\n');
 
     // Patterns with exactly one slot in the whole program: replacing that slot
@@ -933,7 +1017,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
             ? Math.round(priorLogs.reduce((s, l) => s + l.hrv_ms, 0) / priorLogs.length)
             : null;
           const lines = healthLogs.map(l => {
-            const parts = [l.date];
+            const parts = [relDate(l.date)];
             if (l.sleep_hours) parts.push(`sleep ${l.sleep_hours}h`);
             if (l.hrv_ms) parts.push(`HRV ${l.hrv_ms}ms`);
             if (l.resting_hr) parts.push(`RHR ${l.resting_hr}bpm`);
@@ -954,7 +1038,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
     const checkInLines = recoveryCheckIns.length
       ? recoveryCheckIns
           .filter(c => !c.skipped)
-          .map(c => `  ${c.date}: ${c.label} (sleep ${c.sleep}, soreness ${c.soreness}, energy ${c.energy})`)
+          .map(c => `  ${relDate(c.date)}: ${c.label} (sleep ${c.sleep}, soreness ${c.soreness}, energy ${c.energy})`)
           .join('\n') || '  Check-ins skipped'
       : '  No readiness check-ins yet';
 
@@ -962,7 +1046,7 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       ? cardioSessions.slice(0, 5).map(s => {
           const dist = s.distance_km ? (s.session_type === 'swim' ? `${Math.round(s.distance_km * 1000)}m` : `${s.distance_km}km`) : '';
           const sub = [s.cardio_subtype, dist].filter(Boolean).join(' · ');
-          return `  ${format(new Date(s.completed_at), 'EEE MMM d')}: ${s.session_type} ${sub} (${s.duration_min}min)`;
+          return `  ${relDate(s.completed_at)}: ${s.session_type} ${sub} (${s.duration_min}min)`;
         }).join('\n')
       : '  None logged';
 
@@ -1058,7 +1142,9 @@ export default function CoachScreen({ onClose, workoutContext, onProposalApplied
       ? `You already proactively flagged this to the user today (as a notification): "${proactivePrompt.title} — ${proactivePrompt.body}"\n\n`
       : '';
 
-    return `${proactiveLine}User profile:
+    // First line, before anything else: without it every date below is
+    // unplaceable and the model has to invent a present to reason from.
+    return `${todayLine()}\n\n${proactiveLine}User profile:
 - Name: ${profile?.name || 'unknown'}
 - Experience: ${exp}
 - Goal: ${(profile?.goals || []).join(', ') || 'not set'}
@@ -1118,8 +1204,10 @@ them. If something isn't covered here, say it's outside the app's evidence base
 rather than guessing:
 ${formatEvidenceBase()}
 
-This week's volume — last 7 days (sets per muscle):
+Volume over the ROLLING last 7 days, counting today (sets per muscle). This is a
+moving window, not a calendar week — it spans parts of two weeks mid-week:
 ${volumeLines}
+${reviewBlock}
 ${rotationDue ? `\nRotation due (block-end / plateau / skip-pattern trigger): ${rotationDue}\n` : ''}
 Personal records:
 ${prLines}
@@ -1182,9 +1270,10 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     return data ?? null;
   };
 
-  // The week is keyed by the Sunday that starts it, so a new review becomes due
-  // each Sunday — matching the paywall's "weekly narrative summary every Sunday".
-  const currentWeekKey = () => format(startOfWeek(new Date(), { weekStartsOn: 0 }), 'yyyy-MM-dd');
+  // Keyed by the week being reviewed — the one that just ended — so a new review
+  // becomes due each Sunday, matching the paywall's "weekly narrative summary
+  // every Sunday". See reviewWeekKey for why the key is versioned.
+  const currentWeekKey = () => reviewWeekKey();
 
   // The advertised weekly narrative summary.
   //
@@ -1201,7 +1290,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     const weekKey = currentWeekKey();
     // Checked BEFORE the fetch: a dismissed review must not reappear on every open.
     const dismissed = await AsyncStorage.getItem(WEEKLY_DISMISSED_KEY).catch(() => null);
-    if (dismissed === weekKey) return;
+    if (dismissed === weekKey) { setWeeklyHidden(true); return; }
     const { data: existing } = await supabase
       .from('weekly_summaries')
       .select('content')
@@ -1211,10 +1300,10 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     if (existing?.content) { setWeeklySummary(existing.content); return; }
     // Nothing stored yet — offer the button instead of spending a message. Only
     // when there's a week worth summarising; a review of an empty week is filler.
-    const trainedThisWeek = (data.recentSessions || []).some(
-      s => new Date(s.completed_at) >= subDays(new Date(), 7)
-    );
-    if (trainedThisWeek) setWeeklyOffered(true);
+    // Measured over the week being REVIEWED, not a rolling window: offering a
+    // review of last week because you trained yesterday is how the card ends up
+    // narrating a week the user never asked about.
+    if ((data.reviewWeek?.sessions || []).length > 0) setWeeklyOffered(true);
   };
 
   // Explicit, user-initiated. Costs one monthly message, and the button says so.
@@ -1229,7 +1318,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
     try {
       const result = await callCoach(
         [{ role: 'user', content: 'Write my weekly training review.' }],
-        buildContext(data),
+        buildContext(data, 'weekly_summary'),
         'weekly_summary',
       );
       if (result?.text) {
@@ -1252,7 +1341,9 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
   // of the paid feature and the coach's record); this only hides the card until
   // next week's review is due.
   const dismissWeeklyReview = async () => {
+    setWeeklyHidden(true);
     setWeeklySummary(null);
+    setWeeklyOffered(false);
     setWeeklyLoading(false);
     AsyncStorage.setItem(WEEKLY_DISMISSED_KEY, currentWeekKey()).catch(() => {});
   };
@@ -1670,6 +1761,10 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
   const askQuestion = async (explicitText) => {
     const currentQuestion = (typeof explicitText === 'string' ? explicitText : question).trim();
     if (!currentQuestion || quotaExceeded || asking) return;
+    // The question is in flight — the keyboard has nothing left to type into and
+    // covers the answer panel it would appear in. Covers the send button and the
+    // quick chips alike, both of which land here.
+    Keyboard.dismiss();
     setAsking(true);
     setAnswer(null);
     setProposals([]);
@@ -1900,13 +1995,11 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         );
       })()}
 
-      {/* ── Proof of work — costs zero AI messages. recentChanges is real
-          (program_template_overrides), proactivePrompt is the same
+      {/* ── Proof of work — costs zero AI messages. proactivePrompt is the same
           recovery→deload→plateau→missed-session→milestone chain the
           home-screen notification uses, insights come from computeInsights.
           Nothing here is model-generated. */}
       {!isMidWorkout && !focusDismissed && (() => {
-        const recentChanges = userData?.recentChanges || [];
         const proactivePrompt = userData?.proactivePrompt || null;
         const insights = userData?.insights || [];
         const changeEffectiveness = userData?.changeEffectiveness || null;
@@ -2042,7 +2135,7 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
         if (plateauEx) signals.push({ k: t('coach.sigPlateau'), v: plateauEx, amber: true });
         if (recovery) signals.push({ k: t('coach.sigRecovery'), v: recovery });
         if (weeklySets > 0) signals.push({ k: t('coach.sigWeek'), v: t('coach.sigSets', { n: weeklySets }) });
-        if (!recentChanges.length && !focusItem && !signals.length) return null;
+        if (!focusItem && !signals.length) return null;
 
         return (
           <View style={styles.bentoWrap}>
@@ -2133,32 +2226,6 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
               </View>
             )}
 
-            {/* Recent changes — the retrospective changelog, demoted to the bottom. */}
-            {recentChanges.length > 0 && (
-              <View style={styles.doneStrip}>
-                <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
-                {recentChanges.slice(0, 8).map((c, i) => {
-                  // Split "changed Squat to 4 sets (Lower A)" into a bold main
-                  // clause and a muted trailing day-name — real string, just
-                  // formatted in two tones instead of one flat sentence.
-                  const match = c.text.match(/^(.*)\s(\([^)]+\))$/);
-                  return (
-                    <View key={c.id ?? i} style={[styles.doneRow, i > 0 && styles.doneRowBorder]}>
-                      <View style={styles.doneCheck}><Text style={styles.doneCheckMark}>✓</Text></View>
-                      <Text style={styles.doneText}>
-                        {match ? match[1] : c.text}
-                        {match ? <Text style={styles.doneTextMuted}>  {match[2]}</Text> : null}
-                      </Text>
-                    </View>
-                  );
-                })}
-                {recentChanges[0]?.id && (
-                  <Tappable onPress={undoLastChange} disabled={undoing} hitSlop={8} style={{ marginTop: 8 }}>
-                    <Text style={styles.undoBtnText}>{undoing ? t('coach.undoing') : t('coach.undo')}</Text>
-                  </Tappable>
-                )}
-              </View>
-            )}
           </View>
         );
       })()}
@@ -2387,11 +2454,18 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
       </View>
 
 
-      {/* Weekly narrative review — auto-generated once per week, hidden mid-workout.
-          Full accent-hair border (not a side-stripe), same restrained technique
-          as everywhere else accent shows up on this screen — marks this as the
-          week's real payoff moment, distinct from the plain utility cards below. */}
-      {!isMidWorkout && (
+      {/* Weekly narrative review — hidden mid-workout. Full accent-hair border
+          (not a side-stripe), same restrained technique as everywhere else
+          accent shows up on this screen — marks this as the week's real payoff
+          moment, distinct from the plain utility cards below.
+
+          The card only exists when there is a review to show or to offer. It
+          used to render unconditionally, so the two gates around it did nothing
+          they appeared to do: dismissing it left the "Write my weekly review"
+          button sitting there (and tapping that overwrote the summary you had
+          just dismissed), and a week with nothing logged still offered to spend
+          one of 100 monthly messages narrating an empty chart. */}
+      {!isMidWorkout && !weeklyHidden && (weeklySummary || weeklyLoading || weeklyOffered) && (
         <View style={[styles.card, styles.cardBoxed, styles.weeklyReviewCard]}>
           <View style={styles.weeklyHeader}>
             <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{t('coach.weeklyReview')}</Text>
@@ -2409,7 +2483,11 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
                   than seeing the bar, and the app already computed the number. */}
               {(() => {
                 const targets = getVolumeTargets(userData?.profile?.trainingExperience, userData?.profile?.sex);
-                const rows = Object.entries(userData?.weeklyVolume || {})
+                // The reviewed week, NOT the rolling 7 days. These bars sit
+                // directly above the narrative; sourcing them from a different
+                // window than the text is what let the card say "zero sessions"
+                // over a chart full of green.
+                const rows = Object.entries(userData?.reviewWeek?.volume || {})
                   .map(([muscle, done]) => ({
                     muscle, done,
                     target: targets?.[muscle] || null,
@@ -2473,6 +2551,38 @@ ${bodyweightBlock}${workoutContext ? `\n\nCurrent live workout (user is training
           </View>
         ))}
       </View>
+      )}
+
+      {/* Recent changes — the retrospective changelog (real
+          program_template_overrides rows, nothing model-generated). Last thing
+          on the screen: it is a record of what already happened, so it sits
+          below the ask box and the weekly review rather than pushing them down.
+          Not tied to focusDismissed — dismissing today's focus read shouldn't
+          take the changelog with it. */}
+      {!isMidWorkout && (userData?.recentChanges || []).length > 0 && (
+        <View style={styles.doneStrip}>
+          <Text style={styles.doneStripEyebrow}>{t('coach.recentChanges')}</Text>
+          {userData.recentChanges.slice(0, 8).map((c, i) => {
+            // Split "changed Squat to 4 sets (Lower A)" into a bold main
+            // clause and a muted trailing day-name — real string, just
+            // formatted in two tones instead of one flat sentence.
+            const match = c.text.match(/^(.*)\s(\([^)]+\))$/);
+            return (
+              <View key={c.id ?? i} style={[styles.doneRow, i > 0 && styles.doneRowBorder]}>
+                <View style={styles.doneCheck}><Text style={styles.doneCheckMark}>✓</Text></View>
+                <Text style={styles.doneText}>
+                  {match ? match[1] : c.text}
+                  {match ? <Text style={styles.doneTextMuted}>  {match[2]}</Text> : null}
+                </Text>
+              </View>
+            );
+          })}
+          {userData.recentChanges[0]?.id && (
+            <Tappable onPress={undoLastChange} disabled={undoing} hitSlop={8} style={{ marginTop: 8 }}>
+              <Text style={styles.undoBtnText}>{undoing ? t('coach.undoing') : t('coach.undo')}</Text>
+            </Tappable>
+          )}
+        </View>
       )}
     </ScrollView>
     </KeyboardAvoidingView>
