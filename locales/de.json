@@ -568,7 +568,18 @@
       "textOnly": "Diese Version kann nur als Text teilen.",
       "message": "{{name}} — {{mins}} Min, {{sets}} Sätze, {{volume}} kg bewegt. Aufgezeichnet mit Helix.",
       "reps": "WDH",
-      "messageReps": "{{name}} — {{mins}} Min, {{sets}} Sätze, {{reps}} Wiederholungen. Aufgezeichnet mit Helix."
+      "messageReps": "{{name}} — {{mins}} Min, {{sets}} Sätze, {{reps}} Wiederholungen. Aufgezeichnet mit Helix.",
+      "modeStory": "Story",
+      "modeCard": "Karte",
+      "storyNote": "Transparent — liegt über deinem eigenen Foto.",
+      "newPr": "NEUER REKORD",
+      "prGain": "+{{kg}} kg auf deine Bestleistung",
+      "unbroken": "OHNE UNTERBRECHUNG",
+      "everyWeek": "Jede Woche, ohne Lücke",
+      "heaviestYet": "SCHWERSTE BISHER",
+      "acrossSessions": "über {{n}} Einheiten",
+      "overAverage": "+{{pct}}% über deinem Schnitt",
+      "topPct": "TOP {{pct}}%"
     }
   },
   "coach": {

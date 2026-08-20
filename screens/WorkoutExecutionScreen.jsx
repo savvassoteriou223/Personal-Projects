@@ -23,7 +23,7 @@ import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
 import WhySheet, { buildWhy, WhyMark } from '../components/WhySheet';
 import WorkoutShareSheet, { buildShareStats } from './WorkoutShareSheet';
-import { startOfWeek } from 'date-fns';
+import { detectAchievement, streakWeeks } from '../lib/achievements';
 
 const WORKOUT_DRAFT_KEY = '@helix_workout_draft';
 
@@ -200,6 +200,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
   const [showPaywall, setShowPaywall] = useState(false); // free users tapping Coach mid-workout
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [shareStats, setShareStats] = useState(null); // set only when Share is tapped
+  const [shareAchievement, setShareAchievement] = useState(null);
   const [readinessLabel, setReadinessLabel] = useState(null); // 'Moderate' | 'Low' once applied
   const checkInResolved = useRef(false); // guards against a double-tap firing onDone twice
   // Latest `sets` for the readiness check-in effect below, which runs once on
@@ -738,45 +739,79 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
 
   const totalSets = sets.reduce((acc, ex) => acc + ex.completedSets.length, 0);
 
-  // Consecutive weeks with at least one session — the same definition Profile
-  // and the Coach use, so the number on a shared card matches the one in the
-  // app. The week just trained is added by hand: this runs on the finish screen,
-  // before the session is written, so a first-workout-of-the-week share would
-  // otherwise post a streak one short.
-  const currentStreakWeeks = async (userId) => {
-    const { data } = await supabase
-      .from('workout_sessions')
-      .select('completed_at')
-      .eq('user_id', userId)
-      .order('completed_at', { ascending: false })
-      .limit(400);
-    const weeks = new Set((data || []).map(s =>
-      startOfWeek(new Date(s.completed_at), { weekStartsOn: 1 }).toISOString().split('T')[0]));
-    weeks.add(startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0]);
-
-    let streak = 0;
-    let checkDate = startOfWeek(new Date(), { weekStartsOn: 1 });
-    for (const wk of [...weeks].sort().reverse()) {
-      const diff = Math.round((checkDate - new Date(wk)) / (1000 * 60 * 60 * 24 * 7));
-      if (diff <= 1) { streak++; checkDate = new Date(wk); } else break;
-    }
-    return streak;
-  };
-
-  // Built on demand rather than kept in state: most sessions are never shared,
-  // and the streak query is not worth running for every finished workout.
+  // Everything the share sheet needs, built on demand: most sessions are never
+  // shared, and none of these queries is worth running for every finished
+  // workout. All three are best-effort — a share with a missing headline is
+  // still a share, so nothing here is allowed to block the sheet opening.
   const openShare = async () => {
-    let streakWeeks = 0;
+    const durationSec = Math.floor(((finishTime ?? Date.now()) - startTime.current) / 1000);
+    let weeks = 0;
+    let priorBests = {};
+    let priorVolumes = [];
+
     try {
       const user = await getCurrentUser();
-      if (user) streakWeeks = await currentStreakWeeks(user.id);
-    } catch (_) { /* a missing streak just drops the chip off the card */ }
+      if (user) {
+        const names = sets.map(s => s.name).filter(Boolean);
+
+        const [{ data: history }, { data: bestRows }, { data: sameDay }] = await Promise.all([
+          supabase.from('workout_sessions')
+            .select('completed_at').eq('user_id', user.id)
+            .order('completed_at', { ascending: false }).limit(400),
+
+          // Heaviest ever per exercise. Nothing from THIS session is saved yet
+          // at the finish screen, so every row here is genuinely "before".
+          names.length
+            ? supabase.from('completed_sets')
+                .select('exercise_name, weight_kg, reps')
+                .eq('user_id', user.id).in('exercise_name', names)
+                .not('weight_kg', 'is', null)
+                .order('weight_kg', { ascending: false }).limit(400)
+            : Promise.resolve({ data: [] }),
+
+          supabase.from('workout_sessions')
+            .select('id').eq('user_id', user.id).eq('name', workout.name)
+            .order('completed_at', { ascending: false }).limit(10),
+        ]);
+
+        // The week just trained is added by hand — this runs before the session
+        // is written, so a first-workout-of-the-week share would otherwise post
+        // a streak one short.
+        weeks = streakWeeks([...(history || []).map(h => h.completed_at), new Date().toISOString()]);
+
+        (bestRows || []).forEach(r => {
+          const cur = priorBests[r.exercise_name];
+          if (!cur || r.weight_kg > cur.weight) priorBests[r.exercise_name] = { weight: r.weight_kg, reps: r.reps };
+        });
+
+        const ids = (sameDay || []).map(s => s.id);
+        if (ids.length) {
+          const { data: rows } = await supabase
+            .from('completed_sets')
+            .select('session_id, weight_kg, reps')
+            .in('session_id', ids);
+          const bySession = {};
+          (rows || []).forEach(r => {
+            bySession[r.session_id] = (bySession[r.session_id] || 0) + (r.weight_kg || 0) * (r.reps || 0);
+          });
+          priorVolumes = Object.values(bySession);
+        }
+      }
+    } catch (err) {
+      console.warn('openShare: history lookup failed, sharing without a headline', err);
+    }
+
+    const achievement = detectAchievement({
+      sets, priorBests, streakWeeks: weeks, priorVolumes, focus: workout.focus || '',
+    });
+
+    setShareAchievement(achievement);
     setShareStats(buildShareStats({
       workoutName: workout.name,
       focus: workout.focus,
       sets,
-      durationSec: Math.floor(((finishTime ?? Date.now()) - startTime.current) / 1000),
-      streakWeeks,
+      durationSec,
+      streakWeeks: weeks,
     }));
   };
 
@@ -977,6 +1012,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
         <WorkoutShareSheet
           visible={!!shareStats}
           stats={shareStats}
+          achievement={shareAchievement}
           onClose={() => setShareStats(null)}
         />
       </ScrollView>

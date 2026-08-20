@@ -568,7 +568,18 @@
       "textOnly": "Эта версия может делиться только текстом.",
       "message": "{{name}} — {{mins}} мин, подходов: {{sets}}, поднято {{volume}} кг. Записано в Helix.",
       "reps": "ПОВТОРЫ",
-      "messageReps": "{{name}} — {{mins}} мин, подходов: {{sets}}, повторений: {{reps}}. Записано в Helix."
+      "messageReps": "{{name}} — {{mins}} мин, подходов: {{sets}}, повторений: {{reps}}. Записано в Helix.",
+      "modeStory": "История",
+      "modeCard": "Карточка",
+      "storyNote": "Прозрачный — ложится поверх вашего фото.",
+      "newPr": "НОВЫЙ РЕКОРД",
+      "prGain": "+{{kg}} кг к рекорду",
+      "unbroken": "БЕЗ ПРОПУСКОВ",
+      "everyWeek": "Каждую неделю, без пропусков",
+      "heaviestYet": "САМАЯ ТЯЖЁЛАЯ",
+      "acrossSessions": "за {{n}} тренировок",
+      "overAverage": "+{{pct}}% к среднему",
+      "topPct": "ТОП {{pct}}%"
     }
   },
   "coach": {

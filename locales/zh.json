@@ -568,7 +568,18 @@
       "textOnly": "此版本只能以文字分享。",
       "message": "{{name}} — {{mins}} 分钟，{{sets}} 组，{{volume}} 公斤。使用 Helix 记录。",
       "reps": "次数",
-      "messageReps": "{{name}} — {{mins}} 分钟，{{sets}} 组，{{reps}} 次。使用 Helix 记录。"
+      "messageReps": "{{name}} — {{mins}} 分钟，{{sets}} 组，{{reps}} 次。使用 Helix 记录。",
+      "modeStory": "快拍",
+      "modeCard": "卡片",
+      "storyNote": "透明背景 — 叠加在你自己的照片上。",
+      "newPr": "新纪录",
+      "prGain": "比最好成绩多 {{kg}} 公斤",
+      "unbroken": "从未间断",
+      "everyWeek": "每周都练，没有断过",
+      "heaviestYet": "史上最重",
+      "acrossSessions": "共 {{n}} 次训练",
+      "overAverage": "高于平均 {{pct}}%",
+      "topPct": "前 {{pct}}%"
     }
   },
   "coach": {

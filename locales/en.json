@@ -568,7 +568,18 @@
       "textOnly": "This version can only share as text.",
       "message": "{{name}} — {{mins}} min, {{sets}} sets, {{volume}} kg lifted. Tracked with Helix.",
       "reps": "REPS",
-      "messageReps": "{{name}} — {{mins}} min, {{sets}} sets, {{reps}} reps. Tracked with Helix."
+      "messageReps": "{{name}} — {{mins}} min, {{sets}} sets, {{reps}} reps. Tracked with Helix.",
+      "modeStory": "Story",
+      "modeCard": "Card",
+      "storyNote": "Transparent — it sits on top of your own photo.",
+      "newPr": "NEW PR",
+      "prGain": "+{{kg}} kg on your best",
+      "unbroken": "UNBROKEN",
+      "everyWeek": "Every week, no gaps",
+      "heaviestYet": "HEAVIEST YET",
+      "acrossSessions": "across {{n}} sessions",
+      "overAverage": "+{{pct}}% on your average",
+      "topPct": "TOP {{pct}}%"
     }
   },
   "coach": {

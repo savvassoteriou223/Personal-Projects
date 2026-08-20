@@ -568,7 +568,18 @@
       "textOnly": "Questa versione può condividere solo come testo.",
       "message": "{{name}} — {{mins}} min, {{sets}} serie, {{volume}} kg sollevati. Registrato con Helix.",
       "reps": "RIP.",
-      "messageReps": "{{name}} — {{mins}} min, {{sets}} serie, {{reps}} ripetizioni. Registrato con Helix."
+      "messageReps": "{{name}} — {{mins}} min, {{sets}} serie, {{reps}} ripetizioni. Registrato con Helix.",
+      "modeStory": "Storia",
+      "modeCard": "Card",
+      "storyNote": "Trasparente: si appoggia sulla tua foto.",
+      "newPr": "NUOVO RECORD",
+      "prGain": "+{{kg}} kg sul tuo record",
+      "unbroken": "ININTERROTTO",
+      "everyWeek": "Ogni settimana, senza buchi",
+      "heaviestYet": "LA PIÙ PESANTE",
+      "acrossSessions": "su {{n}} sessioni",
+      "overAverage": "+{{pct}}% sulla tua media",
+      "topPct": "TOP {{pct}}%"
     }
   },
   "coach": {

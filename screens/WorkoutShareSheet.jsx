@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { colors, spacing, radius, type } from '../lib/theme';
 import Tappable from '../components/Tappable';
-import { shareCard, canShareImage, SHARE_CARD_RATIO } from '../lib/shareService';
+import { shareCard, shareSticker, canShareImage, SHARE_CARD_RATIO } from '../lib/shareService';
+import StorySticker from './StorySticker';
 
 // How many exercises fit before the card stops being scannable. Past six the
 // rows have to shrink to fit the 4:5 frame, and a wall of 5pt text is not what
@@ -153,12 +154,17 @@ export const ShareCard = forwardRef(function ShareCard({ stats, width }, ref) {
  * button. Posting a card to a public feed is not an action to take on someone's
  * behalf sight-unseen — they get to read the numbers first and back out.
  */
-export default function WorkoutShareSheet({ visible, stats, onClose }) {
+export default function WorkoutShareSheet({ visible, stats, achievement, onClose }) {
   const { t } = useTranslation();
   const { width: screenW } = useWindowDimensions();
   const cardRef = useRef(null);
+  const stickerRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [imageCapable, setImageCapable] = useState(true);
+  // Story is the default. A sticker decorates a post someone was already going
+  // to make; the card asks them to post an advert instead, which is a much
+  // bigger favour to ask.
+  const [mode, setMode] = useState('story');
 
   useEffect(() => {
     if (visible) canShareImage().then(setImageCapable);
@@ -191,11 +197,17 @@ export default function WorkoutShareSheet({ visible, stats, onClose }) {
     if (busy) return;
     setBusy(true);
     try {
-      await shareCard(cardRef, fallback);
+      if (mode === 'story') await shareSticker(stickerRef, fallback);
+      else await shareCard(cardRef, fallback);
     } finally {
       setBusy(false);
     }
   };
+
+  const modes = [
+    ['story', t('workout.share.modeStory', { defaultValue: 'Story' })],
+    ['card', t('workout.share.modeCard', { defaultValue: 'Card' })],
+  ];
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -208,7 +220,45 @@ export default function WorkoutShareSheet({ visible, stats, onClose }) {
             </Tappable>
           </View>
 
-          <ShareCard ref={cardRef} stats={stats} width={cardW} />
+          <View style={styles.modeRow}>
+            {modes.map(([key, label]) => (
+              <Tappable
+                key={key}
+                style={[styles.modeBtn, mode === key && styles.modeBtnOn]}
+                onPress={() => setMode(key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: mode === key }}
+              >
+                <Text style={[styles.modeText, mode === key && styles.modeTextOn]}>{label}</Text>
+              </Tappable>
+            ))}
+          </View>
+
+          {/* Both stay mounted: captureRef needs a laid-out view, and a ref to
+              something that unmounted on a tab switch captures nothing. The
+              inactive one is moved off-screen rather than hidden, because
+              display:none has no layout to capture either. */}
+          <View style={mode === 'card' ? styles.stage : styles.offstage} pointerEvents="none">
+            <ShareCard ref={cardRef} stats={stats} width={cardW} />
+          </View>
+
+          <View style={mode === 'story' ? styles.stage : styles.offstage} pointerEvents="none">
+            {/* The dark plate is preview only — it is NOT captured. It stands in
+                for the photo the sticker will actually sit on, so the user can
+                see a transparent asset at all. */}
+            <View style={[styles.stickerPlate, { width: cardW }]}>
+              <StorySticker
+                ref={stickerRef}
+                achievement={achievement}
+                best={stats.rows?.[0] ? { name: stats.rows[0].name, weight: stats.rows[0].weight, reps: stats.rows[0].reps } : null}
+                focus={stats.focus || stats.workoutName}
+                width={cardW - spacing.lg * 2}
+              />
+            </View>
+            <Text style={styles.plateNote}>
+              {t('workout.share.storyNote', { defaultValue: 'Transparent — it sits on top of your own photo.' })}
+            </Text>
+          </View>
 
           {/* Only shown when the image path is genuinely unavailable, so the
               user is never surprised by a plain-text post. */}
@@ -271,6 +321,27 @@ const styles = StyleSheet.create({
   sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' },
   sheetTitle: { ...type.section, color: colors.textPrimary },
   sheetClose: { fontSize: 20, color: colors.textMuted, paddingHorizontal: spacing.sm },
+
+  // Story / Card switch
+  modeRow: { flexDirection: 'row', gap: spacing.sm, alignSelf: 'stretch' },
+  modeBtn: {
+    flex: 1, minHeight: 40, borderRadius: radius.control, alignItems: 'center', justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, backgroundColor: colors.surfaceInset,
+  },
+  modeBtnOn: { backgroundColor: colors.accentSoft, borderColor: colors.accentHair },
+  modeText: { ...type.body, fontWeight: '600', color: colors.textMuted },
+  modeTextOn: { color: colors.accent },
+
+  stage: { alignItems: 'center', gap: spacing.sm },
+  // Off-screen rather than hidden: captureRef needs real layout, and a view
+  // with display:none has none to capture.
+  offstage: { position: 'absolute', left: -10000, top: 0, opacity: 0 },
+
+  stickerPlate: {
+    backgroundColor: colors.bgDeep, borderRadius: radius.card, padding: spacing.lg,
+    borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border,
+  },
+  plateNote: { ...type.body, color: colors.textFaint, textAlign: 'center' },
   textOnlyNote: { ...type.body, color: colors.textFaint, textAlign: 'center' },
   shareBtn: {
     width: '100%', backgroundColor: colors.surfaceInverse, borderRadius: radius.control,
