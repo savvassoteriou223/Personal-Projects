@@ -209,6 +209,12 @@ export default function WorkoutShareSheet({ visible, stats, achievement, onClose
     ['card', t('workout.share.modeCard', { defaultValue: 'Card' })],
   ];
 
+  // A bodyweight-only session produces no rows at all, so this stays null and
+  // the sticker's fallback rung collapses its hero rather than rendering
+  // "undefined kg".
+  const first = stats.rows?.[0];
+  const bestRow = first ? { name: first.name, weight: first.weight, reps: first.reps } : null;
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
@@ -234,31 +240,38 @@ export default function WorkoutShareSheet({ visible, stats, achievement, onClose
             ))}
           </View>
 
-          {/* Both stay mounted: captureRef needs a laid-out view, and a ref to
-              something that unmounted on a tab switch captures nothing. The
-              inactive one is moved off-screen rather than hidden, because
-              display:none has no layout to capture either. */}
-          <View style={mode === 'card' ? styles.stage : styles.offstage} pointerEvents="none">
-            <ShareCard ref={cardRef} stats={stats} width={cardW} />
-          </View>
-
-          <View style={mode === 'story' ? styles.stage : styles.offstage} pointerEvents="none">
-            {/* The dark plate is preview only — it is NOT captured. It stands in
-                for the photo the sticker will actually sit on, so the user can
-                see a transparent asset at all. */}
-            <View style={[styles.stickerPlate, { width: cardW }]}>
-              <StorySticker
-                ref={stickerRef}
-                achievement={achievement}
-                best={stats.rows?.[0] ? { name: stats.rows[0].name, weight: stats.rows[0].weight, reps: stats.rows[0].reps } : null}
-                focus={stats.focus || stats.workoutName}
-                width={cardW - spacing.lg * 2}
-              />
+          {/* Only the active mode is mounted, and it is the only thing ever
+              captured. An earlier version kept both alive with the inactive one
+              parked at left:-10000 so neither ref could go stale — but
+              captureRef on a view outside the viewport returns blank or clipped
+              output on some Android/view-shot combinations, and a blank PNG
+              fails silently: the share sheet opens, the user posts nothing.
+              Rendering one at a time removes that failure mode by construction
+              instead of hoping the off-screen case behaves. */}
+          {mode === 'card' ? (
+            <View style={styles.stage}>
+              <ShareCard ref={cardRef} stats={stats} width={cardW} />
             </View>
-            <Text style={styles.plateNote}>
-              {t('workout.share.storyNote', { defaultValue: 'Transparent — it sits on top of your own photo.' })}
-            </Text>
-          </View>
+          ) : (
+            <View style={styles.stage}>
+              {/* The dark plate is preview only — it is NOT captured, because
+                  the ref sits on the sticker inside it. It stands in for the
+                  photo the sticker will land on, so a transparent asset is
+                  visible at all. */}
+              <View style={[styles.stickerPlate, { width: cardW }]}>
+                <StorySticker
+                  ref={stickerRef}
+                  achievement={achievement}
+                  best={bestRow}
+                  focus={stats.focus || stats.workoutName}
+                  width={cardW - spacing.lg * 2}
+                />
+              </View>
+              <Text style={styles.plateNote}>
+                {t('workout.share.storyNote', { defaultValue: 'Transparent — it sits on top of your own photo.' })}
+              </Text>
+            </View>
+          )}
 
           {/* Only shown when the image path is genuinely unavailable, so the
               user is never surprised by a plain-text post. */}
@@ -333,9 +346,6 @@ const styles = StyleSheet.create({
   modeTextOn: { color: colors.accent },
 
   stage: { alignItems: 'center', gap: spacing.sm },
-  // Off-screen rather than hidden: captureRef needs real layout, and a view
-  // with display:none has none to capture.
-  offstage: { position: 'absolute', left: -10000, top: 0, opacity: 0 },
 
   stickerPlate: {
     backgroundColor: colors.bgDeep, borderRadius: radius.card, padding: spacing.lg,

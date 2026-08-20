@@ -579,7 +579,8 @@
       "heaviestYet": "史上最重",
       "acrossSessions": "共 {{n}} 次训练",
       "overAverage": "高于平均 {{pct}}%",
-      "topPct": "前 {{pct}}%"
+      "topPct": "前 {{pct}}%",
+      "repsUnit": " 次"
     }
   },
   "coach": {

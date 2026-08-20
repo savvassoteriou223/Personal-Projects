@@ -579,7 +579,8 @@
       "heaviestYet": "LA PIÙ PESANTE",
       "acrossSessions": "su {{n}} sessioni",
       "overAverage": "+{{pct}}% sulla tua media",
-      "topPct": "TOP {{pct}}%"
+      "topPct": "TOP {{pct}}%",
+      "repsUnit": " rip."
     }
   },
   "coach": {

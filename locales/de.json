@@ -579,7 +579,8 @@
       "heaviestYet": "SCHWERSTE BISHER",
       "acrossSessions": "über {{n}} Einheiten",
       "overAverage": "+{{pct}}% über deinem Schnitt",
-      "topPct": "TOP {{pct}}%"
+      "topPct": "TOP {{pct}}%",
+      "repsUnit": " Wdh"
     }
   },
   "coach": {

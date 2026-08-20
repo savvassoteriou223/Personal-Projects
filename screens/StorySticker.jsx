@@ -71,11 +71,19 @@ export const StorySticker = forwardRef(function StorySticker(
     heroUnit = ' kg';
     gain = t('workout.share.overAverage', { pct: a.overAveragePct, defaultValue: '+{{pct}}% on your average' });
   } else {
-    // Nothing rare happened. The best set of the day is still worth showing,
-    // and when there is no loaded set at all the block simply collapses.
+    // Nothing rare happened. The best set of the day is still worth showing.
+    //
+    // Bodyweight work logs no weight, and buildShareStats still emits a row for
+    // it with weight 0 — so this branch has to lead with reps there rather than
+    // print "0 kg × 9" on a perfectly good set of pull-ups.
     sub = best?.name || null;
-    hero = best ? String(best.weight) : null;
-    heroUnit = best ? ` kg × ${best.reps}` : null;
+    if (best && best.weight > 0) {
+      hero = String(best.weight);
+      heroUnit = ` kg × ${best.reps}`;
+    } else if (best && best.reps > 0) {
+      hero = String(best.reps);
+      heroUnit = t('workout.share.repsUnit', { defaultValue: ' reps' });
+    }
   }
 
   return (

@@ -579,7 +579,8 @@
       "heaviestYet": "HEAVIEST YET",
       "acrossSessions": "across {{n}} sessions",
       "overAverage": "+{{pct}}% on your average",
-      "topPct": "TOP {{pct}}%"
+      "topPct": "TOP {{pct}}%",
+      "repsUnit": " reps"
     }
   },
   "coach": {

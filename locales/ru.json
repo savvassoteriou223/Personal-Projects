@@ -579,7 +579,8 @@
       "heaviestYet": "САМАЯ ТЯЖЁЛАЯ",
       "acrossSessions": "за {{n}} тренировок",
       "overAverage": "+{{pct}}% к среднему",
-      "topPct": "ТОП {{pct}}%"
+      "topPct": "ТОП {{pct}}%",
+      "repsUnit": " повт."
     }
   },
   "coach": {
