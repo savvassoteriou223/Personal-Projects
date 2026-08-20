@@ -555,6 +555,20 @@
       "searchPlaceholder": "Search exercises…",
       "all": "All",
       "noResults": "No exercises match your search."
+    },
+    "share": {
+      "title": "Share your session",
+      "action": "Share",
+      "min": "MIN",
+      "sets": "SETS",
+      "volume": "KG LIFTED",
+      "more": "+{{n}} more",
+      "streak": "{{weeks}}-week streak",
+      "tagline": "Science-backed training",
+      "textOnly": "This version can only share as text.",
+      "message": "{{name}} — {{mins}} min, {{sets}} sets, {{volume}} kg lifted. Tracked with Helix.",
+      "reps": "REPS",
+      "messageReps": "{{name}} — {{mins}} min, {{sets}} sets, {{reps}} reps. Tracked with Helix."
     }
   },
   "coach": {

@@ -2,7 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { supabase } from '../supabase';
 
-const CACHE_NS = '@exgif13:';
+// Bump this whenever a gif mapping is corrected or removed. The cache never
+// expires on its own, so a device that already fetched a wrong clip would keep
+// showing it forever otherwise — v14 drops the pendulum squat's hack-squat gif.
+const CACHE_NS = '@exgif14:';
 
 // Web: in-memory only — AsyncStorage uses localStorage which races with Supabase auth init on refresh
 const memCache = new Map();

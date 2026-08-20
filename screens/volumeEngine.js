@@ -206,3 +206,32 @@ export function buildVolumeView(sets = [], tier = 'intermediate', sex = null) {
     };
   });
 }
+
+/**
+ * The per-muscle floor `compactWorkout` trims against: muscle key → { done, min }.
+ *
+ * Measured from the PLANNED program, not from this week's logged sets. The
+ * question a trim answers is "how much of the planned week sits above the
+ * minimum effective volume", which is a property of the program — measuring
+ * logged sets instead would make the same day trim differently on a Monday than
+ * on a Friday. Returns null when there is no program to measure, which
+ * `compactWorkout` reads as "fall back to the flat compound/isolation rule".
+ *
+ * Shared so the Today screen and the Program screen cut a day to exactly the
+ * same sets; two copies of this drifted apart the moment either was touched.
+ */
+export function plannedVolumeFloor(program, profile) {
+  if (!program?.days) return null;
+  const sets = [];
+  program.days.forEach(d => (d.exercises || []).forEach(ex => {
+    for (let i = 0; i < (ex.sets || 0); i++)
+      sets.push({ exercise_name: ex.name, pattern_key: ex.pattern, reps: 10, weight_kg: 40, set_type: 'working' });
+  }));
+  const out = {};
+  buildVolumeView(sets, profile?.trainingExperience || 'beginner', profile?.sex).forEach(g => {
+    const rows = g.split ? g.heads.filter(h => h.target).map(h => [h.key, h.direct, h.target])
+      : (g.target ? [[g.key, g.done, g.target]] : []);
+    rows.forEach(([k, done, tg]) => { out[k] = { done, min: tg.min }; });
+  });
+  return out;
+}

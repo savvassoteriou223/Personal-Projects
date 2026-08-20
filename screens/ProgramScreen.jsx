@@ -1,5 +1,5 @@
 import {
-  useState, useEffect, useCallback } from 'react';
+  useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -7,7 +7,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
-import { generateProgram, getRankedSplits, SPLITS } from './programGenerator';
+import { generateProgram, getRankedSplits, SPLITS, compactWorkout, COMPACT_COMPOUND_PATTERNS } from './programGenerator';
+import { plannedVolumeFloor } from './volumeEngine';
 import { GOAL_PARAMETERS } from './scienceEngine';
 import StudyChart from './StudyChart';
 import { getExerciseInsight } from './studiesLibrary';
@@ -41,6 +42,36 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
   const [loading, setLoading] = useState(true);
   const [openInfo, setOpenInfo] = useState(null); // 'research' | 'goal' | 'progression'
   const [showPaywall, setShowPaywall] = useState(false);
+  // Compact mode for the day you are looking at. Same deal as on Today: it is a
+  // decision about one session, so it is never persisted, and it resets whenever
+  // you back out to the day list — a trim left switched on would quietly halve
+  // every workout you started from this screen.
+  const [compactMode, setCompactMode] = useState(false);
+
+  // Shared with the Today screen so a day trims to the same sets from either
+  // entry point. Measures the whole program, hence keyed on program + profile
+  // rather than on the selected day.
+  const plannedVolume = useMemo(
+    () => plannedVolumeFloor(program, profile),
+    [program, profile?.trainingExperience, profile?.sex],
+  );
+  // Optional days are excluded, exactly as `compactProgram` excludes them: they
+  // are already the extra you do if you have time, so "trim the extra to its
+  // minimum" is not a decision worth a control.
+  const compactSelectedDay = useMemo(
+    () => (selectedDay && !selectedDay.optional ? compactWorkout(selectedDay, plannedVolume) : null),
+    [selectedDay, plannedVolume],
+  );
+  // What the list renders and what Start launches.
+  const servedDay = compactMode && compactSelectedDay ? compactSelectedDay : selectedDay;
+  // Duration, not minutes saved — "do I have time for this?" is the question the
+  // toggle exists to answer. A compound set costs ~3 min with its longer rest,
+  // isolation ~2, the same pricing the Today screen uses.
+  const dayMins = useMemo(() => {
+    const mins = d => (d?.exercises || []).reduce(
+      (n, e) => n + e.sets * (COMPACT_COMPOUND_PATTERNS.has(e.pattern) ? 3 : 2), 0);
+    return { full: mins(selectedDay), compact: mins(compactSelectedDay) };
+  }, [selectedDay, compactSelectedDay]);
 
   useFocusEffect(useCallback(() => { loadProgram(); }, []));
 
@@ -48,7 +79,7 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
     const user = await getCurrentUser();
     if (!user) { setLoading(false); return; }
     const [{ data: prof }, { data: block }] = await Promise.all([
-      supabase.from('profiles').select('weekly_workouts, session_length, goals, name, equipment, selected_split, trainingExperience').eq('id', user.id).single(),
+      supabase.from('profiles').select('weekly_workouts, session_length, goals, name, equipment, selected_split, trainingExperience, sex').eq('id', user.id).single(),
       supabase.from('program_blocks').select('block_index, block_start_date').eq('user_id', user.id).maybeSingle(),
     ]);
     if (prof) {
@@ -279,12 +310,13 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
           <View style={styles.headerNav}>
-            <Tappable onPress={() => setSelectedDay(null)} style={styles.backBtnWrapper}>
+            <Tappable onPress={() => { setSelectedDay(null); setCompactMode(false); }} style={styles.backBtnWrapper}>
               <Text style={styles.backBtn}>← {t('common.back')}</Text>
             </Tappable>
             <Tappable style={styles.startBtn} onPress={() => {
               setSelectedDay(null);
-              onStartWorkout && onStartWorkout({ ...selectedDay, trainingExperience: profile?.trainingExperience });
+              setCompactMode(false);
+              onStartWorkout && onStartWorkout({ ...servedDay, trainingExperience: profile?.trainingExperience });
             }}>
               <Text style={styles.startBtnText}>{t('program.start')}</Text>
             </Tappable>
@@ -295,16 +327,51 @@ export default function ProgramScreen({ onStartWorkout, onSplitChanged, previewD
           </>); })()}
         </View>
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+          {/* Compact toggle. Sits above the day so the set counts below it visibly
+              change when it flips — the trim is the point, and a toggle parked at
+              the bottom of a long list would hide its own effect. Same copy and
+              behaviour as Today's, because it is the same decision. */}
+          {compactSelectedDay && (
+          <Tappable
+            style={[styles.compactToggle, compactMode && styles.compactToggleOn]}
+            onPress={() => { animateLayout(); setCompactMode(v => !v); }}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: compactMode }}
+            accessibilityLabel={t('today.compact.a11y', { defaultValue: 'Compact mode — trim this session' })}
+          >
+            <View style={styles.compactToggleText}>
+              <Text style={[styles.compactTitle, compactMode && styles.compactTitleOn]}>
+                {t('today.compact.on', { defaultValue: 'Compact mode' })}
+              </Text>
+              <Text style={styles.compactSub}>
+                {compactMode
+                  ? t('today.compact.subOn', { defaultValue: 'Same exercises, fewer sets. Keep the weight and push the last set of each.' })
+                  : t('today.compact.subOff', { defaultValue: 'Short on time? Cut to the minimum that still counts toward your week.' })}
+              </Text>
+            </View>
+            {dayMins.compact > 0 && (
+              <View style={[styles.compactBadge, compactMode && styles.compactBadgeOn]}>
+                <Text style={[styles.compactBadgeText, compactMode && styles.compactBadgeTextOn]}>
+                  {t('today.compact.duration', {
+                    mins: compactMode ? dayMins.compact : dayMins.full,
+                    defaultValue: '~{{mins}} min',
+                  })}
+                </Text>
+              </View>
+            )}
+          </Tappable>
+          )}
+
           <View style={styles.scienceCard}>
             <Text style={styles.scienceLabel}>{t('program.scienceBasis')}</Text>
             <Text style={styles.scienceText}>{program.science_basis}</Text>
           </View>
-          {selectedDay.focus && (
+          {servedDay.focus && (
             <View style={styles.focusCard}>
-              <Text style={styles.focusText}>{selectedDay.focus}</Text>
+              <Text style={styles.focusText}>{servedDay.focus}</Text>
             </View>
           )}
-          {selectedDay.exercises.map((ex, i) => (
+          {servedDay.exercises.map((ex, i) => (
             <ExerciseCard key={i} ex={ex} isSimple={profile?.trainingExperience === 'beginner'} />
           ))}
         </ScrollView>
@@ -741,6 +808,27 @@ const styles = StyleSheet.create({
   progressionText: { fontSize: 13, color: colors.textMuted, lineHeight: 20 },
   focusCard: { backgroundColor: colors.surfaceElevated, borderRadius: 10, padding: 12, borderWidth: 0.5, borderColor: colors.border, marginBottom: 16 },
   focusText: { fontSize: 13, color: colors.textSecondary },
+
+  // Compact mode toggle. Deliberately identical to the Today screen's — it is
+  // the same control on the same decision, and two visual treatments would read
+  // as two different features.
+  compactToggle: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20,
+    backgroundColor: colors.surfaceInset, borderRadius: 10, padding: 12,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  compactToggleOn: { backgroundColor: colors.accentSoft, borderColor: colors.accentHair },
+  compactToggleText: { flex: 1, gap: 2 },
+  compactTitle: { fontSize: 15, fontWeight: '600', color: colors.textPrimary },
+  compactTitleOn: { color: colors.accent },
+  compactSub: { fontSize: 13, lineHeight: 19, color: colors.textSubtle },
+  compactBadge: {
+    backgroundColor: colors.surfaceRaised, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 0.5, borderColor: colors.border,
+  },
+  compactBadgeOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  compactBadgeText: { fontSize: 13, fontWeight: '700', color: colors.textMuted, fontVariant: ['tabular-nums'] },
+  compactBadgeTextOn: { color: colors.surfaceRaised },
 
   // Warnings
   warningsSection: { paddingHorizontal: 20, marginBottom: 8 },

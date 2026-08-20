@@ -22,6 +22,8 @@ import { checkReadyToProgress } from './programGenerator';
 import { colors } from '../lib/theme';
 import Tappable from '../components/Tappable';
 import WhySheet, { buildWhy, WhyMark } from '../components/WhySheet';
+import WorkoutShareSheet, { buildShareStats } from './WorkoutShareSheet';
+import { startOfWeek } from 'date-fns';
 
 const WORKOUT_DRAFT_KEY = '@helix_workout_draft';
 
@@ -197,6 +199,7 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
   const [showCoach, setShowCoach] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false); // free users tapping Coach mid-workout
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [shareStats, setShareStats] = useState(null); // set only when Share is tapped
   const [readinessLabel, setReadinessLabel] = useState(null); // 'Moderate' | 'Low' once applied
   const checkInResolved = useRef(false); // guards against a double-tap firing onDone twice
   // Latest `sets` for the readiness check-in effect below, which runs once on
@@ -735,6 +738,48 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
 
   const totalSets = sets.reduce((acc, ex) => acc + ex.completedSets.length, 0);
 
+  // Consecutive weeks with at least one session — the same definition Profile
+  // and the Coach use, so the number on a shared card matches the one in the
+  // app. The week just trained is added by hand: this runs on the finish screen,
+  // before the session is written, so a first-workout-of-the-week share would
+  // otherwise post a streak one short.
+  const currentStreakWeeks = async (userId) => {
+    const { data } = await supabase
+      .from('workout_sessions')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false })
+      .limit(400);
+    const weeks = new Set((data || []).map(s =>
+      startOfWeek(new Date(s.completed_at), { weekStartsOn: 1 }).toISOString().split('T')[0]));
+    weeks.add(startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0]);
+
+    let streak = 0;
+    let checkDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+    for (const wk of [...weeks].sort().reverse()) {
+      const diff = Math.round((checkDate - new Date(wk)) / (1000 * 60 * 60 * 24 * 7));
+      if (diff <= 1) { streak++; checkDate = new Date(wk); } else break;
+    }
+    return streak;
+  };
+
+  // Built on demand rather than kept in state: most sessions are never shared,
+  // and the streak query is not worth running for every finished workout.
+  const openShare = async () => {
+    let streakWeeks = 0;
+    try {
+      const user = await getCurrentUser();
+      if (user) streakWeeks = await currentStreakWeeks(user.id);
+    } catch (_) { /* a missing streak just drops the chip off the card */ }
+    setShareStats(buildShareStats({
+      workoutName: workout.name,
+      focus: workout.focus,
+      sets,
+      durationSec: Math.floor(((finishTime ?? Date.now()) - startTime.current) / 1000),
+      streakWeeks,
+    }));
+  };
+
   const saveWorkout = async () => {
     if (saving) return;
     const user = await getCurrentUser();
@@ -917,9 +962,23 @@ export default function WorkoutExecutionScreen({ workout, onFinish, onCancel, on
           </View>
         )}
 
+        {/* Above Save, not below it: Save leaves this screen, so a share button
+            underneath it would only ever be seen by someone who hasn't finished
+            yet. Kept secondary — saving the session is the action that matters,
+            sharing it is optional. */}
+        <Tappable style={styles.shareBtn} onPress={openShare} disabled={saving}>
+          <Text style={styles.shareBtnText}>{t('workout.share.action', { defaultValue: 'Share' })}</Text>
+        </Tappable>
+
         <Tappable style={[styles.saveBtn, saving && { opacity: 0.5 }]} onPress={saveWorkout} disabled={saving}>
           <Text style={styles.saveBtnText}>{saving ? t('workout.finish.saving') : t('workout.finish.save')}</Text>
         </Tappable>
+
+        <WorkoutShareSheet
+          visible={!!shareStats}
+          stats={shareStats}
+          onClose={() => setShareStats(null)}
+        />
       </ScrollView>
     );
   }
@@ -1699,6 +1758,12 @@ const styles = StyleSheet.create({
   overloadSug: { fontSize: 11, color: colors.textSubtle, lineHeight: 16 },
   saveBtn: { backgroundColor: colors.surfaceInverse, borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
   saveBtnText: { color: colors.surfaceRaised, fontSize: 15, fontWeight: '600' },
+  // Outlined, not filled — it has to sit next to Save without competing with it.
+  shareBtn: {
+    backgroundColor: 'transparent', borderRadius: 12, paddingVertical: 16, alignItems: 'center',
+    borderWidth: 0.5, borderColor: colors.border, marginBottom: 10,
+  },
+  shareBtnText: { color: colors.textSecondary, fontSize: 15, fontWeight: '600' },
 
   restWarningBanner: { backgroundColor: colors.dangerBg, borderBottomWidth: 0.5, borderBottomColor: colors.dangerHair, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
   restWarningText: { flex: 1, fontSize: 11, color: colors.danger, lineHeight: 16 },

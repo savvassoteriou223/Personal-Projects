@@ -555,7 +555,21 @@
       "all": "Todos",
       "noResults": "Ningún ejercicio coincide con tu búsqueda."
     },
-    "minimize": "Minimizar entrenamiento"
+    "minimize": "Minimizar entrenamiento",
+    "share": {
+      "title": "Comparte tu sesión",
+      "action": "Compartir",
+      "min": "MIN",
+      "sets": "SERIES",
+      "volume": "KG LEVANTADOS",
+      "more": "+{{n}} más",
+      "streak": "{{weeks}} semanas seguidas",
+      "tagline": "Entrenamiento basado en la ciencia",
+      "textOnly": "Esta versión solo puede compartir como texto.",
+      "message": "{{name}} — {{mins}} min, {{sets}} series, {{volume}} kg levantados. Registrado con Helix.",
+      "reps": "REPS",
+      "messageReps": "{{name}} — {{mins}} min, {{sets}} series, {{reps}} repeticiones. Registrado con Helix."
+    }
   },
   "coach": {
     "title": "Entrenador",

@@ -555,7 +555,21 @@
       "all": "Tous",
       "noResults": "Aucun exercice ne correspond à votre recherche."
     },
-    "minimize": "Réduire la séance"
+    "minimize": "Réduire la séance",
+    "share": {
+      "title": "Partagez votre séance",
+      "action": "Partager",
+      "min": "MIN",
+      "sets": "SÉRIES",
+      "volume": "KG SOULEVÉS",
+      "more": "+{{n}} de plus",
+      "streak": "{{weeks}} semaines d’affilée",
+      "tagline": "Entraînement fondé sur la science",
+      "textOnly": "Cette version ne peut partager qu’en texte.",
+      "message": "{{name}} — {{mins}} min, {{sets}} séries, {{volume}} kg soulevés. Suivi avec Helix.",
+      "reps": "RÉPS",
+      "messageReps": "{{name}} — {{mins}} min, {{sets}} séries, {{reps}} répétitions. Suivi avec Helix."
+    }
   },
   "coach": {
     "title": "Coach",

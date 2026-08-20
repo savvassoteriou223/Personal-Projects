@@ -555,7 +555,21 @@
       "all": "Alle",
       "noResults": "Keine Übungen entsprechen deiner Suche."
     },
-    "minimize": "Training minimieren"
+    "minimize": "Training minimieren",
+    "share": {
+      "title": "Session teilen",
+      "action": "Teilen",
+      "min": "MIN",
+      "sets": "SÄTZE",
+      "volume": "KG BEWEGT",
+      "more": "+{{n}} weitere",
+      "streak": "{{weeks}} Wochen in Folge",
+      "tagline": "Wissenschaftlich fundiertes Training",
+      "textOnly": "Diese Version kann nur als Text teilen.",
+      "message": "{{name}} — {{mins}} Min, {{sets}} Sätze, {{volume}} kg bewegt. Aufgezeichnet mit Helix.",
+      "reps": "WDH",
+      "messageReps": "{{name}} — {{mins}} Min, {{sets}} Sätze, {{reps}} Wiederholungen. Aufgezeichnet mit Helix."
+    }
   },
   "coach": {
     "title": "Coach",

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase, getCurrentUser } from '../supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateProgram, getVolumeTargets, compactWorkout, COMPACT_COMPOUND_PATTERNS, detectPlateaus, detectDeloadNeeded, generateDeloadWeek, isBlockComplete, getBlockLength, applyPermanentEdit, applyContraindicationFilters, normalizeEquipment, getConditionsFromInjuryProfile, applyContraindicationsToWorkout, computeDislikedExerciseIds, dislikedExerciseIdsFromNotes, getProactiveCoachPrompt, getEligibleGoalMilestones, rebalanceForCompletedOptionalDays, INJURY_BODY_PARTS } from './programGenerator';
-import { buildVolumeView } from './volumeEngine';
+import { buildVolumeView, plannedVolumeFloor } from './volumeEngine';
 import { maybeSendProactiveNudge } from '../lib/notificationService';
 import { MOVEMENT_PATTERNS } from './movementLibrary';
 import { format, isToday, isYesterday, startOfWeek, subDays } from 'date-fns';
@@ -99,24 +99,12 @@ export default function TodayScreen({ onStartWorkout, onPreviewWorkout, onAskCoa
 
   // Compact mode. `compactWorkout` scales each exercise by how far the WEEK sits
   // above that muscle's minimum, so the trim reflects what has actually been
-  // trained rather than a flat percentage. The full program is measured (not
-  // this week's logged sets) because the question is "how much of the planned
-  // week is above the floor", which is a property of the program.
-  const plannedVolume = useMemo(() => {
-    if (!program?.days) return null;
-    const sets = [];
-    program.days.forEach(d => (d.exercises || []).forEach(ex => {
-      for (let i = 0; i < (ex.sets || 0); i++)
-        sets.push({ exercise_name: ex.name, pattern_key: ex.pattern, reps: 10, weight_kg: 40, set_type: 'working' });
-    }));
-    const out = {};
-    buildVolumeView(sets, profile?.trainingExperience || 'beginner', profile?.sex).forEach(g => {
-      const rows = g.split ? g.heads.filter(h => h.target).map(h => [h.key, h.direct, h.target])
-        : (g.target ? [[g.key, g.done, g.target]] : []);
-      rows.forEach(([k, done, tg]) => { out[k] = { done, min: tg.min }; });
-    });
-    return out;
-  }, [program, profile?.trainingExperience, profile?.sex]);
+  // trained rather than a flat percentage. Shared with the Program screen's
+  // day detail so both trim a day to the same sets.
+  const plannedVolume = useMemo(
+    () => plannedVolumeFloor(program, profile),
+    [program, profile?.trainingExperience, profile?.sex],
+  );
 
   const compactWorkoutToday = useMemo(
     () => (todayWorkout ? compactWorkout(todayWorkout, plannedVolume) : null),

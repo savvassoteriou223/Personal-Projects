@@ -160,7 +160,12 @@ const ID_MAP = {
   'barbell front squat':                         '0042', // Barbell Front Squat
   'smith machine squat':                         '0770', // Smith Squat
   'hack squat':                                  '0743', // Sled Hack Squat
-  'pendulum squat':                              '0743', // closest available
+  // No entry for 'pendulum squat' on purpose. It used to point at 0743 (Sled
+  // Hack Squat) as the "closest available", but the whole point of the pendulum
+  // is the arc — the machine puts you through a curved path with a far more
+  // upright torso than a hack squat's fixed rails. Showing the hack squat clip
+  // teaches the wrong movement, and ExerciseGifThumb renders nothing at all when
+  // a name has no gif, so no clip is the honest result.
   '45 leg press':                                '0739', // Sled 45° Leg Press
   'bulgarian split squat':                       '0410', // Dumbbell Single Leg Split Squat
   'bulgarian split squat bodyweight':            '2368', // Split Squats (Body Weight)

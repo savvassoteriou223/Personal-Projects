@@ -555,7 +555,21 @@
       "all": "全部",
       "noResults": "没有符合搜索的动作。"
     },
-    "minimize": "最小化训练"
+    "minimize": "最小化训练",
+    "share": {
+      "title": "分享你的训练",
+      "action": "分享",
+      "min": "分钟",
+      "sets": "组数",
+      "volume": "总重量 (公斤)",
+      "more": "还有 {{n}} 个",
+      "streak": "连续 {{weeks}} 周",
+      "tagline": "有科学依据的训练",
+      "textOnly": "此版本只能以文字分享。",
+      "message": "{{name}} — {{mins}} 分钟，{{sets}} 组，{{volume}} 公斤。使用 Helix 记录。",
+      "reps": "次数",
+      "messageReps": "{{name}} — {{mins}} 分钟，{{sets}} 组，{{reps}} 次。使用 Helix 记录。"
+    }
   },
   "coach": {
     "title": "教练",
