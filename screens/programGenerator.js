@@ -1029,10 +1029,36 @@ export function selectSplit(profile) {
 const SPLIT_DAYS = {
   full_body_2x: f => [
     { id: 'full_body_a', name: 'Full Body A', focus: 'Squat · press · row', slots: [
-      ['squat_pattern', [4, 5, 5]], ['chest_horizontal_push', [4, 4, 5]], ['back_horizontal_pull', [5, 5, 5]], ['shoulders_side_delt', [3, 4, 6]], ['triceps', [3, 6, 6], null, 'stretch'], (f ? ['calves', [3, 6, 6]] : ['biceps', [2, 3, 4], null, 'contracted']), (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [6, 6, 6], 'walking_lunge']), ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['core', [3, 6, 6]]
+      ['squat_pattern', [4, 5, 5]], ['chest_horizontal_push', [4, 4, 5]],
+      // back_inner, not back_horizontal_pull: this is the only row slot in the
+      // whole 2-day split that can carry the back:mid (rhomboids/mid-traps) head
+      // — headCoverage.mjs found it untrained. back_vertical_pull (Day B) already
+      // covers lats, so the weekly "back" total and lat coverage are unaffected;
+      // only which head this particular row credits changes. Free fix: same
+      // slot, same sets, no session-cap cost.
+      ['back_inner', [5, 5, 5]], ['shoulders_side_delt', [3, 4, 6]],
+      // Advanced was 6 — exactly the single slot's raw count, with no second
+      // triceps slot anywhere in the week to add to it. That is short of the
+      // 8-set floor (VOLUME_TARGETS.triceps.advanced.min) by construction, not
+      // by rounding. Raised the advanced count only; beginner/intermediate
+      // already clear their floors.
+      ['triceps', [3, 6, 8], null, 'stretch'], (f ? ['calves', [3, 6, 6]] : ['biceps', [2, 3, 4], null, 'contracted']),
+      // Male advanced glutes: 6 against MALE_GLUTES.advanced.min 8. This is the
+      // ONLY glute_focused slot men get in this split (the second slot is traded
+      // for calves — see splitDesign.mjs's Full Body 2x note); raising ITS
+      // advanced count is a plain set bump, not a reversal of that trade.
+      (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [6, 6, 8], 'walking_lunge']), ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['core', [3, 6, 6]]
     ] },
     { id: 'full_body_b', name: 'Full Body B', focus: 'Hinge · incline · pull', slots: [
-      ['squat_pattern', [4, 5, 5], 'leg_press'], ['hip_hinge', [3, 4, 4], 'conventional_deadlift'], ['chest_incline_push', [4, 4, 5]], ['back_vertical_pull', [5, 5, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 4, 6]], ['rear_delt', [4, 6, 6]], (f ? ['biceps', [3, 6, 6], null, 'stretch'] : ['biceps', [2, 3, 4], null, 'stretch']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['calves', [3, 6, 6]])
+      ['squat_pattern', [4, 5, 5], 'leg_press'], ['hip_hinge', [3, 4, 4], 'conventional_deadlift'], ['chest_incline_push', [4, 4, 5]], ['back_vertical_pull', [5, 5, 5]], ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [2, 4, 6]],
+      // Same story as triceps above: the only rear_delt slot in the split, advanced
+      // was 6 against an 8-set floor.
+      ['rear_delt', [4, 6, 8]],
+      // Female advanced biceps: Day A gives females calves instead of biceps (the
+      // sex tilt above), so this Day B slot is the ONLY biceps slot a woman gets
+      // all week. 6 was short of the 8-set floor; men reach 8 through two slots
+      // (this one plus Day A) and are untouched.
+      (f ? ['biceps', [3, 6, 8], null, 'stretch'] : ['biceps', [2, 3, 4], null, 'stretch']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['calves', [3, 6, 6]])
     ] },
   ],
   full_body_3x: f => [
@@ -1102,7 +1128,12 @@ const SPLIT_DAYS = {
       ['shoulders_vertical_push', [3, 3, 3]], ['shoulders_side_delt', [3, 4, 6]], ['shoulders_side_delt', [2, 4, 6]], ['rear_delt', [2, 3, 5]], ['rear_delt', [2, 3, 5]]
     ] },
     { id: 'legs', name: 'Legs', focus: 'Full lower body', slots: [
-      ['squat_pattern', [3, 4, 4]], ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['squat_pattern', [3, 3, 3], 'leg_press'], (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [6, 6, 6], 'walking_lunge']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['calves', [2, 3, 3]]), (f ? ['calves', [2, 3, 3]] : ['quad_isolation', [2, 3, 3]]), (f ? ['quad_isolation', [2, 3, 3]] : ['hamstring_isolation', [3, 4, 4]]), (f ? ['hamstring_isolation', [3, 4, 4]] : ['calves', [2, 3, 3], 'seated_calf_raise']), ...(f ? [['calves', [2, 3, 3], 'seated_calf_raise']] : [])
+      ['squat_pattern', [3, 4, 4]], ['hip_hinge', [3, 4, 4], 'romanian_deadlift'], ['squat_pattern', [3, 3, 3], 'leg_press'],
+      // Men: this is the ONLY glute_focused slot (the second is traded for a
+      // calf slot, same product decision as Full Body 2x). Advanced was 6
+      // against MALE_GLUTES.advanced.min 8 — this day only runs 8 exercises for
+      // men, one under the 9-exercise cap, so the raise costs nothing.
+      (f ? ['glute_focused', [5, 5, 5], 'walking_lunge'] : ['glute_focused', [6, 6, 8], 'walking_lunge']), (f ? ['glute_focused', [5, 5, 5], 'hip_abduction_machine'] : ['calves', [2, 3, 3]]), (f ? ['calves', [2, 3, 3]] : ['quad_isolation', [2, 3, 3]]), (f ? ['quad_isolation', [2, 3, 3]] : ['hamstring_isolation', [3, 4, 4]]), (f ? ['hamstring_isolation', [3, 4, 4]] : ['calves', [2, 3, 3], 'seated_calf_raise']), ...(f ? [['calves', [2, 3, 3], 'seated_calf_raise']] : [])
     ] },
   ],
   full_body_4x: f => [
@@ -2865,9 +2896,23 @@ function deduplicateDayExercises(exercises, equipment, level = 'intermediate', e
     // glute bridge→single-leg glute bridge), which produced redundant pairs.
     // Instead, concentrate the volume: merge this slot's sets into the first
     // occurrence (capped), so the day never shows two versions of one movement.
+    //
+    // Cap was 8. That is below the advanced/optimal floor for glutes (10) and
+    // side delts (10) — muscles whose SPLIT_DAYS design deliberately runs two
+    // slots to reach that floor (e.g. chest_back_shoulders_legs_4x's leg day:
+    // walking lunge + hip abduction machine). A dumbbell-only or bodyweight-only
+    // lifter has just ONE loaded/available exercise for some of those patterns
+    // (getAllExercisesForPattern drops bodyweight-only alternatives once a
+    // loaded one exists — see its own comment), so both slots collapse onto the
+    // same exercise and the volume that should have reached 10 was being cut to
+    // 8 here, silently under-training the muscle for exactly the users with the
+    // least equipment choice. Raising the cap to 10 fixes it without touching
+    // the split tables or the exercise pool: the two slots' sets were already
+    // designed to sum to the target, this pass was just the thing throwing the
+    // remainder away.
     const first = firstById.get(ex.id) || out.find(o => o && o.name === ex.name);
     if (first && typeof first.sets === 'number' && typeof ex.sets === 'number') {
-      first.sets = Math.min(8, first.sets + ex.sets);
+      first.sets = Math.min(10, first.sets + ex.sets);
     }
     // drop the duplicate (its volume has been folded into `first`)
   }

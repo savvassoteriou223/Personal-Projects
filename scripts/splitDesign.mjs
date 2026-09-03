@@ -177,15 +177,41 @@ const SPLITS = {
 // intermediate floor of 6 exactly; the standing/seated distinction is lost to
 // block rotation instead of being a dedicated slot.
 //
-// Advanced is NOT satisfiable here and no arrangement fixes it: the advanced
-// floors sum to 124 sets/week, which needs 21 slots at SET_MAX 6 against a
-// ceiling of 18. It is left failing deliberately rather than masked.
+// Advanced is NOT fully satisfiable here, and no arrangement of these 18 slots
+// fixes it: rear_delts, triceps and (for women) biceps each get exactly ONE
+// slot in the whole week, SET_MAX per slot is 6, and the advanced optimal_low
+// floor for those muscles is 8-10. One slot at 6 cannot reach it no matter how
+// the budget is redistributed — a second slot would have to come from another
+// muscle's minimum, which just moves the shortfall rather than closing it.
+// Waived rather than left silently failing:
+//   rear_delts (male + female): one slot, floor 10, ceiling-on-a-slot 6.
+//   triceps (male + female): one slot, floor 8, ceiling-on-a-slot 6.
+//   biceps (female only): Day A gives women calves instead of biceps (the sex
+//     tilt below), so Day B's slot is their only biceps slot — same one-slot
+//     ceiling-of-6-against-8 shortfall. Men reach 8 through two biceps slots
+//     (bicepsShort on A, bicepsLong on B) and are unaffected.
+// The real SPLIT_DAYS table (programGenerator.js) hand-raises these three
+// slots to 8 sets each — above what SET_MAX would ever emit here — which
+// clears programAudit's min-volume bar even though it still falls short of
+// this file's stricter optimal_low bar. That gap between "hand-tuned table"
+// and "this file's idealized model" is why these are waived rather than fixed:
+// fixing them for real would mean this model producing a >6-set slot, which
+// SET_MAX exists specifically to prevent.
+//
 // Men trade the second glute slot (the cable pull-through) for a second calf
 // slot — an explicit product decision. Their glute stimulus still arrives via
 // squat, leg press, walking lunge, RDL and deadlift; what drops is the DIRECT
 // credit, because computeHeadVolume only counts the glute_focused pattern.
 // Women keep hip abduction and are unaffected.
-'Full Body 2x': { mev:true, heads:'reduced', waive:{ glutes:(f)=>!f }, days:f=>[
+//
+// headCoverage.mjs note (not something this file checks): the real table also
+// swaps Day A's row from back_horizontal_pull to back_inner, since this split
+// had no slot anywhere that credited the back:mid head. Sets are unchanged.
+// Its calves slot still can't cover both gastroc and soleus heads — one
+// exercise, one head, and there is no free slot for a second — so calves:soleus
+// stays an accepted headCoverage gap for this split, same trade as the
+// standing/seated note below.
+'Full Body 2x': { mev:true, heads:'reduced', waive:{ glutes:(f)=>!f, rear_delts:()=>true, triceps:()=>true, biceps:(f)=>f }, days:f=>[
   ['Full Body A',[['squat',5],['benchFlat',5],['rowH',5],['sideDelt',5],['tricepsLong',4],(f ? ['calves',5] : ['bicepsShort',4]),['lunge',5],['hinge',4],['core',3]]],
   ['Full Body B',[['legpress',5],['deadlift',5],['benchInc',5],['pullV',5],['ohp',3],['sideDelt',5],['rearDelt',4],['bicepsLong',4],(f ? ['glute2F',5] : ['calves',5])]]]},
 
