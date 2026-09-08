@@ -12,6 +12,13 @@ All data is synthetic and generated in-browser; the analytics computed on top of
 
 **[Live demo](https://savvassoteriou223.github.io/Personal-Projects/ledgerline/)** · [Source and write-up](ledgerline/)
 
+### [Helix](https://github.com/savvassoteriou223/Personal-Projects/blob/main/helix) — fitness tracking app
+
+A React Native fitness tracking app with a dark green/mint palette and Bebas Neue typography, built to compete with
+apps like JEFIT, Hevy, and Gymaholic. Features workout execution and exercise visualization screens, structured
+program tracking, and a coaching layer. Completed closed testing on Google Play, working toward production release.
+
+**[Source](https://github.com/savvassoteriou223/Personal-Projects/blob/main/helix)**
 ---
 
 Built by Savvas Soteriou.
