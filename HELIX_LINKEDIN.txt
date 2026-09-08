@@ -1,0 +1,332 @@
+================================================================================
+HELIX - FULL PROJECT ANALYSIS + LINKEDIN COPY
+Verified against source at build 54 (versionCode 54), 3 September 2026
+Tests: 218/218 pass  |  Harnesses: 792/792 programs, 24/30 head coverage
+(1 documented gap), 66/66 splits
+================================================================================
+
+--------------------------------------------------------------------------------
+PART 1 - READY TO PASTE: LINKEDIN "PROJECTS" SECTION
+Plain text, no markdown (LinkedIn does not render markdown). ~2,000 chars.
+Title / date / URL fields go in LinkedIn's own boxes; description below.
+--------------------------------------------------------------------------------
+
+TITLE:  Helix - science-based training app (Android, Google Play)
+DATES:  April 2026 - Present
+URL:    https://play.google.com/store/apps/details?id=com.helixfit.app
+
+DESCRIPTION:
+
+Solo-built React Native / Expo app, live on Google Play since July 2026.
+
+Helix generates resistance-training programmes from published research rather
+than from a language model. A deterministic engine turns 183 exercises across
+23 movement patterns into one of 11 splits, filtered by the user's equipment,
+training age, sex, goals and injuries - with per-muscle weekly set counts
+solved to land inside published volume ranges.
+
+The programme engine is verified, not asserted. Three automated harnesses run
+against the real generator on every change: volume-in-range and correct
+muscle-day assignment (programAudit), muscle-HEAD level coverage
+(headCoverage), and every split x tier x sex combination (splitDesign):
+792/792 programs clean, 24/30 head-coverage checks clean (one documented,
+session-budget-constrained gap), 66/66 splits.
+
+The most interesting piece is the Adaptive Response Engine: it fits a per-lift
+adaptation-rate model from passively logged sets (Epley est-1RM -> OLS slope +
+R-squared, each with a confidence score), ranks candidate experiments by value
+of information, designs a pre-registered two-arm n-of-1 trial with the outcome
+measure and decision rule locked before it starts, edits the programme to run
+it, then judges the result statistically. It reports null results as real
+findings and stays silent below 60 logged sets and 4 weeks of history, because
+it cannot model the user honestly yet.
+
+Recent work: a finish-screen share flow (a 4:5 summary card plus a 9:16
+transparent "story sticker" headlining a PR or streak, only when one
+genuinely happened), a paywall that now reads its trial and savings claims
+from the live store offering instead of hardcoded copy, and a fix to the AI
+coach reading the wrong training week against the user's own charts.
+
+Stack: React Native 0.85 / React 19, Expo SDK 56, Supabase (Postgres + RLS, 27
+migrations), 5 Deno edge functions, Anthropic Claude with tool use for the
+programme-editing coach, RevenueCat, Sentry, i18next across 8 languages at
+100% coverage with a build-failing drift test. ~38k LOC, 218 unit tests, 153
+commits.
+
+
+--------------------------------------------------------------------------------
+PART 2 - THE FULL ANALYSIS (background material, not for pasting)
+--------------------------------------------------------------------------------
+
+WHAT IT IS, IN ONE LINE
+
+An Android fitness app that generates resistance-training programmes from
+published research tables via a deterministic engine, then runs an n-of-1
+experiment loop on your logged data to find what actually works for your body.
+
+THE CORE DISTINCTION: the AI does not write the workout. Research tables do. The
+AI coach is a separate layer that edits an existing programme. This is the
+differentiator - most competitors claim the opposite, and blurring the two
+destroys the pitch.
+
+
+1. THE PROGRAMME ENGINE
+   screens/programGenerator.js - 3,557 lines, deterministic, no LLM in the path.
+
+   Training splits ....... 11 (2-6 days/week: Full Body 2x/3x/4x/5x, Upper/
+                           Lower 4x and 6x, PPL 3x and 6x, a chest-back-
+                           shoulders-legs 4x split, a hybrid 3x split, and a
+                           PPL/Upper/Lower 5x hybrid)
+   Exercises ............. 183 across 23 movement patterns
+                           (screens/movementLibrary.js, 4,320 lines)
+   Inputs ................ goal, training age, sex, days available, session
+                           length, equipment, injuries, health conditions, sports
+   Equipment tiers ....... full gym / limited (dumbbells) / bodyweight-only -
+                           bodyweight users get a complete programme, back and
+                           biceps included
+   Sex-specific .......... women get glute-tilted accessories, men quad-tilted;
+                           compound base identical, volume in range for both
+
+   MUSCLE-HEAD RESOLUTION is the technical flex: it distinguishes upper/mid/lower
+   chest, both triceps heads, both biceps heads, gastrocnemius vs soleus. Most
+   apps program "chest day."
+
+   Both the exercise pool and the split count grew materially since the last
+   pass: exercises rose from 163 to 183 (new cable/machine chest, triceps,
+   back, forearm and core movements; several misfiled exercises reassigned
+   to the correct muscle head), and the audited split count rose from 10 to
+   11 as the harness rewrite below stopped letting the ranking algorithm hide
+   splits that were never actually generated.
+
+   VERIFICATION HARNESSES (scripts/) - the part an engineering audience respects:
+     programAudit.mjs   sweeps generated programmes for weekly sets per muscle
+                        inside research range, correct muscle on correct day,
+                        no duplicated work. Rewritten to pin every split
+                        explicitly rather than letting selectSplit() choose,
+                        after an earlier version audited only whichever splits
+                        the ranking happened to pick and never touched the rest.
+                        792/792 clean.
+     headCoverage.mjs   every muscle HEAD trained, not just every muscle.
+                        24/30 clean. The one gap: Full Body 2x's calf slot can
+                        only run one calf exercise per week per sex, so it
+                        covers the gastrocnemius head and misses the soleus
+                        head - both of that split's sessions are already at
+                        their 9-exercise session-time budget, so closing this
+                        needs a slot rotation, not a quick fix, and it is
+                        tracked rather than hidden.
+     splitDesign.mjs    every split x experience tier x sex combination.
+                        66/66 pass, 7 of those via a documented waived-by-design
+                        list (e.g. Full Body 2x at advanced tier cannot reach
+                        the rear-delt/triceps floor from a single weekly slot -
+                        adding a second slot would blow the session's exercise
+                        budget, so the shortfall is accepted and logged, not
+                        masked as a pass).
+
+   Set counts are solved offline and baked into a SPLIT_DAYS table; they are never
+   hand-edited without re-running the harnesses.
+
+
+2. THE ADAPTIVE RESPONSE ENGINE
+   lib/adaptiveResponseEngine.js + lib/individualModel.js + lib/areStore.js -
+   the genuine moat, live in production. Spot-checked against source for this
+   revision; the mechanism below is unchanged from the last verified pass.
+
+   Every other app applies population averages to individuals. This one runs an
+   actual experiment:
+
+     1. Individual Response Model - Epley est-1RM per set -> per-day working max
+        -> OLS slope + R-squared = your adaptation rate per lift, each with an
+        honest confidence score
+     2. Value-of-information ranking - finds the parameter it is LEAST certain
+        about that MATTERS MOST to you and is RESOLVABLE in a reasonable trial
+     3. Pre-registered protocol - two arms, one variable, outcome measure and
+        decision rule locked BEFORE the trial starts
+     4. Programme is edited to run the trial
+     5. Result judged with real statistics, verdict written permanently into
+        your model
+
+   The rigour guardrails are the product:
+     - Explicit consent required; user can end a trial at any time
+     - ONE TRIAL AT A TIME, enforced at the database level (a CHECK constraint
+       in the migration, not just app logic) - two would contaminate each
+       other and neither answer could be trusted
+     - "NO DIFFERENCE" IS A REAL, REPORTED RESULT - it rules that variable out
+       for you permanently
+     - SILENT below 60 logged sets AND 4 weeks of history (both constants live
+       in lib/areStore.js) - it will not model you dishonestly
+     - Will not propose a trial whose outcome it cannot measure
+
+   The willingness to return a null result is the credibility.
+
+
+3. THE AI COACH
+   Supabase Edge Function supabase/functions/ai-coach/index.ts
+   -> Claude Sonnet with tool use + prompt caching.
+
+   CAN: replace/add/remove exercises, adjust sets, reps, effort - permanently or
+   next-session-only; return ranked alternatives with reasoning when you don't
+   name a substitute; remember dislikes, injuries, preferences and goals across
+   sessions (viewable and deletable); work mid-workout on the exercise in front
+   of you; write a weekly narrative review.
+
+   A real bug closed since the last pass: the coach was reading name-only sets
+   through a path that discards any set missing both reps and weight, so its
+   volume table read all-zero for every muscle while the same-screen chart it
+   sat next to was full. It also lacked any date anchor, so a session from
+   yesterday could read as old, and its weekly review cached a still-in-progress
+   week's summary for the rest of that week. Fixed by making the coach and the
+   chart pull rows through the same path, anchoring "today," and reviewing only
+   the week that has actually ended.
+
+   CONTEXT IT RECEIVES: profile, full programme, equipment, injuries, weekly
+   volume vs target, PRs, recent lifting and cardio, nutrition logs, plateau and
+   deload status, recovery check-ins, bodyweight trend, and everything it has
+   remembered.
+
+   Constrained to cite the 74-study library (screens/studiesLibrary.js, 71 unique
+   citations) rather than improvise.
+
+   CANNOT: change your split, adjust nutrition targets, reschedule training days,
+   set your working weights, or contact you between sessions.
+
+   Honest framing: it is a PROGRAMME EDITOR WITH YOUR TRAINING FILE OPEN, not a
+   chatbot. 100 messages/month, premium only.
+
+
+4. EVERYTHING ELSE THAT SHIPS
+   - Workout logging - sets, reps, weight, rest timer, mid-session swaps
+     (screens/WorkoutExecutionScreen.jsx, 1,861 lines)
+   - Workout sharing - a Share button on the finish screen opens a 4:5 preview
+     card (duration, sets, volume, best set per exercise, streak) before the OS
+     share sheet; a bodyweight-only session falls back to reps instead of a
+     false "0 KG LIFTED". Guarded behind try/require so an older binary
+     degrades to plain-text share instead of crashing.
+   - Story sticker - a 9:16 transparent PNG headline for a finished session,
+     built to sit on top of a photo the user was already going to post rather
+     than ask to BE the post. lib/achievements.js walks a fixed priority
+     ladder over data already stored (PR, streak milestone, heaviest session,
+     muscles trained) and always returns the rarest thing that's TRUE - a
+     first-ever exercise is explicitly not a PR, and a session has to beat its
+     predecessor by a 3% margin with at least three prior sessions logged
+     before it counts as "heaviest," so the sticker can't manufacture a
+     compliment nobody would believe.
+   - Day trimming - a program day can now be cut to a shorter session from the
+     Program screen, not just from Today; both screens share one
+     plannedVolumeFloor() so a trim means the same thing in both places.
+   - Exercise demonstration gifs - re-hosted into a Supabase table rather than
+     hotlinked, so playback doesn't depend on a third-party catalogue staying
+     up or a key surviving in the client bundle.
+   - Muscle recovery map - front/back body SVG anatomy, fresh vs recovering
+   - Weekly volume tracking - sets per muscle vs research target, head-level
+     detail
+   - Nutrition - targets that shift on training vs rest days; photo, voice, text
+     and barcode logging (GPT-4o-mini + Open Food Facts); 7-day protein history
+   - Body composition - weight trend, 7-day moving average, progress to target
+   - Cardio logging, PRs, plateau and deload detection with the research behind
+     each
+   - Recovery check-ins - self-reported sleep/soreness/energy adjusts session
+     effort
+   - The "why" layer - tap almost any number, see the study
+
+
+5. TECH STACK
+   Client ........ React Native 0.85.3 / React 19.2.3, Expo SDK 56.0.4, new
+                   architecture
+   Navigation .... React Navigation (bottom tabs)
+   Backend ....... Supabase - Postgres + auth + RLS, 27 migrations (applied
+                   manually; migration count is a floor, not a live schema
+                   count)
+   Serverless .... 5 Deno Edge Functions (ai-coach, nutrition-ai,
+                   barcode-lookup, delete-account, revenuecat-webhook)
+   AI ............ Anthropic Claude Sonnet (coach, tool use + prompt caching),
+                   OpenAI GPT-4o-mini (nutrition vision/parsing)
+   Payments ...... RevenueCat (react-native-purchases) + server-side webhook;
+                   paywall now derives its trial and price-saving claims from
+                   the live store offering rather than hardcoded copy
+   Monitoring .... Sentry (@sentry/react-native); OTA updates via expo-updates
+   i18n .......... i18next 26.3.1 - 8 languages at 100% (EN/DE/ES/FR/IT/PT/RU/
+                   ZH), 1,049 keys, a Node test asserts zero missing keys, zero
+                   orphaned keys, and matching {{placeholder}} tokens per
+                   locale, and fails the suite on drift
+   Design system . lib/theme.js as single source of truth (38 colour tokens);
+                   1,410 raw hex values migrated out in the original pass
+   Tests ......... 218 Node unit tests + 3 generator harnesses + a signed-in
+                   web smoke test (scripts/smokeWeb.mjs)
+   Scale ......... ~38,000 lines of .js/.jsx/.ts/.tsx outside node_modules,
+                   android and ios (rough wc -l sweep, not a precise figure),
+                   153 commits total, versionCode 54 as of 3 September 2026.
+                   16 explicit "sync/bump versionCode" commits appear in the
+                   git history - a floor on production builds, not a count,
+                   since EAS auto-increments the build number on some builds
+                   without a matching source commit.
+
+   Live on Google Play as com.helixfit.app since 11 July 2026.
+   iOS configured, not shipped.
+
+   Tooling in progress, not a shipped feature: scripts/researchScan.mjs scans
+   PubMed for new meta-analyses, systematic reviews and RCTs relevant to the
+   goals the app programs for, filtered to exclude clinical/rehab populations,
+   and reports them for human review. It deliberately does not write into
+   studiesLibrary.js - new papers aren't automatically better than what's
+   already curated, and a single weak study should never silently move a
+   volume target.
+
+
+6. HONEST WEAKNESSES - DO NOT OVERSELL THESE
+   - It is a LOGGING APP FIRST - a user who does not log gets little
+   - The Adaptive Response Engine needs 60 logged sets and 4 weeks of history;
+     it is a retention asset, not an install-day hook
+   - The coach CANNOT INITIATE - no notifications, no check-ins
+   - Coaching visuals are gifs and written cues, not video - a 3D exercise
+     figure viewer exists in the code (screens/Exercise3DModal.jsx) but is not
+     imported or reachable from any screen; treat as unshipped
+   - Sharing is ONE-WAY OUT of the app (finish-screen share sheet to the OS
+     share surface) - there is still no in-app social layer: no feed, no
+     follows, no leaderboards
+   - NO WEARABLE / HEALTH INTEGRATION. Health Connect was removed outright after
+     a Play policy rejection; all four health permissions are blocked in the
+     manifest. Recovery is self-reported.
+   - Verified by harnesses and smoke tests, not a large device beta
+
+
+7. CLAIMS TO NEVER MAKE
+   - Anything implying AI WRITES THE WORKOUT - it does not, and that is the
+     differentiator
+   - HRV, heart-rate, sleep or STEP TRACKING - removed for Play policy
+   - iOS AVAILABILITY
+   - Any specific USER COUNT, RATING OR RESULT - there is no data to support one
+
+
+--------------------------------------------------------------------------------
+PART 3 - POSITIONING NOTE FOR LINKEDIN
+--------------------------------------------------------------------------------
+
+LinkedIn is an engineering and recruiter audience, not a consumer one. The
+strongest angle is NOT "I built a fitness app" - that reads as a side project.
+It is:
+
+    "I built a deterministic programme engine with a formal verification
+     harness and an n-of-1 experimentation loop, and shipped it to Play
+     solo, with a bug fix and feature cadence that keeps going."
+
+That is a systems-engineering story that happens to be in fitness. Lead with the
+harnesses and the statistics, not the workouts.
+
+THREE DIFFERENT PLACES, THREE DIFFERENT COPY JOBS:
+  - PROJECTS section  - title + dates + URL + ~2,000 char description.
+                        That is Part 1 above.
+  - FEED POST         - what your network sees, ~3,000 chars, rewards a hook in
+                        the first two lines, one idea only, no stack list.
+  - EXPERIENCE entry  - framed as a role with outcomes, not a description of
+                        software.
+
+================================================================================
+Generated from the codebase at build 54, 3 September 2026. If the app changes
+this document is stale - the harnesses in scripts/ are the authority on what
+the programme engine does. Harness numbers here (792/792, 24/30, 66/66) are
+from a real run against commit e96da68, which closed every advanced-tier
+volume gap the previous audit had open. Do not carry forward the old
+288/30/60 figures from the build-45 draft - they predate an audit rewrite
+that changed what is even being counted (10 splits -> 11, and the ranking
+no longer hides untested splits from the sweep).
+================================================================================

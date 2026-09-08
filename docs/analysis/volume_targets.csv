@@ -1,0 +1,37 @@
+muscle,experience_tier,minimum_sets,optimal_low,optimal_high,optimal_range,note
+chest,beginner,6,6,9,6-9,Include both flat and incline pressing for upper/lower fibre development
+chest,intermediate,10,10,15,10-15,Include both flat and incline pressing for upper/lower fibre development
+chest,advanced,12,14,20,14-20,Include both flat and incline pressing for upper/lower fibre development
+back,beginner,8,8,10,8-10,Include vertical pulls (lat width) and horizontal pulls (back thickness)
+back,intermediate,10,10,20,10-20,Include vertical pulls (lat width) and horizontal pulls (back thickness)
+back,advanced,14,16,25,16-25,Include vertical pulls (lat width) and horizontal pulls (back thickness)
+shoulders,beginner,6,6,10,6-10,"Whole-deltoid total. Track side/rear heads separately (side_delts, rear_delts) — pressing only develops front delts"
+shoulders,intermediate,10,10,18,10-18,"Whole-deltoid total. Track side/rear heads separately (side_delts, rear_delts) — pressing only develops front delts"
+shoulders,advanced,12,14,22,14-22,"Whole-deltoid total. Track side/rear heads separately (side_delts, rear_delts) — pressing only develops front delts"
+side_delts,beginner,4,5,9,5-9,Direct abduction work (lateral raises) — pressing barely contributes
+side_delts,intermediate,6,8,16,8-16,Direct abduction work (lateral raises) — pressing barely contributes
+side_delts,advanced,10,12,22,12-22,Direct abduction work (lateral raises) — pressing barely contributes
+rear_delts,beginner,3,4,8,4-8,"Direct isolation (face pulls, reverse pec deck) — rows add some indirect volume"
+rear_delts,intermediate,6,6,14,6-14,"Direct isolation (face pulls, reverse pec deck) — rows add some indirect volume"
+rear_delts,advanced,8,10,18,10-18,"Direct isolation (face pulls, reverse pec deck) — rows add some indirect volume"
+biceps,beginner,3,3,6,3-6,Direct isolation sets only — rows and pull-ups add indirect volume on top
+biceps,intermediate,6,6,10,6-10,Direct isolation sets only — rows and pull-ups add indirect volume on top
+biceps,advanced,8,8,14,8-14,Direct isolation sets only — rows and pull-ups add indirect volume on top
+triceps,beginner,3,3,6,3-6,Direct isolation sets only — all pressing adds indirect volume on top
+triceps,intermediate,6,6,10,6-10,Direct isolation sets only — all pressing adds indirect volume on top
+triceps,advanced,10,10,16,10-16,Direct isolation sets only — all pressing adds indirect volume on top
+quads,beginner,6,6,10,6-10,Include knee-dominant squatting and knee-extension isolation
+quads,intermediate,10,10,15,10-15,Include knee-dominant squatting and knee-extension isolation
+quads,advanced,12,14,20,14-20,Include knee-dominant squatting and knee-extension isolation
+hamstrings,beginner,5,5,8,5-8,"Hip hinge (RDL, deadlift) primary — leg curl targets short head differently"
+hamstrings,intermediate,8,8,12,8-12,"Hip hinge (RDL, deadlift) primary — leg curl targets short head differently"
+hamstrings,advanced,10,10,15,10-15,"Hip hinge (RDL, deadlift) primary — leg curl targets short head differently"
+glutes,beginner,6,6,10,6-10,Compounds provide baseline stimulus — hip thrust and RDL are additive
+glutes,intermediate,8,8,14,8-14,Compounds provide baseline stimulus — hip thrust and RDL are additive
+glutes,advanced,10,12,18,12-18,Compounds provide baseline stimulus — hip thrust and RDL are additive
+calves,beginner,4,4,8,4-8,Full ROM emphasizing the stretch. Type I fibre dominance — tolerates higher frequency
+calves,intermediate,6,6,12,6-12,Full ROM emphasizing the stretch. Type I fibre dominance — tolerates higher frequency
+calves,advanced,10,10,16,10-16,Full ROM emphasizing the stretch. Type I fibre dominance — tolerates higher frequency
+abs,beginner,3,3,8,3-8,Compounds provide indirect stimulus — direct work builds on this baseline
+abs,intermediate,6,6,10,6-10,Compounds provide indirect stimulus — direct work builds on this baseline
+abs,advanced,8,8,12,8-12,Compounds provide indirect stimulus — direct work builds on this baseline
